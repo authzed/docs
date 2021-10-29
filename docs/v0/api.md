@@ -4,7 +4,6 @@ import {ApiExample, ApiSample} from '../../src/components/ApiExample';
 
 :::note
 This page makes use of Zanzibar terminology and namespace configuration.
-Please refer to the [current Authzed terminology](/concepts/terminology), schema configuration, and API reference.
 :::
 
 The v0 Authzed gRPC API is composed of two gRPC services: ACLService and NamespaceService.
@@ -204,7 +203,7 @@ def write_content(user, content_id, new_content):
 
 [Check Request]: /v0/api#aclservicecheck
 [Zookie]: /v0/concepts#zookies
-[New Enemy Problem]: /concepts/authz#what-is-the-new-enemy-problem
+[New Enemy Problem]: /reference/glossary.md#new-enemy-problem
 
 ### Request
 

@@ -2,7 +2,6 @@
 
 :::note
 This page makes use of Zanzibar terminology and namespace configuration.
-Please refer to the [current Authzed terminology](/concepts/terminology) and schema configuration.
 :::
 
 import {ApiExample, ApiSample} from '../../src/components/ApiExample';

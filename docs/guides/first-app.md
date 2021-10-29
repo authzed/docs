@@ -4,7 +4,7 @@ import TabItem from '@theme/TabItem';
 import Tabs from '@theme/Tabs';
 
 :::caution Work in Progress
-This page may be updated frequently as we are actively working on updating our documentation with our [current Authzed terminology](/concepts/terminology).
+Not all languages in this guide are up to date.
 :::
 
 ## Introduction
@@ -18,11 +18,10 @@ Each section demonstrates how to use the API to perform the required step and th
 ## Prerequisites
 
 - An [Authzed] account
-- An [API Token] with _admin_ access to a new [Permissions System].
+- An [API Token] with _admin_ access to a new Permissions System
 
 [Authzed]: https://app.authzed.com
-[API Token]: /concepts/terminology#api-token
-[Permissions System]: /concepts/terminology#permissions-system
+[API Token]: /reference/api#authentication
 
 ## Installation
 

@@ -2,7 +2,6 @@
 
 :::note
 This page makes use of Zanzibar terminology and namespace configuration.
-Please refer to the [current Authzed terminology](/concepts/terminology) and schema configuration.
 :::
 
 ## Users
@@ -504,4 +503,4 @@ It is generally recommend to store the Zookie returned by `Write` next to the ob
 [Check]: /v0/api#aclservicecheck
 [Expand]: /v0/api#aclserviceexpand
 [Write]: #writing-tuples
-[New Enemy Problem]: /concepts/authz/#what-is-the-new-enemy-problem
+[New Enemy Problem]: /reference/glossary.md#new-enemy-problem

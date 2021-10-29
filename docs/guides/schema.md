@@ -40,7 +40,7 @@ So far, our schema and object definitions don't do much: They define the two typ
 
 Our next step, therefore, is to decide how our objects can relate to one another, thus defining the kind of relationships we can store in Authzed.
 
-For this example, we've chosen a simple [RBAC]-style permissions model, where users can be granted a *role*, such as *reader*, on our resource (`document`).
+For this example, we've chosen a simple RBAC-style permissions model, where users can be granted a *role*, such as *reader*, on our resource (`document`).
 
 The choice of RBAC therefore means that the relationship between our resource (`document`) and our users will be defined by the roles we want, and thus, we can start by defining a relation on our `document` type to represent one of these roles (here, `reader`):
 
@@ -63,8 +63,6 @@ If we wanted more than a single allowed object type, the `|` character can be us
 relation reader: example/user | example/anotherobjecttype
 ```
 :::
-
-[RBAC]: /concepts/authz#what-is-rbac
 
 ## Validating our schema
 
@@ -151,8 +149,8 @@ We now have a valid [relationship] representing that `specificuser` can view `sp
 
 <InlinePlayground reference="qF3yzgbAVj7U"/>
 
-[Relationships]: /concepts/terminology#relationship
-[relationship]:  /concepts/terminology#relationship
+[Relationships]: /reference/glossary.md#relationship
+[relationships]: /reference/glossary.md#relationship
 
 ### Writing Assertions
 
