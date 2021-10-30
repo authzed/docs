@@ -551,7 +551,6 @@ client.acl_service.write(
   </TabItem>
 </Tabs>
 
-
 ## Checking Permissions
 
 Permissions Systems that have existing relationships can perform _Permission checks_.
@@ -803,5 +802,6 @@ This document has covered independent usage of each API call needed to integrate
 To see examples and learn more about where these APIs should be called within your application, see the following:
 
 Resources for end-to-end examples include:
+
 - [The Authzed Demo Video](https://authzed.com/demo)
 - [Real World Flask](https://github.com/authzed/flask-realworld-example-app) with [Real World React Redux](https://github.com/authzed/react-redux-realworld-example-app)

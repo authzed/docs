@@ -61,7 +61,6 @@ A Production tenant has no restrictions on API call or tuple count, but cannot b
 | Development | Yes           | *Limited*            |
 | Production  | *No*          | Unlimited            |
 
-
 ### Creating a Tenant
 
 A tenant can be created in the `Tenants` section of the Authzed Management Dashboard.
@@ -355,6 +354,7 @@ thetenant/user:someusername#...
 ```
 
 This results in our overall tuple:
+
 ```
 thetenant/namespace:object#relation@thetenant/user:someusername#...
 ```
@@ -383,7 +383,6 @@ As another example, the tuple `thetenant/document:mydocument#read@thetenant/user
 | ------------------------------------ | ---------------| ---------- | ---------------------------- |
 | `thetenant/document` | `mydocument` | `read`     | `thetenant/user:someusername#...` |
 
-
 #### Example 3
 
 As a third example, the tuple `thetenant/group:mygroup#member@thetenant/group:anothergroup#...` translates to:
@@ -407,15 +406,15 @@ This page makes use of Zanzibar terminology and namespace configuration. Please 
 
 The Authzed API supports two operations to update [tuples] in the system: `Write` and `Delete`. Both operations exist under the same call.
 
-#### Create
+### Create
 
 The `Create` operation is used to create new [tuples] in the Authzed data layer, thereby defining relationships between objects.
 
-#### Delete
+### Delete
 
 The `Delete` operation is used to remove [tuples] from the Authzed data layer
 
-#### Touch
+### Touch
 
 The `Touch` operation is a special operation which will perform an upsert-like operation, inserting a new tuple if one doesn't exist and updating the transaction-time on a tuple if it does.
 

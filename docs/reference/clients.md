@@ -35,7 +35,7 @@ If you are interested in additional language or building your own, feel free to 
 
 [zed] is the official command-line tool for managing Authzed and SpiceDB.
 
-Once configured with credentials, zed usage looks like: 
+Once configured with credentials, zed usage looks like:
 
 ```
 $ zed schema read
@@ -71,7 +71,7 @@ We recommend this client over [grpc_cli](#grpc_cli) for generic gRPC interaction
 Example usage:
 
 ```
-$ noglob grpcurl -rpc-header "authorization: Bearer myapikey" -d '{"schema": "definition user {}"}' grpc.authzed.com:50051 "authzed.api.v1.SchemaService/WriteSchema"
+noglob grpcurl -rpc-header "authorization: Bearer myapikey" -d '{"schema": "definition user {}"}' grpc.authzed.com:50051 "authzed.api.v1.SchemaService/WriteSchema"
 ```
 
 [grpcurl]: https://github.com/fullstorydev/grpcurl

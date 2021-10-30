@@ -1,3 +1,6 @@
 ---
+fenced-code-language: false
 line-length: false
+no-duplicate-heading: false
 no-hard-tabs: false
+no-inline-html: false
