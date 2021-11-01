@@ -59,9 +59,11 @@ definition example/document {
 Note the inclusion of `user` on the right hand side of the relation: This indicates that only objects of type `user` can relate via a `reader` relationship to a document.
 
 If we wanted more than a single allowed object type, the `|` character can be used:
+
 ```zed
 relation reader: example/user | example/anotherobjecttype
 ```
+
 :::
 
 ## Validating our schema

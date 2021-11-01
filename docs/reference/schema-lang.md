@@ -72,9 +72,10 @@ Occasionally you will see a subject which has a sub-relation such as `usergroup:
 :::
 
 ### Naming Relations
+
 Relations define how one object relates to another object/subject, and thus **relations should be named as adjectives**, read as `{relation name} (of the object)`.
 
-Examples: 
+Examples:
 
 | Name     | Read as                |
 | -------- | ---------------------- |
@@ -215,7 +216,7 @@ definition sysprefix/document {
 
 Permissions define a set of objects that can perform an action or have some attribute, and thus **permissions should be named as verbs or nouns**, read as  `(is/can) {permission name} (the object)`.
 
-Examples: 
+Examples:
 
 | Name     | Read as                 |
 | -------- | ----------------------- |
@@ -253,7 +254,7 @@ It is **highly** recommended to put doc comments on all definitions, relations a
 
 <InlinePlayground reference="Vwput-WCrLaz"/>
 
-## Try it out!
+## Try it out
 
 Try the schema Language out now in the [Authzed Playground]
 

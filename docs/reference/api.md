@@ -17,6 +17,7 @@ New Messages, Fields, Services, and RPCs can be added to existing APIs as long a
 When an API version is marked as deprecated, the duration of its continued support will be announced.
 
 During this deprecation period, Authzed reserves the right to take various actions to users and clients using deprecated APIs:
+
 - Email users
 - Print warning messages from official clients
 - Purposely disrupt service near the end of the period
@@ -53,7 +54,7 @@ gRPC Documentation can be found in the [Buf Registry][bsr-v1].
   Schema Read/Write are always fully consistent
 - Schema Read/Write now operates on all definitions at once
 - Relationships are now composed of an Object and Subject references and the relation between them
-- DeleteRelationships was added to enable bulk removal of Relationships 
+- DeleteRelationships was added to enable bulk removal of Relationships
 - Preconditions for WriteRelationships/DeleteRelationships are now expressed via Relationship filters
 
 <details>

@@ -389,7 +389,6 @@ message ExpandRequest {
 }
 ```
 
-
 <details>
 <summary>Additional Protocol buffer definitions used</summary>
 
@@ -581,7 +580,6 @@ message LookupRequest {
 }
 ```
 
-
 <details>
 <summary>Additional Protocol buffer definitions used</summary>
 
@@ -629,7 +627,6 @@ message LookupResponse {
     Zookie revision = 3;
 }
 ```
-
 
 #### Response Example
 
