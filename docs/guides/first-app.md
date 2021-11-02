@@ -3,33 +3,37 @@
 import TabItem from '@theme/TabItem';
 import Tabs from '@theme/Tabs';
 
-:::caution Work in Progress
-Not all languages in this guide are up to date.
-:::
-
 ## Introduction
 
-This guide walks through defining a permission system for a very simple blog application.
+This guide walks through the steps required to deeply integrate an application with SpiceDB.
+Not all software requires this level of integration, but it is preferable for greenfield applications or applications that are central in an architecture with multiple services.
 
-Each section demonstrates how to use the API to perform the required step and the [final section] demonstrates these APIs calls combined into one end-to-end integrated application.
-
-[final section]: #end-to-end-example
+Instead of introducing an unfamiliar example app and altering various locations in its code, this guide is written such that each step is a standalone snippet of code that demonstrates an integration point and finding where those points exist in your codebase is an exercise left to the reader.
 
 ## Prerequisites
 
-- An [Authzed] account
-- An [API Token] with _admin_ access to a new Permissions System
+- An [Authzed] permission system **OR** a running instance of [SpiceDB][SpiceDB]
+- An [API Token] with `admin` access **OR** the configured preshared key for SpiceDB
 
 [Authzed]: https://app.authzed.com
 [API Token]: /reference/api#authentication
+[SpiceDB]: https://github.com/authzed/spicedb
+
+:::warning
+Throughout this guide various substitutions must be made in the provided code snippets:
+
+- Authzed users must replace the `blog` prefix throughout this guide with their own permission system's slug
+- SpiceDB users must replace `grpc.authzed.com:443` with their own SpiceDB endpoint
+- All users must replace `t_your_token_here_1234567deadbeef` with their API token or preshared key
+:::
 
 ## Installation
 
-In order to interact with Authzed, you'll need an [Authzed API] client.
+The first step to integrating any software is ensuring you have an [API client].
 
-In addition to client libraries, the [zed command line tool] can be used to interact with the API from macOS or Linux shells.
+[API client]: reference/clients.md
 
-Each tool is installed with its native package management tools:
+Each tool is installed with its ecosystem's package management tools:
 
 <Tabs groupId="clients" defaultValue={"shell"} values={[
   {label: 'Shell', value: 'shell'},
@@ -41,7 +45,8 @@ Each tool is installed with its native package management tools:
   <TabItem value="shell">
 
 ```sh
-brew install --HEAD authzed/tap/zed
+brew install authzed/tap/zed
+zed context set blog grpc.authzed.com:443 t_your_token_here_1234567deadbeef
 ```
 
   </TabItem>
@@ -78,47 +83,37 @@ gem install authzed
   </TabItem>
 </Tabs>
 
-[Authzed API]: /reference/api
-[zed command line tool]: /reference/zed
+## Defining and Applying a Schema
 
-## Defining and Updating a Schema
+Regardless of whether or not you have a preexisting schema written to your permission system, integrating a new application will typically require you add new definitions to the [Schema].
+As a quick recap, Schemas define the objects, their relations, and their checkable permissions that will be available to be used with the permission system.
 
-The first step in a new permissions system is to apply a _Schema_.
+[Schema]: /guides/schema.md
 
-Schemas define the Objects in a Permissions System.
-
-Objects have two kinds of properties: Relations to other Objects and Permissions.
-
-Relations have types that specify which Objects can have that Relation.
-
-Permissions are computed from combining Relations with set operations (union, intersection, exclusion).
-
-The following is a basic Schema for a blog:
+We'll be using the following blog example throughout this guide:
 
 ```zed
 definition blog/user {}
 
 definition blog/post {
-  relation reader: blog/user
-  relation writer: blog/user
+	relation reader: blog/user
+	relation writer: blog/user
 
-  permission read = reader + writer
-  permission write = writer
+	permission read = reader + writer
+	permission write = writer
 }
 ```
 
-This example defines two types of Objects that will be used in the Permissions System: Users and Posts.
-Posts can have two relations to Users: reader and writer.
-Posts can have two permissions checked: read and write.
+This example defines two types of objects that will be used in the permissions system: `user` and `post`.
+Each post can have two kinds of relations to users: `reader` and `writer`.
+Each post can have two permissions checked: `read` and `write`.
+The `read` permission [unions] together both readers and writers, so that any writer is implicitly granted read, as well.
+Feel free to start with design to modify and test your own experiments in the [playground].
 
-Notice that the read permission _unions_ both readers and writers.
-By doing so, you avoid having to perform multiple checks for all the relations that should have access to an Object.
+[unions]: /reference/schema-lang.md#-union
+[playground]: https://play.authzed.com/s/mVBBpf5poNd8/schema
 
-With the basics down, you can explore building your own schemas on the [Authzed Playground].
-
-[Authzed Playground]: https://play.authzed.com
-
-Now apply the schema using the command line or a client library:
+With a schema designed, we can now move on using our client to to apply that schema to the permission system.
 
 <Tabs groupId="clients" defaultValue={"shell"} values={[
   {label: 'Shell', value: 'shell'},
@@ -130,7 +125,18 @@ Now apply the schema using the command line or a client library:
   <TabItem value="shell">
 
 ```sh
-zed schema write blog_permissions.zed
+zed schema write <(cat << EOF
+definition blog/user {}
+
+definition blog/post {
+	relation reader: blog/user
+	relation writer: blog/user
+
+	permission read = reader + writer
+	permission write = writer
+}
+EOF
+)
 ```
 
   </TabItem>
@@ -144,8 +150,8 @@ import (
 	"log"
 	"os"
 
-	pb "github.com/authzed/authzed-go/proto/authzed/api/v1alpha1"
-	authzed "github.com/authzed/authzed-go/v1alpha1"
+	pb "github.com/authzed/authzed-go/proto/authzed/api/v1"
+	"github.com/authzed/authzed-go/v1"
 	"github.com/authzed/grpcutil"
 )
 
@@ -163,7 +169,7 @@ func main() {
 	client, err := authzed.NewClient(
 		"grpc.authzed.com:443",
 		grpcutil.WithBearerToken("t_your_token_here_1234567deadbeef"),
-		grpcutil.WithSystemCerts(false),
+		grpcutil.WithSystemCerts(grpcutil.VerifyCA),
 	)
 	if err != nil {
 		log.Fatalf("unable to initialize client: %s", err)
@@ -181,7 +187,7 @@ func main() {
   <TabItem value="python">
 
 ```python
-from authzed.api.v1alpha1 import Client, WriteSchemaRequest
+from authzed.api.v1 import Client, WriteSchemaRequest
 from grpcutil import bearer_token_credentials
 
 
@@ -205,6 +211,10 @@ resp = client.WriteSchema(WriteSchemaRequest(schema=SCHEMA))
 
   </TabItem>
   <TabItem value="java">
+
+:::warning
+This example uses the legacy v1alpha1 API.
+:::
 
 ```java
 
@@ -260,7 +270,6 @@ public class App {
   <TabItem value="ruby">
 
 ```rb
-
 require 'authzed'
 
 schema = <<~SCHEMA
@@ -275,34 +284,41 @@ schema = <<~SCHEMA
     }
     SCHEMA
 
-client = Authzed::Api::V1alpha1::Client.new(
+client = Authzed::Api::V1::Client.new(
     target: 'grpc.authzed.com:443',
-    interceptors: [Authzed::GrpcUtil::BearerToken.new(token: "t_your_token_here_1234567deadbeef")],
+    interceptors: [Authzed::GrpcUtil::BearerToken.new(token: 't_your_token_here_1234567deadbeef')],
 )
 
 resp = client.schema_service.write_schema(
-  Authzed::Api::V1alpha1::WriteSchemaRequest.new(
-    schema: schema
-  )
+  Authzed::Api::V1::WriteSchemaRequest.new(schema: schema)
 )
-
 ```
 
   </TabItem>
 </Tabs>
 
-## Creating Relationships
-
-Once a Schema has been applied, the next step is to create _Relationships_ the follow that Schema.
-Relationships are instances of a Relation between two Objects.
-
-Create two relationships: one making Emilia a writer of the first post and another making Beatrice a reader of the first post.
-You can also _touch_ and _delete_ relationships, but those are not as immediately useful for an empty permission system.
-
 :::note
-The API version of the client in the code examples has switched from v1alpha1 to v0.
-Currently, the Schema API is the only API available in v1alpha1.
+Similar to applying schema changes for relational databases, production environments will likely want to write backward-compatible changes and apply those changes to the permission system using a schema migration toolchain.
 :::
+
+## Storing Relationships
+
+After a permission system has its schema applied, it is ready to have its relationships be created, touched, or deleted.
+Relationships are live instances of relations between objects.
+Because the relationships stored in the system can change at runtime, this is a powerful primitive for dynamically granting or revoking access to the resources you've modeled.
+When applications modify or create rows in their database, they will also typically create or update relationships.
+
+:::info
+Writing relationships returns a [ZedToken] which is critical to ensuring performance and [consistency].
+:::
+
+[ZedToken]: /reference/zedtokens-and-zookies.md
+[consistency]: /reference/api-consistency.md
+
+In the following example, we'll be creating two relationships: one making Emilia a writer of the first post and another making Beatrice a reader of the first post.
+You can also [touch and delete] relationships, but those are not as immediately useful for an empty permission system.
+
+[touch and delete]: https://buf.build/authzed/api/docs/main/authzed.api.v1#authzed.api.v1.RelationshipUpdate
 
 <Tabs groupId="clients" defaultValue={"shell"} values={[
   {label: 'Shell', value: 'shell'},
@@ -314,8 +330,8 @@ Currently, the Schema API is the only API available in v1alpha1.
   <TabItem value="shell">
 
 ```sh
-zed relationship create user:emilia   writer posts:1
-zed relationship create user:beatrice reader posts:1
+zed relationship create posts:1 writer user:emilia
+zed relationship create posts:1 reader user:beatrice
 ```
 
   </TabItem>
@@ -329,8 +345,8 @@ import (
 	"fmt"
 	"log"
 
-	pb "github.com/authzed/authzed-go/proto/authzed/api/v0"
-	authzed "github.com/authzed/authzed-go/v0"
+	pb "github.com/authzed/authzed-go/proto/authzed/api/v1"
+	"github.com/authzed/authzed-go/v0"
 	"github.com/authzed/grpcutil"
 )
 
@@ -338,50 +354,52 @@ func main() {
 	client, err := authzed.NewClient(
 		"grpc.authzed.com:443",
 		grpcutil.WithBearerToken("t_your_token_here_1234567deadbeef"),
-		grpcutil.WithSystemCerts(false),
+		grpcutil.WithSystemCerts(grpcutil.VerifyCA),
 	)
 	if err != nil {
 		log.Fatalf("unable to initialize client: %s", err)
 	}
 
-	request := &pb.WriteRequest{Updates: []*pb.RelationTupleUpdate{
+	request := &pb.WriteRequest{Updates: []*pb.RelationshipUpdate{
 		{ // Emilia is a Writer on Post 1
-			Operation: pb.RelationTupleUpdate_CREATE,
-			Tuple: &pb.RelationTuple{
-				User: &pb.User{UserOneof: &pb.User_Userset{Userset: &pb.ObjectAndRelation{
-					Namespace: "user",
-					ObjectId:  "emilia",
-					Relation:  "...",
-				}}},
-				ObjectAndRelation: &pb.ObjectAndRelation{
-					Namespace: "post",
-					ObjectId:  "1",
-					Relation:  "writer",
+			Operation: v1.RelationshipUpdate_OPERATION_CREATE,
+			Relationship: &pb.Relationship{
+				Resource: &pb.ObjectReference{
+					ObjectType: "blog/post",
+					ObjectId: "1",
+				},
+				Relation: "writer",
+				Subject: &pb.SubjectReference{
+					Object: &pb.ObjectReference{
+						ObjectType: "blog/user",
+						ObjectId: "emilia",
+					}
 				},
 			},
 		},
 		{ // Beatrice is a Reader on Post 1
-			Operation: pb.RelationTupleUpdate_CREATE,
-			Tuple: &pb.RelationTuple{
-				User: &pb.User{UserOneof: &pb.User_Userset{Userset: &pb.ObjectAndRelation{
-					Namespace: "user",
-					ObjectId:  "beatrice",
-					Relation:  "...",
-				}}},
-				ObjectAndRelation: &pb.ObjectAndRelation{
-					Namespace: "post",
-					ObjectId:  "1",
-					Relation:  "reader",
+			Operation: v1.RelationshipUpdate_OPERATION_CREATE,
+			Relationship: &pb.Relationship{
+				Resource: &pb.ObjectReference{
+					ObjectType: "blog/post",
+					ObjectId: "1",
+				},
+				Relation: "reader",
+				Subject: &pb.SubjectReference{
+					Object: &pb.ObjectReference{
+						ObjectType: "blog/user",
+						ObjectId: "beatrice",
+					}
 				},
 			},
 		},
 	}}
 
-	resp, err := client.Write(context.Background(), request)
+	resp, err := client.WriteRelationships(context.Background(), request)
 	if err != nil {
 		log.Fatalf("failed to write relations: %s", err)
 	}
-	fmt.Println(resp.Revision.Token)
+	fmt.Println(resp.WrittenAt.Token)
 }
 ```
 
@@ -389,52 +407,65 @@ func main() {
   <TabItem value="python">
 
 ```python
-from authzed.api.v0 import (
+from authzed.api.v1 import (
     Client,
-    ObjectAndRelation,
-    RelationTuple,
-    RelationTupleUpdate,
-    User,
-    WriteRequest,
+    ObjectReference,
+    Relationship,
+    RelationshipUpdate,
+    SubjectReference,
+    WriteRelationshipsRequest,
 )
 from grpcutil import bearer_token_credentials
-
 
 client = Client(
     "grpc.authzed.com:443",
     bearer_token_credentials("t_your_token_here_1234567deadbeef"),
 )
 
-resp = client.Write(WriteRequest(updates=[
-    # Emilia is a Writer on Post 1
-    RelationTupleUpdate(
-        operation=RelationTupleUpdate.Operation.CREATE,
-        tuple=RelationTuple(
-            user=User(namespace="blog/user", object_id="emilia"),
-            object_and_relation=ObjectAndRelation(
-                namespace="blog/post",
-                object_id="1",
-                relation="writer",
+resp = client.WriteRelationships(
+    WriteRelationshipsRequest(
+        updates=[
+            # Emilia is a Writer on Post 1
+            RelationshipUpdate(
+                operation=RelationshipUpdate.Operation.OPERATION_CREATE,
+                relationship=Relationship(
+                    resource=ObjectReference(object_type="blog/post", object_id="1"),
+                    relation="writer",
+                    subject=SubjectReference(
+                        object=ObjectReference(
+                            object_type="blog/user",
+                            object_id="emilia",
+                        )
+                    ),
+                ),
             ),
-        ),
-    ),
-    # Beatrice is a Reader on Post 1
-    RelationTupleUpdate(
-        operation=RelationTupleUpdate.Operation.CREATE,
-        tuple=RelationTuple(
-            user=User(namespace="blog/user", object_id="beatrice"),
-            object_and_relation=ObjectAndRelation(
-                namespace="blog/post",
-                object_id="1",
-                relation="reader",
+            # Beatrice is a Reader on Post 1
+            RelationshipUpdate(
+                operation=RelationshipUpdate.Operation.OPERATION_CREATE,
+                relationship=Relationship(
+                    resource=ObjectReference(object_type="blog/post", object_id="1"),
+                    relation="reader",
+                    subject=SubjectReference(
+                        object=ObjectReference(
+                            object_type="blog/user",
+                            object_id="beatrice",
+                        )
+                    ),
+                ),
             ),
-        ),
-    ),
-]))
+        ]
+    )
+)
+
+print(resp.written_at.token)
 ```
 
   </TabItem>
   <TabItem value="java">
+
+:::warning
+This example uses the legacy v0 API.
+:::
 
 ```java
 
@@ -507,38 +538,35 @@ public class App {
   <TabItem value="ruby">
 
 ```ruby
-
 require 'authzed'
 
-client = Authzed::Api::V0::Client.new(
+client = Authzed::Api::V1::Client.new(
   target: 'grpc.authzed.com:443',
   interceptors: [Authzed::GrpcUtil::BearerToken.new(token: 't_your_token_here_1234567deadbeef')],
 )
 
-client.acl_service.write(
-  Authzed::Api::V0::WriteRequest.new(
+resp = client.permissions_service.write_relationships(
+  Authzed::Api::V1::WriteRelationshipsRequest.new(
     updates: [
       # Emilia is a Writer on Post 1
-      Authzed::Api::V0::RelationTupleUpdate.new(
-        operation: Authzed::Api::V0::RelationTupleUpdate::Operation::CREATE,
-        tuple: Authzed::Api::V0::RelationTuple.new(
-          user: Authzed::Api::V0::User.for(namespace: 'blog/user', object_id: 'emilia'),
-          object_and_relation: Authzed::Api::V0::ObjectAndRelation.new(
-            namespace: 'blog/post',
-            object_id: '1',
-            relation: 'writer'
+      Authzed::Api::V1::Relationship.new(
+        operation: Authzed::Api::V1::RelationshipUpdate::Operation::CREATE,
+        relationship: Authzed::Api::V1::Relationship.new(
+          resource: Authzed::Api::V1::ObjectReference.new(object_type: 'blog/post', object_id: '1'),
+          relation: 'writer',
+          subject: Authzed::Api::V1::SubjectReference.new(
+            object: Authzed::Api::V1::ObjectReference.new(object_type: 'blog/user', object_id: 'emilia'),
           ),
         ),
       ),
       # Beatrice is a Reader on Post 1
-      Authzed::Api::V0::RelationTupleUpdate.new(
-        operation: Authzed::Api::V0::RelationTupleUpdate::Operation::CREATE,
-        tuple: Authzed::Api::V0::RelationTuple.new(
-          user: Authzed::Api::V0::User.for(namespace: 'blog/user', object_id: 'beatrice'),
-          object_and_relation: Authzed::Api::V0::ObjectAndRelation.new(
-            namespace: 'blog/post',
-            object_id: '1',
-            relation: 'reader'
+      Authzed::Api::V1::Relationship.new(
+        operation: Authzed::Api::V1::RelationshipUpdate::Operation::CREATE,
+        relationship: Authzed::Api::V1::Relationship.new(
+          resource: Authzed::Api::V1::ObjectReference.new(object_type: 'blog/post', object_id: '1'),
+          relation: 'reader',
+          subject: Authzed::Api::V1::SubjectReference.new(
+            object: Authzed::Api::V1::ObjectReference.new(object_type: 'blog/user', object_id: 'beatrice'),
           ),
         ),
       ),
@@ -546,6 +574,7 @@ client.acl_service.write(
   )
 )
 
+puts resp.written_at.token
 ```
 
   </TabItem>
@@ -553,14 +582,11 @@ client.acl_service.write(
 
 ## Checking Permissions
 
-Permissions Systems that have existing relationships can perform _Permission checks_.
-Checks determine whether an Object has permission to perform an action on another Object.
-This most commonly takes the form of Users checking their access to perform [CRUD operations] on a resource in an application.
+Permissions Systems that have stored relationships are capable of performing permission checks.
+Checks do not only test for the existence of direct relationships, but will also compute and traverse transitive relationships.
+For example, in our example schema, writers have both write and read, so there's no need to create a read relationship for a subject that is already a writer.
 
-[CRUD operations]: https://en.wikipedia.org/wiki/Create%2C_read%2C_update_and_delete
-
-The following demonstrates exhaustively checking all the permissions for Emilia and Beatrice on the first post;
-notice that Emilia has read access implicitly through the writer relation:
+The following examples demonstrate exactly that:
 
 <Tabs groupId="clients" defaultValue={"shell"} values={[
   {label: 'Shell', value: 'shell'},
@@ -572,10 +598,10 @@ notice that Emilia has read access implicitly through the writer relation:
   <TabItem value="shell">
 
 ```sh
-zed permission check user:emilia   read  posts:1 # true
-zed permission check user:emilia   write posts:1 # true
-zed permission check user:beatrice read  posts:1 # true
-zed permission check user:beatrice write posts:1 # false
+zed permission check post:1 read  user:emilia   # true
+zed permission check post:1 write user:emilia   # true
+zed permission check post:1 read  user:beatrice # true
+zed permission check post:1 write user:beatrice # false
 ```
 
   </TabItem>
@@ -588,8 +614,8 @@ import (
 	"context"
 	"log"
 
-	pb "github.com/authzed/authzed-go/proto/authzed/api/v0"
-	authzed "github.com/authzed/authzed-go/v0"
+	pb "github.com/authzed/authzed-go/proto/authzed/api/v1"
+	"github.com/authzed/authzed-go/v1"
 	"github.com/authzed/grpcutil"
 )
 
@@ -605,44 +631,60 @@ func main() {
 
 	ctx := context.Background()
 
-	emilia := &pb.User{UserOneof: &pb.User_Userset{Userset: &pb.ObjectAndRelation{
-		Namespace: "user",
+	emilia := &pb.SubjectReference{Object: &pb.ObjectReference{
+		ObjectType: "blog/user",
 		ObjectId:  "emilia",
-		Relation:  "...",
-	}}}
+	}}
 
-	beatrice := &pb.User{UserOneof: &pb.User_Userset{Userset: &pb.ObjectAndRelation{
-		Namespace: "user",
+	beatrice := &pb.SubjectReference{Object: &pb.ObjectReference{
+		ObjectType: "user",
 		ObjectId:  "beatrice",
-		Relation:  "...",
-	}}}
+	}}
 
-	post1Reader := &pb.ObjectAndRelation{Namespace: "post", ObjectId: "1", Relation: "reader"}
-	post1Writer := &pb.ObjectAndRelation{Namespace: "post", ObjectId: "1", Relation: "writer"}
+	firstPost := &pb.ObjectReference{
+		ObjectType: "blog/post",
+		ObjectId: "1",
+	}
 
-	resp, err := client.Check(ctx, &pb.CheckRequest{User: emilia, TestUserset: post1Reader})
+	resp, err := client.CheckPermission(ctx, &pb.CheckPermissionRequest{
+		Resource: firstPost,
+		Permission: "read",
+		Subject: emilia,
+	})
 	if err != nil {
 		log.Fatalf("failed to check permission: %s", err)
 	}
-	// resp.Membership == pb.CheckResponse_MEMBER
+	// resp.Permissionship == v1.CheckPermissionResponse_PERMISSIONSHIP_HAS_PERMISSION
 
-	resp, err = client.Check(ctx, &pb.CheckRequest{User: emilia, TestUserset: post1Writer})
+	resp, err = client.CheckPermission(ctx, &pb.CheckPermissionRequest{
+		Resource: firstPost,
+		Permission: "write",
+		Subject: emilia,
+	})
 	if err != nil {
 		log.Fatalf("failed to check permission: %s", err)
 	}
-	// resp.Membership == pb.CheckResponse_MEMBER
+	// resp.Permissionship == v1.CheckPermissionResponse_PERMISSIONSHIP_HAS_PERMISSION
 
-	resp, err = client.Check(ctx, &pb.CheckRequest{User: beatrice, TestUserset: post1Reader})
+	resp, err = client.CheckPermission(ctx, &pb.CheckPermissionRequest{
+		Resource: firstPost,
+		Permission: "read",
+		Subject: beatrice,
+	})
 	if err != nil {
 		log.Fatalf("failed to check permission: %s", err)
 	}
-	// resp.Membership == pb.CheckResponse_MEMBER
+	// resp.Permissionship == v1.CheckPermissionResponse_PERMISSIONSHIP_HAS_PERMISSION
 
-	resp, err = client.Check(ctx, &pb.CheckRequest{User: beatrice, TestUserset: post1Writer})
+	resp, err = client.CheckPermission(ctx, &pb.CheckPermissionRequest{
+		Resource: firstPost,
+		Permission: "write",
+		Subject: beatrice,
+	})
 	if err != nil {
 		log.Fatalf("failed to check permission: %s", err)
 	}
-	// resp.Membership != pb.CheckResponse_MEMBER
+	// resp.Permissionship == v1.CheckPermissionResponse_PERMISSIONSHIP_NO_PERMISSION
 }
 ```
 
@@ -650,45 +692,80 @@ func main() {
   <TabItem value="python">
 
 ```python
-from authzed.api.v0 import CheckRequest, Client, ObjectAndRelation, User
+from authzed.api.v1 import (
+    CheckPermissionRequest,
+    CheckPermissionResponse,
+    Client,
+    ObjectReference,
+    SubjectReference,
+)
 from grpcutil import bearer_token_credentials
 
-
-emilia = User("blog/user", "emilia")
-beatrice = User("blog/user", "beatrice")
-
-post_one_reader = ObjectAndRelation(
-    namespace="blog/post",
-    object_id="1",
-    relation="reader",
+emilia = SubjectReference(
+    object=ObjectReference(
+        object_type="blog/user",
+        object_id="emilia",
+    )
 )
-post_one_writer = ObjectAndRelation(
-    namespace="blog/post",
-    object_id="1",
-    relation="writer",
+beatrice = SubjectReference(
+    object=ObjectReference(
+        object_type="blog/user",
+        object_id="beatrice",
+    )
 )
+
+post_one = ObjectReference(object_type="blog/post", object_id="1")
 
 client = Client(
     "grpc.authzed.com:443",
     bearer_token_credentials("t_your_token_here_1234567deadbeef"),
 )
 
-resp = client.Check(CheckRequest(user=emilia, test_userset=post_one_reader))
-assert resp.is_member
-resp = client.Check(CheckRequest(user=emilia, test_userset=post_one_writer))
-assert resp.is_member
+resp = client.CheckPermission(
+    CheckPermissionRequest(
+        resource=post_one,
+        permission="read",
+        subject=emilia,
+    )
+)
+assert resp.permissionship == CheckPermissionResponse.PERMISSIONSHIP_HAS_PERMISSION
 
-resp = client.Check(CheckRequest(user=beatrice, test_userset=post_one_reader))
-assert resp.is_member
-resp = client.Check(CheckRequest(user=beatrice, test_userset=post_one_writer))
-assert not resp.is_member
+resp = client.CheckPermission(
+    CheckPermissionRequest(
+        resource=post_one,
+        permission="write",
+        subject=emilia,
+    )
+)
+assert resp.permissionship == CheckPermissionResponse.PERMISSIONSHIP_HAS_PERMISSION
+
+resp = client.CheckPermission(
+    CheckPermissionRequest(
+        resource=post_one,
+        permission="read",
+        subject=beatrice,
+    )
+)
+assert resp.permissionship == CheckPermissionResponse.PERMISSIONSHIP_HAS_PERMISSION
+
+resp = client.CheckPermission(
+    CheckPermissionRequest(
+        resource=post_one,
+        permission="write",
+        subject=beatrice,
+    )
+)
+assert resp.permissionship == CheckPermissionResponse.PERMISSIONSHIP_NO_PERMISSION
 ```
 
   </TabItem>
   <TabItem value="java">
 
-```java
+:::warning
+This example uses the legacy v0 API.
+:::
 
+```java
 import com.authzed.api.v0.ACLServiceGrpc;
 import com.authzed.api.v0.AclService;
 import com.authzed.api.v0.Core;
@@ -750,58 +827,61 @@ public class App {
   <TabItem value="ruby">
 
 ```ruby
-
 require 'authzed'
 
-emilia = Authzed::Api::V0::User.for(namespace: 'blog/user', object_id: 'emilia')
-beatrice = Authzed::Api::V0::User.for(namespace: 'blog/user', object_id: 'beatrice')
-
-post_one_reader = Authzed::Api::V0::ObjectAndRelation.new(
-  namespace: 'blog/post',
-  object_id: '1',
-  relation: 'reader')
-
-post_one_writer = Authzed::Api::V0::ObjectAndRelation.new(
-  namespace: 'blog/post',
-  object_id: '1',
-  relation: 'writer')
+emilia = Authzed::Api::V1::SubjectReference.new(object: Authzed::Api::V1::ObjectReference.new(
+  object_type: 'blog/user',
+  object_id: 'emilia',
+))
+beatrice = Authzed::Api::V1::SubjectReference.new(object: Authzed::Api::V1::ObjectReference.new(
+  object_type: 'blog/user',
+  object_id: 'beatrice',
+))
+first_post = Authzed::Api::V1::ObjectReference.new(object_type: 'blog/post', object_id: '1'))
 
 client = Authzed::Api::V0::Client.new(
   target: 'grpc.authzed.com:443',
   interceptors: [Authzed::GrpcUtil::BearerToken.new(token: 't_your_token_here_1234567deadbeef')],
 )
 
-resp = client.acl_service.check(
-  Authzed::Api::V0::CheckRequest.new(test_userset: post_one_reader, user: emilia)
-)
-raise unless resp.is_member
+resp = client.permissions_service.check_permission(Authzed::Api::V1::CheckPermissionRequest.new(
+  resource: first_post,
+  permission: 'read',
+  subject: emilia,
+))
+raise unless Authzed::Api::V1::CheckPermissionResponse::Permissionship.resolve(resp.permissionship)) ==
+  Authzed::Api::V1::CheckPermissionResponse::Permissionship::PERMISSIONSHIP_HAS_PERMISSION
 
-resp = client.acl_service.check(
-  Authzed::Api::V0::CheckRequest.new(test_userset: post_one_writer, user: emilia)
-)
-raise unless resp.is_member
+resp = client.permissions_service.check_permission(Authzed::Api::V1::CheckPermissionRequest.new(
+  resource: first_post,
+  permission: 'write',
+  subject: emilia,
+))
+raise unless Authzed::Api::V1::CheckPermissionResponse::Permissionship.resolve(resp.permissionship)) ==
+  Authzed::Api::V1::CheckPermissionResponse::Permissionship::PERMISSIONSHIP_HAS_PERMISSION
 
-resp = client.acl_service.check(
-  Authzed::Api::V0::CheckRequest.new(test_userset: post_one_reader, user: beatrice)
-)
-raise unless resp.is_member
+resp = client.permissions_service.check_permission(Authzed::Api::V1::CheckPermissionRequest.new(
+  resource: first_post,
+  permission: 'read',
+  subject: beatrice,
+))
+raise unless Authzed::Api::V1::CheckPermissionResponse::Permissionship.resolve(resp.permissionship)) ==
+  Authzed::Api::V1::CheckPermissionResponse::Permissionship::PERMISSIONSHIP_HAS_PERMISSION
 
-resp = client.acl_service.check(
-  Authzed::Api::V0::CheckRequest.new(test_userset: post_one_writer, user: beatrice)
-)
-raise if resp.is_member
-
+resp = client.permissions_service.check_permission(Authzed::Api::V1::CheckPermissionRequest.new(
+  resource: first_post,
+  permission: 'write',
+  subject: beatrice,
+))
+raise unless Authzed::Api::V1::CheckPermissionResponse::Permissionship.resolve(resp.permissionship)) ==
+  Authzed::Api::V1::CheckPermissionResponse::Permissionship::PERMISSIONSHIP_NO_PERMISSION
 ```
 
   </TabItem>
 </Tabs>
 
-## End-to-End Example
+:::note
+In addition to checking permissions, it is also possible to perform checks on relations to determine membership.
 
-This document has covered independent usage of each API call needed to integrate an application, but it has not shown the integration points in a typical application.
-To see examples and learn more about where these APIs should be called within your application, see the following:
-
-Resources for end-to-end examples include:
-
-- [The Authzed Demo Video](https://authzed.com/demo)
-- [Real World Flask](https://github.com/authzed/flask-realworld-example-app) with [Real World React Redux](https://github.com/authzed/react-redux-realworld-example-app)
+This goes against the best practice because computing permissions are far more flexible, but can be useful when used with discretion.
+:::
