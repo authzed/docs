@@ -1,6 +1,6 @@
 # API Overview
 
-Authzed exposes its APIs via [gRPC] and publishes its [Protobuf Definitions] to the [Buf Registry].
+SpiceDB primarily exposes its APIs via [gRPC] and publishes its [Protobuf Definitions] to the [Buf Registry].
 
 The API can be accessed by [various clients] from programming languages or the command line.
 
@@ -8,6 +8,28 @@ The API can be accessed by [various clients] from programming languages or the c
 [Protobuf Definitions]: https://buf.build/authzed/api
 [Buf Registry]: https://buf.build
 [various clients]: clients.md
+
+## Authentication
+
+In order to connect to the API, you must provide a [Bearer Token] in order to identify yourself.
+If you are using an officially supported client library, refer to its documentation or examples for how to provide your credential.
+If you are using your own or third party gRPC clients, refer to the [gRPC Authentication documentation].
+
+Authzed users can find their API Token in the [Authzed dashboard].
+
+[Bearer Token]: https://datatracker.ietf.org/doc/html/rfc6750#section-2.1
+[gRPC Authentication documentation]: https://grpc.io/docs/guides/auth
+[Authzed dashboard]: https://app.authzed.com
+
+## Alternative HTTP/JSON API
+
+By configuring an additional port to listen for traffic, SpiceDB can also support handling JSON requests over HTTP.
+This is accomplished by using the [gRPC Gateway], which translates requests into gRPC messages and forwards them to the port SpiceDB is configured to use for handling gRPC requests.
+The API is documented via [OpenAPI], but may have breaking changes in the future.
+Once the API has stablized, this functionality will become available for Authzed users.
+
+[gRPC Gateway]: https://github.com/grpc-ecosystem/grpc-gateway
+[OpenAPI]: https://petstore.swagger.io/?url=https://raw.githubusercontent.com/authzed/authzed-go/main/proto/apidocs.swagger.json
 
 ## Versioning & Deprecation Policy
 
@@ -23,18 +45,6 @@ During this deprecation period, Authzed reserves the right to take various actio
 - Purposely disrupt service near the end of the period
 
 [Buf Breaking Rules]: https://docs.buf.build/breaking-rules
-
-## Authentication
-
-In order to connect to the API, you must provide a [Bearer Token] in order to identify yourself.
-If you are using an officially supported client library, refer to its documentation or examples for how to provide your credential.
-If you are using your own or third party gRPC clients, refer to the [gRPC Authentication documentation].
-
-Authzed users can find their API Token in the [Authzed dashboard].
-
-[Bearer Token]: https://datatracker.ietf.org/doc/html/rfc6750#section-2.1
-[gRPC Authentication documentation]: https://grpc.io/docs/guides/auth
-[Authzed dashboard]: https://app.authzed.com
 
 ## Changelog
 
