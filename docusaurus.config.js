@@ -8,6 +8,9 @@ module.exports = {
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'throw',
+  customFields: {
+    amplitudeApiKey: env('AMPLITUDE_API_KEY', ''),
+  },
   themeConfig: {
     announcementBar: {
       id: 'github_star',
