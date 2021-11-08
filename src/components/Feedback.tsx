@@ -7,7 +7,7 @@ type FeedbackTypes = 'quality' | 'question';
 type QualityValues = 'yes' | 'no';
 
 const submitAmplitudeFeedback = (client: any, feedbackType: FeedbackTypes, docId: string, value: string) => {
-    client?.logEvent(DOC_FEEDBACK_EVENT, { type: feedbackType, value: value } );
+    client?.logEvent(DOC_FEEDBACK_EVENT, { docId: docId, type: feedbackType, value: value } );
 }
 
 export function Feedback(props: { docId: string }) {
