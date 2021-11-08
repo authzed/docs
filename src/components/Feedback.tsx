@@ -4,6 +4,7 @@ import { AmplitudeContext } from '../components/AmplitudeClient';
 
 const DOC_FEEDBACK_EVENT = 'Submit Doc Feedback';
 type FeedbackTypes = 'quality' | 'question';
+type QualityValues = 'yes' | 'no';
 
 const submitAmplitudeFeedback = (client: any, feedbackType: FeedbackTypes, docId: string, value: string) => {
     client?.logEvent(DOC_FEEDBACK_EVENT, { type: feedbackType, value: value } );
@@ -11,7 +12,7 @@ const submitAmplitudeFeedback = (client: any, feedbackType: FeedbackTypes, docId
 
 export function Feedback(props: { docId: string }) {
     const amplitudeClient = useContext(AmplitudeContext);
-    const [qualitySubmitted, setQualitySubmitted] = useState(undefined);
+    const [qualitySubmitted, setQualitySubmitted] = useState<QualityValues | undefined>(undefined);
     const [questionSubmitted, setQuestionSubmitted] = useState(false);
     const [questionInput, setQuestionInput] = useState('');
 
