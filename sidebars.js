@@ -33,6 +33,7 @@ module.exports = {
       label: 'SpiceDB',
       collapsed: false,
       items: [
+        'spicedb/feature-overview',
         'spicedb/selecting-a-datastore',
       ],
     },
