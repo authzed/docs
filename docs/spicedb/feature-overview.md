@@ -62,7 +62,7 @@ When API requests that attempt to perform writes are made while in read-only, th
 #### Hedging
 
 All datastores support having their requests hedged.
-If a request to the datastore has taken too long, another request is made to hedge against the first ever completing.
+If a request to the datastore has taken too long, another request is made to hedge against the first never completing.
 A configurable quantile value, defaulting to p95, is used to determine whether or not a request is slow.
 When there are not enough samples to accurately use a quantile, a configured absolute duration is used.
 
