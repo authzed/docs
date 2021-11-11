@@ -119,7 +119,7 @@ Every entrypoint to SpiceDB supports configuring structured logging with various
 
 ### Metrics
 
-Every entrypoint to SpiceDB has a configurable HTTP server that serves both a [Prometheus metrics endpoint][prom-endpoint] at `/metrics` and [Go runtime pprof][go-pprof] endpoints at `/debug/pprof`.
+Every entrypoint to SpiceDB has a configurable HTTP server that serves as both a [Prometheus metrics endpoint][prom-endpoint] at `/metrics` and [Go runtime pprof][go-pprof] endpoints at `/debug/pprof`.
 Available metrics include operational information about the Go runtime and serving metrics for any servers that are enabled.
 
 [prom-endpoint]: https://prometheus.io/docs/concepts/jobs_instances/
