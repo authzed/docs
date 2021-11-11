@@ -76,7 +76,7 @@ When configured with a server to listen for dispatch requests and a source of pe
 
 ### Dashboard
 
-The dashboard serves an internal website for humans operating SpiceDB.
+The dashboard serves as an internal website for humans operating SpiceDB.
 It currently includes simple instructions for how to configure [zed][zed] for the running instance.
 
 [zed]: https://github.com/authzed/zed
