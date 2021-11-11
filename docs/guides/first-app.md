@@ -346,7 +346,7 @@ import (
 	"log"
 
 	pb "github.com/authzed/authzed-go/proto/authzed/api/v1"
-	"github.com/authzed/authzed-go/v0"
+	"github.com/authzed/authzed-go/v1"
 	"github.com/authzed/grpcutil"
 )
 
@@ -360,9 +360,9 @@ func main() {
 		log.Fatalf("unable to initialize client: %s", err)
 	}
 
-	request := &pb.WriteRequest{Updates: []*pb.RelationshipUpdate{
+	request := &pb.WriteRelationshipsRequest{Updates: []*pb.RelationshipUpdate{
 		{ // Emilia is a Writer on Post 1
-			Operation: v1.RelationshipUpdate_OPERATION_CREATE,
+			Operation: pb.RelationshipUpdate_OPERATION_CREATE,
 			Relationship: &pb.Relationship{
 				Resource: &pb.ObjectReference{
 					ObjectType: "blog/post",
@@ -373,12 +373,12 @@ func main() {
 					Object: &pb.ObjectReference{
 						ObjectType: "blog/user",
 						ObjectId: "emilia",
-					}
+					},
 				},
 			},
 		},
 		{ // Beatrice is a Reader on Post 1
-			Operation: v1.RelationshipUpdate_OPERATION_CREATE,
+			Operation: pb.RelationshipUpdate_OPERATION_CREATE,
 			Relationship: &pb.Relationship{
 				Resource: &pb.ObjectReference{
 					ObjectType: "blog/post",
@@ -389,7 +389,7 @@ func main() {
 					Object: &pb.ObjectReference{
 						ObjectType: "blog/user",
 						ObjectId: "beatrice",
-					}
+					},
 				},
 			},
 		},
@@ -637,7 +637,7 @@ func main() {
 	}}
 
 	beatrice := &pb.SubjectReference{Object: &pb.ObjectReference{
-		ObjectType: "user",
+		ObjectType: "blog/user",
 		ObjectId:  "beatrice",
 	}}
 
@@ -654,7 +654,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to check permission: %s", err)
 	}
-	// resp.Permissionship == v1.CheckPermissionResponse_PERMISSIONSHIP_HAS_PERMISSION
+	// resp.Permissionship == pb.CheckPermissionResponse_PERMISSIONSHIP_HAS_PERMISSION
 
 	resp, err = client.CheckPermission(ctx, &pb.CheckPermissionRequest{
 		Resource: firstPost,
@@ -664,7 +664,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to check permission: %s", err)
 	}
-	// resp.Permissionship == v1.CheckPermissionResponse_PERMISSIONSHIP_HAS_PERMISSION
+	// resp.Permissionship == pb.CheckPermissionResponse_PERMISSIONSHIP_HAS_PERMISSION
 
 	resp, err = client.CheckPermission(ctx, &pb.CheckPermissionRequest{
 		Resource: firstPost,
@@ -674,7 +674,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to check permission: %s", err)
 	}
-	// resp.Permissionship == v1.CheckPermissionResponse_PERMISSIONSHIP_HAS_PERMISSION
+	// resp.Permissionship == pb.CheckPermissionResponse_PERMISSIONSHIP_HAS_PERMISSION
 
 	resp, err = client.CheckPermission(ctx, &pb.CheckPermissionRequest{
 		Resource: firstPost,
@@ -684,7 +684,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to check permission: %s", err)
 	}
-	// resp.Permissionship == v1.CheckPermissionResponse_PERMISSIONSHIP_NO_PERMISSION
+	// resp.Permissionship == pb.CheckPermissionResponse_PERMISSIONSHIP_NO_PERMISSION
 }
 ```
 
