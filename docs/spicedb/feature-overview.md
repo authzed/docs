@@ -70,7 +70,7 @@ When there are not enough samples to accurately use a quantile, a configured abs
 
 [Dispatching][dispatch] is the primary means of distributing caching across a SpiceDB deployment.
 By default, dispatching only occurs on a single instance.
-When configured with an server to listen for dispatch requests and a source of peer discovery, SpiceDB will use consistent hashing to map specific requests to specific instances in the deployment with the ultimate goal of improving cache hit rates.
+When configured with a server to listen for dispatch requests and a source of peer discovery, SpiceDB will use consistent hashing to map specific requests to specific instances in the deployment with the ultimate goal of improving cache hit rates.
 
 [dispatch]: /reference/glossary.md#dispatchers
 
