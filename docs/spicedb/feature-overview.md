@@ -99,7 +99,7 @@ One of the best ways to consume the integration tests entrypoint is via the [Spi
 
 The devtools entrypoint is currently used to power the [Playground][playground].
 It has the capability to validate schemas with relationships and assertions, using an amount that fits in memory.
-It can also optionally persist and serve bundled schemas with their relationships and assertions such that they can be shared or imported via [zed][zed] or using flags designed to bootstrap SpiceDB.
+It can also optionally persist and serve schemas bundled with their relationships and assertions. These bundles can be shared or imported into SpiceDB via [zed][zed] or using flags for bootstrapping SpiceDB.
 
 [playground]: https://play.authzed.com
 [zed]: https://github.com/authzed/zed
