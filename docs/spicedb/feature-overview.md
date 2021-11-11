@@ -15,7 +15,7 @@ When used in production, these queries are performed through the [API entrypoint
 ## API Entrypoint
 
 The API entrypoint is the primary means of running SpiceDB for production deployments.
-It can serve the its API over gRPC or JSON via HTTP and has configuration for data persistence and various aspects of performance.
+It can serve its API over gRPC or JSON via HTTP and has configuration for data persistence and various aspects of performance.
 
 ### Architecture
 
