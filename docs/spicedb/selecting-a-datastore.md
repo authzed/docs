@@ -35,7 +35,7 @@ There are a few available datastores with various design goals:
 #### Required Parameters
 
 ```sh
---datastore-kind=cockroachdb --datastore-conn-uri="connection uri here"
+--datastore-engine=cockroachdb --datastore-conn-uri="connection uri here"
 ```
 
 #### Notable Parameters
@@ -93,7 +93,7 @@ The available strategies are:
 #### Required Parameters
 
 ```sh
---datastore-kind=postgres --datastore-conn-uri="connection string here"
+--datastore-engine=postgres --datastore-conn-uri="connection string here"
 ```
 
 #### Optional Parameters
@@ -119,12 +119,12 @@ The available strategies are:
 
 ### Developer Notes
 
-- Code can be found [here][pg-code]
-- Documentation can be found [here][pg-godoc]
+- Code can be found [here][memdb-code]
+- Documentation can be found [here][memdb-godoc]
 - Implements its own [MVCC][mvcc] model by storing its data with transaction IDs
 
-[pg-code]: https://github.com/authzed/spicedb/tree/main/internal/datastore/memdb
-[pg-godoc]: https://pkg.go.dev/github.com/authzed/spicedb/internal/datastore/memdb
+[memdb-code]: https://github.com/authzed/spicedb/tree/main/internal/datastore/memdb
+[memdb-godoc]: https://pkg.go.dev/github.com/authzed/spicedb/internal/datastore/memdb
 [mvcc]: https://en.wikipedia.org/wiki/Multiversion_concurrency_control
 
 ### Configuration
@@ -132,7 +132,7 @@ The available strategies are:
 #### Required Parameters
 
 ```sh
---datastore-kind=memdb
+--datastore-engine=memory
 ```
 
 #### Optional Parameters
