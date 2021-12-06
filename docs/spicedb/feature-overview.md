@@ -19,7 +19,12 @@ It can serve its API over gRPC or JSON via HTTP and has configuration for data p
 
 ### Architecture
 
-<img src="/img/arch.svg"/>
+The following is a high-level overview of the sofware architecture of a SpiceDB deployment.
+For more information, read the [architecture blog post][arch].
+
+[arch]: https://authzed.com/blog/spicedb-architecture/
+
+<img alt="architecture of a spicedb deployment" src="/img/arch.svg"/>
 
 ### gRPC API
 
