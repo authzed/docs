@@ -254,6 +254,76 @@ It is **highly** recommended to put doc comments on all definitions, relations a
 
 <InlinePlayground reference="Vwput-WCrLaz"/>
 
+## Common Patterns
+
+### Group membership
+
+Apply specific users or members of a group to a permission on an object type.
+
+<details>
+    <summary>Example</summary>
+    <p>
+        In this example, a group can have users as admins and as members.
+        Both admins and members are considered to have membership in the group.
+        A role can be applied to individual users and groups.
+        All individually applied users as well as members for applied groups will have the `allowed` permission.
+    </p>
+
+<InlinePlayground reference="CNe3PXNuhypm"/>
+</details>
+
+### Super-admin / site-wide permissions
+
+Given an organizational hierarchy of objects where (regular) admin users may exist for a single level of the hierarchy, apply permissions for a set of super-admin users that span across all levels of the hierarchy.
+
+<details>
+    <summary>Example</summary>
+    <p>
+        In lieu of adding a <code>super_admin</code> relation on every object that can be administered, add a root object to the hierarchy, in this example <code>platform</code>.
+        Super admin users can be applied to <code>platform</code> and a relation to <code>platform</code> on top level objects.
+        Admin permission on resources is then defined as the direct owner of the resource as well as through a traversal of the object hierarchy to the platform super admin.
+    </p>
+
+<InlinePlayground reference="m1lRfaaYf9XP"/>
+</details>
+
+### Synthetic relations
+
+Relation traversals can be modeled using intermediate, synthetic relations.
+
+<details>
+    <summary>Example</summary>
+    <p>
+        Given the example hierarchy, portfolio can have folders, folders can have documents, we’d like a reader of a portfolio to also be able to read documents contained in its folders.
+        The read on documents could be thought of as:
+    </p>
+    <p>
+        <code>
+            reader + parent_folder-&gt;reader + parent_folder-&gt;parent_portfolio-&gt;reader
+        </code>
+    </p>
+    <p>
+        Synthetic relations can simulate multiple walks across permissions and relations.
+    </p>
+
+<InlinePlayground reference="O-Z9_Cd-f9K7" />
+</details>
+
+### Recursive permissions
+
+Given a nested set of objects, apply a permission on the ancestors to its descendant objects.
+
+<details>
+    <summary>Example</summary>
+    <p>
+        In this example, a folder can have users with read permission.
+        Additionally, users that can read the parent folder can also read the current folder.
+        Checking read permission on a folder will recursively consider these relations as the answer is computed.
+    </p>
+
+<InlinePlayground reference="LS8xRirjo2Lt"/>
+</details>
+
 ## Try it out
 
 Try the schema Language out now in the [Authzed Playground]
