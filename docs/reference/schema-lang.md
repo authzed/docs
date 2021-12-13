@@ -51,6 +51,14 @@ definition sysprefix/document {
 }
 ```
 
+:::info
+`sysprefix/user` does not contain a sub-relation
+
+Occasionally you will see a subject which has a sub-relation such as `usergroup:admins#members` which refers not just to the `usergroup` as a whole, but the individual members which have that relation to the `usergroup`.
+:::
+
+### Subrelations
+
 Relations can also "contain" references to other relations/permissions.
 For example, a group's `member` relation might include the set of objects marked as `member` of another group, indicating that the other group's members are, themselves, members of this group:
 
@@ -65,10 +73,33 @@ definition sysprefix/group {
 }
 ```
 
-:::info
-`sysprefix/user` does not contain a sub-relation`
+### Wildcards
 
-Occasionally you will see a subject which has a sub-relation such as `usergroup:admins#members` which refers not just to the `usergroup` as a whole, but the individual members which have that relation to the `usergroup`.
+Relations can also specify wildcards to indicate that a grant can be made to the resource *type* as a whole, rather than a particular resource. This allows *public* access to be granted to a particular subject type.
+
+For example, a `viewer` might indicate that *all* users can be granted the ability to view the resource:
+
+```zed
+definition sysprefix/user {}
+
+definition sysprefix/resource {
+    /**
+     * viewer can be granted to a specific user or granted to *all* users.
+     */
+    relation viewer: sysprefix/user | sysprefix/user:*
+}
+```
+
+To be made public, the wildcard relationship would be written linking the specific document to *all* users:
+
+```relationship
+sysprefix/resource:someresource viewer sysprefix/user:*
+```
+
+Now *any* user is a `viewer` of the resource.
+
+:::warning
+Be **very careful** with wildcard support in your schema! **Only** grant it to read permissions, unless you intend to allow for universal writing.
 :::
 
 ### Naming Relations
