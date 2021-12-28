@@ -113,7 +113,7 @@ This could be either good or bad, depending on the design of the policy engine a
 Relationships represent the existence of a live relation between an resource object and subject object or set of subject objects.
 It is often displayed as these three values separated by spaces.
 
-Examples: `document:readme writer user:emilia`, `team:devops admin organization:42#admin`
+Examples: `document:readme writer user:emilia`, `team:devops admin organization:42#admin`, `document:somedocument viewer user:*`
 
 ## Schema
 
@@ -148,6 +148,10 @@ You often see this functionality in software with admin interfaces where the acc
 For more information, you can read [this blog post][udr-post].
 
 [udr-post]: https://authzed.com/blog/user-defined-roles
+
+## Wildcard
+
+A *wildcard* type declared on a `relation` allows for a grant of permission to *all* subjects of the type specified, making any permission that references that relation **public** for all subjects of that type.
 
 ## Zanzibar
 
