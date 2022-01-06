@@ -142,3 +142,12 @@ The available strategies are:
 | `datastore-revision-fuzzing-duration` | Sets a fuzzing window on all zookies/zedtokens                                      | `--datastore-revision-fuzzing-duration=50ms` |
 | `datastore-gc-window`                 | Sets the window outside of which overwritten relationships are no longer accessible | `--datastore-gc-window=1s`                   |
 | `datastore-readonly`                  | Places the datastore into readonly mode                                             | `--datastore-readonly=true`                  |
+## Additional Installation Steps(cockroachdb and postgres)
+
+- All datastores except memdb (cockroachdb and postgres) require migrations
+- You may have to supply parameter *sslmode=disable* as part of postgres connection uri when using in *insecure mode*
+
+### Configuration 
+```sh
+spicedb migrate head --datastore-engine="persistent store string as given in cockroachdb and postgres section" --datastore-conn-uri="connection string here"
+```
