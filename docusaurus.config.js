@@ -19,6 +19,10 @@ module.exports = {
       textColor: '#fff',
       isCloseable: false,
     },
+    colorMode: {
+      disableSwitch: true,
+      respectPrefersColorScheme: true,
+    },
     hideableSidebar: false,
     navbar: {
       title: '',
