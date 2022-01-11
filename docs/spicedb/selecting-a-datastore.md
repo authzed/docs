@@ -8,6 +8,17 @@ There are a few available datastores with various design goals:
 - [PostgreSQL](#postgresql) - Recommended for single-region deployments and those familiar with traditional RDBMS operations
 - [memdb](#memdb) - Recommended for local development and integration testing with applications written to be SpiceDB-native
 
+## Migrations
+
+Before a datastore can be used by SpiceDB or before running a new version of SpiceDB, you must execute all available migrations.
+The only exception is the [memdb datastore](#memdb) because it does not persist any data.
+
+In order to migrate a datastore, run the following command with your desired values:
+
+```sh
+spicedb migrate head --datastore-engine $DESIRED_ENGINE --datastore-conn-uri $CONNECTION_STRING
+```
+
 ## CockroachDB
 
 ### Usage Notes
