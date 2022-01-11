@@ -43,21 +43,27 @@ spicedb migrate head --datastore-engine $DESIRED_ENGINE --datastore-conn-uri $CO
 
 ### Configuration
 
-#### Required Parameters
+:::warning
 
-```sh
---datastore-engine=cockroachdb --datastore-conn-uri="connection uri here"
-```
+In distributed systems, you can trade-off consistency for performance.
 
-#### Notable Parameters
-
-In order to mitigate the [New Enemy Problem](reference/glossary.md#new-enemy-problem), the `--datastore-tx-overlap-strategy` flag is provided.
+Users that are willing to rely on subtle guarantees to mitigate the [New Enemy Problem] can configure `--datastore-tx-overlap-strategy`.
+[New Enemy Problem]: /reference/glossary.md#new-enemy-problem
 
 The available strategies are:
 
-- `static`(Default) - A single key (`datastore-tx-overlap-key`) is used in all writes to ensure proper consistency
-- `prefix` (Unsafe if misused) - A key with the prefix from the object type is used to protect writes with the same prefix
-- `insecure` (Unsafe) - Disables the overlap strategy entirely leaving queries vulnerable to the New Enemy problem
+- `static` (default) - A single key (`--datastore-tx-overlap-key`) is used in all writes to ensure proper consistency
+- `prefix` (unsafe if misused) - A key with the prefix from the object type is used to protect writes with the same prefix
+- `insecure` (unsafe) - Disables the overlap strategy entirely leaving queries vulnerable to the New Enemy problem
+
+:::
+
+#### Required Parameters
+
+| Parameter | Description | Example |
+|----------------------|--|--|
+| `datastore-engine` | the datastore engine | `--datastore-engine=cockroachdb`|
+| `datastore-conn-uri` | connection string used to connecto to CRDB | `--datastore-conn-uri="postgres://user:password@localhost:26257/spicedb?sslmode=disable"` |
 
 #### Optional Parameters
 
@@ -103,9 +109,10 @@ The available strategies are:
 
 #### Required Parameters
 
-```sh
---datastore-engine=postgres --datastore-conn-uri="connection string here"
-```
+| Parameter | Description | Example |
+|----------------------|--|--|
+| `datastore-engine` | the datastore engine | `--datastore-engine=postgres`|
+| `datastore-conn-uri` | connection string used to connecto to CRDB | `--datastore-conn-uri="postgres://postgres:password@localhost:5432/spicedb?sslmode=disable"` |
 
 #### Optional Parameters
 
@@ -142,9 +149,9 @@ The available strategies are:
 
 #### Required Parameters
 
-```sh
---datastore-engine=memory
-```
+| Parameter | Description | Example |
+|----------------------|--|--|
+| `datastore-engine` | the datastore engine | `--datastore-engine memory` |
 
 #### Optional Parameters
 
