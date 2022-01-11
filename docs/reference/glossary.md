@@ -174,6 +174,10 @@ Excluding implementation details that are vague or not described in the paper, S
 
 - SpiceDB supports an optional prefix for Object Types that can be used for enforcing security boundaries when multiple tenants are using the same deployment.
 
+- SpiceDB has an additional API endpoint, [authzed.api.v1.LookupResources][lookup], that lists resources to which the subject has a particular permission.
+
+[lookup]: https://buf.build/authzed/api/docs/main/authzed.api.v1#LookupResources
+
 ### Mapping Terminology from the Zanzibar paper
 
 | Zanzibar Term      | SpiceDB Term        |
