@@ -8,6 +8,17 @@ There are a few available datastores with various design goals:
 - [PostgreSQL](#postgresql) - Recommended for single-region deployments and those familiar with traditional RDBMS operations
 - [memdb](#memdb) - Recommended for local development and integration testing with applications written to be SpiceDB-native
 
+## Migrations
+
+Before a datastore can be used by SpiceDB or before running a new version of SpiceDB, you must execute all available migrations.
+The only exception is the [memdb datastore](#memdb) because it does not persist any data.
+
+In order to migrate a datastore, run the following command with your desired values:
+
+```sh
+spicedb migrate head --datastore-engine $DESIRED_ENGINE --datastore-conn-uri $CONNECTION_STRING
+```
+
 ## CockroachDB
 
 ### Usage Notes
@@ -32,21 +43,27 @@ There are a few available datastores with various design goals:
 
 ### Configuration
 
-#### Required Parameters
+:::warning
 
-```sh
---datastore-engine=cockroachdb --datastore-conn-uri="connection uri here"
-```
+In distributed systems, you can trade-off consistency for performance.
 
-#### Notable Parameters
-
-In order to mitigate the [New Enemy Problem](reference/glossary.md#new-enemy-problem), the `--datastore-tx-overlap-strategy` flag is provided.
+Users that are willing to rely on subtle guarantees to mitigate the [New Enemy Problem] can configure `--datastore-tx-overlap-strategy`.
+[New Enemy Problem]: /reference/glossary.md#new-enemy-problem
 
 The available strategies are:
 
-- `static`(Default) - A single key (`datastore-tx-overlap-key`) is used in all writes to ensure proper consistency
-- `prefix` (Unsafe if misused) - A key with the prefix from the object type is used to protect writes with the same prefix
-- `insecure` (Unsafe) - Disables the overlap strategy entirely leaving queries vulnerable to the New Enemy problem
+- `static` (default) - A single key (`--datastore-tx-overlap-key`) is used in all writes to ensure proper consistency
+- `prefix` (unsafe if misused) - A key with the prefix from the object type is used to protect writes with the same prefix
+- `insecure` (unsafe) - Disables the overlap strategy entirely leaving queries vulnerable to the New Enemy problem
+
+:::
+
+#### Required Parameters
+
+| Parameter | Description | Example |
+|----------------------|--|--|
+| `datastore-engine` | the datastore engine | `--datastore-engine=cockroachdb`|
+| `datastore-conn-uri` | connection string used to connecto to CRDB | `--datastore-conn-uri="postgres://user:password@localhost:26257/spicedb?sslmode=disable"` |
 
 #### Optional Parameters
 
@@ -92,9 +109,10 @@ The available strategies are:
 
 #### Required Parameters
 
-```sh
---datastore-engine=postgres --datastore-conn-uri="connection string here"
-```
+| Parameter | Description | Example |
+|----------------------|--|--|
+| `datastore-engine` | the datastore engine | `--datastore-engine=postgres`|
+| `datastore-conn-uri` | connection string used to connecto to CRDB | `--datastore-conn-uri="postgres://postgres:password@localhost:5432/spicedb?sslmode=disable"` |
 
 #### Optional Parameters
 
@@ -131,9 +149,9 @@ The available strategies are:
 
 #### Required Parameters
 
-```sh
---datastore-engine=memory
-```
+| Parameter | Description | Example |
+|----------------------|--|--|
+| `datastore-engine` | the datastore engine | `--datastore-engine memory` |
 
 #### Optional Parameters
 
