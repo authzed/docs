@@ -511,6 +511,6 @@ And that's it! We now have a fully working permissions system:
 
 ## Get started for real
 
-Want to get started for real? [Start protecting your first application](guides/first-app) or [Visit the Discord](https://discord.com/invite/jTysUaxXzM) if you have any questions!
+Want to get started for real? [Start protecting your first application](first-app) or [Visit the Discord](https://discord.com/invite/jTysUaxXzM) if you have any questions!
 
 [Authzed Playground]: https://play.authzed.com
