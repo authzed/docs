@@ -69,7 +69,7 @@ pip install authzed
 ```java
 // build.gradle
 dependencies {
-  implementation "com.authzed.api:authzed:0.0.1"
+  implementation "com.authzed.api:authzed:0.1.0"
 }
 ```
 
@@ -212,56 +212,48 @@ resp = client.WriteSchema(WriteSchemaRequest(schema=SCHEMA))
   </TabItem>
   <TabItem value="java">
 
-:::warning
-This example uses the legacy v1alpha1 API.
-:::
-
 ```java
 
-import com.authzed.api.v1alpha1.Schema;
-import com.authzed.api.v1alpha1.SchemaServiceGrpc;
+import com.authzed.api.v1.SchemaServiceGrpc;
+import com.authzed.api.v1.SchemaServiceOuterClass.*;
 import com.authzed.grpcutil.BearerToken;
 import io.grpc.*;
 
-import java.util.concurrent.TimeUnit;
-
 public class App {
-    public static void main(String[] args) {
+  public static void main(String[] args) {
         ManagedChannel channel = ManagedChannelBuilder
                 .forTarget("grpc.authzed.com:443")
                 .useTransportSecurity()
                 .build();
-        try {
-            SchemaServiceGrpc.SchemaServiceBlockingStub blockingStub = SchemaServiceGrpc.newBlockingStub(channel);
-            blockingStub.withCallCredentials(new BearerToken("t_your_token_here_1234567deadbeef"));
 
-            String schema = """
-                    definition blog/user {}
+    BearerToken bearerToken = new BearerToken("t_your_token_here_1234567deadbeef");
+    SchemaServiceGrpc.SchemaServiceBlockingStub schemaService = SchemaServiceGrpc.newBlockingStub(channel)
+            .withCallCredentials(bearerToken);
 
-                    definition blog/post {
-                      relation reader: blog/user
-                      relation writer: blog/user
-
-                      permission read = reader + writer
-                      permission write = writer
-                    }
-                    """;
-            Schema.WriteSchemaRequest request = Schema.WriteSchemaRequest
-                    .newBuilder()
-                    .setSchema(schema)
-                    .build();
-
-            Schema.WriteSchemaResponse response;
-            response = blockingStub.writeSchema(request);
-
-        } finally {
-            try {
-                channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                // Uh oh!
+    String schema = """
+            definition blog/user {}
+                            
+            definition blog/post {
+                relation reader: blog/user
+                relation writer: blog/user
+                            
+                permission read = reader + writer
+                permission write = writer
             }
-        }
+            """;
+
+    WriteSchemaRequest request = WriteSchemaRequest
+            .newBuilder()
+            .setSchema(schema)
+            .build();
+
+    WriteSchemaResponse response;
+    try {
+      response = schemaService.writeSchema(request);
+    } catch (Exception e) {
+      // Uh oh!
     }
+  }
 }
 
 ```
@@ -463,75 +455,59 @@ print(resp.written_at.token)
   </TabItem>
   <TabItem value="java">
 
-:::warning
-This example uses the legacy v0 API.
-:::
-
 ```java
 
-import com.authzed.api.v0.ACLServiceGrpc;
-import com.authzed.api.v0.AclService;
-import com.authzed.api.v0.Core;
+import com.authzed.api.v1.PermissionService;
+import com.authzed.api.v1.PermissionsServiceGrpc;
 import com.authzed.grpcutil.BearerToken;
+import com.authzed.api.v1.Core.*;
 import io.grpc.*;
 
-import java.util.concurrent.TimeUnit;
-
 public class App {
-    public static void main(String[] args) {
-        ManagedChannel channel = ManagedChannelBuilder
-                .forTarget("grpc.authzed.com:443")
-                .useTransportSecurity()
-                .build();
-        try {
-            ACLServiceGrpc.ACLServiceBlockingStub v0blockingStub = ACLServiceGrpc.newBlockingStub(channel);
-            v0blockingStub.withCallCredentials(new BearerToken("t_your_token_here_1234567deadbeef"));
-            AclService.WriteRequest request = AclService.WriteRequest
-                    .newBuilder()
-                    .addUpdates(
-                            Core.RelationTupleUpdate
-                                    .newBuilder()
-                                    .setOperationValue(Core.RelationTupleUpdate.Operation.CREATE_VALUE)
-                                    .setTuple(
-                                            Core.RelationTuple
-                                                    .newBuilder()
-                                                    .setUser(
-                                                            Core.User
-                                                                    .newBuilder()
-                                                                    .setUserset(
-                                                                            Core.ObjectAndRelation
-                                                                                    .newBuilder()
-                                                                                    .setNamespace("blog/user")
-                                                                                    .setObjectId("emilia")
-                                                                                    .setRelation("...")
-                                                                                    .build()
-                                                                    )
-                                                                    .build()
-                                                    )
-                                                    .setObjectAndRelation(
-                                                            Core.ObjectAndRelation
-                                                                    .newBuilder()
-                                                                    .setNamespace("blog/post")
-                                                                    .setObjectId("1")
-                                                                    .setRelation("author")
-                                                                    .build()
-                                                    )
-                                    )
-                                    .build())
-                    .build();
+  public static void main(String[] args) {
+    ManagedChannel channel = ManagedChannelBuilder
+            .forTarget("grpc.authzed.com:443")
+            .useTransportSecurity()
+            .build();
+    
+    BearerToken bearerToken = new BearerToken("t_your_token_here_1234567deadbeef");
+    PermissionsServiceGrpc.PermissionsServiceBlockingStub permissionsService = PermissionsServiceGrpc.newBlockingStub(channel)
+            .withCallCredentials(bearerToken);
 
-            AclService.WriteResponse response;
-            response = v0blockingStub.write(request);
+    PermissionService.WriteRelationshipsRequest request = PermissionService.WriteRelationshipsRequest.newBuilder()
+            .addUpdates(
+                    RelationshipUpdate.newBuilder()
+                            .setOperation(RelationshipUpdate.Operation.OPERATION_CREATE)
+                            .setRelationship(
+                                    Relationship.newBuilder()
+                                            .setResource(
+                                                    ObjectReference.newBuilder()
+                                                            .setObjectType("blog/post")
+                                                            .setObjectId("1")
+                                                            .build())
+                                            .setRelation("writer")
+                                            .setSubject(
+                                                    SubjectReference.newBuilder()
+                                                            .setObject(
+                                                                    ObjectReference.newBuilder()
+                                                                            .setObjectType("blog/user")
+                                                                            .setObjectId("emilia")
+                                                                            .build())
+                                                            .build())
+                                            .build())
+                            .build())
+            .build();
 
-        } finally {
-            try {
-                channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                // Uh oh!
-            }
-        }
+    PermissionService.WriteRelationshipsResponse response;
+    try {
+      response = permissionsService.writeRelationships(request);
+      String zedToken = response.getWrittenAt().getToken();
+    } catch (Exception e) {
+      // Uh oh!
     }
+  }
 }
+
 ```
 
   </TabItem>
@@ -761,64 +737,57 @@ assert resp.permissionship == CheckPermissionResponse.PERMISSIONSHIP_NO_PERMISSI
   </TabItem>
   <TabItem value="java">
 
-:::warning
-This example uses the legacy v0 API.
-:::
-
 ```java
-import com.authzed.api.v0.ACLServiceGrpc;
-import com.authzed.api.v0.AclService;
-import com.authzed.api.v0.Core;
-import com.authzed.grpcutil.BearerToken;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 
-import java.util.concurrent.TimeUnit;
+import com.authzed.api.v1.PermissionService;
+import com.authzed.api.v1.PermissionsServiceGrpc;
+import com.authzed.grpcutil.BearerToken;
+import com.authzed.api.v1.Core.*;
+import io.grpc.*;
 
 public class App {
-    public static void main(String[] args) {
-        ManagedChannel channel = ManagedChannelBuilder
-                .forTarget("grpc.authzed.com:443")
-                .useTransportSecurity()
-                .build();
-        try {
-            ACLServiceGrpc.ACLServiceBlockingStub v0blockingStub = ACLServiceGrpc.newBlockingStub(channel);
-            v0blockingStub.withCallCredentials(new BearerToken("t_your_token_here_1234567deadbeef"));
+  public static void main(String[] args) {
+    ManagedChannel channel = ManagedChannelBuilder
+            .forTarget("grpc.authzed.com:443")
+            .useTransportSecurity()
+            .build();
 
-            Core.User emilia = Core.User
-                    .newBuilder()
-                    .setUserset(
-                            Core.ObjectAndRelation
-                                    .newBuilder()
-                                    .setNamespace("blog/user")
-                                    .setObjectId("emilia")
-                                    .setRelation("...")
-                                    .build()
-                    )
-                    .build();
-            Core.ObjectAndRelation postOneReader = Core.ObjectAndRelation
-                    .newBuilder()
-                    .setNamespace("blog/post")
-                    .setObjectId("1")
-                    .setRelation("reader")
-                    .build();
-            AclService.CheckRequest request = AclService.CheckRequest
-                    .newBuilder()
-                    .setUser(emilia)
-                    .setTestUserset(postOneReader)
-                    .build();
+    BearerToken bearerToken = new BearerToken("t_your_token_here_1234567deadbeef");
+    PermissionsServiceGrpc.PermissionsServiceBlockingStub permissionsService = PermissionsServiceGrpc.newBlockingStub(channel)
+            .withCallCredentials(bearerToken);
 
-            AclService.CheckResponse response;
-            response = v0blockingStub.check(request);
+    ZedToken zedToken = ZedToken.newBuilder()
+            .setToken("zed_token_value")
+            .build();
+    PermissionService.CheckPermissionRequest request = PermissionService.CheckPermissionRequest.newBuilder()
+            .setConsistency(
+                    PermissionService.Consistency.newBuilder()
+                            .setAtLeastAsFresh(zedToken)
+                            .build())
+            .setResource(
+                    ObjectReference.newBuilder()
+                            .setObjectType("blog/post")
+                            .setObjectId("1")
+                            .build())
+            .setSubject(
+                    SubjectReference.newBuilder()
+                            .setObject(
+                                    ObjectReference.newBuilder()
+                                            .setObjectType("blog/user")
+                                            .setObjectId("emilia")
+                                            .build())
+                            .build())
+            .setPermission("read")
+            .build();
 
-        } finally {
-            try {
-                channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                // Uh oh!
-            }
-        }
+    PermissionService.CheckPermissionResponse response;
+    try {
+      response = permissionsService.checkPermission(request);
+      response.getPermissionship();
+    } catch (Exception e) {
+      // Uh oh!
     }
+  }
 }
 
 ```
