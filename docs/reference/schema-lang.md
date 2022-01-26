@@ -4,27 +4,33 @@ import {InlinePlayground} from '../../src/components/InlinePlayground';
 
 ## Overview
 
-The *Schema Language* is a language for specifying the `definition`s of object types, their `relation`s to one another, and the `permission`s they expose as part of a *Permissions System*.
+The **Schema** of [SpiceDB] or a Permissions System in [Authzed] defines the types of objects found, how those objects relate to one another, and the permissions that can be computed off of those relations.
 
 The Schema Language's extension for use on a file system is `.zed`
 
+[SpiceDB]: https://github.com/authzed/spicedb
+[Authzed]: https://app.authzed.com
+
 ## Definitions
 
-The top level of a Schema consists of zero or more Object `definition`s, which define the types exposed in the permissions system.
+The top level of a Schema consists of zero or more object `definition`s, which define the types exposed in the permissions system.
 
 It might help to think about Object Definitions as similar to a class definition in an Object Oriented programming language.
 
-The name of each Object Definition is prefixed with the Permissions System it will be applied to. This is done to make all Object names globally unique in Authzed.
+If being used with Authzed, the name of each Object Definition is prefixed with the Permissions System to which it will be applied.
+This is done to make all Object names globally unique in Authzed.
+
+For SpiceDB, prefixes can be used to logically group types, but are otherwise unnecessary.
 
 ```zed
 /**
  * sometype is some type that I've decided to define
  */
-definition sysprefix/sometype {}
+definition sometype {}
 ```
 
 :::note
-Note that `sysprefix` is the prefix used in the examples. You'll need to replace it with the prefix from your permissions system.
+Note that the examples are unprefixed. You'll need to add the prefix from your permissions system if calling `WriteSchema` for a permissions system hosted in Authzed.
 :::
 
 ## Relations
@@ -38,23 +44,23 @@ Relations are always defined with a *name* and one (or more) allowed *types* of 
 /**
  * user represents a user
  */
-definition sysprefix/user {}
+definition user {}
 
 /**
  * document represents a document in the system
  */
-definition sysprefix/document {
+definition document {
     /**
      * reader relates a user that is a reader on the document
      */
-    relation reader: sysprefix/user
+    relation reader: user
 }
 ```
 
 :::info
-`sysprefix/user` does not contain a sub-relation
+In the above example, the `user` on `reader` does not contain a sub-relation
 
-Occasionally you will see a subject which has a sub-relation such as `usergroup:admins#members` which refers not just to the `usergroup` as a whole, but the individual members which have that relation to the `usergroup`.
+Occasionally you will see a subject which has a sub-relation such as `usergroup:admins#members` which refers not just to the `usergroup` as a whole, but the set of members which have that relation to the `usergroup`.
 :::
 
 ### Subrelations
@@ -63,13 +69,13 @@ Relations can also "contain" references to other relations/permissions.
 For example, a group's `member` relation might include the set of objects marked as `member` of another group, indicating that the other group's members are, themselves, members of this group:
 
 ```zed
-definition sysprefix/user {}
+definition user {}
 
-definition sysprefix/group {
+definition group {
     /**
-     * member includes both users and *all the members* of other groups.
+     * member can include both users and *the set of members* of other specific groups.
      */
-    relation member: sysprefix/user | sysprefix/group#member
+    relation member: user | group#member
 }
 ```
 
@@ -90,7 +96,7 @@ definition sysprefix/resource {
 }
 ```
 
-To be made public, the wildcard relationship would be written linking the specific document to *all* users:
+To be made public, the wildcard relationship would be written linking the specific document to *any* user:
 
 ```relationship
 sysprefix/resource:someresource viewer sysprefix/user:*
@@ -117,16 +123,16 @@ Examples:
 
 ## Permissions
 
-A `permission` defines a *computed set of objects* that have a permission of some kind on the parent object. For example, can a user `edit` a document.
+A `permission` defines a *computed set of subjects* that have a permission of some kind on the parent object. For example, is a user within the set of users that can `edit` a document.
 
-Permissions are always defined with a *name* and an *expression* defining how that permission's allowed set of objects is computed:
+Permissions are always defined with a *name* and an *expression* defining how that permission's allowed set of subjects is computed:
 
 ```zed
-definition sysprefix/user {}
+definition user {}
 
-definition sysprefix/document {
-    relation writer: sysprefix/user
-    relation reader: sysprefix/user
+definition document {
+    relation writer: user
+    relation reader: user
 
     /**
      * edit determines whether a user can edit the document
@@ -148,7 +154,7 @@ Permissions support four kinds of operations: **union**, **intersection**, **exc
 
 Unions together the relations/permissions referenced
 
-Union is the most common operation and is used to join different relations or permissions together to form a set of allowed objects.
+Union is the most common operation and is used to join different relations or permissions together to form a set of allowed subjects.
 
 For example, to grant a permission to both the `reader`s and `writer`s of a document:
 
@@ -158,9 +164,9 @@ permission combined = reader + writer
 
 #### `&` (Intersection)
 
-Intersects the set of objects found for the relations/permissions referenced
+Intersects the set of subjects found for the relations/permissions referenced
 
-Intersection allows for a permission to only include those objects that were found in **both** relations/permissions.
+Intersection allows for a permission to only include those subjects that were found in **both** relations/permissions.
 
 For example, to grant a permission to a user that is both a `reader` and a `writer` of a document:
 
@@ -170,7 +176,7 @@ permission read_and_write = reader & writer
 
 #### `-` (Exclusion)
 
-Excludes the set of objects found for the right side relation/permission from those found in the left side relation/permission
+Excludes the set of subjects found for the right side relation/permission from those found in the left side relation/permission
 
 Exclusion allows for computing the difference between two sets of relations/permissions
 
@@ -187,61 +193,69 @@ Arrows allow for "walking" the heirarchy of relations (and permissions) defined 
 For example, imagine a schema where a document is found under a folder:
 
 ```zed
-definition sysprefix/user {}
+definition user {}
 
-definition sysprefix/folder {
-    relation reader: sysprefix/user
+definition folder {
+    relation reader: user
 }
 
-definition sysprefix/document {
+definition document {
     /**
      * parent_folder defines the folder that holds this document
      */
-    relation parent_folder: sysprefix/folder
+    relation parent_folder: folder
 }
 ```
 
 We likely want to allow any `reader` of the folder to **also** be a reader of the document.
-To accomplish this, we can use the arrow operator to walk to the `parent_folder`'s `reader` relation:
+
+To accomplish this, we can use the arrow operator to walk to the `parent_folder`'s `read` permission, thus including any subjects found there as well:
 
 ```zed
-definition sysprefix/user {}
+definition user {}
 
-definition sysprefix/folder {
-    relation reader: sysprefix/user
+definition folder {
+    relation reader: user
+    permission read = reader
 }
 
-definition sysprefix/document {
-    relation parent_folder: sysprefix/folder
+definition document {
+    relation parent_folder: folder
 
     /**
      * read defines whether a user can read the document
      */
-    permission read = parent_folder->reader
+    permission read = parent_folder->read
 }
 ```
 
-The expression `parent_folder->reader` indicates to "walk" from the `parent_folder` of the `document`, and then to include the objects found within `reader` of that folder.
+The expression `parent_folder->read` indicates to "walk" from the `parent_folder` of the `document`, and then to include the subjects found for the `read` permission of that folder.
 
-Making use of a `union`, we can also include the *local* `reader` relation, allowing the `read` permission on a document can check whether a user is a `reader` of a document or a `reader` of its parent folder.
+Making use of a `union`, we can also include the local `reader` relation, allowing the `read` permission on a document can check whether a user is a `reader` of a document or a `reader` of its parent folder.
 
 ```zed
-definition sysprefix/user {}
+definition user {}
 
-definition sysprefix/folder {
-    relation reader: sysprefix/user
+definition folder {
+    relation reader: user
+    permission read = reader
 }
 
-definition sysprefix/document {
-    relation parent_folder: sysprefix/folder
-    relation reader: sysprefix/user
+definition document {
+    relation parent_folder: folder
+    relation reader: user
 
     /**
      * read defines whether a user can read the document
      */
-    permission read = reader + parent_folder->reader
+    permission read = reader + parent_folder->read
 }
 ```
+
+:::note
+It is *recommended* that the right side of all arrows refer to **permissions**, instead
+of relations. This allows for easy nested computation, and is more readable.
+:::
 
 ### Naming Permissions
 
@@ -257,7 +271,7 @@ Examples:
 | `member` | is member of the object |
 
 :::note
-You'll note that we also used `member` above in the relation example. Defining `member` as a **permission** might be found when you have multiple "ways" an object can be a member of another object, thus changing it from a direct relation to a computed set.
+You'll note that we also used `member` above in the relation example. Defining `member` as a **permission** might be found when you have multiple "ways" a subject can be a member of a resource, thus changing it from a simple relation to a *computed* set of subjects.
 :::
 
 ## Comments
@@ -283,7 +297,7 @@ It is **highly** recommended to put doc comments on all definitions, relations a
 
 ## Full Example
 
-<InlinePlayground reference="Vwput-WCrLaz"/>
+<InlinePlayground reference="vlduOcwEOmVY"/>
 
 ## Common Patterns
 
@@ -312,16 +326,16 @@ Admin permission on resources is then defined as the direct owner of the resourc
 
 Relation traversals can be modeled using intermediate, synthetic relations.
 
-Given the example hierarchy, portfolio can have folders, folders can have documents, we’d like a reader of a portfolio to also be able to read documents contained in its folders.
+Given the example hierarchy, portfolio can have folders, folders can have documents, we’d like a viewer of a portfolio to also be able to read documents contained in its folders.
 The read on documents could be thought of as:
 
 ```
-reader + parent_folder->reader + parent_folder->parent_portfolio->reader
+reader + parent_folder->reader + parent_folder->parent_portfolio->read
 ```
 
 Synthetic relations can simulate multiple walks across permissions and relations.
 
-<InlinePlayground reference="O-Z9_Cd-f9K7" />
+<InlinePlayground reference="_VZkOgNX6xfw" />
 
 ### Recursive permissions
 
@@ -331,7 +345,19 @@ In this example, a folder can have users with read permission.
 Additionally, users that can read the parent folder can also read the current folder.
 Checking read permission on a folder will recursively consider these relations as the answer is computed.
 
-<InlinePlayground reference="LS8xRirjo2Lt"/>
+<InlinePlayground reference="8tE13O7iMM8W"/>
+
+:::note
+Note that since `parent->read` calls the same `read` permission, it will form a recursive
+lookup across the chain of parent folder(s).
+:::
+
+### Recursive permissions across different resource types
+
+If a non-recursive resource is used as the starting point for a recursive lookup, it is
+**very important** that the permission name used on the right side of the arrow is the **same** in both the starting resource type and the parent resource type(s):
+
+<InlinePlayground reference="EWVhjM3vGxE6"/>
 
 ## Try it out
 
