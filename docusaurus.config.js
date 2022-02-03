@@ -76,6 +76,7 @@ module.exports = {
     },
   },
   plugins: [
+    './webpack-fallbacks-plugin',
     [
       '@docusaurus/plugin-client-redirects',
       {

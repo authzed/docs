@@ -162,3 +162,47 @@ table td {
   height: 4rem;
   margin-bottom: 1rem;
 }
+
+.sample-config-editor {
+  padding: 10px;
+  border: 1px solid #494b6c;
+}
+
+.sample-config-editor .system-options {
+}
+
+.sample-config-editor .system-parameters {
+  margin-top: 10px;
+}
+
+.sample-config-editor .system-parameters label {
+  margin-bottom: 4px;
+  font-size: 85%;
+  margin-top: 10px;
+  display: block;
+}
+
+.sample-config-editor .system-parameters label:first-child {
+  margin-top: 0px;
+}
+
+.sample-config-editor .system-parameters input {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  display: block;
+  width: 100%;
+  font-size: 105%;
+}
+
+.sample-config-editor .system-option {
+  display: flex;
+  align-items: center;
+}
+
+.sample-config-editor input[type="radio"] {
+  width: 1.2em;
+  height: 1.2em;
+  margin: 0px;
+  margin-right: 6px;
+}
