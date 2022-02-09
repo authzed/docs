@@ -26,6 +26,7 @@ module.exports = {
       items: [
         'guides/first-app',
         'guides/schema',
+        'guides/defining-a-subject-type',
       ],
     },
     {
