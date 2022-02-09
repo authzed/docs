@@ -81,40 +81,6 @@ module.exports = {
       '@docusaurus/plugin-client-redirects',
       {
         redirects: [
-          {
-            to: '/v0/api',
-            from: [
-              '/api/overview',
-              '/api/read',
-              '/api/write',
-              '/api/read-namespace-config',
-              '/api/write-namespace-config',
-              '/api/check',
-              '/api/content-change-check',
-              '/api/expand',
-              '/api/lookup',
-              '/concept/check',
-              '/concept/expand',
-              '/concept/lookup',
-            ],
-          },
-          {
-            to: '/v0/concepts',
-            from: [
-              '/mgmt/users',
-              '/mgmt/tenants',
-              '/mgmt/clients',
-              '/mgmt/tokens',
-              '/concept/zookies',
-              '/concept/write-and-delete',
-              '/concept/tuples',
-              '/guides/developing-namespace',
-              '/api/namespace-config',
-              '/concept/namespaces',
-              '/v0/namespaces',
-            ],
-          },
-          { to: '/v0/quickstart', from: '/guides/quickstart' },
           { to: '/reference/clients', from: '/reference/zed' },
           {
             to: '/reference/glossary',

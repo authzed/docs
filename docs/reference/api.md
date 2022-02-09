@@ -48,6 +48,12 @@ During this deprecation period, Authzed reserves the right to take various actio
 
 ## Changelog
 
+:::caution
+
+authzed.api.v0 will be [deprecated] on March 14, 2022. Upgrade to the [authzed.api.v1][bsr-v1] API.
+
+:::
+
 ### authzed.api.v1
 
 The v1 Authzed API is a full redesign of the initial v0 APIs.
@@ -65,6 +71,7 @@ gRPC Documentation can be found in the [Buf Registry][bsr-v1].
 - Schema Read/Write now operates on all definitions at once
 - Relationships are now composed of an Object and Subject references and the relation between them
 - DeleteRelationships was added to enable bulk removal of Relationships
+
 - Preconditions for WriteRelationships/DeleteRelationships are now expressed via Relationship filters
 
 <details>
@@ -87,17 +94,12 @@ gRPC Documentation can be found on the [Buf Registry][bsr-v1alpha1].
 
 ### authzed.api.v0
 
+v0 is now [deprecated].
+
 v0 is the first iteration of the Authzed API.
 It strived to be as accurate to the description of the [Zanzibar] APIs as possible.
 
 [Zanzibar]: https://research.google/pubs/pub48190/
-
-#### API Docs
-
-gRPC Documentation can be found in the [v0 docs] or the [Buf Registry][bsr-v0].
-
-[v0 docs]: /v0/api
-[bsr-v0]: https://buf.build/authzed/api/docs/main/authzed.api.v0
 
 #### Caveats
 
@@ -106,5 +108,6 @@ While the API can be called with or without the `authzed.api.v0` prefix, some to
 This had no effect on any official tooling or client libraries as all stable releases have always used the fully prefixed names of RPCs.
 
 [gRPC Reflection API]: https://github.com/grpc/grpc/blob/master/doc/server-reflection.md
+[deprecated]: #versioning--deprecation-policy
 
 </details>
