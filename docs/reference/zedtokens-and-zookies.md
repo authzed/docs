@@ -2,9 +2,9 @@
 
 ## Overview
 
-### What is a ZedToken (or Zookie)?
+### What is a ZedToken?
 
-A ZedToken (referred to as a _Zookie_ in the [v0 API]) is a token representing a **point-in-time** of the SpiceDB datastore, encoded for easy storage and transmission.
+A ZedToken is a token representing a **point-in-time** of the SpiceDB datastore, encoded for easy storage and transmission.
 
 ## Why should I use them?
 
@@ -76,25 +76,6 @@ CheckPermissionRequest{
 [the Write response]: https://buf.build/authzed/api/docs/main/authzed.api.v1#authzed.api.v1.WriteRelationshipsResponse
 [v1 API]: https://buf.build/authzed/api/tree/main/authzed/api/v1
 [Consistency]: api-consistency.md
-
-### v0 API (Legacy)
-
-#### When changing the content of a resource
-
-1. Issue an `authzed.api.v0.ContentChangeCheck` request to retrieve the most recent Zookie for the resource.
-2. Store the returned Zookie.
-
-#### When adding or removing a relationship for a resource
-
-1. Issue an `authzed.api.v0.Write` request to write or delete the relationship(s) for the subject on the resource.
-2. Store the returned Zookie.
-
-#### Using the stored Zookie
-
-1. Pass the Zookie to subsequent `authzed.api.v0.Check` requests.
-   - If no Zookie stored, issue a `authzed.api.v0.ContentChangeCheck` or a `authzed.api.v0.Check` only if consistency is not a concern.
-
-[v0 API]: https://buf.build/authzed/api/docs/main/authzed.api.v0
 
 ## Frequently Asked Questions
 
