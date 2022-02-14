@@ -37,5 +37,13 @@ module.exports = {
         'spicedb/selecting-a-datastore',
       ],
     },
+    {
+      type: 'category',
+      label: 'Authzed',
+      collapsed: false,
+      items: [
+        'authzed/pricing',
+      ],
+    },
   ],
 };
