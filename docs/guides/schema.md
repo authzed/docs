@@ -89,7 +89,7 @@ With the definition of our two object types, and the `reader` relation on our `d
 
 > Is a specific user a reader on a specific document?
 
-In Authzed, such a question is answered via use of a [CheckPermission] call, which takes in two objects (the `resource` and the `subject`), as well as a possible permission (or relation) between them (the `permission`), and returns whether the subject is *reachable* from the resource.
+In Authzed, such a question is answered via use of a [CheckPermission] call, which takes in two objects (the `resource` and the `subject`), as well as a possible permission (or relation) between them (the `permission`), and returns whether the [subject] is *reachable* from the resource.
 
 ```text
 Can a specific user read the specific document?
@@ -100,6 +100,7 @@ Can a specific user read the specific document?
 To add this question for validation in the Authzed Playground, we must translate the question into the *Test Relationships* and the *Assertions*.
 
 [CheckPermission]: https://buf.build/authzed/api/docs/main/authzed.api.v1#CheckPermission
+[subject]: /guides/defining-a-subject-type
 
 ### Creating test relationships
 
