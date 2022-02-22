@@ -96,7 +96,7 @@ The available strategies are:
 
 - Code can be found [here][spanner-code]
 - Documentation can be found [here][spanner-godoc]
-- Starts an [GC process][gc-process] to clean up old entries from the manually-generated changelog table
+- Starts a background [GC worker][gc-process] to clean up old entries from the manually-generated changelog table
 
 [spanner-code]: https://github.com/authzed/spicedb/tree/main/internal/datastore/spanner
 [spanner-godoc]: https://pkg.go.dev/github.com/authzed/spicedb/internal/datastore/spanner
@@ -105,7 +105,7 @@ The available strategies are:
 ### Configuration
 
 - The [Cloud Spanner docs][spanner-docs] outline how to set up an instance
-- Authication is via service accounts. The service account that runs migrations must have `Cloud Spanner Database Admin`; SpiceDB (non-migrations) must have `Cloud Spanner Database User`.
+- Authentication via service accounts: The service account that runs migrations must have `Cloud Spanner Database Admin`; SpiceDB (non-migrations) must have `Cloud Spanner Database User`.
 
 [spanner-docs]: https://cloud.google.com/spanner
 
