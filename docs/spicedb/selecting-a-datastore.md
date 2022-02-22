@@ -117,17 +117,15 @@ The available strategies are:
 | `datastore-conn-uri` | the cloud spanner database identifier | `--datastore-conn-uri="projects/project-id/instances/instance-id/databases/database-id"` |
 | `datastore-spanner-credentials` | json service account token | `--datastore-spanner-credentials=./spanner.json`
 
-
 #### Optional Parameters
 
 | Parameter                             | Description                                                                         | Example                                      |
 |---------------------------------------|-------------------------------------------------------------------------------------|----------------------------------------------|
-| `datastore-gc-interval`               | Amount of time to wait between garbage collection passes                            | `--datastore-gc-interval=3m`                 | 
+| `datastore-gc-interval`               | Amount of time to wait between garbage collection passes                            | `--datastore-gc-interval=3m`                 |
 | `datastore-gc-window`                 | Sets the window outside of which overwritten relationships are no longer accessible | `--datastore-gc-window=1s`                   |
 | `datastore-revision-fuzzing-duration` | Sets a fuzzing window on all zookies/zedtokens                                      | `--datastore-revision-fuzzing-duration=50ms` |
 | `datastore-readonly`                  | Places the datastore into readonly mode                                             | `--datastore-readonly=true`                  |
 | `datastore-follower-read-delay-duration` | Amount of time to subtract from non-sync revision timestamps to ensure stale reads |  `--datastore-follower-read-delay-duration=4.8s` |
-
 
 ## PostgreSQL
 
