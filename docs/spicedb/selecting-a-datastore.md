@@ -5,7 +5,7 @@ SpiceDB ships with a number of [datastores](reference/glossary.md#datastore) -- 
 There are a few available datastores with various design goals:
 
 - [CockroachDB](#cockroachdb) - Recommended for multi-region deployments
-- [(Beta) Cloud Spanner](#cloud-spanner) - Suitable for cloud multi-region deployments
+- [Cloud Spanner (Beta)](#cloud-spanner-beta) - Suitable for cloud multi-region deployments
 - [PostgreSQL](#postgresql) - Recommended for single-region deployments and those familiar with traditional RDBMS operations
 - [memdb](#memdb) - Recommended for local development and integration testing with applications written to be SpiceDB-native
 
@@ -84,7 +84,7 @@ The available strategies are:
 | `datastore-readonly`                  | Places the datastore into readonly mode                                             | `--datastore-readonly=true`                  |
 |  `datastore-follower-read-delay-duration` | Amount of time to subtract from non-sync revision timestamps to ensure follower reads |  `-datastore-follower-read-delay-duration=4.8s` |
 
-## Cloud Spanner
+## Cloud Spanner (Beta)
 
 
 :::warning
