@@ -5,6 +5,7 @@ SpiceDB ships with a number of [datastores](reference/glossary.md#datastore) -- 
 There are a few available datastores with various design goals:
 
 - [CockroachDB](#cockroachdb) - Recommended for multi-region deployments
+- [Cloud Spanner](#cloud-spanner) - Beta. Suitable for cloud multi-region deployments
 - [PostgreSQL](#postgresql) - Recommended for single-region deployments and those familiar with traditional RDBMS operations
 - [memdb](#memdb) - Recommended for local development and integration testing with applications written to be SpiceDB-native
 
@@ -34,6 +35,7 @@ spicedb migrate head --datastore-engine $DESIRED_ENGINE --datastore-conn-uri $CO
 - Code can be found [here][crdb-code]
 - Documentation can be found [here][crdb-godoc]
 - Implemented using [pgx][pgx] for a SQL driver and connection pooling
+- Has a native changefeed
 - Stores migration revisions using the same strategy as [Alembic][alembic]
 
 [crdb-code]: https://github.com/authzed/spicedb/tree/main/internal/datastore/crdb
@@ -63,7 +65,7 @@ The available strategies are:
 | Parameter | Description | Example |
 |----------------------|--|--|
 | `datastore-engine` | the datastore engine | `--datastore-engine=cockroachdb`|
-| `datastore-conn-uri` | connection string used to connecto to CRDB | `--datastore-conn-uri="postgres://user:password@localhost:26257/spicedb?sslmode=disable"` |
+| `datastore-conn-uri` | connection string used to connect to CRDB | `--datastore-conn-uri="postgres://user:password@localhost:26257/spicedb?sslmode=disable"` |
 
 #### Optional Parameters
 
@@ -80,6 +82,52 @@ The available strategies are:
 | `datastore-gc-window`                 | Sets the window outside of which overwritten relationships are no longer accessible | `--datastore-gc-window=1s`                   |
 | `datastore-revision-fuzzing-duration` | Sets a fuzzing window on all zookies/zedtokens                                      | `--datastore-revision-fuzzing-duration=50ms` |
 | `datastore-readonly`                  | Places the datastore into readonly mode                                             | `--datastore-readonly=true`                  |
+|  `datastore-follower-read-delay-duration` | Amount of time to subtract from non-sync revision timestamps to ensure follower reads |  `-datastore-follower-read-delay-duration=4.8s` |
+
+## Cloud Spanner
+
+### Usage Notes
+
+- Requires a Google Cloud Account with an active Cloud Spanner instance
+- Take advantage of Google's TrueTime. The Spanner driver assumes the database is linearizable and skips the transaction overlap strategy required by CockroachDB.
+- Currently in Beta
+
+### Developer Notes
+
+- Code can be found [here][spanner-code]
+- Documentation can be found [here][spanner-godoc]
+- Starts an [GC process][gc-process] to clean up old entries from the manually-generated changelog table
+
+[spanner-code]: https://github.com/authzed/spicedb/tree/main/internal/datastore/spanner
+[spanner-godoc]: https://pkg.go.dev/github.com/authzed/spicedb/internal/datastore/spanner
+[gc-process]: https://github.com/authzed/spicedb/blob/main/internal/datastore/spanner/gc.go
+
+### Configuration
+
+- The [Cloud Spanner docs][spanner-docs] outline how to set up an instance
+- Authication is via service accounts. The service account that runs migrations must have `Cloud Spanner Database Admin`; SpiceDB (non-migrations) must have `Cloud Spanner Database User`.
+
+[spanner-docs]: https://cloud.google.com/spanner
+
+#### Required Parameters
+
+| Parameter | Description | Example |
+|----------------------|--|--|
+| `datastore-engine` | the datastore engine | `--datastore-engine=spanner`|
+| `datastore-conn-uri` | the cloud spanner database identifier | `--datastore-conn-uri="projects/project-id/instances/instance-id/databases/database-id"` |
+| `datastore-spanner-credentials` | json service account token | `--datastore-spanner-credentials=./spanner.json`
+
+
+#### Optional Parameters
+
+| Parameter                             | Description                                                                         | Example                                      |
+|---------------------------------------|-------------------------------------------------------------------------------------|----------------------------------------------|
+| `datastore-gc-interval`               | Amount of time to wait between garbage collection passes                            | `--datastore-gc-interval=3m`                 | 
+| `datastore-gc-window`                 | Sets the window outside of which overwritten relationships are no longer accessible | `--datastore-gc-window=1s`                   |
+| `datastore-revision-fuzzing-duration` | Sets a fuzzing window on all zookies/zedtokens                                      | `--datastore-revision-fuzzing-duration=50ms` |
+| `datastore-readonly`                  | Places the datastore into readonly mode                                             | `--datastore-readonly=true`                  |
+| `datastore-follower-read-delay-duration` | Amount of time to subtract from non-sync revision timestamps to ensure stale reads |  `--datastore-follower-read-delay-duration=4.8s` |
+
 
 ## PostgreSQL
 
@@ -112,7 +160,7 @@ The available strategies are:
 | Parameter | Description | Example |
 |----------------------|--|--|
 | `datastore-engine` | the datastore engine | `--datastore-engine=postgres`|
-| `datastore-conn-uri` | connection string used to connecto to CRDB | `--datastore-conn-uri="postgres://postgres:password@localhost:5432/spicedb?sslmode=disable"` |
+| `datastore-conn-uri` | connection string used to connect to PostgreSQL | `--datastore-conn-uri="postgres://postgres:password@localhost:5432/spicedb?sslmode=disable"` |
 
 #### Optional Parameters
 
