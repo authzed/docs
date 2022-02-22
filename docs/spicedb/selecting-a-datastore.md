@@ -86,7 +86,6 @@ The available strategies are:
 
 ## Cloud Spanner (Beta)
 
-
 :::warning
 The Cloud Spanner driver is currently Beta.
 :::
