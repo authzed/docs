@@ -44,6 +44,7 @@ module.exports = {
       collapsed: false,
       items: [
         'authzed/pricing',
+        'authzed/enterprise',
       ],
     },
   ],
