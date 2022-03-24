@@ -32,8 +32,8 @@ module.exports = {
       },
       items: [
         {
-          to: 'https://authzed.com',
-          label: 'Home',
+          to: '/',
+          label: 'Documentation',
           position: 'left',
         },
         {
@@ -43,11 +43,11 @@ module.exports = {
         },
         {
           to: 'https://app.authzed.com',
-          label: 'Dashboard',
+          label: 'Authzed Dashboard',
           position: 'left',
         },
         {
-          to: 'https://github.com/authzed',
+          to: 'https://github.com/authzed/spicedb',
           position: 'right',
           className: 'header-github-link',
         },
@@ -69,6 +69,7 @@ module.exports = {
       copyright: `© ${new Date().getFullYear()} Authzed. All rights reserved.`
     },
     algolia: {
+      appId: env('ALGOLIA_APP_ID', 'test'),
       apiKey: env('ALGOLIA_API_KEY', 'test'),
       indexName: env('ALGOLIA_INDEX', 'test'),
       contextualSearch: true,
@@ -117,6 +118,23 @@ module.exports = {
         sitemap: { changefreq: 'daily' },
         blog: false,
         pages: false,
+      },
+    ],
+    [
+      'redocusaurus',
+      {
+        // Plugin Options for loading OpenAPI files
+        specs: [
+          {
+            spec: 'https://raw.githubusercontent.com/authzed/authzed-go/main/proto/apidocs.swagger.json',
+            route: '/rest-api/',
+          },
+        ],
+        // Theme Options for modifying how redoc renders them
+        theme: {
+          // Change with your site colors
+          primaryColor: '#494B6C',
+        },
       },
     ],
   ],

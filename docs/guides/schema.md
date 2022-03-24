@@ -1,4 +1,4 @@
-# Developing a Schema
+# Developing Your Schema
 
 import {InlinePlayground} from '../../src/components/InlinePlayground';
 

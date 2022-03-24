@@ -16,23 +16,26 @@ Once stored, data can be performantly queried to answer questions such as "Does 
 
 ## Getting Started
 
-- Log into the [Authzed dashboard] to create a serverless SpiceDB instance
-- Install and play with [SpiceDB] locally
+1. Log into the [Authzed dashboard] to create a serverless SpiceDB instance or [Install SpiceDB locally]
+2. Start the [Protecting Your First App] guide
+
+## Other Resources
+
 - Follow the guide for [developing a schema]
 - [Watch a video] of us modeling GitHub
 - Read the schema language [design documentation]
 - [Jump into the playground], load up some examples, and mess around
-- Learn the latest best practice by following the [Protecting Your First App] guide
 - Explore the gRPC API documentation on the [Buf Registry]
 - [Install zed] and interact with a live database
 
+[Install SpiceDB locally]: /guides/installing
 [Authzed]: https://authzed.com
 [Authzed dashboard]: https://app.authzed.com
 [SpiceDB]: https://github.com/authzed/spicedb
-[developing a schema]: https://docs.authzed.com/guides/schema
+[developing a schema]: /guides/schema
 [Watch a video]: https://www.youtube.com/watch?v=x3-B9-ICj0w
 [design documentation]: https://docs.authzed.com/reference/schema-lang
 [Jump into the playground]: https://play.authzed.com
-[Protecting Your First App]: https://docs.authzed.com/guides/first-app
+[Protecting Your First App]: /guides/first-app
 [Buf Registry]: https://buf.build/authzed/api/docs
 [Install zed]: https://github.com/authzed/zed
