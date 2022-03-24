@@ -1,0 +1,13 @@
+diff --git a/node_modules/@docusaurus/theme-common/lib/utils/codeBlockUtils.js b/node_modules/@docusaurus/theme-common/lib/utils/codeBlockUtils.js
+index 711d1bf..dfc7c88 100644
+--- a/node_modules/@docusaurus/theme-common/lib/utils/codeBlockUtils.js
++++ b/node_modules/@docusaurus/theme-common/lib/utils/codeBlockUtils.js
+@@ -6,7 +6,7 @@
+  */
+ import rangeParser from 'parse-numeric-range';
+ const codeBlockTitleRegex = /title=(?<quote>["'])(?<title>.*?)\1/;
+-const highlightLinesRangeRegex = /{(?<range>[\d,-]+)}/;
++const highlightLinesRangeRegex = /\{(?<range>[\d,-]+)\}/;
+ const commentTypes = ['js', 'jsBlock', 'jsx', 'python', 'html'];
+ // Supported types of highlight comments
+ const commentPatterns = {

@@ -9,13 +9,14 @@
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
     "serve": "docusaurus serve",
-    "clear": "docusaurus clear"
+    "clear": "docusaurus clear",
+    "postinstall": "patch-package"
   },
   "dependencies": {
-    "@docusaurus/core": "^2.0.0-beta.16",
-    "@docusaurus/module-type-aliases": "^2.0.0-beta.16",
-    "@docusaurus/plugin-client-redirects": "^2.0.0-beta.16",
-    "@docusaurus/preset-classic": "^2.0.0-beta.16",
+    "@docusaurus/core": "2.0.0-beta.17",
+    "@docusaurus/module-type-aliases": "2.0.0-beta.17",
+    "@docusaurus/plugin-client-redirects": "2.0.0-beta.17",
+    "@docusaurus/preset-classic": "2.0.0-beta.17",
     "@mdx-js/react": "^1.6.21",
     "amplitude-js": "^8.9.1",
     "clsx": "^1.1.1",
@@ -40,5 +41,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "patch-package": "^6.4.7",
+    "postinstall-postinstall": "^2.1.0"
   }
 }
