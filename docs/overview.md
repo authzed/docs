@@ -16,7 +16,7 @@ Once stored, data can be performantly queried to answer questions such as "Does 
 
 ## Getting Started
 
-1. Log into the [Authzed dashboard] to create a serverless SpiceDB instance or [Install SpiceDB locally]
+1. Log into the [Authzed dashboard] to create a serverless SpiceDB instance or [run SpiceDB] yourself.
 2. Start the [Protecting Your First App] guide
 
 ## Other Resources
@@ -28,7 +28,7 @@ Once stored, data can be performantly queried to answer questions such as "Does 
 - Explore the gRPC API documentation on the [Buf Registry]
 - [Install zed] and interact with a live database
 
-[Install SpiceDB locally]: /guides/installing
+[run SpiceDB]: /spicedb/installing
 [Authzed]: https://authzed.com
 [Authzed dashboard]: https://app.authzed.com
 [SpiceDB]: https://github.com/authzed/spicedb

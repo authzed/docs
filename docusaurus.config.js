@@ -119,23 +119,6 @@ module.exports = {
         blog: false,
         pages: false,
       },
-    ],
-    [
-      'redocusaurus',
-      {
-        // Plugin Options for loading OpenAPI files
-        specs: [
-          {
-            spec: 'https://raw.githubusercontent.com/authzed/authzed-go/main/proto/apidocs.swagger.json',
-            route: '/rest-api/',
-          },
-        ],
-        // Theme Options for modifying how redoc renders them
-        theme: {
-          // Change with your site colors
-          primaryColor: '#494B6C',
-        },
-      },
-    ],
+    ]
   ],
 };

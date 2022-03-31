@@ -9,19 +9,17 @@ module.exports = {
     {
       type: 'link',
       label: 'REST API Reference',
-      href: '/rest-api',
+      href: 'https://app.swaggerhub.com/apis-docs/authzed/authzed/1.0',
     },
     {
       type: 'category',
       label: 'Getting Started',
       collapsed: false,
-      items: [
-        'guides/installing',
+      items: [        
         'guides/first-app',
         'guides/schema',
         'guides/defining-a-subject-type',
-        'guides/writing-relationships',
-        'guides/rest-api',
+        'guides/writing-relationships',        
       ],
     },
     {
@@ -29,8 +27,10 @@ module.exports = {
       label: 'SpiceDB',
       collapsed: true,
       items: [
+        'spicedb/installing', 
         'spicedb/feature-overview',
         'spicedb/selecting-a-datastore',
+        'spicedb/commands',
       ],
     },
     {

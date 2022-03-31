@@ -151,7 +151,7 @@ For more information, you can read [this blog post][udr-post].
 
 ## Wildcard
 
-A *wildcard* type declared on a `relation` allows for a grant of permission to *all* subjects of the type specified, making any permission that references that relation **public** for all subjects of that type.
+A _wildcard_ type declared on a `relation` allows for a grant of permission to _all_ subjects of the type specified, making any permission that references that relation **public** for all subjects of that type.
 
 ## Zanzibar
 
