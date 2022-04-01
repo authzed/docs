@@ -16,7 +16,8 @@ docker pull authzed/spicedb
 
 ```sh
 docker run --name spicedb \
-    -p 50051:50051 --rm \
+    -p 50051:50051 \
+    --rm \
     authzed/spicedb serve \
     --grpc-preshared-key "somerandomkeyhere"
 ```

@@ -29,8 +29,7 @@ module.exports = {
       items: [
         'spicedb/installing', 
         'spicedb/feature-overview',
-        'spicedb/selecting-a-datastore',
-        'spicedb/commands',
+        'spicedb/selecting-a-datastore',        
       ],
     },
     {
