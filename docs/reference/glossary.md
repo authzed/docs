@@ -151,7 +151,7 @@ For more information, you can read [this blog post][udr-post].
 
 ## Wildcard
 
-A *wildcard* type declared on a `relation` allows for a grant of permission to *all* subjects of the type specified, making any permission that references that relation **public** for all subjects of that type.
+A _wildcard_ type declared on a `relation` allows for a grant of permission to _all_ subjects of the type specified, making any permission that references that relation **public** for all subjects of that type.
 
 ## Zanzibar
 
@@ -176,7 +176,7 @@ Excluding implementation details that are vague or not described in the paper, S
 
 - SpiceDB has an additional API endpoint, [authzed.api.v1.LookupResources][lookup], that lists resources to which the subject has a particular permission.
 
-[lookup]: https://buf.build/authzed/api/docs/main/authzed.api.v1#LookupResources
+[lookup]: https://buf.build/authzed/api/docs/main:authzed.api.v1#LookupResources
 
 ### Mapping Terminology from the Zanzibar paper
 

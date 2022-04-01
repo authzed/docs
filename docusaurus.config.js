@@ -32,8 +32,8 @@ module.exports = {
       },
       items: [
         {
-          to: 'https://authzed.com',
-          label: 'Home',
+          to: '/',
+          label: 'Documentation',
           position: 'left',
         },
         {
@@ -43,11 +43,11 @@ module.exports = {
         },
         {
           to: 'https://app.authzed.com',
-          label: 'Dashboard',
+          label: 'Authzed Dashboard',
           position: 'left',
         },
         {
-          to: 'https://github.com/authzed',
+          to: 'https://github.com/authzed/spicedb',
           position: 'right',
           className: 'header-github-link',
         },
@@ -69,6 +69,7 @@ module.exports = {
       copyright: `© ${new Date().getFullYear()} Authzed. All rights reserved.`
     },
     algolia: {
+      appId: env('ALGOLIA_APP_ID', 'test'),
       apiKey: env('ALGOLIA_API_KEY', 'test'),
       indexName: env('ALGOLIA_INDEX', 'test'),
       contextualSearch: true,
@@ -118,6 +119,6 @@ module.exports = {
         blog: false,
         pages: false,
       },
-    ],
+    ]
   ],
 };

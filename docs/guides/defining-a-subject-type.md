@@ -2,7 +2,7 @@
 
 Within a Permissions System, a [CheckPermission] call is always made between an object representing the *resource* and an object representing a *subject*: The API call returns whether the *subject* has the specified permission on the *resource*.
 
-[CheckPermission]: https://buf.build/authzed/api/docs/main/authzed.api.v1#CheckPermission
+[CheckPermission]: https://buf.build/authzed/api/docs/main:authzed.api.v1#CheckPermission
 
 The choice of how to represent subjects can have large downstream effects on the design of a permissions system.
 

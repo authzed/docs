@@ -49,11 +49,11 @@ Below are the estimations for determining the worse-cast dispatch count for an A
 | [WriteRelationships]   | The number of preconditions + `1` for the write     |
 | [DeleteRelationships]  | The number of preconditions + `1` for the delete    |
 
-[CheckPermission]: https://buf.build/authzed/api/docs/main/authzed.api.v1#CheckPermission
-[ExpandPermissionTree]: https://buf.build/authzed/api/docs/main/authzed.api.v1#ExpandPermissionTree
-[LookupResources]: https://buf.build/authzed/api/docs/main/authzed.api.v1#LookupResources
-[WriteRelationships]: https://buf.build/authzed/api/docs/main/authzed.api.v1#WriteRelationships
-[DeleteRelationships]: https://buf.build/authzed/api/docs/main/authzed.api.v1#DeleteRelationships
+[CheckPermission]: https://buf.build/authzed/api/docs/main:authzed.api.v1#CheckPermission
+[ExpandPermissionTree]: https://buf.build/authzed/api/docs/main:authzed.api.v1#ExpandPermissionTree
+[LookupResources]: https://buf.build/authzed/api/docs/main:authzed.api.v1#LookupResources
+[WriteRelationships]: https://buf.build/authzed/api/docs/main:authzed.api.v1#WriteRelationships
+[DeleteRelationships]: https://buf.build/authzed/api/docs/main:authzed.api.v1#DeleteRelationships
 
 ### Example: CheckPermission
 

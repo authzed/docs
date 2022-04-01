@@ -14,6 +14,12 @@ function fallbacksPlugin(
                         path: false
                     },
                 },
+                module: {
+                    // See: https://github.com/eemeli/yaml/issues/208
+                    rules: [
+                        { test: /\.js$/, type: 'javascript/auto' }
+                    ]
+                },
             };
         },
     };

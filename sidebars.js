@@ -2,50 +2,62 @@ module.exports = {
   someSidebar: [
     'overview',
     {
-      type: 'category',
-      label: 'Reference',
-      collapsed: false,
-      items: [
-        'reference/api',
-        'reference/clients',
-        {
-          type: 'link',
-          label: 'API Documentation',
-          href: 'https://buf.build/authzed/api/docs/main/authzed.api.v1',
-        },
-        'reference/api-consistency',
-        'reference/schema-lang',
-        'reference/zedtokens-and-zookies',
-        'reference/glossary',
-      ],
+      type: 'link',
+      label: 'gRPC API Reference',
+      href: 'https://buf.build/authzed/api/docs/main:authzed.api.v1',
+    },
+    {
+      type: 'link',
+      label: 'REST API Reference',
+      href: 'https://app.swaggerhub.com/apis-docs/authzed/authzed/1.0',
     },
     {
       type: 'category',
-      label: 'Guides',
+      label: 'Getting Started',
       collapsed: false,
-      items: [
+      items: [        
         'guides/first-app',
         'guides/schema',
         'guides/defining-a-subject-type',
+        'guides/writing-relationships',        
       ],
     },
     {
       type: 'category',
       label: 'SpiceDB',
-      collapsed: false,
+      collapsed: true,
       items: [
+        'spicedb/installing', 
         'spicedb/feature-overview',
-        'spicedb/selecting-a-datastore',
+        'spicedb/selecting-a-datastore',        
       ],
     },
     {
       type: 'category',
       label: 'Authzed',
-      collapsed: false,
+      collapsed: true,
       items: [
         'authzed/pricing',
         'authzed/enterprise',
       ],
     },
+    {
+      type: 'category',
+      label: 'Reference',
+      collapsed: true,
+      items: [
+        'reference/api',
+        'reference/clients',
+        'reference/api-consistency',
+        'reference/schema-lang',
+        'reference/zedtokens-and-zookies',
+        'reference/glossary',
+        {
+          type: 'link',
+          label: 'API Reference',
+          href: 'https://buf.build/authzed/api/docs/main:authzed.api.v1',
+        },
+      ],
+    }
   ],
 };
