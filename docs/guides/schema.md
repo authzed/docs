@@ -99,7 +99,7 @@ Can a specific user read the specific document?
 
 To add this question for validation in the Authzed Playground, we must translate the question into the *Test Relationships* and the *Assertions*.
 
-[CheckPermission]: https://buf.build/authzed/api/docs/main/authzed.api.v1#CheckPermission
+[CheckPermission]: https://buf.build/authzed/api/docs/main:authzed.api.v1#CheckPermission
 [subject]: /guides/defining-a-subject-type
 
 ### Creating test relationships

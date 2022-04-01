@@ -176,7 +176,7 @@ Excluding implementation details that are vague or not described in the paper, S
 
 - SpiceDB has an additional API endpoint, [authzed.api.v1.LookupResources][lookup], that lists resources to which the subject has a particular permission.
 
-[lookup]: https://buf.build/authzed/api/docs/main/authzed.api.v1#LookupResources
+[lookup]: https://buf.build/authzed/api/docs/main:authzed.api.v1#LookupResources
 
 ### Mapping Terminology from the Zanzibar paper
 

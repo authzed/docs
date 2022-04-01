@@ -11,7 +11,7 @@ module.exports = {
         {
           type: 'link',
           label: 'API Documentation',
-          href: 'https://buf.build/authzed/api/docs/main/authzed.api.v1',
+          href: 'https://buf.build/authzed/api/docs/main:authzed.api.v1',
         },
         'reference/api-consistency',
         'reference/schema-lang',

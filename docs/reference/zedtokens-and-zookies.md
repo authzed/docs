@@ -72,8 +72,8 @@ CheckPermissionRequest{
 }
 ```
 
-[the Check response]: https://buf.build/authzed/api/docs/main/authzed.api.v1#authzed.api.v1.CheckPermissionResponse
-[the Write response]: https://buf.build/authzed/api/docs/main/authzed.api.v1#authzed.api.v1.WriteRelationshipsResponse
+[the Check response]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.CheckPermissionResponse
+[the Write response]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.WriteRelationshipsResponse
 [v1 API]: https://buf.build/authzed/api/tree/main/authzed/api/v1
 [Consistency]: api-consistency.md
 
