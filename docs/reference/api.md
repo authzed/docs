@@ -62,7 +62,7 @@ The v1 Authzed API is a full redesign of the initial v0 APIs.
 
 gRPC Documentation can be found in the [Buf Registry][bsr-v1].
 
-[bsr-v1]: https://buf.build/authzed/api/docs/main/authzed.api.v1
+[bsr-v1]: https://buf.build/authzed/api/docs/main:authzed.api.v1
 
 #### Changes
 
@@ -90,7 +90,7 @@ gRPC Documentation can be found on the [Buf Registry][bsr-v1alpha1].
 - A new _Schema_ language replaces Namespace Configs.
   Existing v0 NamespaceConfigs can be read from the SchemaRead() API.
 
-[bsr-v1alpha1]: https://buf.build/authzed/api/docs/main/authzed.api.v1alpha1
+[bsr-v1alpha1]: https://buf.build/authzed/api/docs/main:authzed.api.v1alpha1
 
 ### authzed.api.v0
 

@@ -82,7 +82,7 @@ spicedb serve \
 
 The recommended and most supported wap of calling the [SpiceDB API] is via **gRPC**.
 
-[SpiceDB API]: https://buf.build/authzed/api/docs/main/authzed.api.v1
+[SpiceDB API]: https://buf.build/authzed/api/docs/main:authzed.api.v1
 
 ```
 --grpc-addr string                        address to listen on to serve gRPC (default ":50051")

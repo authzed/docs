@@ -4,7 +4,7 @@ module.exports = {
     {
       type: 'link',
       label: 'gRPC API Reference',
-      href: 'https://buf.build/authzed/api/docs/main/authzed.api.v1',
+      href: 'https://buf.build/authzed/api/docs/main:authzed.api.v1',
     },
     {
       type: 'link',
@@ -56,7 +56,7 @@ module.exports = {
         {
           type: 'link',
           label: 'API Reference',
-          href: 'https://buf.build/authzed/api/docs/main/authzed.api.v1',
+          href: 'https://buf.build/authzed/api/docs/main:authzed.api.v1',
         },
       ],
     }

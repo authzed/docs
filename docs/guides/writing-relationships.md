@@ -37,14 +37,14 @@ In the above example, the relationship between a resource and its teams, as well
 
 Rather, this information can be stored solely in SpiceDB, and accessed by the application via a [ReadRelationships] or [ExpandPermissionsTree] call when necessary.
 
-[ReadRelationships]: https://buf.build/authzed/api/docs/main/authzed.api.v1#ReadRelationships
-[ExpandPermissionsTree]: https://buf.build/authzed/api/docs/main/authzed.api.v1#ExpandPermissionTree
+[ReadRelationships]: https://buf.build/authzed/api/docs/main:authzed.api.v1#ReadRelationships
+[ExpandPermissionsTree]: https://buf.build/authzed/api/docs/main:authzed.api.v1#ExpandPermissionTree
 
 ## Two writes + commit
 
 The most common and straightforward way to store relationships in SpiceDB is to use a 2 phase commit-like approach, making use of a transaction from the relational database along with a [WriteRelationships] call to SpiceDB.
 
-[WriteRelationships]: https://buf.build/authzed/api/docs/main/authzed.api.v1#WriteRelationships
+[WriteRelationships]: https://buf.build/authzed/api/docs/main:authzed.api.v1#WriteRelationships
 
 ```python title='Example of a 2PC-like approach'
 try:

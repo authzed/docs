@@ -7,7 +7,7 @@ Consistency is provided via the [Consistency message][msg] on supported API call
 
 [v1-api]: https://buf.build/authzed/api/tree/main/authzed/api/v1
 [consistency]: https://en.wikipedia.org/wiki/Data_consistency
-[msg]: https://buf.build/authzed/api/docs/main/authzed.api.v1#authzed.api.v1.Consistency
+[msg]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.Consistency
 
 ## Defaults
 
