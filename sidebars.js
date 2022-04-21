@@ -15,11 +15,11 @@ module.exports = {
       type: 'category',
       label: 'Getting Started',
       collapsed: false,
-      items: [        
+      items: [
         'guides/first-app',
         'guides/schema',
         'guides/defining-a-subject-type',
-        'guides/writing-relationships',        
+        'guides/writing-relationships',
       ],
     },
     {
@@ -27,9 +27,10 @@ module.exports = {
       label: 'SpiceDB',
       collapsed: true,
       items: [
-        'spicedb/installing', 
+        'spicedb/installing',
         'spicedb/feature-overview',
-        'spicedb/selecting-a-datastore',        
+        'spicedb/selecting-a-datastore',
+        'spicedb/updating',
       ],
     },
     {
