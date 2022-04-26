@@ -8,6 +8,12 @@ Want to use SpiceDB as a service without any installation? Visit the [Authzed Da
 
 ## Install options
 
+:::warning
+The commands documented do not configure best practices for production deployments.
+For example, TLS is disabled and data is not persisted when SpiceDB is shut down.
+See the guide for [selecting a datastore].
+:::
+
 ### Docker
 
 ```sh
@@ -32,10 +38,6 @@ brew install spicedb
 spicedb serve --grpc-preshared-key "somerandomkeyhere"
 ```
 
-:::warning
-The above commands should only be used when running SpiceDB for the first time as TLS is disabled and no data is persisted when SpiceDB is shut down. See the guide for [selecting a datastore].
-:::
-
 [selecting a datastore]: /spicedb/selecting-a-datastore
 
 ### Download the binary
@@ -43,6 +45,21 @@ The above commands should only be used when running SpiceDB for the first time a
 Binaries are available to download on the [releases page].
 
 [releases page]: https://github.com/authzed/spicedb/releases
+
+### GitHub Actions
+
+Authzed maintains [GitHub Actions] for integrating SpiceDB with your CI/CD pipelines:
+
+- [action-spicedb]: Runs SpiceDB such that each Bearer Token provided by the client is allocated its own isolated, ephemeral datastore.
+  By using unique tokens in each of your application's integration tests, they can be executed in parallel safely against a single instance of SpiceDB.
+  Equivalent to running `spicedb serve-testing`.
+- [action-spicedb-validate]: Validates SpiceDB schema files. Schema files can be easily exported from the [playground].
+  Equivalent to running `zed validate`.
+
+[GitHub Actions]: https://github.com/features/actions
+[action-spicedb]: https://github.com/authzed/action-spicedb
+[action-spicedb-validate]: https://github.com/authzed/action-spicedb-validate
+[playground]: https://play.authzed.com
 
 ## Verifying that SpiceDB is running
 
@@ -64,6 +81,19 @@ brew install zed
 ```sh
 zed context set local localhost:50051 "somerandomkeyhere" --insecure
 zed schema read --insecure
+```
+
+## Configuration
+
+### Flags
+
+In addition to CLI flags, SpiceDB also supports configuration via environment variables.
+You can replace any command's argument with an environment variable by converting dashes into underscores and prefixing with `SPICEDB_` (e.g. `--log-level` becomes `SPICEDB_LOG_LEVEL`).
+The following are equivalent:
+
+```sh
+spicedb serve --grpc-preshared-key=somerandomkeyhere
+SPICEDB_GRPC_PRESHARED_KEY=somerandomkeyhere spicedb serve
 ```
 
 ## Next Steps
