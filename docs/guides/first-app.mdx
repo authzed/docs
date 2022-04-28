@@ -581,10 +581,10 @@ The following examples demonstrate exactly that:
   <TabItem value="shell">
 
 ```shell
-zed permission check post:1 read  user:emilia --revision "zedtokenfromwriterel" # true
-zed permission check post:1 write user:emilia --revision "zedtokenfromwriterel"  # true
-zed permission check post:1 read  user:beatrice --revision "zedtokenfromwriterel" # true
-zed permission check post:1 write user:beatrice --revision "zedtokenfromwriterel" # false
+zed permission check blog/post:1 read  blog/user:emilia --revision "zedtokenfromwriterel" # true
+zed permission check blog/post:1 write blog/user:emilia --revision "zedtokenfromwriterel"  # true
+zed permission check blog/post:1 read  blog/user:beatrice --revision "zedtokenfromwriterel" # true
+zed permission check blog/post:1 write blog/user:beatrice --revision "zedtokenfromwriterel" # false
 ```
 
   </TabItem>
