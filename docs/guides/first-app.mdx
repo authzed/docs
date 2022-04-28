@@ -330,8 +330,8 @@ You can also [touch and delete] relationships, but those are not as immediately 
   <TabItem value="shell">
 
 ```shell
-zed relationship create blog/post:1 writer blog/user:emilia
-zed relationship create blog/post:1 reader blog/user:beatrice
+zed relationship create {{ tenant }}/post:1 writer {{ tenant }}/user:emilia
+zed relationship create {{ tenant }}/post:1 reader {{ tenant }}/user:beatrice
 ```
 
   </TabItem>
@@ -581,10 +581,10 @@ The following examples demonstrate exactly that:
   <TabItem value="shell">
 
 ```shell
-zed permission check blog/post:1 read  blog/user:emilia --revision "zedtokenfromwriterel" # true
-zed permission check blog/post:1 write blog/user:emilia --revision "zedtokenfromwriterel"  # true
-zed permission check blog/post:1 read  blog/user:beatrice --revision "zedtokenfromwriterel" # true
-zed permission check blog/post:1 write blog/user:beatrice --revision "zedtokenfromwriterel" # false
+zed permission check {{ tenant }}/post:1 read  {{ tenant }}/user:emilia --revision "zedtokenfromwriterel" # true
+zed permission check {{ tenant }}/post:1 write {{ tenant }}/user:emilia --revision "zedtokenfromwriterel"  # true
+zed permission check {{ tenant }}/post:1 read  {{ tenant }}/user:beatrice --revision "zedtokenfromwriterel" # true
+zed permission check {{ tenant }}/post:1 write {{ tenant }}/user:beatrice --revision "zedtokenfromwriterel" # false
 ```
 
   </TabItem>
