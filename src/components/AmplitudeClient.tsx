@@ -1,4 +1,4 @@
-import React, { createContext, PropsWithChildren } from 'react';
+import React, { createContext, PropsWithChildren, useEffect, useState } from 'react';
 import amplitude, { AmplitudeClient } from 'amplitude-js';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 
@@ -7,12 +7,15 @@ export const AmplitudeContext = createContext<AmplitudeClient | undefined>(undef
 export function AmplitudeClientProvider(props: PropsWithChildren) {
     const { siteConfig } = useDocusaurusContext();
     const apiKey = siteConfig.customFields?.amplitudeApiKey;
+    const [client, setClient] = useState<AmplitudeClient | undefined>(undefined)
 
-    let client = undefined;
-    if (apiKey) {
-        client = amplitude.getInstance()
-        client.init(apiKey);
-    }
+    useEffect(() => {
+        if (apiKey && !client) {
+            const amp = amplitude.getInstance()
+            amp.init(apiKey);
+            setClient(amp);
+        }
+    }, [apiKey, client]);
 
     return (
         <AmplitudeContext.Provider value={client}>
