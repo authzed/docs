@@ -6,6 +6,7 @@ There are a few available datastores with various design goals:
 
 - [CockroachDB](#cockroachdb) - Recommended for multi-region deployments
 - [Cloud Spanner (Beta)](#cloud-spanner-beta) - Suitable for cloud multi-region deployments
+- [MySQL](#mysql) - Recommended for single-region deployments and those familiar with traditional RDBMS operations
 - [PostgreSQL](#postgresql) - Recommended for single-region deployments and those familiar with traditional RDBMS operations
 - [memdb](#memdb) - Recommended for local development and integration testing with applications written to be SpiceDB-native
 
