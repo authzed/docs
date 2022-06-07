@@ -529,8 +529,8 @@ resp = client.permissions_service.write_relationships(
   Authzed::Api::V1::WriteRelationshipsRequest.new(
     updates: [
       # Emilia is a Writer on Post 1
-      Authzed::Api::V1::Relationship.new(
-        operation: Authzed::Api::V1::RelationshipUpdate::Operation::CREATE,
+      Authzed::Api::V1::RelationshipUpdate.new(
+        operation: Authzed::Api::V1::RelationshipUpdate::Operation::OPERATION_CREATE,
         relationship: Authzed::Api::V1::Relationship.new(
           resource: Authzed::Api::V1::ObjectReference.new(object_type: '{{ tenant }}/post', object_id: '1'),
           relation: 'writer',
@@ -540,8 +540,8 @@ resp = client.permissions_service.write_relationships(
         ),
       ),
       # Beatrice is a Reader on Post 1
-      Authzed::Api::V1::Relationship.new(
-        operation: Authzed::Api::V1::RelationshipUpdate::Operation::CREATE,
+      Authzed::Api::V1::RelationshipUpdate.new(
+        operation: Authzed::Api::V1::RelationshipUpdate::Operation::OPERATION_CREATE,
         relationship: Authzed::Api::V1::Relationship.new(
           resource: Authzed::Api::V1::ObjectReference.new(object_type: '{{ tenant }}/post', object_id: '1'),
           relation: 'reader',
@@ -813,7 +813,7 @@ beatrice = Authzed::Api::V1::SubjectReference.new(object: Authzed::Api::V1::Obje
   object_type: '{{ tenant }}/user',
   object_id: 'beatrice',
 ))
-first_post = Authzed::Api::V1::ObjectReference.new(object_type: '{{ tenant }}/post', object_id: '1'))
+first_post = Authzed::Api::V1::ObjectReference.new(object_type: '{{ tenant }}/post', object_id: '1')
 ·
 client = Authzed::Api::V1::Client.new(
     target: '{{ endpoint }}',
@@ -827,7 +827,7 @@ resp = client.permissions_service.check_permission(Authzed::Api::V1::CheckPermis
   permission: 'read',
   subject: emilia,
 ))
-raise unless Authzed::Api::V1::CheckPermissionResponse::Permissionship.resolve(resp.permissionship)) ==
+raise unless Authzed::Api::V1::CheckPermissionResponse::Permissionship.resolve(resp.permissionship) ==
   Authzed::Api::V1::CheckPermissionResponse::Permissionship::PERMISSIONSHIP_HAS_PERMISSION
 ·
 resp = client.permissions_service.check_permission(Authzed::Api::V1::CheckPermissionRequest.new(
@@ -835,7 +835,7 @@ resp = client.permissions_service.check_permission(Authzed::Api::V1::CheckPermis
   permission: 'write',
   subject: emilia,
 ))
-raise unless Authzed::Api::V1::CheckPermissionResponse::Permissionship.resolve(resp.permissionship)) ==
+raise unless Authzed::Api::V1::CheckPermissionResponse::Permissionship.resolve(resp.permissionship) ==
   Authzed::Api::V1::CheckPermissionResponse::Permissionship::PERMISSIONSHIP_HAS_PERMISSION
 ·
 resp = client.permissions_service.check_permission(Authzed::Api::V1::CheckPermissionRequest.new(
@@ -843,7 +843,7 @@ resp = client.permissions_service.check_permission(Authzed::Api::V1::CheckPermis
   permission: 'read',
   subject: beatrice,
 ))
-raise unless Authzed::Api::V1::CheckPermissionResponse::Permissionship.resolve(resp.permissionship)) ==
+raise unless Authzed::Api::V1::CheckPermissionResponse::Permissionship.resolve(resp.permissionship) ==
   Authzed::Api::V1::CheckPermissionResponse::Permissionship::PERMISSIONSHIP_HAS_PERMISSION
 ·
 resp = client.permissions_service.check_permission(Authzed::Api::V1::CheckPermissionRequest.new(
@@ -851,7 +851,7 @@ resp = client.permissions_service.check_permission(Authzed::Api::V1::CheckPermis
   permission: 'write',
   subject: beatrice,
 ))
-raise unless Authzed::Api::V1::CheckPermissionResponse::Permissionship.resolve(resp.permissionship)) ==
+raise unless Authzed::Api::V1::CheckPermissionResponse::Permissionship.resolve(resp.permissionship) ==
   Authzed::Api::V1::CheckPermissionResponse::Permissionship::PERMISSIONSHIP_NO_PERMISSION
 `}</SampleCodeBlock>
   </TabItem>
