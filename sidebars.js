@@ -53,6 +53,7 @@ module.exports = {
         'reference/schema-lang',
         'reference/zedtokens-and-zookies',
         'reference/glossary',
+        'reference/annotated-zanzibar-spicedb',
         {
           type: 'link',
           label: 'API Reference',
