@@ -20,6 +20,7 @@ module.exports = {
         'guides/schema',
         'guides/defining-a-subject-type',
         'guides/writing-relationships',
+        'guides/validation-and-testing',
       ],
     },
     {
