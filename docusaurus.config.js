@@ -23,7 +23,11 @@ module.exports = {
       disableSwitch: true,
       respectPrefersColorScheme: true,
     },
-    hideableSidebar: false,
+    docs: {
+      sidebar: {
+        hideable: false,
+      },
+    },
     navbar: {
       title: '',
       logo: {
