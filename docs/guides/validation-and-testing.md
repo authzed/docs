@@ -15,7 +15,7 @@ Together, these tabs provide a very powerful way of **exhaustively** validating 
 However, using the Playground for all development validation is not tenable: changes to the schema may occur from other sources and it is critical it is still validated.
 
 :::note
-The examples below use the `zaml` suffix for the files containing schema, test relationships, assertions and expected relations. This is merely a convention, and the files are YAML. An example can be found as [test-schema.zaml]
+The examples below use the `zaml` suffix for the files containing schema, test relationships, assertions and expected relations. This is merely a convention, and the files are YAML. An example can be found at [test-schema.zaml]
 :::
 
 To support this use case, the [zed] CLI tool provides the `validate` command, which can be used to run the *same* validation as the Playground, over a downloaded Playground YAML file:
