@@ -103,7 +103,7 @@ The file format of the schema and test relationship data is the same as that use
 
 ### Running via GitHub Action
 
-Like the validation command, `serve-testing` is also available in [GitHub Action Form]:
+`serve-testing` is also available in [GitHub Action Form]:
 
 ```yaml
 steps:
