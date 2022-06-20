@@ -97,7 +97,9 @@ $ spicedb serve-testing --load-configs myschema.zaml
 2:24PM INF grpc server started listening addr=:50052 network=tcp prefix=readonly-grpc workers=0
 ```
 
-The file format of the schema and test relationship data is the same as that used by the validation tooling discussed above.
+The file format of the schema and test relationship data is the same as that used by the [validation tooling].
+
+[validation tooling]: #validation-of-schema-changes
 
 [SpiceDB]: https://github.com/authzed/spicedb
 
