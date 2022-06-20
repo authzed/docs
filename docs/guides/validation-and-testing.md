@@ -4,7 +4,7 @@ After the initial [development of the schema] for a Permissions System, it is im
 
 [development of the schema]: schema.md
 
-SpiceDB provides two sets of tooling to help in this area: A validation system that can be run from the command line or as part of CI, to ensure that any schema changes continued to be validated as part of the development process, and a built-in testing server for running real API calls against in-memory testing data.
+SpiceDB provides two sets of tooling to help in this area: A validation system that can be run from the command line or as part of CI that ensures any schema changes continue to be validated as part of the development process, and a built-in testing server for running real API calls against in-memory testing data.
 
 ## Validation of schema changes
 
