@@ -76,6 +76,12 @@ You can refer to a collection of Objects by additionally specifying one of their
 
 Examples: `user:emilia`, `organization:42`, `document:a4259512-3506-4030-a2c7-4b3fd1e9d199`, `team:devops#managers`
 
+## Permission
+
+A `permission` is a computed set of subjects for a particular object. While API callers can check for objects in relations directly, it is preferred to always check a permission as the ability to compute the set allows for design iteration with breaking the calling interface.
+
+Example: `permission view = viewer + writer + admin`
+
 ## Policy Engine
 
 A Policy Engine is software that process programs called _policies_ in order to produce a final decision.
@@ -108,12 +114,28 @@ This could be either good or bad, depending on the design of the policy engine a
 
 [pure]: https://en.wikipedia.org/wiki/Pure_function
 
+## Relation
+
+A `relation` defines a set of allowable [relationships](#relationship) between objects in a schema.
+
+In a role-based access control system, a `relation` over a `user` or `team` is analogous to a role.
+
+Example: `relation viewer: user`
+
+### Subject Relation
+
+A "subject relation" is the use of a relation on the *right* side of another relation, to indicate that all subjects found within *that* relation are to be included in the parent relation.
+
+For example the subject relation `group#member` in `relation viewer: group#member` indicates that any `member` of any `group` has the "role" of `viewer`.
+
 ## Relationship
 
 Relationships represent the existence of a live relation between an resource object and subject object or set of subject objects.
 It is often displayed as these three values separated by spaces.
 
 Examples: `document:readme writer user:emilia`, `team:devops admin organization:42#admin`, `document:somedocument viewer user:*`
+
+Relationships are defined in [schema](#schema) by use of [relations](#relation)
 
 ## Schema
 
