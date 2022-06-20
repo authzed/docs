@@ -78,7 +78,7 @@ It is **highly** recommended to use Token Isolation for testing
 
 If a token is provided to the API call, SpiceDB will create a **unique ephemeral datastore** for that token.
 
-This means that multiple tests can make multiple API calls which read and write to an **isolated version** of the Permissions System, simply by switching the token being sent to the server.
+This means that multiple tests can make multiple API calls which read and write to their own **isolated version** of the Permissions System, simply by switching the token being sent to the server.
 
 If no token is provided, a "default" datastore is used.
 
