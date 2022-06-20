@@ -116,7 +116,7 @@ definition resource {
 }
 ```
 
-Or via a token it was granted:
+Or via a token it was granted, by use of a reference to a *subject relation*:
 
 ```zed
 definition token {}
