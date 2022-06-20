@@ -12,7 +12,7 @@ Validation of schema changes is critical to ensure that a Permissions System ope
 To help with that goal, the [Authzed Playground] provides two sets of validation tooling: an "Assertions" tab which allows for defining a set of permission Checks with their expected results, and the "Expected Relations" tab for defining the exhaustive set of subjects that can be found for a particular permission on a particular resource.
 Together, these tabs provide a very powerful way of **exhaustively** validating the schema for a Permissions System.
 
-However, using the Playground for all development validation is not tenable: changes to schema may occur outside, and it is critical that schema be validated even if edited with another editor.
+However, using the Playground for all development validation is not tenable: changes to the schema may occur from other sources and it is critical it is still validated.
 
 :::note
 The examples below use the `zaml` suffix for the files containing schema, test relationships, assertions and expected relations. This is merely a convention, and the files are YAML. An example can be found as [test-schema.zaml]
