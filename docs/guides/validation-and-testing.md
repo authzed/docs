@@ -58,7 +58,7 @@ $ spicedb serve-testing
 
 ### Making API calls
 
-The `serve-testing` command starts SpiceDB in *Testing Mode*, which has a number of unique features to it:
+The `serve-testing` command starts SpiceDB in *Testing Mode*, which has a number of unique features:
 
 #### Ephemeral Data
 
