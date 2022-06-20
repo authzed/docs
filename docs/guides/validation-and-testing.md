@@ -41,7 +41,7 @@ steps:
 
 ## Testing code against SpiceDB
 
-In addition to validation of schema, it is often important to test the actual API calls being made to [SpiceDB].
+In addition to schema validation, it is often important to test the actual API calls being made to [SpiceDB].
 
 To support this use case, the [SpiceDB] binary provides a specialized run mode called `serve-testing`, which runs SpiceDB in a *testing-only* mode:
 
