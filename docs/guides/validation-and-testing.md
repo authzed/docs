@@ -9,7 +9,7 @@ SpiceDB provides two sets of tooling to help in this area: A validation system t
 ## Validation of schema changes
 
 Validation of schema changes is critical to ensure that a Permissions System operates as intended by its developers.
-To help with that goal, the [Authzed Playground] provides two sets of validation tooling: an "Assertions" tab which allows for defining Checks that are expected to succeed or fail, and the "Expected Relations" tab which allows for defining the exhaustive set of subjects that can be found for a particular permission, on a particular resource.
+To help with that goal, the [Authzed Playground] provides two sets of validation tooling: an "Assertions" tab which allows for defining a set of permission Checks with their expected results, and the "Expected Relations" tab for defining the exhaustive set of subjects that can be found for a particular permission on a particular resource.
 Together, these tabs provide a very powerful way of **exhaustively** validating the schema for a Permissions System.
 
 However, using the Playground for all development validation is not tenable: changes to schema may occur outside, and it is critical that schema be validated even if edited with another editor.
