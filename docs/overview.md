@@ -3,39 +3,111 @@ slug: /
 summary: "Documentation for Authzed, the planet-scale, serverless database platform for SpiceDB."
 ---
 
-# Overview
+# SpiceDB and Authzed
 
-## What is Authzed? What is SpiceDB?
+<div style={{textAlign: 'center'}}>
+<img src="/graph.svg"/>
+<div class="overview-top-buttons">
+<a href="/guides/first-app" class="btn">
+    <i class="fa fa-play"></i>
+    Get Started Protecting Your App
+</a>
+<a href="https://authzed.com/discord" class="btn with-left-margin">
+    <i class="fa-brands fa-discord"></i>
+    Discuss on Discord
+</a>
+<a href="https://github.com/authzed/spicedb" class="btn with-left-margin">
+    <i class="fa-brands fa-github"></i>
+    Browse on GitHub
+</a>
+</div>
+</div>
+<h2>Fine-grained relationship-based access control and permissions</h2>
+<h4>Based on <a href="https://authzed.com/blog/what-is-zanzibar">Google Zanzibar</a> for scalable, reliable and verifiable permissions handling</h4>
 
-[SpiceDB] is a database system for managing security-critical permissions checking.
+## What is SpiceDB? What is Authzed?
 
-SpiceDB acts as a centralized service that stores authorization data.
-Once stored, data can be performantly queried to answer questions such as "Does this user have access to this resource?" and "What are all the resources this user has access to?".
+[SpiceDB] is an **open source** database system for managing security-critical fine grained permissions checking.
 
-[Authzed] operates the globally available, serverless database platform for SpiceDB.
+SpiceDB acts as a centralized service that stores authorization data: Once stored, data can be performantly queried to answer questions such as <code>Does this user have access to this resource?</code> or <code>What are all the resources this user has access to?</code>.
+
+[Authzed] operates SpiceDB for you: serverless, dedicated or on premises.
+
+---
 
 ## Getting Started
 
-1. Log into the [Authzed dashboard] to create a serverless SpiceDB instance or [run SpiceDB] yourself.
-2. Start the [Protecting Your First App] guide
+Log into the [Authzed dashboard] to create a serverless SpiceDB instance or [run SpiceDB] yourself, and then:
 
-## Other Resources
+<div class="next-steps-grid">
+    <a href="/guides/first-app">
+        <Button class="btn btn-large">
+            <i class="fa fa-play"></i>
+            Start Protecting Your App
+        </Button>
+    </a>
+    <a href="https://play.authzed.com">
+        <Button class="btn btn-large">
+            <i class="fa fa-file-code"></i>
+            Start modeling in the Playground
+        </Button>
+    </a>
+    <a href="https://github.com/authzed/zed">
+        <Button class="btn btn-large">
+            <i class="fa fa-terminal"></i>
+            Install zed and interact with your database
+        </Button>
+    </a>
+    <a href="https://www.youtube.com/watch?v=x3-B9-ICj0w">
+        <Button class="btn btn-video">
+            <div class="thumbnail">
+                <i class="fa-brands fa-youtube"></i>
+                <img src="/img/youtube_x3-B9-ICj0w.png"/>
+            </div>
+            Modeling GitHub in Authzed
+        </Button>
+    </a>
+    <a href="https://www.youtube.com/watch?v=dlARPyDVPZQ">
+        <Button class="btn btn-video">
+            <div class="thumbnail">
+                <i class="fa-brands fa-youtube"></i>
+                <img src="/img/youtube_dlARPyDVPZQ.png"/>
+            </div>
+            Modeling Google Groups in Authzed
+        </Button>
+    </a>
+    <a href="https://www.youtube.com/watch?v=WTfZsRPDv9Q">
+        <Button class="btn btn-video">
+            <div class="thumbnail">
+                <i class="fa-brands fa-youtube"></i>
+                <img src="/img/youtube_WTfZsRPDv9Q.png"/>
+            </div>
+            Learn more about Zanizbar
+        </Button>
+    </a>
+</div>
+
+## Other Documentation and Guides
 
 - Follow the guide for [developing a schema]
-- [Watch a video] of us modeling GitHub
 - Read the schema language [design documentation]
-- [Jump into the playground], load up some examples, and mess around
 - Explore the gRPC API documentation on the [Buf Registry]
-- [Install zed] and interact with a live database
+- [Read the Authzed Blog] for in-depth discussions about SpiceDB, Authzed, and other technical topics
 
-[run SpiceDB]: /spicedb/installing
-[Authzed]: https://authzed.com
-[Authzed dashboard]: https://app.authzed.com
-[SpiceDB]: https://github.com/authzed/spicedb
+## Have a question?
+
+Join us on [Discord] to discuss any questions you may have!
+
+[discord]: https://authzed.com/discord
+[run spicedb]: /spicedb/installing
+[authzed]: https://authzed.com
+[authzed dashboard]: https://app.authzed.com
+[spicedb]: https://github.com/authzed/spicedb
 [developing a schema]: /guides/schema
-[Watch a video]: https://www.youtube.com/watch?v=x3-B9-ICj0w
+[watch a video]: https://www.youtube.com/watch?v=x3-B9-ICj0w
 [design documentation]: https://docs.authzed.com/reference/schema-lang
-[Jump into the playground]: https://play.authzed.com
-[Protecting Your First App]: /guides/first-app
-[Buf Registry]: https://buf.build/authzed/api/docs
-[Install zed]: https://github.com/authzed/zed
+[jump into the playground]: https://play.authzed.com
+[protecting your first app]: /guides/first-app
+[buf registry]: https://buf.build/authzed/api/docs
+[install zed]: https://github.com/authzed/zed
+[read the authzed blog]: https://authzed.com/blog
