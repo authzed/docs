@@ -17,7 +17,12 @@
 /* color-secondary-v2-300 : #EEC5D0; */
 /* color-tertiary-v2      : #393B58; */
 
+html[data-theme='light'] {
+  --ifm-button-color: #fff;
+}
+
 html[data-theme='dark'] {
+  --ifm-button-color: #2d343a;
   --ifm-font-color-base: #dadde1;
 
   --ifm-background-color: #242A2F;
@@ -36,6 +41,7 @@ html[data-theme='dark'] {
 }
 
 @import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css');
 
 :root {
   --ifm-color-primary: #842743;
@@ -219,4 +225,103 @@ table td {
   height: 1.2em;
   margin: 0px;
   margin-right: 6px;
+}
+
+.btn {
+  display: inline-grid;
+  align-items: center;
+  grid-template-columns: auto 1fr;
+  column-gap: 10px;
+  padding: 6px;
+  padding-left: 10px;
+  padding-right: 10px;
+  background-color:var(--ifm-button-color);
+  border-radius: 6px;
+  color: var(--ifm-font-color-base);
+  vertical-align: middle;
+}
+
+.btn:hover {
+  cursor: pointer;
+  color: var(--ifm-link-hover-color);
+}
+
+.with-right-margin {
+  margin-right: 10px;
+}
+
+.with-left-margin {
+  margin-left: 10px;
+}
+
+.btn-large {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 16px;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.btn-large i {
+  font-size: 300%;
+  margin-bottom: 10px;
+}
+
+.btn-video {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0px;
+  align-items: center;
+  text-align: center;
+  padding-bottom: 10px;
+}
+
+.btn-video .thumbnail {
+  height: 150px;
+  width: 100%;
+  margin-bottom: 10px;
+  position: relative;
+}
+
+.btn-video img {
+  height: 150px;
+  width: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+  border-bottom-left-radius: 0px;
+  border-bottom-right-radius: 0px;
+  position: relative;
+}
+
+.btn-video i {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  z-index: 99999;
+  font-size: 200%;
+  mix-blend-mode: difference;
+}
+
+.next-steps-grid {
+  display: inline-grid;
+  align-items: center;
+  grid-template-columns: 1fr 1fr 1fr;
+  column-gap: 10px;
+  row-gap: 10px;
+}
+
+.next-steps-grid a {
+  height: 100%;
+  text-decoration: none !important;
+}
+
+.overview-top-buttons {
+  margin-top: 30px;
+}
+
+.overview-top-buttons a {
+  text-decoration: none !important;
 }
