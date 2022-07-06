@@ -31,7 +31,7 @@ docker run --name spicedb \
 ### brew
 
 ```sh
-brew install spicedb
+brew install authzed/tap/spicedb
 ```
 
 ```sh
