@@ -63,27 +63,27 @@ The available strategies are:
 
 #### Required Parameters
 
-| Parameter | Description | Example |
-|----------------------|--|--|
-| `datastore-engine` | the datastore engine | `--datastore-engine=cockroachdb`|
+| Parameter            | Description                               | Example                                                                                   |
+| -------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `datastore-engine`   | the datastore engine                      | `--datastore-engine=cockroachdb`                                                          |
 | `datastore-conn-uri` | connection string used to connect to CRDB | `--datastore-conn-uri="postgres://user:password@localhost:26257/spicedb?sslmode=disable"` |
 
 #### Optional Parameters
 
-| Parameter                             | Description                                                                         | Example                                      |
-|---------------------------------------|-------------------------------------------------------------------------------------|----------------------------------------------|
-| `datastore-max-tx-retries`            | Maximum number of times to retry a query before raising an error                    | `--datastore-max-tx-retries=50`              |
-| `datastore-tx-overlap-strategy`       | The overlap strategy to prevent New Enemy on CRDB (see below)                       | `--datastore-tx-overlap-strategy=static`     |
-| `datastore-tx-overlap-key`            | The key to use for the overlap strategy (see below)                                 | `--datastore-tx-overlap-key="foo"`           |
-| `datastore-conn-max-idletime`         | Maximum idle time for a connection before it is recycled                            | `--datastore-conn-max-idletime=60s`          |
-| `datastore-conn-max-lifetime`         | Maximum lifetime for a connection before it is recycled                             | `--datastore-conn-max-lifetime=300s`         |
-| `datastore-conn-max-open`             | Maximum number of concurrent connections to open                                    | `--datastore-conn-max-open=10`               |
-| `datastore-conn-min-open`             | Minimum number of concurrent connections to open                                    | `--datastore-conn-min-open=1`                |
-| `datastore-query-split-size`          | The (estimated) query size at which to split a query into multiple queries          | `--datastore-query-split-size=5kb`           |
-| `datastore-gc-window`                 | Sets the window outside of which overwritten relationships are no longer accessible | `--datastore-gc-window=1s`                   |
-| `datastore-revision-fuzzing-duration` | Sets a fuzzing window on all zookies/zedtokens                                      | `--datastore-revision-fuzzing-duration=50ms` |
-| `datastore-readonly`                  | Places the datastore into readonly mode                                             | `--datastore-readonly=true`                  |
-|  `datastore-follower-read-delay-duration` | Amount of time to subtract from non-sync revision timestamps to ensure follower reads |  `-datastore-follower-read-delay-duration=4.8s` |
+| Parameter                                | Description                                                                           | Example                                        |
+| ---------------------------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| `datastore-max-tx-retries`               | Maximum number of times to retry a query before raising an error                      | `--datastore-max-tx-retries=50`                |
+| `datastore-tx-overlap-strategy`          | The overlap strategy to prevent New Enemy on CRDB (see below)                         | `--datastore-tx-overlap-strategy=static`       |
+| `datastore-tx-overlap-key`               | The key to use for the overlap strategy (see below)                                   | `--datastore-tx-overlap-key="foo"`             |
+| `datastore-conn-max-idletime`            | Maximum idle time for a connection before it is recycled                              | `--datastore-conn-max-idletime=60s`            |
+| `datastore-conn-max-lifetime`            | Maximum lifetime for a connection before it is recycled                               | `--datastore-conn-max-lifetime=300s`           |
+| `datastore-conn-max-open`                | Maximum number of concurrent connections to open                                      | `--datastore-conn-max-open=10`                 |
+| `datastore-conn-min-open`                | Minimum number of concurrent connections to open                                      | `--datastore-conn-min-open=1`                  |
+| `datastore-query-split-size`             | The (estimated) query size at which to split a query into multiple queries            | `--datastore-query-split-size=5kb`             |
+| `datastore-gc-window`                    | Sets the window outside of which overwritten relationships are no longer accessible   | `--datastore-gc-window=1s`                     |
+| `datastore-revision-fuzzing-duration`    | Sets a fuzzing window on all zookies/zedtokens                                        | `--datastore-revision-fuzzing-duration=50ms`   |
+| `datastore-readonly`                     | Places the datastore into readonly mode                                               | `--datastore-readonly=true`                    |
+| `datastore-follower-read-delay-duration` | Amount of time to subtract from non-sync revision timestamps to ensure follower reads | `-datastore-follower-read-delay-duration=4.8s` |
 
 ## Cloud Spanner (Beta)
 
@@ -116,21 +116,21 @@ The Cloud Spanner driver is currently Beta.
 
 #### Required Parameters
 
-| Parameter | Description | Example |
-|----------------------|--|--|
-| `datastore-engine` | the datastore engine | `--datastore-engine=spanner`|
+| Parameter            | Description                           | Example                                                                                  |
+| -------------------- | ------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `datastore-engine`   | the datastore engine                  | `--datastore-engine=spanner`                                                             |
 | `datastore-conn-uri` | the cloud spanner database identifier | `--datastore-conn-uri="projects/project-id/instances/instance-id/databases/database-id"` |
-| `datastore-spanner-credentials` | json service account token | `--datastore-spanner-credentials=./spanner.json`
 
 #### Optional Parameters
 
-| Parameter                             | Description                                                                         | Example                                      |
-|---------------------------------------|-------------------------------------------------------------------------------------|----------------------------------------------|
-| `datastore-gc-interval`               | Amount of time to wait between garbage collection passes                            | `--datastore-gc-interval=3m`                 |
-| `datastore-gc-window`                 | Sets the window outside of which overwritten relationships are no longer accessible | `--datastore-gc-window=1s`                   |
-| `datastore-revision-fuzzing-duration` | Sets a fuzzing window on all zookies/zedtokens                                      | `--datastore-revision-fuzzing-duration=50ms` |
-| `datastore-readonly`                  | Places the datastore into readonly mode                                             | `--datastore-readonly=true`                  |
-| `datastore-follower-read-delay-duration` | Amount of time to subtract from non-sync revision timestamps to ensure stale reads |  `--datastore-follower-read-delay-duration=4.8s` |
+| Parameter                                | Description                                                                                                                         | Example                                          |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `datastore-spanner-credentials`          | JSON service account token (omit to use [application default credentials](https://cloud.google.com/docs/authentication/production)) | `--datastore-spanner-credentials=./spanner.json` |
+| `datastore-gc-interval`                  | Amount of time to wait between garbage collection passes                                                                            | `--datastore-gc-interval=3m`                     |
+| `datastore-gc-window`                    | Sets the window outside of which overwritten relationships are no longer accessible                                                 | `--datastore-gc-window=1s`                       |
+| `datastore-revision-fuzzing-duration`    | Sets a fuzzing window on all zookies/zedtokens                                                                                      | `--datastore-revision-fuzzing-duration=50ms`     |
+| `datastore-readonly`                     | Places the datastore into readonly mode                                                                                             | `--datastore-readonly=true`                      |
+| `datastore-follower-read-delay-duration` | Amount of time to subtract from non-sync revision timestamps to ensure stale reads                                                  | `--datastore-follower-read-delay-duration=4.8s`  |
 
 ## PostgreSQL
 
@@ -160,15 +160,15 @@ The Cloud Spanner driver is currently Beta.
 
 #### Required Parameters
 
-| Parameter | Description | Example |
-|----------------------|--|--|
-| `datastore-engine` | the datastore engine | `--datastore-engine=postgres`|
+| Parameter            | Description                                     | Example                                                                                      |
+| -------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `datastore-engine`   | the datastore engine                            | `--datastore-engine=postgres`                                                                |
 | `datastore-conn-uri` | connection string used to connect to PostgreSQL | `--datastore-conn-uri="postgres://postgres:password@localhost:5432/spicedb?sslmode=disable"` |
 
 #### Optional Parameters
 
 | Parameter                             | Description                                                                         | Example                                      |
-|---------------------------------------|-------------------------------------------------------------------------------------|----------------------------------------------|
+| ------------------------------------- | ----------------------------------------------------------------------------------- | -------------------------------------------- |
 | `datastore-conn-max-idletime`         | Maximum idle time for a connection before it is recycled                            | `--datastore-conn-max-idletime=60s`          |
 | `datastore-conn-max-lifetime`         | Maximum lifetime for a connection before it is recycled                             | `--datastore-conn-max-lifetime=300s`         |
 | `datastore-conn-max-open`             | Maximum number of concurrent connections to open                                    | `--datastore-conn-max-open=10`               |
@@ -200,14 +200,14 @@ The Cloud Spanner driver is currently Beta.
 
 #### Required Parameters
 
-| Parameter | Description | Example |
-|----------------------|--|--|
+| Parameter          | Description          | Example                     |
+| ------------------ | -------------------- | --------------------------- |
 | `datastore-engine` | the datastore engine | `--datastore-engine memory` |
 
 #### Optional Parameters
 
 | Parameter                             | Description                                                                         | Example                                      |
-|---------------------------------------|-------------------------------------------------------------------------------------|----------------------------------------------|
+| ------------------------------------- | ----------------------------------------------------------------------------------- | -------------------------------------------- |
 | `datastore-revision-fuzzing-duration` | Sets a fuzzing window on all zookies/zedtokens                                      | `--datastore-revision-fuzzing-duration=50ms` |
 | `datastore-gc-window`                 | Sets the window outside of which overwritten relationships are no longer accessible | `--datastore-gc-window=1s`                   |
 | `datastore-readonly`                  | Places the datastore into readonly mode                                             | `--datastore-readonly=true`                  |
