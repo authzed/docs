@@ -144,7 +144,6 @@ EOF
 import (
 	"context"
 	"log"
-	"os"
 ·
 	pb "github.com/authzed/authzed-go/proto/authzed/api/v1"
 	"github.com/authzed/authzed-go/v1"
@@ -178,7 +177,7 @@ func main() {
 	}
 ·
 	request := &pb.WriteSchemaRequest{Schema: schema}
-	resp, err := client.WriteSchema(context.Background(), request)
+	_, err = client.WriteSchema(context.Background(), request)
 	if err != nil {
 		log.Fatalf("failed to write schema: %s", err)
 	}
