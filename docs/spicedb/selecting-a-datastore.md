@@ -178,6 +178,52 @@ The Cloud Spanner driver is currently Beta.
 | `datastore-revision-fuzzing-duration` | Sets a fuzzing window on all zookies/zedtokens                                      | `--datastore-revision-fuzzing-duration=50ms` |
 | `datastore-readonly`                  | Places the datastore into readonly mode                                             | `--datastore-readonly=true`                  |
 
+## MySQL
+
+### Usage Notes
+
+- Recommended for single-region deployments
+- Resiliency to failures only when MySQL is operating with a follower and proper failover
+- Setup and operational complexity of running MySQL
+- Does not rely on any non-standard MySQL extensions
+- Compatible with managed MySQL services
+
+### Developer Notes
+
+- Code can be found [here][mysql-code]
+- Documentation can be found [here][mysql-godoc]
+- Implemented using [pgx][pgx] for a SQL driver and connection pooling
+- Stores migration revisions using the same strategy as [Alembic][alembic]
+- Implements its own [MVCC][mvcc] model by storing its data with transaction IDs
+
+[mysql-code]: https://github.com/authzed/spicedb/tree/main/internal/datastore/mysql
+[mysql-godoc]: https://pkg.go.dev/github.com/authzed/spicedb/internal/datastore/mysql
+[pgx]: https://pkg.go.dev/gopkg.in/jackc/pgx.v3
+[alembic]: https://alembic.sqlalchemy.org/en/latest/
+[mvcc]: https://en.wikipedia.org/wiki/Multiversion_concurrency_control
+
+### Configuration
+
+#### Required Parameters
+
+| Parameter            | Description                                | Example                                                                          |
+| -------------------- | ------------------------------------------ | -------------------------------------------------------------------------------- |
+| `datastore-engine`   | the datastore engine                       | `--datastore-engine=postgres`                                                    |
+| `datastore-conn-uri` | connection string used to connect to MySQL | `--datastore-conn-uri="username:password@(localhost:3306)/mysql?parseTime=true"` |
+
+#### Optional Parameters
+
+| Parameter                             | Description                                                                         | Example                                      |
+| ------------------------------------- | ----------------------------------------------------------------------------------- | -------------------------------------------- |
+| `datastore-conn-max-idletime`         | Maximum idle time for a connection before it is recycled                            | `--datastore-conn-max-idletime=60s`          |
+| `datastore-conn-max-lifetime`         | Maximum lifetime for a connection before it is recycled                             | `--datastore-conn-max-lifetime=300s`         |
+| `datastore-conn-max-open`             | Maximum number of concurrent connections to open                                    | `--datastore-conn-max-open=10`               |
+| `datastore-conn-min-open`             | Minimum number of concurrent connections to open                                    | `--datastore-conn-min-open=1`                |
+| `datastore-query-split-size`          | The (estimated) query size at which to split a query into multiple queries          | `--datastore-query-split-size=5kb`           |
+| `datastore-gc-window`                 | Sets the window outside of which overwritten relationships are no longer accessible | `--datastore-gc-window=1s`                   |
+| `datastore-revision-fuzzing-duration` | Sets a fuzzing window on all zookies/zedtokens                                      | `--datastore-revision-fuzzing-duration=50ms` |
+| `datastore-readonly`                  | Places the datastore into readonly mode                                             | `--datastore-readonly=true`                  |
+
 ## memdb
 
 ### Usage Notes
