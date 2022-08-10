@@ -122,7 +122,7 @@ Or via a token it was granted, by use of a reference to a *subject relation*:
 definition token {}
 
 definition service {
-    token: token
+    relation token: token
 }
 
 definition resource {
