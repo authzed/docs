@@ -135,6 +135,15 @@ Available metrics include operational information about the Go runtime and servi
 Every entrypoint that runs an API server is instrumented to support [OpenTelemetry][otel] for distributed tracing.
 Currently, [only Jaeger is supported][otel-collector-issue], but in the future, SpiceDB will support generic [OpenTelemetry Collectors][otel-collector].
 
-[otel]: https://openetelemetry.io
+[otel]: https://opentelemetry.io
 [otel-collector-issue]: https://github.com/authzed/spicedb/issues/14
 [otel-collector]: https://opentelemetry.io/docs/collector/
+
+## Available Integrations
+
+SpiceDB supports [integrations] with a variety of backing datastores, identity providers, and tools.
+
+Looking for support with additional integrations? Join the SpiceDB community by filing a [GitHub issue] or providing a contribution.
+
+[integrations]: https://authzed.com/integrations
+[GitHub issue]: https://github.com/authzed/spicedb/issues
