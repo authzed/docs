@@ -162,7 +162,7 @@ The Cloud Spanner driver is currently Beta.
 | Parameter            | Description                           | Example                                                                                  |
 | -------------------- | ------------------------------------- | ---------------------------------------------------------------------------------------- |
 | `datastore-engine`   | the datastore engine                  | `--datastore-engine=mysql`
-| `datastore-conn-uri` | connection string used to connect to MySQL | `--datastore-conn-uri="mysql://mysql:password@localhost:5432/spicedb?sslmode=disable"` |                                                  |
+| `datastore-conn-uri` | connection string used to connect to MySQL | `--datastore-conn-uri="mysql:password@localhost:5432/spicedb?sslmode=disable"` |                                                  |
 
 #### Optional Parameters
 
