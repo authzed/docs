@@ -1,10 +1,22 @@
-# Pricing on Authzed
+# SpiceDB Serverless
 
-[Authzed], the managed permissions database service, has a **usage** based pricing model.
+[SpiceDB Serverless] is the Authzed product for self-service, shared-hardware SpiceDB clusters.
 
-Customers are charged monthly based on two dimensions: the number of [relationships] stored in Authzed, and the number of dispatched operations made when performing [API] calls.
+- This is a fully managed service run by the experts at Authzed.
+- Clusters are autonomously configured and scaled without any configuration necessary.
+- Provision and manage permission systems and view real time metrics all from one place: our dashboard.
+
+[SpiceDB Serverless]: https://app.authzed.com/?utm_source=docs&utm_content=spicedb+serverless
+
+
+## Pricing
+
+The billing model for this service is **usage-based**.
+
+Customers are **charged monthly** based on two dimensions: the number of [relationships] stored in Authzed, and the number of [dispatched operations] made when performing [API] calls.
 
 [relationships]: /reference/glossary#relationship
+[dispatched operations]: #what-counts-as-a-dispatched-operation
 [API]: /reference/api
 [Authzed]: https://app.authzed.com
 
@@ -13,23 +25,23 @@ Customers are charged monthly based on two dimensions: the number of [relationsh
 | Relationships         | $1 per 1 million    |
 | Dispatched Operations | $1 per 1 million    |
 
-## Do you have a free tier?
+### Do you have a free tier?
 
 Yes. Any amount less than 1 million relationships or dispatched operations is considered a charge of `$0`.
 
 A credit card is required to be entered for production permissions systems.
 
-## How do I enable and configure billing?
+### How do I enable and configure billing?
 
-Click the `Billing` tab in the left hand side column of [Authzed].
+Click the `Billing` tab in your [Authzed] dashboard.
 
-## Viewing operation counts
+### Viewing operation counts
 
 The count of dispatched and cached operations can be viewed in the `Billing` panel of the permissions system view on [Authzed].
 
 <img src="/img/billing-metrics.png"/>
 
-## What counts as a "dispatched operation"?
+### What counts as a "dispatched operation"?
 
 A **dispatched operation** is a single *non-cached* operation performed by Authzed to resolve the answer to the API request.
 
@@ -37,15 +49,15 @@ The number of dispatched operations depends heavily on the type of [API] being c
 
 [schema]: /guides/schema
 
-### API Dispatch Estimation
+#### API Dispatch Estimation
 
-Below are the estimations for determining the worse-cast dispatch count for an API call:
+Below are the estimations for determining the worst-case dispatch count for an API call:
 
 | API                    | Dispatch Count                                      |
 |------------------------|-----------------------------------------------------|
-| [CheckPermission]      | The number of non-cached subproblems to be computed |
-| [ExpandPermissionTree] | The number of non-cached subproblems to be computed |
-| [LookupResources]      | The number of non-cached subproblems to be computed |
+| [CheckPermission]      | The number of non-cached sub-problems to be computed |
+| [ExpandPermissionTree] | The number of non-cached sub-problems to be computed |
+| [LookupResources]      | The number of non-cached sub-problems to be computed |
 | [WriteRelationships]   | The number of preconditions + `1` for the write     |
 | [DeleteRelationships]  | The number of preconditions + `1` for the delete    |
 
@@ -55,7 +67,7 @@ Below are the estimations for determining the worse-cast dispatch count for an A
 [WriteRelationships]: https://buf.build/authzed/api/docs/main:authzed.api.v1#WriteRelationships
 [DeleteRelationships]: https://buf.build/authzed/api/docs/main:authzed.api.v1#DeleteRelationships
 
-### Example: CheckPermission
+#### Example: CheckPermission
 
 Imagine a permissions system with the following schema:
 
@@ -74,7 +86,7 @@ Issuing a [CheckPermission] call for `view` permission on a `document` will have
 
 The dispatched operation count for this API call will **at most** be `3`, with lower counts based whether the user was found early, whether the problems have been cached, or other optimizations automatically performed by Authzed.
 
-### Finding out the dispatched count
+#### Finding out the dispatched count
 
 To find the dispatched count of an API operation, the [zed] tool can be used with the `--log-level debug` flag:
 

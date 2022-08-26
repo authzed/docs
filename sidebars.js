@@ -11,6 +11,7 @@ module.exports = {
       label: 'REST API Reference',
       href: 'https://app.swaggerhub.com/apis-docs/authzed/authzed/1.0',
     },
+    'support',
     {
       type: 'category',
       label: 'Getting Started',
@@ -36,11 +37,12 @@ module.exports = {
     },
     {
       type: 'category',
-      label: 'Authzed',
+      label: 'Products',
       collapsed: true,
       items: [
-        'authzed/pricing',
-        'authzed/enterprise',
+        'products/serverless',
+        'products/dedicated',
+        'products/enterprise',
       ],
     },
     {
