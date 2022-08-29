@@ -80,4 +80,3 @@ You can read more about keyless container signing and verification in the [cosig
     - 3 4-vCPU Nodes
     - Project Contour Ingress 1.19+
     - Certmanager 1.6+
-

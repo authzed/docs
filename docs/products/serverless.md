@@ -8,7 +8,6 @@
 
 [SpiceDB Serverless]: https://app.authzed.com/?utm_source=docs&utm_content=spicedb+serverless
 
-
 ## Pricing
 
 The billing model for this service is **usage-based**.

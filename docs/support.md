@@ -15,7 +15,6 @@ Please be respectful and read over the community [Code of Conduct] before intera
 [GitHub issues]: https://github.com/authzed/spicedb/issues
 [Code of Conduct]: https://github.com/authzed/spicedb/blob/main/CODE-OF-CONDUCT.md
 
-
 ## Gold Support
 
 Gold Support is a paid plan that offers an additional escalation for tickets with an initial-response within 1 hour, 24/7.
