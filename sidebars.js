@@ -37,6 +37,16 @@ module.exports = {
     },
     {
       type: 'category',
+      label: 'Operator',
+      collapsed: true,
+      items: [
+        'operator/installing',
+        'operator/configuration',
+        'operator/updating',
+      ],
+    },
+    {
+      type: 'category',
       label: 'Products',
       collapsed: true,
       items: [
