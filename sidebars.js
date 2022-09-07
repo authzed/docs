@@ -30,6 +30,7 @@ module.exports = {
       collapsed: true,
       items: [
         'spicedb/installing',
+        'spicedb/operator',
         'spicedb/feature-overview',
         'spicedb/selecting-a-datastore',
         'spicedb/updating',

@@ -6,6 +6,14 @@ Want to use SpiceDB as a service without the need to update? Visit the [Authzed 
 
 [Authzed Dashboard]: https://app.authzed.com
 
+## Operator
+
+The recommended way to update SpiceDB is to use the [operator].
+Please see the [operator-specific update docs] for various update options.
+
+[operator]: /spicedb/operator
+[operator-specific update docs]: /spicedb/operator#updating-managed-spicedbclusters
+
 ## Learning about updates
 
 ### Being notified of updates

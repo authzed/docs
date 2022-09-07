@@ -1,15 +1,24 @@
 # Installing SpiceDB
 
 :::info
-Want to use SpiceDB as a service without any installation? Visit the [Authzed Dashboard] to create a new permissions system
+Want to use SpiceDB as a service without any installation? Visit the [Authzed Dashboard] to create a new permissions system, or check out [Authzed Dedicated]
 :::
 
 [Authzed Dashboard]: https://app.authzed.com
+[Authzed Dedicated]: https://authzed.com/pricing
 
-## Install options
+## Installing with the Operator
+
+The recommended way to install SpiceDB for a production system is with the operator on Kubernetes, see the [operator docs] for installation details.
+
+The other installation options below can be helpful to test SpiceDB locally, or to run on a non-Kubernetes system.
+
+[operator docs]: /spicedb/operator
+
+## Other install options
 
 :::warning
-The commands documented do not configure best practices for production deployments.
+The commands documented here do not configure best practices for production deployments.
 For example, TLS is disabled and data is not persisted when SpiceDB is shut down.
 See the guide for [selecting a datastore].
 :::
