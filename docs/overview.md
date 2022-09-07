@@ -8,7 +8,7 @@ summary: "Documentation for Authzed, the planet-scale, serverless database platf
 <div style={{textAlign: 'center'}}>
 <img src="/graph.svg"/>
 <div class="overview-top-buttons">
-<a href="/operator/installing" class="btn">
+<a href="/spicedb/operator" class="btn">
     <i class="fa-solid fa-cubes"></i>
     Install the Operator
 </a>

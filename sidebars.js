@@ -30,19 +30,10 @@ module.exports = {
       collapsed: true,
       items: [
         'spicedb/installing',
+        'spicedb/operator',
         'spicedb/feature-overview',
         'spicedb/selecting-a-datastore',
         'spicedb/updating',
-      ],
-    },
-    {
-      type: 'category',
-      label: 'Operator',
-      collapsed: true,
-      items: [
-        'operator/installing',
-        'operator/configuration',
-        'operator/updating',
       ],
     },
     {

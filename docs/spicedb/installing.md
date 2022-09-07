@@ -1,10 +1,11 @@
 # Installing SpiceDB
 
 :::info
-Want to use SpiceDB as a service without any installation? Visit the [Authzed Dashboard] to create a new permissions system
+Want to use SpiceDB as a service without any installation? Visit the [Authzed Dashboard] to create a new permissions system, or check out [Authzed Dedicated]
 :::
 
 [Authzed Dashboard]: https://app.authzed.com
+[Authzed Dedicated]: https://authzed.com/pricing
 
 ## Installing with the Operator
 
@@ -12,7 +13,7 @@ The recommended way to install SpiceDB for a production system is with the opera
 
 The other installation options below can be helpful to test SpiceDB locally, or to run on a non-Kubernetes system.
 
-[operator docs]: /operator/installing.md
+[operator docs]: /spicedb/operator
 
 ## Other install options
 
