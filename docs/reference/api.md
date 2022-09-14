@@ -28,6 +28,9 @@ This is accomplished by using the [gRPC Gateway], which translates requests into
 The API is documented via [OpenAPI], but may have breaking changes in the future.
 Once the API has stablized, this functionality will become available for Authzed users.
 
+Learn more about the HTTP API by reading [Have you met...our HTTP API?].
+
+[Have you met...our HTTP API?]: https://authzed.com/blog/authzed-http-api/
 [gRPC Gateway]: https://github.com/grpc-ecosystem/grpc-gateway
 [OpenAPI]: https://petstore.swagger.io/?url=https://raw.githubusercontent.com/authzed/authzed-go/main/proto/apidocs.swagger.json
 
