@@ -22,6 +22,7 @@ module.exports = {
         'guides/defining-a-subject-type',
         'guides/writing-relationships',
         'guides/validation-and-testing',
+        'guides/debugging',
       ],
     },
     {
