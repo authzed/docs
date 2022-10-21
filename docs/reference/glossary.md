@@ -88,7 +88,7 @@ A Policy Engine is software that process programs called _policies_ in order to 
 Policies are expressed in _policy languages_ that vary depending on the engine.
 Some languages are very limited in functionality, while others are [Turing Complete].
 
-[Turing Complete]: https://en.wikipedia.org/wiki/Turing_completeness
+[turing complete]: https://en.wikipedia.org/wiki/Turing_completeness
 
 In permission systems, policy engines are used to determine whether or not a _subject_ has access to perform an _action_ on an _object_.
 This can occur at various points during a request's lifecycle:
@@ -124,7 +124,7 @@ Example: `relation viewer: user`
 
 ### Subject Relation
 
-A "subject relation" is the use of a relation on the *right* side of another relation, to indicate that all subjects found within *that* relation are to be included in the parent relation.
+A "subject relation" is the use of a relation on the _right_ side of another relation, to indicate that all subjects found within _that_ relation are to be included in the parent relation.
 
 For example the subject relation `group#member` in `relation viewer: group#member` indicates that any `member` of any `group` has the "role" of `viewer`.
 
@@ -194,7 +194,7 @@ Excluding implementation details that are vague or not described in the paper, S
 - Zanzibar represents users as numerical values that are special-cased as a distinct concept.
   SpiceDB leaves modeling users as an exercise to the schema author so that they can create more complex representations of users.
 
-- SpiceDB supports an optional prefix for Object Types that can be used for enforcing security boundaries when multiple tenants are using the same deployment.
+- SpiceDB supports an optional prefix for Object Types that can be used for logically separating types when multiple tenants are using the same deployment.
 
 - SpiceDB has an additional API endpoint, [authzed.api.v1.LookupResources][lookup], that lists resources to which the subject has a particular permission.
 
@@ -202,16 +202,16 @@ Excluding implementation details that are vague or not described in the paper, S
 
 ### Mapping Terminology from the Zanzibar paper
 
-| Zanzibar Term      | SpiceDB Term        |
-|--------------------|---------------------|
-| Tuple              | Relationship        |
-| Namespace          | Object Type         |
-| Namespace Config   | Schema              |
-| Userset            | Subject Reference   |
-| User               | Subject Reference   |
-| Zookie             | ZedToken            |
-| Tupleset           | Relationship Set    |
-| Tupleset Filter    | Relationship Filter |
+| Zanzibar Term    | SpiceDB Term        |
+| ---------------- | ------------------- |
+| Tuple            | Relationship        |
+| Namespace        | Object Type         |
+| Namespace Config | Schema              |
+| Userset          | Subject Reference   |
+| User             | Subject Reference   |
+| Zookie           | ZedToken            |
+| Tupleset         | Relationship Set    |
+| Tupleset Filter  | Relationship Filter |
 
 ## ZedToken
 
