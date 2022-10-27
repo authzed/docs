@@ -268,7 +268,7 @@ document:specificdocument#writer:
 - '[user:differentuser] is <document:specificdocument#writer>'
 ```
 
-## Definining permissions
+## Defining permissions
 
 The above configuration and validation exposes one issue, however: users are assigned to a single relation `writer` or `reader`, but what if we wanted all users who could write a document to also be able to read a document?
 
