@@ -1,57 +1,76 @@
 # Updating SpiceDB
 
-:::info
-Want to use SpiceDB as a service without the need to update? Visit the [Authzed Dashboard] to create a new permissions system
+Like all actively developed software, SpiceDB has new versions of the software released on a regular cadence.
+Updates are published to the [SpiceDB GitHub releases page] and announced via [Twitter] and [Discord].
+
+Transitioning between versions is often as simple as executing a new binary or container, but there are times when updates are more complex.
+For example, releases that include [datastore migrations] will require that users update to specific versions and perform a series of actions in order to avoid downtime.
+Another notable example is when a security fix follows our embargo program for all customers before being made public.
+In these cases, the release page should contain the specific instructions necessary for updating.
+
+:::warning
+SpiceDB attempts to main compatibility across each version and its following minor version.
+You should refer to the Upgrade Notes section of each release to find instructions for updating to avoid downtime.
 :::
 
-[Authzed Dashboard]: https://app.authzed.com
+[SpiceDB GitHub releases page]: https://github.com/authzed/spicedb/releases
+[Twitter]: https://twitter.com/authzed
+[Discord]: https://authzed.com/discord
+[datastore migrations]: #what-are-migrations
 
-## Operator
+## Migrations
 
-The recommended way to update SpiceDB is to use the [operator].
-Please see the [operator-specific update docs] for various update options.
+### What are migrations?
 
-[operator]: /spicedb/operator
-[operator-specific update docs]: /spicedb/operator#updating-managed-spicedbclusters
+For all software that maintains data, there can be updates to code that rely on also updating the data, too.
+The process of updating data to use new versions of software is called _migrating_.
 
-## Learning about updates
+SpiceDB users will see migrations crop up in two places: when they update versions of SpiceDB and when they write backwards incompatible changes to their schema.
+This document's focus is on the former.
 
-### Being notified of updates
+### SpiceDB migration tooling
 
-Join the [SpiceDB Discord] to be notified of new releases of SpiceDB.
+SpiceDB ships with a migration command: `spicedb migrate`.
+This command powers all of Authzed products' zero down-time migrations, so it's guaranteed to be battle-tested and supportable.
+And while you are free to explore other tools to help you migrate, we cannot recommend them.
 
-[SpiceDB Discord]: https://authzed.com/discord
-
-### Checking for updates
-
-Releases of SpiceDB can be found on the [SpiceDB Releases] page on GitHub.
-
-[SpiceDB Releases]: https://github.com/authzed/spicedb/releases
-
-## Applying an update
-
-Applying an update for SpiceDB requires three steps:
-
-### 1. Download new release of SpiceDB
-
-Download the new release from the [SpiceDB Releases] page or from [DockerHub]
-
-[DockerHub]: https://hub.docker.com/r/authzed/spicedb
-
-### 2. Migrate the datastore
-
-Run `spicedb migrate head` to migrate the existing cluster's datastore forward:
+If you do not care about causing downtime or you are bringing up a new cluster, you can always run the following command to migrate:
 
 ```sh
 spicedb migrate head
 ```
 
-:::note
-**Unless otherwise documented**, this is a backward compatible change
-:::
+In most cases, this command will not actually cause downtime, but one should confirm that's the case before executing on production environments with uptime requirements.
 
-### 3. Deploy the new release of SpiceDB
+## Recommendations
 
-Deploy the new release of SpiceDB using your deployment system.
+### Managed services
 
-If possible, it is recommended to use a rolling deployment, to ensure that the existing cluster can handle traffic while the nodes or pods for the new version come into service.
+Rather than handling updates yourself, SpiceDB is offered as a [managed service].
+Depending on the service, the update strategy varies:
+
+- SpiceDB Serverless upgrades seamlessly to track the latest release (and sometimes newer)
+- SpiceDB Dedicated users can select the desired version of SpiceDB
+
+No matter which service you select, zero-downtime migrations are always performed.
+
+[managed service]: https://authzed.com/pricing
+
+### Operator
+
+If you are operating SpiceDB yourself, the recommended update workflow is to use the [SpiceDB Operator].
+Please see the [operator-specific update docs] for various update options.
+
+[SpiceDB Operator]: /spicedb/operator
+[operator-specific update docs]: /spicedb/operator#updating-managed-spicedbclusters
+
+### Sequential Updates
+
+We highly recommend updating sequentially through SpiceDB minor versions (e.g. 1.0.0 -> 1.1.0) to avoid headaches.
+Jumping many versions at once might cause you to miss instructions for a particular release that could lead to downtime.
+The [SpiceDB Operator](#operator) automates this process.
+
+### Rolling Deployments
+
+We highly recommend a deployment orchestrator to help coordinate rolling out new instances of SpiceDB without dropping traffic.
+SpiceDB has been developed with an eye towards running on Kubernetes, but other platforms should be well supported.
