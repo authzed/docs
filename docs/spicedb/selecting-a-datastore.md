@@ -154,10 +154,10 @@ The available strategies are:
 
 #### Required Parameters
 
-| Parameter            | Description                           | Example                                                                                  |
-| -------------------- | ------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `datastore-engine`   | the datastore engine                  | `--datastore-engine=mysql`
-| `datastore-conn-uri` | connection string used to connect to MySQL | `--datastore-conn-uri="mysql:password@localhost:5432/spicedb?sslmode=disable"` |                                                  |
+| Parameter            | Description                                | Example                                                                        |
+| -------------------- | ------------------------------------------ | ------------------------------------------------------------------------------ | --- |
+| `datastore-engine`   | the datastore engine                       | `--datastore-engine=mysql`                                                     |
+| `datastore-conn-uri` | connection string used to connect to MySQL | `--datastore-conn-uri="mysql:password@localhost:5432/spicedb?sslmode=disable"` |     |
 
 #### Optional Parameters
 
@@ -169,7 +169,7 @@ The available strategies are:
 | `datastore-query-split-size`          | The (estimated) query size at which to split a query into multiple queries          | `--datastore-query-split-size=5kb`           |
 | `datastore-gc-window`                 | Sets the window outside of which overwritten relationships are no longer accessible | `--datastore-gc-window=1s`                   |
 | `datastore-revision-fuzzing-duration` | Sets a fuzzing window on all zookies/zedtokens                                      | `--datastore-revision-fuzzing-duration=50ms` |
-| `datastore-mysql-table-prefix string` | Prefix to add to the name of all SpiceDB database tables                            | `--datastore-mysql-table-prefix=spicedb`     |  
+| `datastore-mysql-table-prefix string` | Prefix to add to the name of all SpiceDB database tables                            | `--datastore-mysql-table-prefix=spicedb`     |
 | `datastore-readonly`                  | Places the datastore into readonly mode                                             | `--datastore-readonly=true`                  |
 
 ## PostgreSQL
@@ -220,9 +220,15 @@ The available strategies are:
 
 ### Usage Notes
 
-- Fully ephemeral; no data is lost the process is terminated
+- Fully ephemeral; _all_ data is lost when the process is terminated
 - Intended for usage with SpiceDB itself and testing application integrations
 - Cannot be ran highly-available as multiple instances will not share the same in-memory data
+
+:::note
+If you need an ephemeral datastore designed for validation or testing, see the test server system in [Validating and Testing]
+:::
+
+[validating and testing]: /guides/validation-and-testing
 
 ### Developer Notes
 
