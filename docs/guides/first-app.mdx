@@ -41,6 +41,7 @@ Each tool is installed with its ecosystem's package management tools:
   {label: 'Python', value: 'python'},
   {label: 'Java', value: 'java'},
   {label: 'Ruby', value: 'ruby'},
+  {label: 'Node (JS/TS)', value: 'node'},
 ]}>
   <TabItem value="shell">
     <CodeBlock lang="shell">
@@ -83,6 +84,13 @@ gem install authzed
 ```
 
   </TabItem>
+  <TabItem value="node">
+
+```shell
+npm i @authzed/authzed-node
+```
+
+  </TabItem>
 </Tabs>
 
 ## Defining and Applying a Schema
@@ -122,6 +130,7 @@ With a schema designed, we can now move on using our client to to apply that sch
   {label: 'Python', value: 'python'},
   {label: 'Java', value: 'java'},
   {label: 'Ruby', value: 'ruby'},
+  {label: 'Node (JS/TS)', value: 'node'},
 ]}>
   <TabItem value="shell">
 
@@ -296,6 +305,43 @@ resp = client.schema_service.write_schema(
   Authzed::Api::V1::WriteSchemaRequest.new(schema: schema)
 )`}</SampleCodeBlock>
   </TabItem>
+  <TabItem value="node">
+<SampleCodeBlock lang="ts">{`import {
+  ClientSecurity,
+  NewClient,
+  ObjectReference,
+  SubjectReference,
+  WriteSchemaRequest,
+  WriteRelationshipsRequest,
+  Relationship,
+  RelationshipUpdate,
+} from from '@authzed/authzed-node/v1';
+·
+const { promises: client } = NewClient(
+  '{{ token }}',
+{% if not authzed %}
+  '{{ endpoint }}',
+  // NOTE: Remove if SpiceDB is behind TLS
+  ClientSecurity.INSECURE_PLAINTEXT_CREDENTIALS
+{% endif %}
+);
+·
+const schema = \`definition {{ tenant }}/user {}
+·
+definition {{ tenant }}/post {
+	relation reader: {{ tenant }}/user
+	relation writer: {{ tenant }}/user\n
+	permission read = reader + writer
+	permission write = writer
+}\`;
+·
+const schemaRequest = WriteSchemaRequest.create({
+  schema: schema,
+});
+·
+const schemaResponse = await client.writeSchema(schemaRequest)
+`}</SampleCodeBlock>
+  </TabItem>
 </Tabs>
 
 :::note
@@ -329,6 +375,7 @@ You can also [touch and delete] relationships, but those are not as immediately 
   {label: 'Python', value: 'python'},
   {label: 'Java', value: 'java'},
   {label: 'Ruby', value: 'ruby'},
+  {label: 'Node (JS/TS)', value: 'node'},
 ]}>
   <TabItem value="shell">
 
@@ -559,6 +606,73 @@ resp = client.permissions_service.write_relationships(
 ·
 puts resp.written_at.token`}</SampleCodeBlock>
   </TabItem>
+  <TabItem value="node">
+<SampleCodeBlock lang="ts">{`import {
+  ClientSecurity,
+  NewClient,
+  ObjectReference,
+  SubjectReference,
+  WriteSchemaRequest,
+  WriteRelationshipsRequest,
+  Relationship,
+  RelationshipUpdate,
+} from from '@authzed/authzed-node/v1';
+·
+const { promises: client } = NewClient(
+  '{{ token }}',
+{% if not authzed %}
+  '{{ endpoint }}',
+  // NOTE: Remove if SpiceDB is behind TLS
+  ClientSecurity.INSECURE_PLAINTEXT_CREDENTIALS
+{% endif %}
+);
+·
+const resource = ObjectReference.create({
+  objectType: '{{ tenant }}/post',
+  objectId: '1',
+});
+·
+const emilia = ObjectReference.create({
+  objectType: '{{ tenant }}/user',
+  objectId: 'emilia',
+});
+·
+const beatrice = ObjectReference.create({
+  objectType: '{{ tenant }}/user',
+  objectId: 'beatrice',
+});
+·
+const writeRequest = WriteRelationshipsRequest.create({
+  updates: [
+    // Emilia is a Writer on Post 1
+    RelationshipUpdate.create({
+      relationship: Relationship.create({
+        resource: resource,
+        relation: 'writer',
+        subject: SubjectReference.create({
+          object: emilia,
+        }),
+      }),
+      operation: RelationshipUpdate_Operation.CREATE,
+    }),
+    //  Beatrice is a Reader on Post 1
+    RelationshipUpdate.create({
+      relationship: Relationship.create({
+        resource: resource,
+        relation: 'reader',
+        subject: SubjectReference.create({
+          object: beatrice,
+        }),
+      }),
+      operation: RelationshipUpdate_Operation.CREATE,
+    }),
+  ],
+});
+·
+const response = await client.writeRelationships(writeRequest)
+·
+console.log(response)`}</SampleCodeBlock>
+  </TabItem>
 </Tabs>
 
 ## Checking Permissions
@@ -582,6 +696,7 @@ The following examples demonstrate exactly that:
   {label: 'Python', value: 'python'},
   {label: 'Java', value: 'java'},
   {label: 'Ruby', value: 'ruby'},
+  {label: 'Node (JS/TS)', value: 'node'},
 ]}>
   <TabItem value="shell">
 
@@ -857,6 +972,78 @@ resp = client.permissions_service.check_permission(Authzed::Api::V1::CheckPermis
 raise unless Authzed::Api::V1::CheckPermissionResponse::Permissionship.resolve(resp.permissionship) ==
   Authzed::Api::V1::CheckPermissionResponse::Permissionship::PERMISSIONSHIP_NO_PERMISSION
 `}</SampleCodeBlock>
+  </TabItem>
+  <TabItem value="node">
+<SampleCodeBlock lang="ts">{`import {
+  ClientSecurity,
+  NewClient,
+  ObjectReference,
+  SubjectReference,
+  WriteSchemaRequest,
+  WriteRelationshipsRequest,
+  Relationship,
+  RelationshipUpdate,
+} from from '@authzed/authzed-node/v1';
+·
+const { promises: client } = NewClient(
+  '{{ token }}',
+{% if not authzed %}
+  '{{ endpoint }}',
+  // NOTE: Remove if SpiceDB is behind TLS
+  ClientSecurity.INSECURE_PLAINTEXT_CREDENTIALS
+{% endif %}
+);
+·
+const resource = ObjectReference.create({
+  objectType: '{{ tenant }}/post',
+  objectId: '1',
+});
+·
+const emilia = ObjectReference.create({
+  objectType: '{{ tenant }}/user',
+  objectId: 'emilia',
+});
+·
+const beatrice = ObjectReference.create({
+  objectType: '{{ tenant }}/user',
+  objectId: 'beatrice',
+});
+·
+const emiliaCanRead = await client.checkPermission(CheckPermissionRequest.create({
+  resource,
+  permission: 'read',
+  subject: SubjectReference.create({
+    object: emilia,
+  }),
+}));
+console.log(emiliaCanRead.permissionship === CheckPermissionResponse_Permissionship.HAS_PERMISSION);
+·
+const emiliaCanWrite = await client.checkPermission(CheckPermissionRequest.create({
+  resource,
+  permission: 'write',
+  subject: SubjectReference.create({
+    object: emilia,
+  }),
+}));
+console.log(emiliaCanWrite.permissionship === CheckPermissionResponse_Permissionship.HAS_PERMISSION);
+·
+const beatriceCanRead = await client.checkPermission(CheckPermissionRequest.create({
+  resource,
+  permission: 'read',
+  subject: SubjectReference.create({
+    object: beatrice,
+  }),
+}));
+console.log(beatriceCanRead.permissionship === CheckPermissionResponse_Permissionship.HAS_PERMISSION);
+·
+const beatriceCanWrite = await client.checkPermission(CheckPermissionRequest.create({
+  resource,
+  permission: 'write',
+  subject: SubjectReference.create({
+    object: beatrice,
+  }),
+}));
+console.log(beatriceCanWrite.permissionship === CheckPermissionResponse_Permissionship.HAS_PERMISSION);`}</SampleCodeBlock>
   </TabItem>
 </Tabs>
 
