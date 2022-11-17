@@ -8,8 +8,8 @@ The **Schema** of [SpiceDB] or a Permissions System in [Authzed] defines the typ
 
 The Schema Language's extension for use on a file system is `.zed`
 
-[SpiceDB]: https://github.com/authzed/spicedb
-[Authzed]: https://app.authzed.com
+[spicedb]: https://github.com/authzed/spicedb
+[authzed]: https://app.authzed.com
 
 ## Definitions
 
@@ -38,7 +38,7 @@ Note that the examples are unprefixed. You'll need to add the prefix from your p
 A `relation` defines how two objects (or an object and subject) can relate to one another.
 For example, a `reader` on a document, or a `member` of a group.
 
-Relations are always defined with a *name* and one (or more) allowed *types* of objects that can be the subjects of that relation:
+Relations are always defined with a _name_ and one (or more) allowed _types_ of objects that can be the subjects of that relation:
 
 ```zed
 /**
@@ -81,14 +81,14 @@ definition group {
 ```
 
 :::note
-Subject Relations are useful in RBAC-style permissions systems to grant "roles" to *sets* of subjects, such as the members of a team.
+Subject Relations are useful in RBAC-style permissions systems to grant "roles" to _sets_ of subjects, such as the members of a team.
 :::
 
 ### Wildcards
 
-Relations can also specify wildcards to indicate that a grant can be made to the resource *type* as a whole, rather than a particular resource. This allows *public* access to be granted to a particular subject type.
+Relations can also specify wildcards to indicate that a grant can be made to the resource _type_ as a whole, rather than a particular resource. This allows _public_ access to be granted to a particular subject type.
 
-For example, a `viewer` might indicate that *all* users can be granted the ability to view the resource:
+For example, a `viewer` might indicate that _all_ users can be granted the ability to view the resource:
 
 ```zed
 definition user {}
@@ -101,13 +101,13 @@ definition resource {
 }
 ```
 
-To be made public, the wildcard relationship would be written linking the specific document to *any* user:
+To be made public, the wildcard relationship would be written linking the specific document to _any_ user:
 
 ```relationship
 resource:someresource viewer user:*
 ```
 
-Now *any* user is a `viewer` of the resource.
+Now _any_ user is a `viewer` of the resource.
 
 :::warning
 Be **very careful** with wildcard support in your schema! **Only** grant it to read permissions, unless you intend to allow for universal writing.
@@ -115,7 +115,7 @@ Be **very careful** with wildcard support in your schema! **Only** grant it to r
 
 ### Naming Relations
 
-Relations define how one object relates to another object/subject, and thus **relations should be named as adjectives**, read as `{relation name} (of the object)`.
+Relations define how one object relates to another object/subject, and thus **relations should be named as nouns**, read as `{relation name} (of the object)`.
 
 Examples:
 
@@ -128,9 +128,9 @@ Examples:
 
 ## Permissions
 
-A `permission` defines a *computed set of subjects* that have a permission of some kind on the parent object. For example, is a user within the set of users that can `edit` a document.
+A `permission` defines a _computed set of subjects_ that have a permission of some kind on the parent object. For example, is a user within the set of users that can `edit` a document.
 
-Permissions are always defined with a *name* and an *expression* defining how that permission's allowed set of subjects is computed:
+Permissions are always defined with a _name_ and an _expression_ defining how that permission's allowed set of subjects is computed:
 
 ```zed
 definition user {}
@@ -193,7 +193,7 @@ permission can_only_read = reader - writer
 
 #### `->` (Arrow)
 
-Arrows allow for "walking" the heirarchy of relations (and permissions) defined for an object, referencing a permission or relation on the *resulting* object.
+Arrows allow for "walking" the heirarchy of relations (and permissions) defined for an object, referencing a permission or relation on the _resulting_ object.
 
 For example, imagine a schema where a document is found under a folder:
 
@@ -258,13 +258,13 @@ definition document {
 ```
 
 :::note
-It is *recommended* that the right side of all arrows refer to **permissions**, instead
+It is _recommended_ that the right side of all arrows refer to **permissions**, instead
 of relations. This allows for easy nested computation, and is more readable.
 :::
 
 ### Naming Permissions
 
-Permissions define a set of objects that can perform an action or have some attribute, and thus **permissions should be named as verbs or nouns**, read as  `(is/can) {permission name} (the object)`.
+Permissions define a set of objects that can perform an action or have some attribute, and thus **permissions should be named as verbs or nouns**, read as `(is/can) {permission name} (the object)`.
 
 Examples:
 
@@ -276,7 +276,7 @@ Examples:
 | `member` | is member of the object |
 
 :::note
-You'll note that we also used `member` above in the relation example. Defining `member` as a **permission** might be found when you have multiple "ways" a subject can be a member of a resource, thus changing it from a simple relation to a *computed* set of subjects.
+You'll note that we also used `member` above in the relation example. Defining `member` as a **permission** might be found when you have multiple "ways" a subject can be a member of a resource, thus changing it from a simple relation to a _computed_ set of subjects.
 :::
 
 ## Comments
@@ -368,4 +368,4 @@ If a non-recursive resource is used as the starting point for a recursive lookup
 
 Try the schema Language out now in the [Authzed Playground]
 
-[Authzed Playground]: https://play.authzed.com
+[authzed playground]: https://play.authzed.com
