@@ -4,8 +4,8 @@
 Want to use SpiceDB as a service without any installation? Visit the [Authzed Dashboard] to create a new permissions system, or check out [Authzed Dedicated]
 :::
 
-[Authzed Dashboard]: https://app.authzed.com
-[Authzed Dedicated]: https://authzed.com/pricing
+[authzed dashboard]: https://app.authzed.com
+[authzed dedicated]: https://authzed.com/pricing
 
 ## Installing with the Operator
 
@@ -65,7 +65,7 @@ Authzed maintains [GitHub Actions] for integrating SpiceDB with your CI/CD pipel
 - [action-spicedb-validate]: Validates SpiceDB schema files. Schema files can be easily exported from the [playground].
   Equivalent to running `zed validate`.
 
-[GitHub Actions]: https://github.com/features/actions
+[github actions]: https://github.com/features/actions
 [action-spicedb]: https://github.com/authzed/action-spicedb
 [action-spicedb-validate]: https://github.com/authzed/action-spicedb-validate
 [playground]: https://play.authzed.com
@@ -107,6 +107,7 @@ SPICEDB_GRPC_PRESHARED_KEY=somerandomkeyhere spicedb serve
 
 ## Next Steps
 
-Continue with the [Protecting Your First App] guide to learn how to use SpiceDB to protect your application
+Continue with the [Protecting Your First App] guide to learn how to use SpiceDB to protect your application and read [Configuring Dispatching] to learn more about how to configure your SpiceDB for production-level dispatching and caching.
 
-[Protecting Your First App]: /guides/first-app
+[protecting your first app]: /guides/first-app
+[configuring dispatching]: /spicedb/configuring-dispatch

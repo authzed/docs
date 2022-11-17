@@ -22,7 +22,7 @@ module.exports = {
         'guides/defining-a-subject-type',
         'guides/writing-relationships',
         'guides/validation-and-testing',
-        'guides/debugging',
+        'guides/debugging'
       ],
     },
     {
@@ -34,6 +34,7 @@ module.exports = {
         'spicedb/operator',
         'spicedb/feature-overview',
         'spicedb/selecting-a-datastore',
+        'spicedb/configuring-dispatch',
         'spicedb/updating',
       ],
     },
