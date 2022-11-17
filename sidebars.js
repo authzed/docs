@@ -59,6 +59,7 @@ module.exports = {
         'reference/schema-lang',
         'reference/zedtokens-and-zookies',
         'reference/glossary',
+        'reference/caveats',
         {
           type: 'link',
           label: 'API Reference',

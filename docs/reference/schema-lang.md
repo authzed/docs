@@ -13,7 +13,13 @@ The Schema Language's extension for use on a file system is `.zed`
 
 ## Definitions
 
-The top level of a Schema consists of zero or more object `definition`s, which define the types exposed in the permissions system.
+:::note
+To learn more about the experimental caveats feature, please take a look at the [caveats documentation]
+:::
+
+[caveats documentation]: /reference/caveats
+
+The top level of a Schema consists of zero or more object `definition` and `caveat`s, which define the types and caveats exposed in the permissions system.
 
 It might help to think about Object Definitions as similar to a class definition in an Object Oriented programming language.
 
