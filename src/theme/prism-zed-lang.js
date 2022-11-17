@@ -6,6 +6,10 @@
                 lookbehind: true
             },
             {
+                pattern: /(\b(?:caveat)\s+)(\w+\/)?\w*(?=\s*\()/,
+                lookbehind: true
+            },
+            {
                 pattern: /(\b(?:permission)\s+)\w+(?=\s*\=)/,
                 lookbehind: true
             },
@@ -14,6 +18,6 @@
                 lookbehind: true
             },
         ],
-        'keyword': /\b(?:definition|relation|permission)\b(?!\s*=\s*\d)/,
+        'keyword': /\b(?:definition|caveat|relation|permission|with)\b(?!\s*=\s*\d)/,
     });
 }(Prism));
