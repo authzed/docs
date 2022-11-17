@@ -51,7 +51,11 @@ Each tool is installed with its ecosystem's package management tools:
   <TabItem value="go">
 
 ```shell
+mkdir first_app && cd first_app
+go mod init first_app
 go get github.com/authzed/authzed-go
+go mod download github.com/authzed/grpcutil
+go mod tidy
 ```
 
   </TabItem>
