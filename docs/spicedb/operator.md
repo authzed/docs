@@ -2,7 +2,7 @@
 
 The SpiceDB operator is a [Kubernetes Operator] that can manage the installation and lifecycle of SpiceDB Clusters.
 
-[Kubernetes Operator]: https://kubernetes.io/docs/concepts/extend-kubernetes/operator/
+[kubernetes operator]: https://kubernetes.io/docs/concepts/extend-kubernetes/operator/
 
 ## Installing
 
@@ -51,7 +51,7 @@ metadata:
   name: dev
 spec:
   config:
-    datastoreEngine: memory 
+    datastoreEngine: memory
   secretName: dev-spicedb-config
 ---
 apiVersion: v1
@@ -59,7 +59,7 @@ kind: Secret
 metadata:
   name: dev-spicedb-config
 stringData:
-  preshared_key: "averysecretpresharedkey" 
+  preshared_key: "averysecretpresharedkey"
 EOF
 ```
 
@@ -110,7 +110,7 @@ metadata:
 spec:
   config:
     replicas: 2
-    datastoreEngine: cockroachdb 
+    datastoreEngine: cockroachdb
     logLevel: debug
 ```
 
@@ -121,16 +121,17 @@ There may be exceptions to this rule, but they will be documented in release not
 
 The operator also introduces some new flags that are not present on the CLI:
 
-| Flag                         | Description                                                                                                                                                           | Type                         |
-|------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------|
-| image                        | A specific container image to run.                                                                                                                                    | string                       |
-| replicas                     | The number of nodes to run for this cluster.                                                                                                                          | string or int                |
-| skipMigrations               | If true, the operator will not run migrations on changes to this cluster.                                                                                             | string or bool               |
-| tlsSecretName                | The name of a Kubernetes secret in the same namespace to use as the TLS credentials for SpiceDB services.                                                             | string                       |
-| dispatchUpstreamCASecretName | The name of a Kubernetes secret in the same namespace to use as the TLS CA validation. This should be the CA cert that was used to issue the cert in `tlsSecretName`  | string                       |
-| datastoreTLSSecretName       | The name of a Kubernetes secret containing a TLS secret to use when connecting to the datastore.                                                                      | string                       |
-| spannerCredentials           | The name of a Kubernetes secret containing credentials for talking to Cloud Spanner. Typically, this would not be used, in favor of workload identity.                | string                       |
-| extraPodLabels               | A set of additional labels to add to the spicedb pods.                                                                                                                | string or map[string]string  |
+| Flag                         | Description                                                                                                                                                          | Type                        |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| image                        | A specific container image to run.                                                                                                                                   | string                      |
+| replicas                     | The number of nodes to run for this cluster.                                                                                                                         | string or int               |
+| skipMigrations               | If true, the operator will not run migrations on changes to this cluster.                                                                                            | string or bool              |
+| tlsSecretName                | The name of a Kubernetes secret in the same namespace to use as the TLS credentials for SpiceDB services.                                                            | string                      |
+| dispatchUpstreamCASecretName | The name of a Kubernetes secret in the same namespace to use as the TLS CA validation. This should be the CA cert that was used to issue the cert in `tlsSecretName` | string                      |
+| datastoreTLSSecretName       | The name of a Kubernetes secret containing a TLS secret to use when connecting to the datastore.                                                                     | string                      |
+| spannerCredentials           | The name of a Kubernetes secret containing credentials for talking to Cloud Spanner. Typically, this would not be used, in favor of workload identity.               | string                      |
+| extraPodLabels               | A set of additional labels to add to the spicedb pods.                                                                                                               | string or map[string]string |
+| extraPodAnnotations          | A set of additional annotations to add to the spicedb pods.                                                                                                          | string or map[string]string |
 
 All other flags are passed through to SpiceDB without any additional processing.
 
@@ -145,12 +146,12 @@ Example:
 
 ```yaml
 allowedImages:
-- ghcr.io/authzed/spicedb
-- authzed/spicedb
-- quay.io/authzed/spicedb
+  - ghcr.io/authzed/spicedb
+  - authzed/spicedb
+  - quay.io/authzed/spicedb
 allowedTags:
-- v1.11.0
-- v1.10.0
+  - v1.11.0
+  - v1.10.0
 disableImageValidation: false
 imageName: ghcr.io/authzed/spicedb
 imageTag: v1.11.0
@@ -201,7 +202,7 @@ The operator supports different strategies for updating SpiceDB clusters, descri
 
 If keeping on top of updates sounds daunting, [Authzed Dedicated] provides a simple interface for managing SpiceDB upgrades without the hassle.
 
-[Authzed Dedicated]: https://authzed.com/pricing
+[authzed dedicated]: https://authzed.com/pricing
 
 #### Automatic Updates
 
@@ -214,8 +215,8 @@ This is recommended primarily for development environments.
 If you wish to have truly zero-touch upgrades, you can automate the updating of the operator with standard git-ops tooling like [Flux] or [ArgoCD].
 In the future, other update mechanisms may become available.
 
-[Flux]: https://github.com/fluxcd/flux2/
-[ArgoCD]: https://argoproj.github.io/cd/
+[flux]: https://github.com/fluxcd/flux2/
+[argocd]: https://argoproj.github.io/cd/
 
 #### Manual upgrades
 
@@ -226,4 +227,4 @@ Each operator release only "knows" about previous SpiceDB releases.
 Although the operator attempts to be forward-compatible as much as possible, the guarantees are only best-effort.
 We recommend updating SpiceDB operator before updating SpiceDB whenever possible.
 
-[SpiceDB release]: https://github.com/authzed/spicedb/releases/
+[spicedb release]: https://github.com/authzed/spicedb/releases/
