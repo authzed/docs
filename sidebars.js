@@ -34,6 +34,7 @@ module.exports = {
         'spicedb/operator',
         'spicedb/feature-overview',
         'spicedb/selecting-a-datastore',
+        'spicedb/enabling-watch-api',
         'spicedb/configuring-dispatch',
         'spicedb/updating',
       ],
