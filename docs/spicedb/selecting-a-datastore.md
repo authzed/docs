@@ -23,6 +23,12 @@ spicedb migrate head --datastore-engine $DESIRED_ENGINE --datastore-conn-uri $CO
 
 ## CockroachDB
 
+:::note
+If you want to use the Watch API with CockroachDB, an additional capability must be enabled within the database. See [Enabling Watch API for CRDB]
+:::
+
+[enabling watch api for crdb]: enabling-watch-api#crdb
+
 ### Usage Notes
 
 - Recommended for multi-region deployments, with configurable region awareness
@@ -173,6 +179,12 @@ The available strategies are:
 | `datastore-readonly`                  | Places the datastore into readonly mode                                             | `--datastore-readonly=true`                  |
 
 ## PostgreSQL
+
+:::note
+If you want to use the Watch API with PostgreSQL, an additional capability must be enabled within the database. See [Enabling Watch API for PostgreSQL]
+:::
+
+[enabling watch api for postgresql]: enabling-watch-api#postgres
 
 ### Usage Notes
 
