@@ -306,23 +306,14 @@ resp = client.schema_service.write_schema(
 )`}</SampleCodeBlock>
   </TabItem>
   <TabItem value="node">
-<SampleCodeBlock lang="ts">{`import {
-  ClientSecurity,
-  NewClient,
-  ObjectReference,
-  SubjectReference,
-  WriteSchemaRequest,
-  WriteRelationshipsRequest,
-  Relationship,
-  RelationshipUpdate,
-} from from '@authzed/authzed-node/v1';
+<SampleCodeBlock lang="ts">{`import { v1 } from '@authzed/authzed-node';
 ·
-const { promises: client } = NewClient(
+const { promises: client } = v1.NewClient(
   '{{ token }}',
 {% if not authzed %}
   '{{ endpoint }}',
   // NOTE: Remove if SpiceDB is behind TLS
-  ClientSecurity.INSECURE_PLAINTEXT_CREDENTIALS
+  v1.ClientSecurity.INSECURE_PLAINTEXT_CREDENTIALS
 {% endif %}
 );
 ·
@@ -335,11 +326,12 @@ definition {{ tenant }}/post {
 	permission write = writer
 }\`;
 ·
-const schemaRequest = WriteSchemaRequest.create({
+const schemaRequest = v1.WriteSchemaRequest.create({
   schema: schema,
 });
 ·
 const schemaResponse = await client.writeSchema(schemaRequest)
+console.log(schemaResponse)
 `}</SampleCodeBlock>
   </TabItem>
 </Tabs>
@@ -607,64 +599,55 @@ resp = client.permissions_service.write_relationships(
 puts resp.written_at.token`}</SampleCodeBlock>
   </TabItem>
   <TabItem value="node">
-<SampleCodeBlock lang="ts">{`import {
-  ClientSecurity,
-  NewClient,
-  ObjectReference,
-  SubjectReference,
-  WriteSchemaRequest,
-  WriteRelationshipsRequest,
-  Relationship,
-  RelationshipUpdate,
-} from from '@authzed/authzed-node/v1';
+<SampleCodeBlock lang="ts">{`import { v1 } from '@authzed/authzed-node';
 ·
-const { promises: client } = NewClient(
+const { promises: client } = v1.NewClient(
   '{{ token }}',
 {% if not authzed %}
   '{{ endpoint }}',
   // NOTE: Remove if SpiceDB is behind TLS
-  ClientSecurity.INSECURE_PLAINTEXT_CREDENTIALS
+  v1.ClientSecurity.INSECURE_PLAINTEXT_CREDENTIALS
 {% endif %}
 );
 ·
-const resource = ObjectReference.create({
+const resource = v1.ObjectReference.create({
   objectType: '{{ tenant }}/post',
   objectId: '1',
 });
 ·
-const emilia = ObjectReference.create({
+const emilia = v1.ObjectReference.create({
   objectType: '{{ tenant }}/user',
   objectId: 'emilia',
 });
 ·
-const beatrice = ObjectReference.create({
+const beatrice = v1.ObjectReference.create({
   objectType: '{{ tenant }}/user',
   objectId: 'beatrice',
 });
 ·
-const writeRequest = WriteRelationshipsRequest.create({
+const writeRequest = v1.WriteRelationshipsRequest.create({
   updates: [
     // Emilia is a Writer on Post 1
-    RelationshipUpdate.create({
-      relationship: Relationship.create({
+    v1.RelationshipUpdate.create({
+      relationship: v1.Relationship.create({
         resource: resource,
         relation: 'writer',
-        subject: SubjectReference.create({
+        subject: v1.SubjectReference.create({
           object: emilia,
         }),
       }),
-      operation: RelationshipUpdate_Operation.CREATE,
+      operation: v1.RelationshipUpdate_Operation.CREATE,
     }),
     //  Beatrice is a Reader on Post 1
-    RelationshipUpdate.create({
-      relationship: Relationship.create({
+    v1.RelationshipUpdate.create({
+      relationship: v1.Relationship.create({
         resource: resource,
         relation: 'reader',
-        subject: SubjectReference.create({
+        subject: v1.SubjectReference.create({
           object: beatrice,
         }),
       }),
-      operation: RelationshipUpdate_Operation.CREATE,
+      operation: v1.RelationshipUpdate_Operation.CREATE,
     }),
   ],
 });
@@ -974,76 +957,67 @@ raise unless Authzed::Api::V1::CheckPermissionResponse::Permissionship.resolve(r
 `}</SampleCodeBlock>
   </TabItem>
   <TabItem value="node">
-<SampleCodeBlock lang="ts">{`import {
-  ClientSecurity,
-  NewClient,
-  ObjectReference,
-  SubjectReference,
-  WriteSchemaRequest,
-  WriteRelationshipsRequest,
-  Relationship,
-  RelationshipUpdate,
-} from from '@authzed/authzed-node/v1';
+<SampleCodeBlock lang="ts">{`import { v1 } from '@authzed/authzed-node';
 ·
-const { promises: client } = NewClient(
+const { promises: client } = v1.NewClient(
   '{{ token }}',
 {% if not authzed %}
   '{{ endpoint }}',
   // NOTE: Remove if SpiceDB is behind TLS
-  ClientSecurity.INSECURE_PLAINTEXT_CREDENTIALS
+  v1.ClientSecurity.INSECURE_PLAINTEXT_CREDENTIALS
 {% endif %}
 );
 ·
-const resource = ObjectReference.create({
+const resource = v1.ObjectReference.create({
   objectType: '{{ tenant }}/post',
   objectId: '1',
 });
 ·
-const emilia = ObjectReference.create({
+const emilia = v1.ObjectReference.create({
   objectType: '{{ tenant }}/user',
   objectId: 'emilia',
 });
 ·
-const beatrice = ObjectReference.create({
+const beatrice = v1.ObjectReference.create({
   objectType: '{{ tenant }}/user',
   objectId: 'beatrice',
 });
 ·
-const emiliaCanRead = await client.checkPermission(CheckPermissionRequest.create({
+const emiliaCanRead = await client.checkPermission(v1.CheckPermissionRequest.create({
   resource,
   permission: 'read',
-  subject: SubjectReference.create({
+  subject: v1.SubjectReference.create({
     object: emilia,
   }),
 }));
-console.log(emiliaCanRead.permissionship === CheckPermissionResponse_Permissionship.HAS_PERMISSION);
+console.log(emiliaCanRead.permissionship === v1.CheckPermissionResponse_Permissionship.HAS_PERMISSION);
 ·
-const emiliaCanWrite = await client.checkPermission(CheckPermissionRequest.create({
+const emiliaCanWrite = await client.checkPermission(v1.CheckPermissionRequest.create({
   resource,
   permission: 'write',
-  subject: SubjectReference.create({
+  subject: v1.SubjectReference.create({
     object: emilia,
   }),
 }));
-console.log(emiliaCanWrite.permissionship === CheckPermissionResponse_Permissionship.HAS_PERMISSION);
+console.log(emiliaCanWrite.permissionship === v1.CheckPermissionResponse_Permissionship.HAS_PERMISSION);
 ·
-const beatriceCanRead = await client.checkPermission(CheckPermissionRequest.create({
+const beatriceCanRead = await client.checkPermission(v1.CheckPermissionRequest.create({
   resource,
   permission: 'read',
-  subject: SubjectReference.create({
+  subject: v1.SubjectReference.create({
     object: beatrice,
   }),
 }));
-console.log(beatriceCanRead.permissionship === CheckPermissionResponse_Permissionship.HAS_PERMISSION);
+console.log(beatriceCanRead.permissionship === v1.CheckPermissionResponse_Permissionship.HAS_PERMISSION);
 ·
-const beatriceCanWrite = await client.checkPermission(CheckPermissionRequest.create({
+const beatriceCanWrite = await client.checkPermission(v1.CheckPermissionRequest.create({
   resource,
   permission: 'write',
-  subject: SubjectReference.create({
+  subject: v1.SubjectReference.create({
     object: beatrice,
   }),
 }));
-console.log(beatriceCanWrite.permissionship === CheckPermissionResponse_Permissionship.HAS_PERMISSION);`}</SampleCodeBlock>
+console.log(beatriceCanWrite.permissionship === v1.CheckPermissionResponse_Permissionship.HAS_PERMISSION);`}</SampleCodeBlock>
   </TabItem>
 </Tabs>
 
