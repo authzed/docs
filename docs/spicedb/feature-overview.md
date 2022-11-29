@@ -45,7 +45,7 @@ The API is documented via [OpenAPI], but may have breaking changes in the future
 For more information, see the [API Overview].
 
 [gRPC Gateway]: https://github.com/grpc-ecosystem/grpc-gateway
-[OpenAPI]: https://petstore.swagger.io/?url=https://raw.githubusercontent.com/authzed/authzed-go/main/proto/apidocs.swagger.json
+[OpenAPI]: https://www.postman.com/authzed/workspace/spicedb/overview
 [API Overview]: /reference/api.md
 
 ### Datastore

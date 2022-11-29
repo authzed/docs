@@ -9,7 +9,7 @@ module.exports = {
     {
       type: 'link',
       label: 'REST API Reference',
-      href: 'https://app.swaggerhub.com/apis-docs/authzed/authzed/1.0',
+      href: 'https://www.postman.com/authzed/workspace/spicedb/overview',
     },
     'support',
     {
@@ -22,7 +22,7 @@ module.exports = {
         'guides/defining-a-subject-type',
         'guides/writing-relationships',
         'guides/validation-and-testing',
-        'guides/debugging'
+        'guides/debugging',
       ],
     },
     {
@@ -67,6 +67,6 @@ module.exports = {
           href: 'https://buf.build/authzed/api/docs/main:authzed.api.v1',
         },
       ],
-    }
+    },
   ],
 };

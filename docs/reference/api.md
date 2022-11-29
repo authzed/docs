@@ -32,7 +32,7 @@ Learn more about the HTTP API by reading [Have you met...our HTTP API?].
 
 [Have you met...our HTTP API?]: https://authzed.com/blog/authzed-http-api/
 [gRPC Gateway]: https://github.com/grpc-ecosystem/grpc-gateway
-[OpenAPI]: https://petstore.swagger.io/?url=https://raw.githubusercontent.com/authzed/authzed-go/main/proto/apidocs.swagger.json
+[OpenAPI]: https://www.postman.com/authzed/workspace/spicedb/overview
 
 ## Versioning & Deprecation Policy
 
