@@ -97,4 +97,4 @@ curl -H "Authorization: Bearer myapikey" -X POST localhost:443/v1/schema/read
 
 [SpiceDB]: https://github.com/authzed/spicedb
 [curl]: https://curl.se
-[openapi]: https://petstore.swagger.io/?url=https://raw.githubusercontent.com/authzed/authzed-go/main/proto/apidocs.swagger.json
+[openapi]: https://www.postman.com/authzed/workspace/spicedb/overview
