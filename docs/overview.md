@@ -109,7 +109,7 @@ Join us on [Discord] to discuss any questions you may have!
 [spicedb]: https://github.com/authzed/spicedb
 [developing a schema]: /guides/schema
 [watch a video]: https://www.youtube.com/watch?v=x3-B9-ICj0w
-[design documentation]: https://docs.authzed.com/reference/schema-lang
+[design documentation]: https://authzed.com/docs/reference/schema-lang
 [jump into the playground]: https://play.authzed.com
 [protecting your first app]: /guides/first-app
 [buf registry]: https://buf.build/authzed/api/docs

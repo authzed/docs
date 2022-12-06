@@ -11,7 +11,7 @@ It's built with [Docusaurus] v2.
 
 [Authzed]: https://authzed.com
 [SpiceDB]: https://github.com/authzed/spicedb
-[website]: https://docs.authzed.com
+[website]: https://authzed.com/docs
 [Docusaurus]: https://docusaurus.io
 
 See [CONTRIBUTING.md](/CONTRIBUTING.md) for instructions on how to contribute and perform common tasks like building the project and running tests.

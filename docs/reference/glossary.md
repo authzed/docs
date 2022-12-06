@@ -41,7 +41,7 @@ Authzed is the company that created SpiceDB and is the primary sponsor of its de
 Their products include support contracts and a planet-scale, serverless platform for those that do not want to operate SpiceDB themselves.
 They also host [documentation][docs] and operate additional tools such as a [Schema playground][playground].
 
-[docs]: https://docs.authzed.com
+[docs]: https://authzed.com/docs
 [playground]: https://play.authzed.com
 
 ## Datastore

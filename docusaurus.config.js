@@ -4,8 +4,8 @@ module.exports = {
   title: 'authzed',
   tagline: 'Documentation for Authzed, the planet-scale, serverless database platform for SpiceDB.',
   favicon: 'img/favicon.svg',
-  url: 'https://docs.authzed.com',
-  baseUrl: '/',
+  url: 'https://authzed.com',
+  baseUrl: '/docs/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'throw',
   customFields: {
