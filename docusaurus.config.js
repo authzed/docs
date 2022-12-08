@@ -4,7 +4,7 @@ module.exports = {
   title: 'authzed',
   tagline: 'Documentation for Authzed, the planet-scale, serverless database platform for SpiceDB.',
   favicon: 'img/favicon.svg',
-  url: 'https://docs.authzed.com',
+  url: 'https://authzed.com',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'throw',
@@ -14,7 +14,7 @@ module.exports = {
   themeConfig: {
     announcementBar: {
       id: 'github_star',
-      content: '<a href="https://github.com/authzed/spicedb" target="_blank" style="text-decoration:none;font-size:100%;">🎉 <strong>Introducing SpiceDB!</strong> 🎉 An open source, Zanzibar-inspired database for permissions</a>',
+      content: '<a href="https://authzed.com/zanzibar" target="_blank" style="text-decoration:none; display:inline-block;"><strong>The Zanzibar Paper, annotated by AuthZed</strong> &#x1F4C4; <span style="display: inline-block">Read the pioneering paper with expert commentary.</span></a>',
       backgroundColor: '#842743',
       textColor: '#fff',
       isCloseable: false,
