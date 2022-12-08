@@ -14,7 +14,7 @@ module.exports = {
   themeConfig: {
     announcementBar: {
       id: 'github_star',
-      content: '<a href="https://github.com/authzed/spicedb" target="_blank" style="text-decoration:none;font-size:100%;">🎉 <strong>Introducing SpiceDB!</strong> 🎉 An open source, Zanzibar-inspired database for permissions</a>',
+      content: '<a href="https://zanzibar.tech" target="_blank" style="text-decoration:none; display:inline-block;"><strong>The Zanzibar Paper, annotated by AuthZed</strong> 📰 <span style="display: inline-block">Read the seminal paper with expert commentary.</span></a>',
       backgroundColor: '#842743',
       textColor: '#fff',
       isCloseable: false,

@@ -76,13 +76,18 @@ html[data-theme='dark'] {
   --ifm-navbar-link-hover-color: #ecb4c3;
 }
 
-div[class^='announcementBar'] {
-  height: 46px !important;
+div[class^='announcementBar_'] {
+  min-height: 3rem;
+}
+
+div[class^='announcementBarContent'] {
+  height: 100% !important;
   padding: 10px;
   font-family: "Inter", sans-serif;
   font-weight: 400;
   font-size: 15px;
   border: 0px;
+  z-index: 10;
 }
 
 /* mobile menu icon */
