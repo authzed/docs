@@ -14,7 +14,7 @@ module.exports = {
   themeConfig: {
     announcementBar: {
       id: 'github_star',
-      content: '<a href="https://authzed.com/zanzibar" target="_blank" style="text-decoration:none; display:inline-block;"><strong>The Zanzibar Paper, annotated by AuthZed</strong> &#x1F4C4; <span style="display: inline-block">Read the pioneering paper with expert commentary.</span></a>',
+      content: '<a href="https://authzed.com/zanzibar" target="_blank" style="text-decoration:none; display:inline-block;"><strong>The Zanzibar Paper, annotated by AuthZed</strong> &#x1F4C4; <span style="display: inline-block">Read the seminal paper with expert commentary.</span></a>',
       backgroundColor: '#842743',
       textColor: '#fff',
       isCloseable: false,
