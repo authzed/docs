@@ -38,7 +38,7 @@ Click the `Billing` tab in your [Authzed] dashboard.
 
 The count of dispatched and cached operations can be viewed in the `Billing` panel of the permissions system view on [Authzed].
 
-<img src="/img/billing-metrics.png"/>
+!['](/img/billing-metrics.png)
 
 ### What counts as a "dispatched operation"?
 
@@ -76,7 +76,6 @@ definition user {}
 definition document {
     relation reader: user
     relation writer: user
-    
     permission view = reader + writer
 }
 ```

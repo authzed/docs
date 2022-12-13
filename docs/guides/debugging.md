@@ -23,19 +23,19 @@ zed permission check release something not_banned user foo --explain
 
 The result of the check will be displayed graphically, with permissions in green and relations in orange:
 
-<img src="/img/explain-success.png"/>
+![''](/img/explain-success.png)
 
 ### Cached results
 
 If the result for a CheckPermission has already been cached by SpiceDB, then that will be indicated:
 
-<img src="/img/explain-cached.png"/>
+![''](/img/explain-cached.png)
 
 ### Cycle detection
 
 If the schema and relationships within SpiceDB forms a cycle, it will be indicated in the output:
 
-<img src="/img/explain-cycle.png"/>
+![''](/img/explain-cycle.png)
 
 ## Using the tracing API directly
 

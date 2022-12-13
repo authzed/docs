@@ -24,7 +24,7 @@ For more information, read the [architecture blog post][arch].
 
 [arch]: https://authzed.com/blog/spicedb-architecture/
 
-<img alt="architecture of a spicedb deployment" src="/img/arch.svg"/>
+!['Architecture of a spicedb deployment'](/img/arch.svg)
 
 ### gRPC API
 

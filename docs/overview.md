@@ -6,7 +6,9 @@ summary: "Documentation for Authzed, the planet-scale, serverless database platf
 # SpiceDB and Authzed
 
 <div style={{textAlign: 'center'}}>
-<img src="/graph.svg"/>
+
+!['Relationships'](/graph.svg)
+
 <div class="overview-top-buttons">
 <a href="/spicedb/operator" class="btn">
     <i class="fa-solid fa-cubes"></i>
@@ -66,7 +68,7 @@ Log into the [Authzed dashboard] to create a serverless SpiceDB instance or [run
         <Button class="btn btn-video">
             <div class="thumbnail">
                 <i class="fa-brands fa-youtube"></i>
-                <img src="/img/youtube_x3-B9-ICj0w.png"/>
+                <img src={require("/img/youtube_x3-B9-ICj0w.png").default} />
             </div>
             Modeling GitHub in Authzed
         </Button>
@@ -75,7 +77,7 @@ Log into the [Authzed dashboard] to create a serverless SpiceDB instance or [run
         <Button class="btn btn-video">
             <div class="thumbnail">
                 <i class="fa-brands fa-youtube"></i>
-                <img src="/img/youtube_dlARPyDVPZQ.png"/>
+                <img src={require("/img/youtube_dlARPyDVPZQ.png").default} />
             </div>
             Modeling Google Groups in Authzed
         </Button>
@@ -84,7 +86,7 @@ Log into the [Authzed dashboard] to create a serverless SpiceDB instance or [run
         <Button class="btn btn-video">
             <div class="thumbnail">
                 <i class="fa-brands fa-youtube"></i>
-                <img src="/img/youtube_WTfZsRPDv9Q.png"/>
+                <img src={require("/img/youtube_WTfZsRPDv9Q.png").default} />
             </div>
             Learn more about Zanizbar
         </Button>
