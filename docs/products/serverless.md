@@ -76,6 +76,7 @@ definition user {}
 definition document {
     relation reader: user
     relation writer: user
+
     permission view = reader + writer
 }
 ```
