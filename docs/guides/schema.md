@@ -193,7 +193,7 @@ Validation can be run by clicking the `Validate` button in the Playground
 In addition the assertions tab, the Playground supports the use of "Check Watches", which are *live* assertions are run on all edit changes made.
 Check Watches are super useful when you are actively editing a schema, so you can in real-time know if you have made a breaking change.
 
-<img src="/img/check-watch.png"/>
+!['](/img/check-watch.png)
 :::
 
 ### Writing Expected Relations

@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "redirects": [
+    {
+      "source": "/:match*",
+      "has": [
+        {
+          "type": "host",
+          "value": "docs.authzed.com"
+        }
+      ],
+      "destination": "https://authzed.com/docs/:match*",
+      "permanent": true
+    }
+  ]
+}

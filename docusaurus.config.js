@@ -2,19 +2,22 @@ const env = (envvar, fallback) => typeof process.env[envvar] !== 'undefined' ? p
 
 module.exports = {
   title: 'authzed',
-  tagline: 'Documentation for Authzed, the planet-scale, serverless database platform for SpiceDB.',
+  tagline:
+    'Documentation for Authzed, the planet-scale, serverless database platform for SpiceDB.',
   favicon: 'img/favicon.svg',
-  url: 'https://docs.authzed.com',
-  baseUrl: '/',
+  url: 'https://authzed.com',
+  baseUrl: '/docs/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'throw',
+  staticDirectories: ['static'],
   customFields: {
     amplitudeApiKey: env('AMPLITUDE_API_KEY', ''),
   },
   themeConfig: {
     announcementBar: {
       id: 'github_star',
-      content: '<a href="https://zanzibar.tech" target="_blank" style="text-decoration:none; display:inline-block;"><strong>The Zanzibar Paper, annotated by AuthZed</strong> 📰 <span style="display: inline-block">Read the seminal paper with expert commentary.</span></a>',
+      content:
+        '<a href="https://zanzibar.tech" target="_blank" style="text-decoration:none; display:inline-block;"><strong>The Zanzibar Paper, annotated by AuthZed</strong> 📰 <span style="display: inline-block">Read the seminal paper with expert commentary.</span></a>',
       backgroundColor: '#842743',
       textColor: '#fff',
       isCloseable: false,
@@ -70,7 +73,7 @@ module.exports = {
     footer: {
       style: 'dark',
       links: [],
-      copyright: `© ${new Date().getFullYear()} Authzed. All rights reserved.`
+      copyright: `© ${new Date().getFullYear()} Authzed. All rights reserved.`,
     },
     algolia: {
       appId: env('ALGOLIA_APP_ID', 'test'),
@@ -118,11 +121,13 @@ module.exports = {
           sidebarPath: require.resolve('./sidebars.js'),
           editUrl: 'https://github.com/authzed/docs/edit/main',
         },
-        googleAnalytics: { trackingID: env('GOOGLE_ANALYTICS_UA', 'UA-faketest') },
+        googleAnalytics: {
+          trackingID: env('GOOGLE_ANALYTICS_UA', 'UA-faketest'),
+        },
         sitemap: { changefreq: 'daily' },
         blog: false,
         pages: false,
       },
-    ]
+    ],
   ],
 };
