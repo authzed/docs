@@ -22,6 +22,17 @@
       ],
       "destination": "https://authzed.com/docs/:match*",
       "permanent": true
+    },
+    {
+      "source": "/:match*/",
+      "has": [
+        {
+          "type": "host",
+          "value": "docs.authzed.com"
+        }
+      ],
+      "destination": "https://authzed.com/docs/:match*",
+      "permanent": true
     }
   ]
 }
