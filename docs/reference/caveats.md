@@ -286,7 +286,7 @@ CheckPermissionRequest {
         ObjectType: "resource",
         ObjectId: "someresource",
     },
-    Relation: "view",
+    Permission: "view",
     Subject: {
         ObjectType: "user",
         ObjectId: "sarah",
