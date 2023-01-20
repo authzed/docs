@@ -11,17 +11,17 @@ Examples of object types include resources, users, groups, documents, or any kin
 For the exhaustive description of the language used to write schemas, check out the [schema language reference].
 
 [schema language reference]: /reference/schema-lang
-[SpiceDB]: https://github.com/authzed/spicedb
-[Authzed]: https://app.authzed.com
+[spicedb]: https://github.com/authzed/spicedb
+[authzed]: https://app.authzed.com
 
-:::warning
-This guide does not specify prefixes on its definitions. SpiceDB and the playground tool accept schema without prefixes, but they are required in Authzed.
+:::note
+This guide does not specify prefixes on its definitions. Authzed Enterprise, Authzed Dedicated, SpiceDB and the playground tool accept schema without prefixes, but they are required in Authzed Serverless.
 
-If you intend to deploy these examples to Authzed, you'll need to place `yourprefix/` in front of all definitions and references like so:
+If you intend to deploy these examples to Authzed Serverless, you'll need to place `yourprefix/` in front of all definitions and references like so:
 
-```definition document { ... }```
+`definition document { ... }`
 ->
-```definition yourprefix/document { ... }```
+`definition yourprefix/document { ... }`
 :::
 
 ## Defining object types
@@ -47,7 +47,7 @@ So far, our schema and object definitions don't do much: They define the two typ
 
 Our next step, therefore, is to decide how our objects can relate to one another, thus defining the kind of relationships we can store in SpiceDB or Authzed.
 
-For this example, we've chosen a simple RBAC-style permissions model, where users can be granted a *role*, such as *reader*, on our resource (`document`).
+For this example, we've chosen a simple RBAC-style permissions model, where users can be granted a _role_, such as _reader_, on our resource (`document`).
 
 The choice of RBAC therefore means that the relationship between our resource (`document`) and our users will be defined by the roles we want.
 We can therefore start by defining a relation on our `document` type to represent one of these roles (here, `reader`):
@@ -76,7 +76,7 @@ relation reader: user | anotherobjecttype
 
 ## Validating our schema
 
-To validate that our schema is correct, the Authzed Playground supports the writing of *Test Relationships* to define the test data for our system.
+To validate that our schema is correct, the Authzed Playground supports the writing of _Test Relationships_ to define the test data for our system.
 Via the test relationships, we can define test data to be used for validation and verification in three places:
 
 - **Checks Watches:** Live checks performed as we edit the schema
@@ -89,7 +89,7 @@ With the definition of our two object types, and the `reader` relation on our `d
 
 > Is a specific user a reader on a specific document?
 
-In Authzed, such a question is answered via use of a [CheckPermission] call, which takes in two objects (the `resource` and the `subject`), as well as a possible permission (or relation) between them (the `permission`), and returns whether the [subject] is *reachable* from the resource.
+In Authzed, such a question is answered via use of a [CheckPermission] call, which takes in two objects (the `resource` and the `subject`), as well as a possible permission (or relation) between them (the `permission`), and returns whether the [subject] is _reachable_ from the resource.
 
 ```text
 Can a specific user read the specific document?
@@ -97,9 +97,9 @@ Can a specific user read the specific document?
          subject permission      resource
 ```
 
-To add this question for validation in the Authzed Playground, we must translate the question into the *Test Relationships* and the *Assertions*.
+To add this question for validation in the Authzed Playground, we must translate the question into the _Test Relationships_ and the _Assertions_.
 
-[CheckPermission]: https://buf.build/authzed/api/docs/main:authzed.api.v1#CheckPermission
+[checkpermission]: https://buf.build/authzed/api/docs/main:authzed.api.v1#CheckPermission
 [subject]: /guides/defining-a-subject-type
 
 ### Creating test relationships
@@ -142,7 +142,7 @@ document:specificdocument <reader> user:specificuser
 
 :::info
 Note that we could have just as easily defined a relation on the user and used it instead.
-A defined non-empty relation is typically used if you want to have *multiple* ways to represent an object as a subject.
+A defined non-empty relation is typically used if you want to have _multiple_ ways to represent an object as a subject.
 
 For example, if the subject was a group, we might want to define our relation to accept `group#members` and have our relationship reference `group:specificgroup#members`, to indicate it is the group's members that are `reader`, rather than the group itself.
 :::
@@ -161,12 +161,12 @@ We now have a valid [relationship] representing that `specificuser` can view `sp
 
 <InlinePlayground reference="r9EkIWREZAB1"/>
 
-[Relationships]: /reference/glossary.md#relationship
+[relationships]: /reference/glossary.md#relationship
 [relationships]: /reference/glossary.md#relationship
 
 ### Writing Assertions
 
-Now that we have a super-basic schema, and some data to validate, we can write *assertions* that can be run to ensure that our schema matches our expectations.
+Now that we have a super-basic schema, and some data to validate, we can write _assertions_ that can be run to ensure that our schema matches our expectations.
 
 Assertions are written in a YAML form, with two sections (`assertTrue` and `assertFalse`), each containing a list of zero or more relationships (implicit or defined) to verify.
 
@@ -174,23 +174,23 @@ For our example, we wish to verify that the specific user we just gave the `read
 
 ```yaml
 assertTrue:
-- "document:specificdocument#reader@user:specificuser"
+  - "document:specificdocument#reader@user:specificuser"
 assertFalse: []
 ```
 
-Similarly, if we wanted to validate that *another* user does not have that role, we can add that unexpected relationship to the `assertFalse` branch:
+Similarly, if we wanted to validate that _another_ user does not have that role, we can add that unexpected relationship to the `assertFalse` branch:
 
 ```yaml
 assertTrue:
-- "document:specificdocument#reader@user:specificuser"
+  - "document:specificdocument#reader@user:specificuser"
 assertFalse:
-- "document:specificdocument#reader@user:anotheruser"
+  - "document:specificdocument#reader@user:anotheruser"
 ```
 
 Validation can be run by clicking the `Validate` button in the Playground
 
 :::note
-In addition the assertions tab, the Playground supports the use of "Check Watches", which are *live* assertions are run on all edit changes made.
+In addition the assertions tab, the Playground supports the use of "Check Watches", which are _live_ assertions are run on all edit changes made.
 Check Watches are super useful when you are actively editing a schema, so you can in real-time know if you have made a breaking change.
 
 !['](/img/check-watch.png)
@@ -198,7 +198,7 @@ Check Watches are super useful when you are actively editing a schema, so you ca
 
 ### Writing Expected Relations
 
-In addition to *Assertions*, the Authzed Playground also supports the concept of *Expected Relations*, which can be used to **exhaustively** check the membership of relations or permissions.
+In addition to _Assertions_, the Authzed Playground also supports the concept of _Expected Relations_, which can be used to **exhaustively** check the membership of relations or permissions.
 
 The Expected Relations consists of a YAML-formatted map, with each key representing a relation, and the values being a list of strings holding the full set of expected relations.
 
@@ -212,7 +212,7 @@ After hitting the `Update` button, we are given the fully expanded form:
 
 ```yaml
 document:specificdocument#reader:
-- '[user:specificuser] is <document:specificdocument#reader>'
+  - "[user:specificuser] is <document:specificdocument#reader>"
 ```
 
 While not demonstrating much more power than the assertions we wrote above, Expected Relations becomes more powerful once we add additional relations and, later, permissions to our schema.
@@ -248,7 +248,7 @@ document:specificdocument#reader@user:specificuser
 document:specificdocument#writer@user:differentuser
 ```
 
-To verify our test relationships worked, we can add another assertion, and also assert that the original user (`specificuser`) is *not* a writer:
+To verify our test relationships worked, we can add another assertion, and also assert that the original user (`specificuser`) is _not_ a writer:
 
 ```yaml title="Assertions"
 assertTrue:
@@ -263,9 +263,9 @@ Finally, we can add an expected relation for the new relation, to validate it:
 
 ```yaml title="Expected Relations"
 document:specificdocument#reader:
-- '[user:specificuser] is <document:specificdocument#reader>'
+  - "[user:specificuser] is <document:specificdocument#reader>"
 document:specificdocument#writer:
-- '[user:differentuser] is <document:specificdocument#writer>'
+  - "[user:differentuser] is <document:specificdocument#writer>"
 ```
 
 ## Defining permissions
@@ -274,11 +274,11 @@ The above configuration and validation exposes one issue, however: users are ass
 
 As a naive solution, we could create a `reader` relationship for every user whenever we create a `writer` relationship, but that would get difficult to maintain very quickly.
 
-Instead, we'd ideally like a user with role `writer` to be **implicitly** allowed to a read a document, such that we only ever need to write *one* relationship representing the user's **actual** relation/role to the document.
+Instead, we'd ideally like a user with role `writer` to be **implicitly** allowed to a read a document, such that we only ever need to write _one_ relationship representing the user's **actual** relation/role to the document.
 
 The solution to this problem is the second concept available within the Schema Language: **permissions**
 
-A `permission` in schema defines a permission *computed* from one or more other relations or permissions.
+A `permission` in schema defines a permission _computed_ from one or more other relations or permissions.
 
 Let's take our schema again from above:
 
@@ -319,7 +319,7 @@ definition document {
 ```
 
 A `permission`, unlike a `relation`, does not represent a concrete relationship between a resource and a subject.
-Rather, the permission is *computed* based on the expression found after the `=`.
+Rather, the permission is _computed_ based on the expression found after the `=`.
 Here, we compute the `view` permission to include any users found to have either the `reader` OR `writer` role, thus allowing users with either (or both) roles to view the document, as we intended.
 
 ### Updating our expected relations
@@ -330,33 +330,33 @@ To start, we add an assertion that checks if the users can `view` the document:
 
 ```yaml title="Assertions"
 assertTrue:
-- "document:specificdocument#reader@user:specificuser"
-- "document:specificdocument#writer@user:differentuser"
-- "document:specificdocument#view@user:specificuser"
-- "document:specificdocument#view@user:differentuser"
+  - "document:specificdocument#reader@user:specificuser"
+  - "document:specificdocument#writer@user:differentuser"
+  - "document:specificdocument#view@user:specificuser"
+  - "document:specificdocument#view@user:differentuser"
 assertFalse:
-- "document:specificdocument#reader@user:anotheruser"
-- "document:specificdocument#writer@user:specificuser"
+  - "document:specificdocument#reader@user:anotheruser"
+  - "document:specificdocument#writer@user:specificuser"
 ```
 
 Next, we can update the expected relations to add the `view` permission, and ensure that both users have that permission on the document:
 
 ```yaml title="Expected Relations"
 document:specificdocument#reader:
-- '[user:specificuser] is <document:specificdocument#reader>'
+  - "[user:specificuser] is <document:specificdocument#reader>"
 document:specificdocument#view:
-- '[user:differentuser] is <document:specificdocument#writer>'
-- '[user:specificuser] is <document:specificdocument#reader>'
+  - "[user:differentuser] is <document:specificdocument#writer>"
+  - "[user:specificuser] is <document:specificdocument#reader>"
 document:specificdocument#writer:
-- '[user:differentuser] is <document:specificdocument#writer>'
+  - "[user:differentuser] is <document:specificdocument#writer>"
 ```
 
-Note that the contents of the angled brackets for `differentuser` and `specificuser` are **different**: they indicate the *relation* by which the permission was transitively granted.
+Note that the contents of the angled brackets for `differentuser` and `specificuser` are **different**: they indicate the _relation_ by which the permission was transitively granted.
 
 :::note
-Expected Relations includes the relation by which a subject was found for a permission to ensure that not only is the permission is valid, but also that the *way* a permission was validated matches that expected.
+Expected Relations includes the relation by which a subject was found for a permission to ensure that not only is the permission is valid, but also that the _way_ a permission was validated matches that expected.
 
-If there are multiple ways that a subject can be found for a permission, Expected Relations will require *all* of them to be listed to be valid.
+If there are multiple ways that a subject can be found for a permission, Expected Relations will require _all_ of them to be listed to be valid.
 :::
 
 #### Working example
@@ -365,7 +365,7 @@ If there are multiple ways that a subject can be found for a permission, Expecte
 
 ### Preparing to inherit permissions
 
-As we've seen above, we can use `permission` to define *implicit* permissions, such as a `view` permission consisting of users either the `reader` or `writer` role. Implicit permissions on a specific object type, however, are often insufficient: Sometimes permissions need to be **inherited** between object types.
+As we've seen above, we can use `permission` to define _implicit_ permissions, such as a `view` permission consisting of users either the `reader` or `writer` role. Implicit permissions on a specific object type, however, are often insufficient: Sometimes permissions need to be **inherited** between object types.
 
 As an example: Imagine that we add the concept of an `organization` to our permissions system, where any user that is an administrator of an organization automatically gains the ability to `view` any `document` within that organization... how would we define such a permissions schema?
 
@@ -444,7 +444,7 @@ Note the use of the organization as the **subject** in this relationship
 
 Now that we have a means of stating that a document is owned by an organization, and a relation to define administrators role on the organization itself, our final steps are to add an `view_all_documents` permission to the organization and to edit the `view` permission to take this permission into account.
 
-To do so, we make use of the arrow operator (`->`), which allows for referencing permissions *across* another relation or permission:
+To do so, we make use of the arrow operator (`->`), which allows for referencing permissions _across_ another relation or permission:
 
 ```zed title="Schema"
 /** user represents a registered user's account in our application */
@@ -480,7 +480,7 @@ The expression `docorg->view_all_documents` indicates to SpiceDB or Authzed to f
 By use of this expression, any user defined as an administrator of the organization that owns the document will also be able to view the document!
 
 :::note
-It is *recommended* that the right side of all arrows refer to **permissions**, instead
+It is _recommended_ that the right side of all arrows refer to **permissions**, instead
 of relations.
 This allows for easy nested computation, and is more readable.
 :::
@@ -499,25 +499,25 @@ Finally, we can add the user to the declarations in Assertions and Expected Rela
 
 ```yaml title="Assertions"
 assertTrue:
-- "document:specificdocument#reader@user:specificuser"
-- "document:specificdocument#writer@user:differentuser"
-- "document:specificdocument#view@user:specificuser"
-- "document:specificdocument#view@user:differentuser"
-- "document:specificdocument#view@user:someadminuser"
+  - "document:specificdocument#reader@user:specificuser"
+  - "document:specificdocument#writer@user:differentuser"
+  - "document:specificdocument#view@user:specificuser"
+  - "document:specificdocument#view@user:differentuser"
+  - "document:specificdocument#view@user:someadminuser"
 assertFalse:
-- "document:specificdocument#reader@user:anotheruser"
-- "document:specificdocument#writer@user:specificuser"
+  - "document:specificdocument#reader@user:anotheruser"
+  - "document:specificdocument#writer@user:specificuser"
 ```
 
 ```yaml title="Expected Relations"
 document:specificdocument#reader:
-- '[user:specificuser] is <document:specificdocument#reader>'
+  - "[user:specificuser] is <document:specificdocument#reader>"
 document:specificdocument#view:
-- '[user:differentuser] is <document:specificdocument#writer>'
-- '[user:someadminuser] is <organization:someorg#administrator>'
-- '[user:specificuser] is <document:specificdocument#reader>'
+  - "[user:differentuser] is <document:specificdocument#writer>"
+  - "[user:someadminuser] is <organization:someorg#administrator>"
+  - "[user:specificuser] is <document:specificdocument#reader>"
 document:specificdocument#writer:
-- '[user:differentuser] is <document:specificdocument#writer>'
+  - "[user:differentuser] is <document:specificdocument#writer>"
 ```
 
 :::info
@@ -534,4 +534,4 @@ And that's it! We now have a fully working permissions system:
 
 Want to get started for real? [Start protecting your first application](/guides/first-app) or [Visit the Discord](https://discord.com/invite/jTysUaxXzM) if you have any questions!
 
-[Authzed Playground]: https://play.authzed.com
+[authzed playground]: https://play.authzed.com

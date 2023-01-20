@@ -23,10 +23,10 @@ The top level of a Schema consists of zero or more object `definition` and `cave
 
 It might help to think about Object Definitions as similar to a class definition in an Object Oriented programming language.
 
-If being used with Authzed, the name of each Object Definition is prefixed with the Permissions System to which it will be applied.
-This is done to make all Object names globally unique in Authzed.
+If being used with Authzed Serverless, the name of each Object Definition is prefixed with the Permissions System to which it will be applied.
+This is done to make all Object names globally unique in Authzed Serverless.
 
-For SpiceDB, prefixes can be used to logically group types, but are otherwise unnecessary.
+For all other installations, prefixes can be used to logically group types, but are otherwise unnecessary.
 
 ```zed
 /**
@@ -36,7 +36,7 @@ definition sometype {}
 ```
 
 :::note
-Note that the examples are unprefixed. You'll need to add the prefix from your permissions system if calling `WriteSchema` for a permissions system hosted in Authzed.
+Note that the examples are unprefixed. You'll need to add the prefix from your permissions system if calling `WriteSchema` for a permissions system hosted in Authzed Serverless.
 :::
 
 ## Relations
