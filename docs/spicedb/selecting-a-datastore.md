@@ -160,10 +160,19 @@ The available strategies are:
 
 #### Required Parameters
 
-| Parameter            | Description                                | Example                                                                        |
-| -------------------- | ------------------------------------------ | ------------------------------------------------------------------------------ | --- |
-| `datastore-engine`   | the datastore engine                       | `--datastore-engine=mysql`                                                     |
-| `datastore-conn-uri` | connection string used to connect to MySQL | `--datastore-conn-uri="mysql:password@localhost:5432/spicedb?sslmode=disable"` |     |
+| Parameter            | Description                                | Example                                                                                       |
+| -------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------- | --- |
+| `datastore-engine`   | the datastore engine                       | `--datastore-engine=mysql`                                                                    |
+| `datastore-conn-uri` | connection string used to connect to MySQL | `--datastore-conn-uri="mysql:password@localhost:5432/spicedb?parseTime=True&sslmode=disable"` |     |
+
+##### MySQL Time
+
+:::note
+`--datastore-conn-uri` **must** contain `parseTime=true` as a query parameter
+in order support time-based operations such as Garbage Collection in SpiceDB.
+
+Example: `--datastore-conn-uri="mysql:password@localhost:5432/spicedb?sslmode=disable&parseTime=True"`
+:::
 
 #### Optional Parameters
 
