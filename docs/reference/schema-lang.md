@@ -13,12 +13,6 @@ The Schema Language's extension for use on a file system is `.zed`
 
 ## Definitions
 
-:::note
-To learn more about the experimental caveats feature, please take a look at the [caveats documentation]
-:::
-
-[caveats documentation]: /reference/caveats
-
 The top level of a Schema consists of zero or more object `definition` and `caveat`s, which define the types and caveats exposed in the permissions system.
 
 It might help to think about Object Definitions as similar to a class definition in an Object Oriented programming language.
@@ -30,6 +24,13 @@ For all other installations, prefixes can be used to logically group types, but 
 
 ```zed
 /**
+ * somecaveat is a caveat defined
+ */
+caveat somecaveat(someparameter int) {
+    someparameter == 42
+}
+
+/**
  * sometype is some type that I've decided to define
  */
 definition sometype {}
@@ -38,6 +39,18 @@ definition sometype {}
 :::note
 Note that the examples are unprefixed. You'll need to add the prefix from your permissions system if calling `WriteSchema` for a permissions system hosted in Authzed Serverless.
 :::
+
+### Object Definitions
+
+An _object definition_ defines a new type of resource in the schema.
+
+Objects are used to represent both resources and subjects.
+
+### Caveat Definitions
+
+See the [caveats guide] to learn more about caveats.
+
+[caveats guide]: /reference/caveats
 
 ## Relations
 
