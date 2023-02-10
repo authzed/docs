@@ -76,20 +76,37 @@ The available strategies are:
 
 #### Optional Parameters
 
-| Parameter                                | Description                                                                           | Example                                        |
-| ---------------------------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| `datastore-max-tx-retries`               | Maximum number of times to retry a query before raising an error                      | `--datastore-max-tx-retries=50`                |
-| `datastore-tx-overlap-strategy`          | The overlap strategy to prevent New Enemy on CRDB (see below)                         | `--datastore-tx-overlap-strategy=static`       |
-| `datastore-tx-overlap-key`               | The key to use for the overlap strategy (see below)                                   | `--datastore-tx-overlap-key="foo"`             |
-| `datastore-conn-max-idletime`            | Maximum idle time for a connection before it is recycled                              | `--datastore-conn-max-idletime=60s`            |
-| `datastore-conn-max-lifetime`            | Maximum lifetime for a connection before it is recycled                               | `--datastore-conn-max-lifetime=300s`           |
-| `datastore-conn-max-open`                | Maximum number of concurrent connections to open                                      | `--datastore-conn-max-open=10`                 |
-| `datastore-conn-min-open`                | Minimum number of concurrent connections to open                                      | `--datastore-conn-min-open=1`                  |
-| `datastore-query-split-size`             | The (estimated) query size at which to split a query into multiple queries            | `--datastore-query-split-size=5kb`             |
-| `datastore-gc-window`                    | Sets the window outside of which overwritten relationships are no longer accessible   | `--datastore-gc-window=1s`                     |
-| `datastore-revision-fuzzing-duration`    | Sets a fuzzing window on all zookies/zedtokens                                        | `--datastore-revision-fuzzing-duration=50ms`   |
-| `datastore-readonly`                     | Places the datastore into readonly mode                                               | `--datastore-readonly=true`                    |
-| `datastore-follower-read-delay-duration` | Amount of time to subtract from non-sync revision timestamps to ensure follower reads | `-datastore-follower-read-delay-duration=4.8s` |
+| Parameter                                | Description                                                                           | Example                                         |
+| ---------------------------------------- | ------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `datastore-max-tx-retries`               | Maximum number of times to retry a query before raising an error                      | `--datastore-max-tx-retries=50`                 |
+| `datastore-tx-overlap-strategy`          | The overlap strategy to prevent New Enemy on CRDB (see below)                         | `--datastore-tx-overlap-strategy=static`        |
+| `datastore-tx-overlap-key`               | The key to use for the overlap strategy (see below)                                   | `--datastore-tx-overlap-key="foo"`              |
+| `datastore-conn-max-idletime`            | Maximum idle time for a connection before it is recycled                              | `--datastore-conn-max-idletime=60s`             |
+| `datastore-conn-max-lifetime`            | Maximum lifetime for a connection before it is recycled                               | `--datastore-conn-max-lifetime=300s`            |
+| `datastore-conn-max-open`                | Maximum number of concurrent connections to open                                      | `--datastore-conn-max-open=10`                  |
+| `datastore-conn-min-open`                | Minimum number of concurrent connections to open                                      | `--datastore-conn-min-open=1`                   |
+| `datastore-query-split-size`             | The (estimated) query size at which to split a query into multiple queries            | `--datastore-query-split-size=5kb`              |
+| `datastore-gc-window`                    | Sets the window outside of which overwritten relationships are no longer accessible   | `--datastore-gc-window=1s`                      |
+| `datastore-revision-fuzzing-duration`    | Sets a fuzzing window on all zookies/zedtokens                                        | `--datastore-revision-fuzzing-duration=50ms`    |
+| `datastore-readonly`                     | Places the datastore into readonly mode                                               | `--datastore-readonly=true`                     |
+| `datastore-follower-read-delay-duration` | Amount of time to subtract from non-sync revision timestamps to ensure follower reads | `--datastore-follower-read-delay-duration=4.8s` |
+
+#### Garbage Collection Window
+
+##### Why did I get a warning about the garbage collection window size?
+
+Cockroach DB has (as of Feb 2023) recently changed the [default garbage collection window] size to `1.5 hours` for CRDB Serverless and `4 hours` for CRDB Dedicated.
+
+SpiceDB will read and use the setting _from CRDB_, but reports a warning if the (SpiceDB) configured window is larger in size.
+
+If you need a longer time window for Watch or Snapshots, please adjust on the [CRDB side]:
+
+```
+ALTER ZONE default CONFIGURE ZONE USING gc.ttlseconds = 90000;
+```
+
+[crdb side]: https://www.cockroachlabs.com/docs/stable/configure-replication-zones.html#replication-zone-variables
+[default garbage collection window]: https://github.com/cockroachdb/cockroach/issues/89233
 
 ## Cloud Spanner
 
