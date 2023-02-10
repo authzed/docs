@@ -1,33 +1,10 @@
-# Caveats (Experiment)
+# Caveats
 
-:::warning
-Caveats are currently marked as **experimental** and should not be used in production yet. Tooling also does not currently support caveats.
-:::
+Caveats is a feature within SpiceDB that allows for relationships to be defined conditionally: the relationship will only be considered present if the caveat expression evaluates to true.
+
+Caveats allow for Attribute Based Access Control (ABAC)-style decisions on top of the Relationship Based Access Control (ReBAC) model derived from Google Zanzibar.
 
 ## Getting Started
-
-The caveats feature in SpiceDB is currently available at the HEAD revision on the main branch of SpiceDB:
-
-```
-git clone github.com/authzed/spicedb
-git checkout main
-cd cmd/spicedb
-go build .
-```
-
-The feature can be enabled in any running SpiceDB instance by use of the flag or the environmental variable:
-
-```
-spicedb serve --experiment-enable-caveats=true …
-```
-
-Or
-
-```
-SPICEDB_EXPERIMENT_ENABLE_CAVEATS=true spicedb serve …
-```
-
-## Defining Caveats
 
 Caveats are named expressions that can be defined in schema via the **WriteSchema** call, alongside the `definition`s for object types.
 
@@ -296,11 +273,3 @@ CheckPermissionRequest {
     }
 }
 ```
-
-## Known Limitations
-
-Below are known limitations of the current implementation which will be completed in the near future:
-
-- The **zed** command line tool does not currently support Caveats.
-- The Authzed Playground does not currently support Caveats.
-- The development API does not currently support Caveats.
