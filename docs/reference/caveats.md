@@ -273,3 +273,50 @@ CheckPermissionRequest {
     }
 }
 ```
+
+## Validation with Caveats
+
+The [Assertions] and [Expected Relations] definitions for validation of schema support caveats as well.
+
+[assertions]: /guides/schema#writing-assertions
+[expected relations]: /guides/schema#writing-expected-relations
+
+### Assertions
+
+Caveated permissions can be checked in assertions by the addition of the `assertCaveated` block:
+
+```yaml title="Assertions for caveated permissions"
+assertTrue:
+  - "document:specificdocument#reader@user:specificuser"
+assertCaveated:
+  - "document:specificdocument#reader@user:caveateduser"
+assertFalse:
+  - "document:specificdocument#reader@user:anotheruser"
+```
+
+To assert that a permission does or does not exist when some context it specified, the `with` keyword can be used to provide the context:
+
+```yaml title="Assertions for caveated permissions with context"
+assertTrue:
+  - "document:specificdocument#reader@user:specificuser"
+  - 'document:specificdocument#reader@user:caveateduser with {"somecondition": true}'
+assertCaveated:
+  - "document:specificdocument#reader@user:caveateduser"
+assertFalse:
+  - "document:specificdocument#reader@user:anotheruser"
+  - 'document:specificdocument#reader@user:caveateduser with {"somecondition": false}'
+```
+
+### Expected Relations
+
+Expected relations notes if a subject is caveated via the inclusion of the `[...]` string on the end of the subject:
+
+```yaml title="Expected Relations with caveats"
+document:specificdocument#view:
+  - "[user:specificuser] is <document:specificdocument#reader>"
+  - "[user:caveateduser[...]] might be <document:specificdocument#writer>"
+```
+
+:::note
+Expected Relations does **not** evaluate caveats, even if the necessary context is fully specified on the relationship. This means that a caveated subject that might actually return `HAS_PERMISSION` will appear as `subject[...]` in expected relations
+:::
