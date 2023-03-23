@@ -212,6 +212,10 @@ If you want to use the Watch API with PostgreSQL, an additional capability must 
 
 [enabling watch api for postgresql]: enabling-watch-api#postgres
 
+:::note
+The minimum supported PostgreSQL version is 13.8
+:::
+
 ### Usage Notes
 
 - Recommended for single-region deployments
