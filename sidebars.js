@@ -2,17 +2,6 @@ module.exports = {
   someSidebar: [
     'overview',
     {
-      type: 'link',
-      label: 'gRPC API Reference',
-      href: 'https://buf.build/authzed/api/docs/main:authzed.api.v1',
-    },
-    {
-      type: 'link',
-      label: 'REST API Reference',
-      href: 'https://www.postman.com/authzed/workspace/spicedb/overview',
-    },
-    'support',
-    {
       type: 'category',
       label: 'Getting Started',
       collapsed: false,
@@ -30,6 +19,16 @@ module.exports = {
       label: 'SpiceDB',
       collapsed: true,
       items: [
+        {
+          type: 'link',
+          label: 'gRPC API Reference',
+          href: 'https://buf.build/authzed/api/docs/main:authzed.api.v1',
+        },
+        {
+          type: 'link',
+          label: 'REST API Reference',
+          href: 'https://www.postman.com/authzed/workspace/spicedb/overview',
+        },
         'spicedb/installing',
         'spicedb/operator',
         'spicedb/feature-overview',
@@ -63,10 +62,16 @@ module.exports = {
         'reference/caveats',
         {
           type: 'link',
-          label: 'API Reference',
+          label: 'gRPC API Reference',
           href: 'https://buf.build/authzed/api/docs/main:authzed.api.v1',
+        },
+        {
+          type: 'link',
+          label: 'REST API Reference',
+          href: 'https://www.postman.com/authzed/workspace/spicedb/overview',
         },
       ],
     },
+    'support',
   ],
 };
