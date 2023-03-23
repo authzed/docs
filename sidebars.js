@@ -38,6 +38,14 @@ module.exports = {
         'spicedb/updating',
       ],
     },
+	{
+      type: 'category',
+      label: 'SpiceDB Dedicated',
+      collapsed: true,
+      items: [
+        'spicedb-dedicated/fgam',
+      ],
+    },
     {
       type: 'category',
       label: 'Products',
