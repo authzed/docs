@@ -9,9 +9,8 @@ module.exports = {
     {
       type: 'link',
       label: 'REST API Reference',
-      href: 'https://www.postman.com/authzed/workspace/spicedb/overview',
-    },
-    'support',
+     href: 'https://www.postman.com/authzed/workspace/spicedb/overview',
+   },
     {
       type: 'category',
       label: 'Getting Started',
@@ -30,6 +29,16 @@ module.exports = {
       label: 'SpiceDB',
       collapsed: true,
       items: [
+        {
+          type: 'link',
+          label: 'gRPC API Reference',
+          href: 'https://buf.build/authzed/api/docs/main:authzed.api.v1',
+        },
+        {
+          type: 'link',
+          label: 'REST API Reference',
+          href: 'https://www.postman.com/authzed/workspace/spicedb/overview',
+        },
         'spicedb/installing',
         'spicedb/operator',
         'spicedb/feature-overview',
@@ -37,6 +46,14 @@ module.exports = {
         'spicedb/enabling-watch-api',
         'spicedb/configuring-dispatch',
         'spicedb/updating',
+      ],
+    },
+	{
+      type: 'category',
+      label: 'SpiceDB Dedicated',
+      collapsed: true,
+      items: [
+        'spicedb-dedicated/fgam',
       ],
     },
     {
@@ -63,10 +80,16 @@ module.exports = {
         'reference/caveats',
         {
           type: 'link',
-          label: 'API Reference',
+          label: 'gRPC API Reference',
           href: 'https://buf.build/authzed/api/docs/main:authzed.api.v1',
+        },
+        {
+          type: 'link',
+          label: 'REST API Reference',
+          href: 'https://www.postman.com/authzed/workspace/spicedb/overview',
         },
       ],
     },
+    'support',
   ],
 };
