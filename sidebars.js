@@ -2,6 +2,16 @@ module.exports = {
   someSidebar: [
     'overview',
     {
+      type: 'link',
+      label: 'gRPC API Reference',
+      href: 'https://buf.build/authzed/api/docs/main:authzed.api.v1',
+    },
+    {
+      type: 'link',
+      label: 'REST API Reference',
+     href: 'https://www.postman.com/authzed/workspace/spicedb/overview',
+   },
+    {
       type: 'category',
       label: 'Getting Started',
       collapsed: false,
