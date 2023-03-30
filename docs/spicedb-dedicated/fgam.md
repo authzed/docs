@@ -2,9 +2,11 @@
 
 Fine-Grained Access Management is an optional feature for managing access to your SpiceDB Permissions Systems deployed with SpiceDB Dedicated. Those familiar with configuring IAM on any major cloud provider should feel comfortable with the basic concepts:
 
-- [Service Accounts](notion://www.notion.so/authzed/5fd4a5c9d42c424e8643430e4b1b9cf7#service-accounts) represent workloads (e.g., an application calling the [SpiceDB API](https://buf.build/authzed/api/docs/main:authzed.api.v1))
-- [Roles](notion://www.notion.so/authzed/5fd4a5c9d42c424e8643430e4b1b9cf7#Roles) grant access to APIs and subsets of relationships using [CEL expressions](https://github.com/google/cel-spec)
-- [Policies](notion://www.notion.so/authzed/5fd4a5c9d42c424e8643430e4b1b9cf7#Policy) bind a Service Account to a Role
+- [Service Accounts](#service-accounts) represent workloads (e.g., an application calling the [SpiceDB API](https://buf.build/authzed/api/docs/main:authzed.api.v1))
+- [Access Tokens](#access-tokens) identify Service Accounts.
+- [Permissions](#roles-and-permissions) map to [SpiceDB API](https://buf.build/authzed/api/docs/main:authzed.api.v1) calls, an optional FGAM Caveat defined as a [CEL expression](https://github.com/google/cel-spec), and are associated with a Role.
+- [Roles](#roles-and-permissions) define a collection of Permissions.
+- [Policies](#Policy) bind a Service Account to a Role
 
 ## Concepts
 
@@ -17,15 +19,15 @@ A Service Account can have zero or more Access Tokens.
 ### Access Tokens
 
 Access Tokens are long-lived credentials that identify the Service Account.
-SpiceDB clients must provide a Token in the Authorization header of an API request to perform actions granted to the Service Account through [Roles](notion://www.notion.so/authzed/5fd4a5c9d42c424e8643430e4b1b9cf7#Roles) bound by [Policies](notion://www.notion.so/authzed/5fd4a5c9d42c424e8643430e4b1b9cf7#Policy).
+SpiceDB clients must provide a Token in the Authorization header of an API request to perform actions granted to the Service Account through [Roles](#Roles) bound by [Policies](#Policy).
 
 ### Roles and Permissions
 
-Roles are lists of Permissions for accessing the [SpiceDB API](https://buf.build/authzed/api/docs/main:authzed.api.v1). You grant Roles to zero or more [Service Accounts](notion://www.notion.so/authzed/5fd4a5c9d42c424e8643430e4b1b9cf7#service-accounts) via [Policies](notion://www.notion.so/authzed/5fd4a5c9d42c424e8643430e4b1b9cf7#Policy).
+Roles are lists of Permissions for accessing the [SpiceDB API](https://buf.build/authzed/api/docs/main:authzed.api.v1). You grant Roles to zero or more [Service Accounts](#service-accounts) via [Policies](#Policy).
 
 Each Permission specifies an API call and an optional [CEL expression](https://github.com/google/cel-spec), which is evaluated at runtime to determine whether or not to grant the Permission.
 
-Adding the Permission to a Role means each [Service Account](notion://www.notion.so/authzed/5fd4a5c9d42c424e8643430e4b1b9cf7#service-accounts) assigned the Role will have the corresponding API access. Calling the API method will only be authorized if a [Service Account](notion://www.notion.so/authzed/5fd4a5c9d42c424e8643430e4b1b9cf7#service-accounts) has been granted direct access via a Role and a [Policy](notion://www.notion.so/authzed/5fd4a5c9d42c424e8643430e4b1b9cf7#Policy) binding it.
+Adding the Permission to a Role means each [Service Account](#service-accounts) assigned the Role will have the corresponding API access. Calling the API method will only be authorized if a [Service Account](#service-accounts) has been granted direct access via a Role and a [Policy](#Policy) binding it.
 
 ### Advanced Roles with Conditions
 
@@ -68,7 +70,7 @@ For more details on CEL's language definition, please refer to [CEL language spe
 
 ### Policy
 
-Policies bind [Roles](notion://www.notion.so/authzed/5fd4a5c9d42c424e8643430e4b1b9cf7#Roles) to [Service Accounts](notion://www.notion.so/authzed/5fd4a5c9d42c424e8643430e4b1b9cf7#service-accounts). Each Policy represents a 1:1 mapping of a Service Account to Role. Binding multiple Roles to a single Service Account is additive, so if any of the Roles have a Permission, then that Service Account receives that Permission.
+Policies bind [Roles](#Roles) to [Service Accounts](#service-accounts). Each Policy represents a 1:1 mapping of a Service Account to Role. Binding multiple Roles to a single Service Account is additive, so if any of the Roles have a Permission, then that Service Account receives that Permission.
 
 ## Example: Assign a `read-only` Role to Service Account
 
