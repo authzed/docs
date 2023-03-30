@@ -6,7 +6,7 @@ Fine-Grained Access Management is an optional feature for managing access to you
 - [Access Tokens](#access-tokens) identify Service Accounts.
 - [Permissions](#roles-and-permissions) map to [SpiceDB API](https://buf.build/authzed/api/docs/main:authzed.api.v1) calls, an optional FGAM Caveat defined as a [CEL expression](https://github.com/google/cel-spec), and are associated with a Role.
 - [Roles](#roles-and-permissions) define a collection of Permissions.
-- [Policies](#Policy) bind a Service Account to a Role
+- [Policies](#policy) bind a Service Account to a Role
 
 ## Concepts
 
