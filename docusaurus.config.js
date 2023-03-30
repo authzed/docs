@@ -6,7 +6,7 @@ module.exports = {
     'Documentation for Authzed, the planet-scale, serverless database platform for SpiceDB.',
   favicon: 'img/favicon.svg',
   url: 'https://authzed.com',
-  baseUrl: '/docs/',
+  baseUrl: env('DOCUSAURUS_BASE_URL', '/'),
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'throw',
   staticDirectories: ['static'],
