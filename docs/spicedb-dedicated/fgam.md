@@ -1,42 +1,45 @@
 # Fine-Grained Access Management
 
-Fine-Grained Access Management is an optional feature used to manage the access to permission systems deployed with SpiceDB Dedicated.
-Those familiar with configuring IAM on any major cloud provider should feel comfortable with the basic concepts:
+Fine-Grained Access Management is an optional feature for managing access to your SpiceDB Permissions Systems deployed with SpiceDB Dedicated. Those familiar with configuring IAM on any major cloud provider should feel comfortable with the basic concepts:
 
-- [Service Accounts](#service-accounts) represent workloads (e.g. an application calling the SpiceDB API)
-- [Roles](#roles) grant access to APIs and subsets of relationships using [CEL expressions]
+- [Service Accounts](#service-accounts) represent workloads (e.g., an application calling the [SpiceDB API](https://buf.build/authzed/api/docs/main:authzed.api.v1))
+- [Tokens](#tokens) identify Service Accounts.
+- [Permissions](#roles-and-permissions) map to [SpiceDB API](https://buf.build/authzed/api/docs/main:authzed.api.v1) calls, an optional FGAM Caveat defined as a [CEL expression](https://github.com/google/cel-spec), and are associated with a Role.
+- [Roles](#roles-and-permissions) define a collection of Permissions.
 - [Policies](#policy) bind a Service Account to a Role
 
 ## Concepts
 
 ### Service Accounts
 
-Service Accounts are used to represent your workloads.
-We recommend creating a Service Account for each application that will access the SpiceDB API.
+Service Accounts represent your workloads. We recommend creating a Service Account for each application that will access the [SpiceDB API](https://buf.build/authzed/api/docs/main:authzed.api.v1).
 
-A Service Account can have zero or more access tokens which are a long-lived credentials that identify the Service Account.
-SpiceDB clients must provide a token in the Authorization header of an API request in order to perform actions granted to the Service Account through [Roles](#roles) bound by [Policies](#policy).
+A Service Account can have zero or more Tokens.
 
-### Roles
+### Tokens
 
-Roles are lists of permissions for accessing the [SpiceDB API] that can be granted to zero or more [Service Accounts](#service-accounts) via [Policies](#policy).
-Each permission specifies an RPC and an optional [CEL expression] which is evaluated at runtime to determine whether or not to grant the permission.
+Tokens are long-lived credentials that identify the Service Account.
+SpiceDB clients must provide a Token in the Authorization header of an API request to perform actions granted to the Service Account through [Roles](#roles-and-permissions) bound by [Policies](#policy).
 
-Adding the permission to a Role means each [Service Accounts](#service-accounts) assigned the Role will have the corresponding API access.
-Calling the API method won't be authorized unless a [Service Accounts](#service-accounts) has been granted explicit access via a Role and a [Policy](#policy) binding it.
+### Roles and Permissions
 
-#### Advanced Roles with Conditions
+Roles are lists of Permissions for accessing the [SpiceDB API](https://buf.build/authzed/api/docs/main:authzed.api.v1). You grant Roles to zero or more [Service Accounts](#service-accounts) via [Policies](#policy).
 
-Fine-Grained Access Management offers advanced permissions by letting users define dynamic conditions that need to be met at request time for the request to be authorized.
-This is achieved by augmenting fine-grained permissions with Google's [CEL expressions] language.
+Each Permission specifies an API call and an optional [CEL expression](https://github.com/google/cel-spec), which is evaluated at runtime to determine whether or not to grant the Permission.
 
-Each role permission provides an input text box to introduce an conditional expression, which is optional.
+Adding the Permission to a Role means each [Service Account](#service-accounts) assigned the Role will have the corresponding API access. Calling the API method will only be authorized if a [Service Account](#service-accounts) has been granted direct access via a Role and a [Policy](#policy) binding it.
+
+### Advanced Roles with Conditions
+
+Fine-Grained Access Management offers advanced Permissions by letting users define dynamic conditions that must be met at request time for the request to be authorized. This is achieved by augmenting fine-grained Permissions with Google's [CEL expressions](https://github.com/google/cel-spec) language.
+
+Each Permission provides an input text box to introduce an optional conditional expression.
 When included, an API request will be authorized if:
 
-- the service account has been granted a permission
-- the expression of the permission is met
+- the Service Account has been granted a Permission
+- the expression of the Permission is met
 
-SpiceDB Dedicated will expose the protobuffer payload to the expression language, so the following variables will be available to be used in the expression:
+SpiceDB Dedicated will expose the protobuf payload to the expression language, so the following variables are available in the expression:
 
 - `WriteRelationshipsRequest`
 - `ReadRelationshipsRequest`
@@ -49,80 +52,78 @@ SpiceDB Dedicated will expose the protobuffer payload to the expression language
 - `ExpandPermissionTreeRequest`
 - `WatchRequest`
 
-This is powerful because it let's you extend the logic to authorize an API request beyond "granted / not granted".
-Let's have a look at a few examples of what can be done:
+This lets you extend the logic to authorize an API request beyond "granted / not granted".
+Here are a few examples:
 
-| Example | Expresssion |
-|---|---|
-| Grants permissions to update only a specific type of resource on a write request  | `WriteRelationshipsRequest.updates.all(x, x.relationship.resource.object_type == "resource")`  |
-|  Grants permission to update only a specific type of subject on a write request | `WriteRelationshipsRequest.updates.all(x, x.relationship.subject.object.object_type == "user")`  |
-| Allows only write operations that use `CREATE`  | `WriteRelationshipsRequest.updates.all(x, x.operation == authzed.api.v1.RelationshipUpdate.Operation.OPERATION_CREATE)`  |
-| Allows reading only relationships of a specific type of resource type | `ReadRelationshipsRequest.relationship_filter.resource_type == "resource"`  |
+| Example | Expression |
+| --- | --- |
+| Grants Permissions to update only a specific type of resource on a write request | `WriteRelationshipsRequest.updates.all(x, x.relationship.resource.object_type == "resource")` |
+| Grants Permission to update only a specific type of subject on a write request | `WriteRelationshipsRequest.updates.all(x, x.relationship.subject.object.object_type == "user")` |
+| Allows only write operations that use CREATE | `WriteRelationshipsRequest.updates.all(x, x.operation == authzed.api.v1.RelationshipUpdate.Operation.OPERATION_CREATE)` |
+| Allows reading only relationships of a specific type of resource type | `ReadRelationshipsRequest.relationship_filter.resource_type == "resource"` |
 | Blocks writing the schema that contain specific strings | `!WriteSchemaRequest.schema.contains("blockchain")` |
-| Only allows checking a specific permission | `CheckPermissionRequest.permission != "admin"` |
-| Only allows looking up resources after a specific permission | `LookupResourcesRequest.permission != "admin"` |
+| Only allows checking a specific Permission | `CheckPermissionRequest.permission != "admin"` |
+| Only allows looking up resources after a specific Permission | `LookupResourcesRequest.permission != "admin"` |
 
-Any of the public API types will be avaliable to the expression language, so you can traverse any type and their fields using language operators.
-For more details on CEL's language definition, please refer to [CEL language specification].
+Any Public API type will be available to the CEL expression so that you can traverse any type and its fields using language operators.
+For more details on CEL's language definition, please refer to [CEL language specification](https://github.com/google/cel-spec/blob/81e07d7cf76e7fc89b177bd0fdee8ba6d6604bf5/doc/langdef.md).
 
 ### Policy
 
-Policies bind [Roles](#roles) to [Service Accounts](#service-accounts).
-Each Policy represents a 1:1 mapping of Service Account to Role.
-Binding multiple Roles to a single Service Account is additive: if any of the Roles have a permission, then that granted that permission.
+Policies bind [Roles](#roles-and-permissions) to [Service Accounts](#service-accounts). Each Policy represents a 1:1 mapping of a Service Account to Role. Binding multiple Roles to a single Service Account is additive, so if any of the Roles have a Permission, then that Service Account receives that Permission.
 
-## Example: assign read-only role to service account
+## Example: Assign a `read-only` Role to Service Account
 
-Let's illustrate how you can create a read-only role for your service.
-You should start by making sure your Permission System has Fine-Grained Access Management enabled.
-This can be done at permission system creation time, by enabling the corresponding option.
+### Pre-Requisites
 
-![Create Permission System with FGAM Enabled](/img/fgam/create-ps-fgam.png)
+Let's illustrate how you can create a `read-only` Role for your Service Account.
+Start by ensuring your Permissions System has enabled *Fine-Grained Access Management*. You can do this by enabling the corresponding option while creating a Permissions System.
 
-Once your permissions system has been created, you should be able to access the "Access Management" menu on your Permission System.
-You'd be greeted with the list of available service accounts, which should be empty.
-If you hit "Create Service Account", you'd be prompted to introduce a display name and a description.
-Once you hit "Create Service Account", the information page is shown, with the global ID of the service, and the date and time of creation.
+![/img/fgam/create-ps-fgam.png](/img/fgam/create-ps-fgam.png)
 
-The Service Account page now shows the new service with the values provided, and you can use the bin icon on the right side of the entry to remove the Service Account.
+### Create a Service Account
 
-![Create Service Account Animation](/img/fgam/create-service-account.gif)
+Once you have a Permissions System, click *Access Management* from the left navigation area. Now you will see a list of empty Service Accounts.
+Create a Service Account by hitting *Create Service Account*, and providing a Display Name and Description.
 
-Next let's go ahead and create a role that only has access to read-only operations on SpiceDB's API.
-You'd hit the "Create Role" button and will be prompted to introduce a display name and a description.
-In "API Permissions" you'd be offered with a drop-down with all of SpiceDB's public APIs.
-Hit "Add Api Permission" if you'd like the role to have that permission.
-The list of permissions currently in the role will be shown below.
-You should leave the "Optional Expression" empty for now.
+Now you’ll see the information page, with the global ID of the Service Account, and the date and time of creation.
 
-Once created, you'd be shown with the role information page, which includes the generated unique ID and the date and time of creation.
-If you go back to the roles page, you should see your new read-only role listed there, and similarly to service accounts, a bin icon is shown on the right side of the entry to delete the role if you wish.
+Go back to see the Service Account page, which now lists the new Service. To remove the Service, use the bin icon on the right side of the entry.
 
-Please note Roles are immutable at the moment, but we will consider adding support for editing roles in the future.
+![/img/fgam/create-service-account.gif](/img/fgam/create-service-account.gif)
 
-![Create Role Animation](/img/fgam/create-role.gif)
+### Create a Role
 
-This newly created role can now be granted to any service account by binding them through a Policy.
-Head out to the Policy page, which gives you an overview of all existing policies.
+Next, let's go ahead and create a Role that only has access to `read-only` operations on your Permissions System.
+Hit *Create Role*, and provide a Display Name and Description.
+In the *API Permissions,* dropdown, you can choose from all of SpiceDB's APIs.
+To add a Permission to your Role, hit *Add API Permission*.
+When you're done, you'll see a list of Permissions currently associated with the Role.
+Leave the *Optional Expression* empty for now.
 
-If you hit the create policy, you'd be given the option to select the principal and the assigned role.
-We will choose our demo service and hit "Create Policy".
-Upon completion you'll be shown with the policy page, from which you can navigate to either the service account or the role.
+Now go back to the Role page, and you'll see your new `read-only` Role listed. To remove the Role, use the bin icon on the right side of the entry.
 
-![Create Policy Animation](/img/fgam/create-policy.gif)
+![/img/fgam/create-role.gif](/img/fgam/create-role.gif)
 
-The last step is to issue a token for our service account.
-These are long-lived and so adequate secret management is warranted.
+You can now grant the Role to any Service Account by binding them with a Policy.
 
-Go once again to `Access Management > Service Accounts` and choose `service-account-demo`.
-This will take you to the service account page, which will show you `Details` and `Tokens` on the left side navigation menu.
-Hit `Tokens`, you'll be shown with the list of tokens created for that Service Account.
-If you click on `Create Token`, you'll be shown with a modal that will allow you to copy the token, or configure it in the `zed` command-line tool with a one-liner.
-Whatever option you select, the token should be available for you, and should be listed in the tokens page for your service account.
+### Create a Policy
 
-![Create Token Animation](/img/fgam/create-token.gif)
+Head to the Policy page, which gives you an overview of all existing Policies.
 
-[CEL expressions]: https://github.com/google/cel-spec
-[CEL expression]: https://github.com/google/cel-spec
-[SpiceDB API]: https://buf.build/authzed/api/docs/main:authzed.api.v1
-[CEL language specification]: https://github.com/google/cel-spec/blob/81e07d7cf76e7fc89b177bd0fdee8ba6d6604bf5/doc/langdef.md
+Hit *Create Policy*, and select the Principal and Assigned Role.
+Choose the Service Account you created above and hit *Create Policy*.
+
+![/img/fgam/create-policy.gif](/img/fgam/create-policy.gif)
+
+### Create a Token
+
+The last step is to issue a Token for your Service Account.
+⚠️ These are long-lived, so adequate secret management is warranted.
+
+Head to `Access Management > Service Accounts` and choose your Service Account.
+Hit *Tokens* from the left navigation menu on the Service Account page. Click *Create Token*.
+
+![/img/fgam/create-token.gif](/img/fgam/create-token.gif)
+
+That's it! You can now make restricted calls from your workload to your SpiceDB Permissions System.
