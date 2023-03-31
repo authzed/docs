@@ -3,7 +3,7 @@
 Fine-Grained Access Management is an optional feature for managing access to your SpiceDB Permissions Systems deployed with SpiceDB Dedicated. Those familiar with configuring IAM on any major cloud provider should feel comfortable with the basic concepts:
 
 - [Service Accounts](#service-accounts) represent workloads (e.g., an application calling the [SpiceDB API](https://buf.build/authzed/api/docs/main:authzed.api.v1))
-- [Access Tokens](#access-tokens) identify Service Accounts.
+- [Tokens](#tokens) identify Service Accounts.
 - [Permissions](#roles-and-permissions) map to [SpiceDB API](https://buf.build/authzed/api/docs/main:authzed.api.v1) calls, an optional FGAM Caveat defined as a [CEL expression](https://github.com/google/cel-spec), and are associated with a Role.
 - [Roles](#roles-and-permissions) define a collection of Permissions.
 - [Policies](#policy) bind a Service Account to a Role
@@ -14,20 +14,20 @@ Fine-Grained Access Management is an optional feature for managing access to you
 
 Service Accounts represent your workloads. We recommend creating a Service Account for each application that will access the [SpiceDB API](https://buf.build/authzed/api/docs/main:authzed.api.v1).
 
-A Service Account can have zero or more Access Tokens. 
+A Service Account can have zero or more Tokens.
 
-### Access Tokens
+### Tokens
 
-Access Tokens are long-lived credentials that identify the Service Account.
-SpiceDB clients must provide a Token in the Authorization header of an API request to perform actions granted to the Service Account through [Roles](#Roles) bound by [Policies](#Policy).
+Tokens are long-lived credentials that identify the Service Account.
+SpiceDB clients must provide a Token in the Authorization header of an API request to perform actions granted to the Service Account through [Roles](#roles-and-permissions) bound by [Policies](#policy).
 
 ### Roles and Permissions
 
-Roles are lists of Permissions for accessing the [SpiceDB API](https://buf.build/authzed/api/docs/main:authzed.api.v1). You grant Roles to zero or more [Service Accounts](#service-accounts) via [Policies](#Policy).
+Roles are lists of Permissions for accessing the [SpiceDB API](https://buf.build/authzed/api/docs/main:authzed.api.v1). You grant Roles to zero or more [Service Accounts](#service-accounts) via [Policies](#policy).
 
 Each Permission specifies an API call and an optional [CEL expression](https://github.com/google/cel-spec), which is evaluated at runtime to determine whether or not to grant the Permission.
 
-Adding the Permission to a Role means each [Service Account](#service-accounts) assigned the Role will have the corresponding API access. Calling the API method will only be authorized if a [Service Account](#service-accounts) has been granted direct access via a Role and a [Policy](#Policy) binding it.
+Adding the Permission to a Role means each [Service Account](#service-accounts) assigned the Role will have the corresponding API access. Calling the API method will only be authorized if a [Service Account](#service-accounts) has been granted direct access via a Role and a [Policy](#policy) binding it.
 
 ### Advanced Roles with Conditions
 
@@ -70,7 +70,7 @@ For more details on CEL's language definition, please refer to [CEL language spe
 
 ### Policy
 
-Policies bind [Roles](#Roles) to [Service Accounts](#service-accounts). Each Policy represents a 1:1 mapping of a Service Account to Role. Binding multiple Roles to a single Service Account is additive, so if any of the Roles have a Permission, then that Service Account receives that Permission.
+Policies bind [Roles](#roles-and-permissions) to [Service Accounts](#service-accounts). Each Policy represents a 1:1 mapping of a Service Account to Role. Binding multiple Roles to a single Service Account is additive, so if any of the Roles have a Permission, then that Service Account receives that Permission.
 
 ## Example: Assign a `read-only` Role to Service Account
 
@@ -124,6 +124,6 @@ The last step is to issue a Token for your Service Account.
 Head to `Access Management > Service Accounts` and choose your Service Account.
 Hit *Tokens* from the left navigation menu on the Service Account page. Click *Create Token*.
 
-![/img/fgam/create-Token.gif](/img/fgam/create-token.gif)
+![/img/fgam/create-token.gif](/img/fgam/create-token.gif)
 
 That's it! You can now make restricted calls from your workload to your SpiceDB Permissions System. 
