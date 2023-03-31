@@ -57,13 +57,13 @@ Here are a few examples:
 
 | Example | Expression |
 | --- | --- |
-| Grants Permissions to update only a specific type of resource on a write request | WriteRelationshipsRequest.updates.all(x, x.relationship.resource.object_type == "resource") |
-| Grants Permission to update only a specific type of subject on a write request | WriteRelationshipsRequest.updates.all(x, x.relationship.subject.object.object_type == "user") |
-| Allows only write operations that use CREATE | WriteRelationshipsRequest.updates.all(x, x.operation == authzed.api.v1.RelationshipUpdate.Operation.OPERATION_CREATE) |
-| Allows reading only relationships of a specific type of resource type | ReadRelationshipsRequest.relationship_filter.resource_type == "resource" |
-| Blocks writing the schema that contain specific strings | !WriteSchemaRequest.schema.contains("blockchain") |
-| Only allows checking a specific Permission | CheckPermissionRequest.Permission != "admin" |
-| Only allows looking up resources after a specific Permission | LookupResourcesRequest.Permission != "admin" |
+| Grants Permissions to update only a specific type of resource on a write request | `WriteRelationshipsRequest.updates.all(x, x.relationship.resource.object_type == "resource")` |
+| Grants Permission to update only a specific type of subject on a write request | `WriteRelationshipsRequest.updates.all(x, x.relationship.subject.object.object_type == "user")` |
+| Allows only write operations that use CREATE | `WriteRelationshipsRequest.updates.all(x, x.operation == authzed.api.v1.RelationshipUpdate.Operation.OPERATION_CREATE)` |
+| Allows reading only relationships of a specific type of resource type | `ReadRelationshipsRequest.relationship_filter.resource_type == "resource"` |
+| Blocks writing the schema that contain specific strings | `!WriteSchemaRequest.schema.contains("blockchain")` |
+| Only allows checking a specific Permission | `CheckPermissionRequest.Permission != "admin"` |
+| Only allows looking up resources after a specific Permission | `LookupResourcesRequest.Permission != "admin"` |
 
 Any Public API type will be available to the CEL expression so that you can traverse any type and its fields using language operators.
 For more details on CEL's language definition, please refer to [CEL language specification](https://github.com/google/cel-spec/blob/81e07d7cf76e7fc89b177bd0fdee8ba6d6604bf5/doc/langdef.md).
