@@ -84,7 +84,7 @@ Start by ensuring your Permissions System has enabled *Fine-Grained Access Manag
 ### Create a Service Account
 
 Once you have a Permissions System, click *Access Management* from the left navigation area. Now you will see a list of empty Service Accounts.
-Create a Service Account by hitting *Create Service Account*, and providing a Display Name and Description. 
+Create a Service Account by hitting *Create Service Account*, and providing a Display Name and Description.
 
 Now you’ll see the information page, with the global ID of the Service Account, and the date and time of creation.
 
@@ -126,4 +126,4 @@ Hit *Tokens* from the left navigation menu on the Service Account page. Click *C
 
 ![/img/fgam/create-token.gif](/img/fgam/create-token.gif)
 
-That's it! You can now make restricted calls from your workload to your SpiceDB Permissions System. 
+That's it! You can now make restricted calls from your workload to your SpiceDB Permissions System.
