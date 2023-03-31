@@ -62,8 +62,8 @@ Here are a few examples:
 | Allows only write operations that use CREATE | `WriteRelationshipsRequest.updates.all(x, x.operation == authzed.api.v1.RelationshipUpdate.Operation.OPERATION_CREATE)` |
 | Allows reading only relationships of a specific type of resource type | `ReadRelationshipsRequest.relationship_filter.resource_type == "resource"` |
 | Blocks writing the schema that contain specific strings | `!WriteSchemaRequest.schema.contains("blockchain")` |
-| Only allows checking a specific Permission | `CheckPermissionRequest.Permission != "admin"` |
-| Only allows looking up resources after a specific Permission | `LookupResourcesRequest.Permission != "admin"` |
+| Only allows checking a specific Permission | `CheckPermissionRequest.permission != "admin"` |
+| Only allows looking up resources after a specific Permission | `LookupResourcesRequest.permission != "admin"` |
 
 Any Public API type will be available to the CEL expression so that you can traverse any type and its fields using language operators.
 For more details on CEL's language definition, please refer to [CEL language specification](https://github.com/google/cel-spec/blob/81e07d7cf76e7fc89b177bd0fdee8ba6d6604bf5/doc/langdef.md).
