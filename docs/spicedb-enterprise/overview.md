@@ -1,6 +1,6 @@
 # SpiceDB Enterprise
 
-SpiceDB Enterprise is the Authzed product for running private clusters operated by you on your own premises.
+SpiceDB Enterprise is the AuthZed product for running private clusters operated by you on your own premises.
 
 - Clusters operate in your own production environment inaccessible to anyone else.
 - Your operations team takes point only escalating to experts at Authzed in case of an emergency.
@@ -17,9 +17,9 @@ SpiceDB Enterprise is a collection of entirely optional subscriptions:
 
 For more information, you can review the [pricing page] or [schedule an introductory call]
 
-[Gold Support]: /support#gold-support
-[Silver Support]: /support#silver-support
-[SRE Tooling]: #what-is-included-in-the-sre-tooling-package
+[gold support]: /support#gold-support
+[silver support]: /support#silver-support
+[sre tooling]: #what-is-included-in-the-sre-tooling-package
 [pricing page]: https://authzed.com/pricing
 [schedule an introductory call]: https://authzed.com/contact/?utm_source=docs
 
@@ -38,7 +38,7 @@ Container images for the following:
   - Mimics production workloads by executing API calls sequences with weights and a target query rate
   - Powers the metrics behind [status.authzed.com]
 
-[Dashboard]: https://app.authzed.com
+[dashboard]: https://app.authzed.com
 [play.authzed.com]: https://play.authzed.com
 [status.authzed.com]: https://status.authzed.com
 
@@ -55,8 +55,8 @@ You can read more about keyless container signing and verification in the [cosig
 
 [cosign]: https://github.com/sigstore/cosign
 [rekor transparency log]: https://rekor.sigstore.dev
-[Linux Foundation's]: https://www.linuxfoundation.org
-[OpenSSF]: https://openssf.org
+[linux foundation's]: https://www.linuxfoundation.org
+[openssf]: https://openssf.org
 [cosign documentation]: https://github.com/sigstore/cosign/blob/main/KEYLESS.md
 
 ## Recommended environment for SpiceDB Enterprise
