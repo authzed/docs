@@ -180,7 +180,7 @@ ALTER ZONE default CONFIGURE ZONE USING gc.ttlseconds = 90000;
 | Parameter            | Description                                | Example                                                                                       |
 | -------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------- | --- |
 | `datastore-engine`   | the datastore engine                       | `--datastore-engine=mysql`                                                                    |
-| `datastore-conn-uri` | connection string used to connect to MySQL | `--datastore-conn-uri="mysql:password@localhost:5432/spicedb?parseTime=True&sslmode=disable"` |     |
+| `datastore-conn-uri` | connection string used to connect to MySQL | `--datastore-conn-uri="user:password@(localhost:3306)/spicedb?parseTime=True"` |     |
 
 ##### MySQL Time
 
@@ -188,7 +188,7 @@ ALTER ZONE default CONFIGURE ZONE USING gc.ttlseconds = 90000;
 `--datastore-conn-uri` **must** contain `parseTime=true` as a query parameter
 in order support time-based operations such as Garbage Collection in SpiceDB.
 
-Example: `--datastore-conn-uri="mysql:password@localhost:5432/spicedb?sslmode=disable&parseTime=True"`
+Example: `--datastore-conn-uri="username:password@(localhost:3306)/spicedb?parseTime=True"`
 :::
 
 #### Optional Parameters
