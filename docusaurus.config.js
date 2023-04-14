@@ -89,6 +89,9 @@ module.exports = {
       '@docusaurus/plugin-client-redirects',
       {
         redirects: [
+          { to: '/spicedb-dedicated/overview', from: '/products/dedicated' },
+          { to: '/spicedb-enterprise/overview', from: '/products/enterprise' },
+          { to: '/spicedb-serverless/overview', from: '/products/serverless' },
           { to: '/reference/clients', from: '/reference/zed' },
           {
             to: '/reference/glossary',

@@ -6,7 +6,7 @@
 - Clusters are autonomously configured and scaled without any configuration necessary.
 - Provision and manage permission systems and view real time metrics all from one place: our dashboard.
 
-[SpiceDB Serverless]: https://app.authzed.com/?utm_source=docs&utm_content=spicedb+serverless
+[spicedb serverless]: https://app.authzed.com/?utm_source=docs&utm_content=spicedb+serverless
 
 ## Pricing
 
@@ -16,11 +16,11 @@ Customers are **charged monthly** based on two dimensions: the number of [relati
 
 [relationships]: /reference/glossary#relationship
 [dispatched operations]: #what-counts-as-a-dispatched-operation
-[API]: /reference/api
-[Authzed]: https://app.authzed.com
+[api]: /reference/api
+[authzed]: https://app.authzed.com
 
 | Dimension             | Price Per 1 miliion |
-|-----------------------|---------------------|
+| --------------------- | ------------------- |
 | Relationships         | $1 per 1 million    |
 | Dispatched Operations | $1 per 1 million    |
 
@@ -42,7 +42,7 @@ The count of dispatched and cached operations can be viewed in the `Billing` pan
 
 ### What counts as a "dispatched operation"?
 
-A **dispatched operation** is a single *non-cached* operation performed by Authzed to resolve the answer to the API request.
+A **dispatched operation** is a single _non-cached_ operation performed by Authzed to resolve the answer to the API request.
 
 The number of dispatched operations depends heavily on the type of [API] being called, the complexity of the permissions system's [schema] and how many of those operations have been cached from previous [API] calls.
 
@@ -52,19 +52,19 @@ The number of dispatched operations depends heavily on the type of [API] being c
 
 Below are the estimations for determining the worst-case dispatch count for an API call:
 
-| API                    | Dispatch Count                                      |
-|------------------------|-----------------------------------------------------|
+| API                    | Dispatch Count                                       |
+| ---------------------- | ---------------------------------------------------- |
 | [CheckPermission]      | The number of non-cached sub-problems to be computed |
 | [ExpandPermissionTree] | The number of non-cached sub-problems to be computed |
 | [LookupResources]      | The number of non-cached sub-problems to be computed |
-| [WriteRelationships]   | The number of preconditions + `1` for the write     |
-| [DeleteRelationships]  | The number of preconditions + `1` for the delete    |
+| [WriteRelationships]   | The number of preconditions + `1` for the write      |
+| [DeleteRelationships]  | The number of preconditions + `1` for the delete     |
 
-[CheckPermission]: https://buf.build/authzed/api/docs/main:authzed.api.v1#CheckPermission
-[ExpandPermissionTree]: https://buf.build/authzed/api/docs/main:authzed.api.v1#ExpandPermissionTree
-[LookupResources]: https://buf.build/authzed/api/docs/main:authzed.api.v1#LookupResources
-[WriteRelationships]: https://buf.build/authzed/api/docs/main:authzed.api.v1#WriteRelationships
-[DeleteRelationships]: https://buf.build/authzed/api/docs/main:authzed.api.v1#DeleteRelationships
+[checkpermission]: https://buf.build/authzed/api/docs/main:authzed.api.v1#CheckPermission
+[expandpermissiontree]: https://buf.build/authzed/api/docs/main:authzed.api.v1#ExpandPermissionTree
+[lookupresources]: https://buf.build/authzed/api/docs/main:authzed.api.v1#LookupResources
+[writerelationships]: https://buf.build/authzed/api/docs/main:authzed.api.v1#WriteRelationships
+[deleterelationships]: https://buf.build/authzed/api/docs/main:authzed.api.v1#DeleteRelationships
 
 #### Example: CheckPermission
 
@@ -95,7 +95,7 @@ DBG set log level new level=debug
 DBG extracted response dispatch metadata cached=3 dispatch=0
 ```
 
-The number of dispatched operations can be found in `dispatch`, while the number of *cached* operations can be found as `cached`
+The number of dispatched operations can be found in `dispatch`, while the number of _cached_ operations can be found as `cached`
 
 :::note
 The number of cached vs dispatched operations will change over time based on the usage of the API
