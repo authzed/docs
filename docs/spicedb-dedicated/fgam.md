@@ -122,6 +122,6 @@ The last step is to issue a Token for your Service Account.
 Head to `Access Management > Service Accounts` and choose your Service Account.
 Hit *Tokens* from the left navigation menu on the Service Account page. Click *Create Token*.
 
-![/img/fgam/create-Token.gif](/img/fgam/create-Token.gif)
+![/img/fgam/create-Token.gif](/img/fgam/create-token.gif)
 
 That's it! You can now make restricted calls from your workload to your SpiceDB Permissions System. 
