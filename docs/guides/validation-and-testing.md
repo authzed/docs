@@ -29,6 +29,7 @@ This functionality is also provided in the form of a [GitHub Action], for use in
 
 ```yaml
 steps:
+- uses: "actions/checkout@v3"
 - uses: "authzed/action-spicedb-validate@v1"
   with:
     validationfile: "myschema.zaml"
