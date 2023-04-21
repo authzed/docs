@@ -6,7 +6,7 @@ SpiceDB Dedicated is AuthZed's managed, hosted version of [SpiceDB Enterprise] f
 - Each deployment operates in its own cloud account and peering only with your private network.
 - Dedicated clusters can allocate resources to multiple SpiceDB clusters.
 
-[spicedb enterprise]: /spicedb-enterprise/overview
+[spicedb enterprise]: /spicedb-self-hosted/overview
 
 ## What is included in SpiceDB Dedicated?
 
