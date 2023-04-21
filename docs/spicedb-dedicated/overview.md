@@ -15,11 +15,7 @@ SpiceDB Dedicated delivers raw compute where users choose how they want to provi
 Compute is purchasable in buckets that equate to what can operate a normalized SpiceDB cluster at 600 permission checks per second.
 Each bucket can only be allocated to one cloud region.
 
-Additionally, the following can be purchased by SpiceDB Dedicated users:
-
-- [Gold Support]: 24/7 1-hour initial response SLA
-- [Silver Support]: business-hours 24-hour initial response SLA
-- Solutions Engineering: 20-hour increments of solutions engineering to aid application integration or SpiceDB feature development
+SpiceDB Dedicated is backed by our Uptime SLA, and monitored 24/7 by an on-call engineer. Customer's can leverage our Support Desk or Slack to submit support tickets.
 
 For more information, you can review the [pricing page] or [schedule an introductory call]
 

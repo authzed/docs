@@ -37,7 +37,7 @@ summary: "Documentation for Authzed, the planet-scale, serverless database platf
 
 SpiceDB acts as a centralized service that stores authorization data: Once stored, data can be performantly queried to answer questions such as <code>Does this user have access to this resource?</code> or <code>What are all the resources this user has access to?</code>.
 
-[Authzed] operates SpiceDB for you: serverless, dedicated or on premises.
+[Authzed] provides managed SpiceDB as a service with SpiceDB Serverless, shared infrastructure, and SpiceDB Dedicated, private infrastructure, options. You can also license a version of SpiceDB that powers our managed services for deploying in your own environemnt.
 
 ---
 
