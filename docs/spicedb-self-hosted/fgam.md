@@ -1,4 +1,4 @@
-# Using Fine-Grained Access Management with SpiceDB Self-Hosted
+# Fine-Grained Access Management in SpiceDB Self-Hosted
 
 The `spicedb-enterprise` binary exposes additional functionality through `Extenders`. These can be enabled via CLI arguments. FGAM is one such extender.
 
@@ -17,7 +17,7 @@ The `serve` command is the entry point to running SpiceDB, and you can see it ex
 - The `extender-enabled` lets you enable or disable extenders. Some are enabled by default and cannot be disabled. To enable FGAM set the flag like `--extender-enabled authzed-fgam`.
 - `--extender-authzed-fgam-endpoint` let's you define a reference to a YAML configuration file that statically defines the FGAM configuration and as is expected to be handled via a GitOps proceses. The host SpiceDB is pointed to this configuration YAML file, and will be able to spawn an embedded in-memory SpiceDB. That instance is immutable and runs the extremely fast memory datastore to minimize the overhead. 
 
-## The static configuration YAML
+## The static configuration YAML
 
 FGAM's static configuration is handled via a YAML descriptor. This descriptor describes all the different FGAM concepts like services, roles, policies and tokens. As such, it must be subject to proper secret management in your deployment environment.
 
