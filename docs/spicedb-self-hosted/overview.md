@@ -1,6 +1,6 @@
 # SpiceDB Self-Hosted
 
-SpiceDB Self-Hosted is the AuthZed product for running private clusters operated by you on your own premises.
+SpiceDB Self-Hosted is the AuthZed product for running SpiceDB (with enterprise-grade features), operated by your team, on your own premises.
 
 - Clusters operate in your own production environment inaccessible to anyone else.
 - Your operations team takes point only escalating to experts at Authzed in case of an emergency.
