@@ -15,7 +15,7 @@ The `serve` command is the entry point to running SpiceDB, and you can see it ex
 ![spicedb-enterprise serve --help](/img/fgam/self-hosted/serve-help.png)
 
 - The `extender-enabled` lets you enable or disable extenders. Some are enabled by default and cannot be disabled. To enable FGAM set the flag like `--extender-enabled authzed-fgam`.
-- `--extender-authzed-fgam-endpoint` let's you define a reference to a YAML configuration file that statically defines the FGAM configuration and as is expected to be handled via a GitOps proceses. The host SpiceDB is pointed to this configuration YAML file, and will be able to spawn an embedded in-memory SpiceDB. That instance is immutable and runs the extremely fast memory datastore to minimize the overhead. 
+- `--extender-authzed-fgam-endpoint` let's you define a reference to a YAML configuration file that statically defines the FGAM configuration and as is expected to be handled via a GitOps proceses. The host SpiceDB is pointed to this configuration YAML file, and will be able to spawn an embedded in-memory SpiceDB. That instance is immutable and runs the extremely fast memory datastore to minimize the overhead.
 
 ## The static configuration YAML
 
@@ -102,7 +102,13 @@ To generate the hash for your secret, you can run:
 echo -n thisisnotaverysecuresecret | sha256sum
 ```
 
-The result would look like this
+The token would look like this:
+
+```
+sdbst_h256_71c73ba92f2032416b18a4f4fffb2a825755bea6a8430f2622ab1f3fb35a10d0
+```
+
+And the result of introducing it in the YAML configuration would be:
 
 ```yaml
 service_account:
@@ -125,9 +131,7 @@ policy:
       - "admin"
 ```
 
-
-
-  ## Running spicedb-enterprise with static FGAM configuration
+## Running spicedb-enterprise with static FGAM configuration
 
 Rolling out FGAM for a SpiceDB that is already in production requires careful consideration. There are two ways:
 
