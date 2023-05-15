@@ -1,14 +1,14 @@
-# SpiceDB Enterprise
+# SpiceDB Self-Hosted
 
-SpiceDB Enterprise is the AuthZed product for running private clusters operated by you on your own premises.
+SpiceDB Self-Hosted is the AuthZed product for running SpiceDB (with enterprise-grade features), operated by your team, on your own premises.
 
 - Clusters operate in your own production environment inaccessible to anyone else.
 - Your operations team takes point only escalating to experts at Authzed in case of an emergency.
 - Customers are included under security embargo and are provided access to patches before public announcement.
 
-## What is included in SpiceDB Enterprise?
+## What is included in SpiceDB Self-Hosted?
 
-SpiceDB Enterprise is a collection of entirely optional subscriptions:
+SpiceDB Self-Hosted is a collection of entirely optional subscriptions:
 
 - [Gold Support]: 24/7 1-hour initial response SLA
 - [Silver Support]: business-hours 24-hour initial response SLA
