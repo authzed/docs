@@ -55,7 +55,7 @@ Each tool is installed with its ecosystem's package management tools:
 mkdir first_app && cd first_app
 go mod init first_app
 go get github.com/authzed/authzed-go
-go mod download github.com/authzed/grpcutil
+go get github.com/authzed/grpcutil
 go mod tidy
 ```
 
@@ -161,6 +161,8 @@ import (
 	pb "github.com/authzed/authzed-go/proto/authzed/api/v1"
 	"github.com/authzed/authzed-go/v1"
 	"github.com/authzed/grpcutil"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 ·
 const schema = \`definition {{ tenant }}/user {}
@@ -400,6 +402,7 @@ func main() {
 	        grpcutil.WithSystemCerts(grpcutil.VerifyCA),
     {% else %}
     	grpcutil.WithInsecureBearerToken("{{ token }}"),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
     {% endif %}
 	)
 	if err != nil {
