@@ -214,11 +214,10 @@ permission can_only_read = reader - writer
 
 Arrows allow for "walking" the heirarchy of relations (and permissions) defined for an object, referencing a permission or relation on the _resulting_ object.
 
-:::info When using the arrow operator on a subject relation, such as the `group#member` subject relation in the `relation member: user | group#member` example above,
-the resulting object is the _subject_ of the subject relation, not the relation itself.
+:::info
+When using the arrow operator on a subject relation, such as the `group#member` subject relation in the `relation member: user | group#member` example above, the resulting object is the _subject_ of the subject relation, not the relation itself.
 
-That is, an expression like `member->verb` (where `member` was a `group#member`) would reference the `verb` permission on the related `group`, 
-not the `#member`s of the `group`.
+That is, an expression like `member->verb` (where `member` was a `group#member`) would reference the `verb` permission on the related `group`, not the `#member`s of the `group`.
 :::
 
 For example, imagine a schema where a document is found under a folder:
