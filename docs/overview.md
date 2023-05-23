@@ -88,7 +88,7 @@ Log into the [Authzed dashboard] to create a serverless SpiceDB instance or [run
                 <i class="fa-brands fa-youtube"></i>
                 <img src={require("/img/youtube_WTfZsRPDv9Q.png").default} />
             </div>
-            Learn more about Zanizbar
+            Learn more about Zanzibar
         </Button>
     </a>
 </div>
