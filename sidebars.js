@@ -56,6 +56,7 @@ module.exports = {
       items: [
         'spicedb-dedicated/overview',
         'spicedb-dedicated/fgam',
+        'spicedb-dedicated/gcp',
         {
           type: 'category',
           label: 'Releases',
