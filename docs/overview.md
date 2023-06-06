@@ -28,16 +28,31 @@ summary: "Documentation for Authzed, the planet-scale, serverless database platf
 </a>
 </div>
 </div>
-<h2>Fine-grained relationship-based access control and permissions</h2>
-<h4>Based on <a href="https://authzed.com/blog/what-is-zanzibar">Google Zanzibar</a> for scalable, reliable and verifiable permissions handling</h4>
 
-## What is SpiceDB? What is Authzed?
+## What is SpiceDB?
 
-[SpiceDB] is an **open source** database system for managing security-critical fine grained permissions checking.
+SpiceDB is an open-source authorization system for managing security-critical fine grained authorization. It was inspired by [Google's Zanzibar whitepaper](https://zanzibar.tech) released in 2019 that details how Google manages to provide robust authorization to all of its core products without sacrificing performance and scale requirements. Google's Relationship-Based Access Control (ReBAC) approach has quickly become the go-to for building scalable authorization: with Slack, Carta, and Airbnb already following in Google's footsteps.
 
-SpiceDB acts as a centralized service that stores authorization data: Once stored, data can be performantly queried to answer questions such as <code>Does this user have access to this resource?</code> or <code>What are all the resources this user has access to?</code>.
+SpiceDB has grown into the most mature open-source implementation of the authorization system put forward by Google Zanzibar. SpiceDB implements Google's Zanzibar core features, along with improvements such as [SpiceDB Caveats](/reference/caveats), which let you combine policy-based authorization with relationship-based authorization. You can find the project on GitHub: [SpiceDB: Google Zanzibar-Inspired Authorization System](https://github.com/authzed/spicedb).
 
-[Authzed] provides managed SpiceDB as a service with SpiceDB Serverless, shared infrastructure, and SpiceDB Dedicated, private infrastructure, options. You can also license a version of SpiceDB that powers our managed services for deploying in your own environemnt.
+## How does SpiceDB work?
+
+SpiceDB acts as a centralized service that allows you to store authorization data as relationships. The relationship data is stored as a graph and powers authorization requests. Your graph's schema is defined using [SpiceDB's Schema Language](/reference/schema-lang) which establishes the relationships and permissions that drive authorization decisions for your workload.
+
+SpiceDB caches relationship data to performantly respond to client authorization requests, and persist the data to a datastore. Today, SpiceDB supports PostgreSQL, CockroachDB, and Google's Cloud Spanner for persisting relationships.
+
+You integrate your applications with SpiceDB's API to write your schema, read and write relationships, and perform common authorization checks, e.g., "does this user have access to this resource?" or "what are all the resources this user has access to?" For a full list of the available SpiceDB libraries head over to [Awesome SpiceDB](https://github.com/authzed/awesome-spicedb).
+
+## What is Authzed?
+
+[Authzed] provides managed SpiceDB as a service with 2 products that let you deploy highly-available SpiceDB Enterprise Permissions Systems:
+
+- [SpiceDB Serverless], our shared infrastructure offering
+- [SpiceDB Dedicated], our private infrastructure offering
+
+SpiceDB Enterprise has all the features of [SpiceDB Open-Source] with additional features to help you run confidently in production. You can also license a version of SpiceDB Enterprise for deploying in your own environement.
+
+For SpiceDB Dedicated and licensing SpiceDB Enterprise please [book a call] to learn more.
 
 ---
 
@@ -117,3 +132,7 @@ Join us on [Discord] to discuss any questions you may have!
 [buf registry]: https://buf.build/authzed/api/docs
 [install zed]: https://github.com/authzed/zed
 [read the authzed blog]: https://authzed.com/blog
+[spicedb serverless]: https://authzed.com/products/spicedb-serverless
+[spicedb dedicated]: https://authzed.com/products/spicedb-dedicated
+[spicedb open source]: https://authzed.com/products/spicedb
+[book a call]: https://authzed.com/call

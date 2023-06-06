@@ -10,9 +10,7 @@ Each of the subscriptions above includes access to our security embargo: you wil
 
 Although not required, we recommend a Support Tier if purchasing a license for SpiceDB Enterprise.
 
-For more information, please [schedule an introductory call].
-
-[schedule an introductory call]: https://authzed.com/call/?utm_source=docs
+For more information, please [book a call].
 
 ## Recommended Environment for SpiceDB Enterprise
 
@@ -21,12 +19,11 @@ The below is a minimum recommendation for an HA deployment of SpiceDB Enterprise
   - Kubernetes 1.24+
     - At least 3 x 2 vCPU, 4 GiB Memory nodes.
     - Project Contour Ingress 1.19+
-    - Certmanager 1.6+
 
 For single-region deployments, an HA deployment of PostgreSQL using RDS or similar is suffecient.
 
-For additional resiliency and multi-region support we recommend [Cockroach Lab's](https://www.cockroachlabs.com) Self-Hosted or Dedicated products.
+For additional resiliency and multi-region support we recommend [CockroachLabs'](https://www.cockroachlabs.com) CockroachDB Self-Hosted or Cloud. If deploying within GCP, we recommend [Google's Cloud Spanner](https://cloud.google.com/spanner).
 
-If deploying within GCP, Google's Spanner product provides resilience and multi-region support as well.
+For help right-sizing your deployment, please [book a call].
 
-For help right-sizing your deployment, please reachout to the AuthZed team.
+[book a call]: https://authzed.com/call

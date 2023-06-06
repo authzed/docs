@@ -1,36 +1,34 @@
 # SpiceDB Dedicated
 
-SpiceDB Dedicated is AuthZed's managed, hosted version of [SpiceDB Enterprise] for customers, with private, isolated clusters operated by our expert SRE team.
+Our most popular offering [SpiceDB Dedicated], is a fully-managed private environment for deploying and managing isolated SpiceDB Enterprise Permissions Systems. SpiceDB Enterprise is built on top of our open-source project [SpiceDB], but provides additional capabilities like [Fine-Grained Access Management](/spicedb-dedicated/fgam) for API tokens.
 
-- Deployments are located next to your workloads to keep latency low. Locked down exclusively to you.
-- Each deployment operates in its own cloud account and peering only with your private network.
-- Dedicated clusters can allocate resources to multiple SpiceDB clusters.
+## Key benefits of SpiceDB Dedicated
 
-[spicedb enterprise]: /spicedb-self-hosted/overview
+- **Low-latency**: SpiceDB Dedicated is deployed next to your applications.
+- **Private infrastructure and network**: each deployment is dedicated to your organization exclusively.
+- **Multi-region**: deploy SpiceDB Permissions Systems across multile regions with distributed permissions data.
+- **Mutli-datastore support**: choose from PostgreSQL, CockroachDB, and Spanner (GCP only).
+- Managed by our SRE team and backed by AuthZed's Uptime SLA.
 
-## What is included in SpiceDB Dedicated?
 
-SpiceDB Dedicated delivers raw compute where users choose how they want to provision SpiceDB clusters of varying sizes.
+## What's Included in SpiceDB Dedicated?
 
-Compute is purchasable in buckets that equate to what can operate a normalized SpiceDB cluster at 600 permission checks per second.
-Each bucket can only be allocated to one cloud region.
+Each SpiceDB Dedicated deployment comes with:
 
-SpiceDB Dedicated is backed by our Uptime SLA, and monitored 24/7 by an on-call engineer. Customer's can leverage our Support Desk or Slack to submit support tickets.
+- Raw compute and storage to run SpiceDB and store permissions data
+- Management console for managing and deploying SpiceDB
+- AuthZed's uptime SLA
+- 24/7 SRE monitoring
+- Email, Discord, and Slack support
 
-For more information, you can review the [pricing page] or [schedule an introductory call]
+## Where Can SpiceDB Dedicated be Deployed?
 
-[gold support]: /support#gold-support
-[silver support]: /support#silver-support
-[pricing page]: https://authzed.com/pricing
-[schedule an introductory call]: https://authzed.com/contact/?utm_source=docs
+We support AWS and GCP today, with Azure support planned. SpiceDB Dedicated can be deployed in any of the regions provided by the cloud you choose.
 
-## How is SpiceDB Dedicated isolated?
+## How to buy SpiceDB Dedicated?
 
-Compute is isolated to its own cloud provider subaccount.
-All resources are allocated into a VPC and peered only with the user's own VPC and the systems used to provision and manage these resources.
+If you're interested in deploying SpiceDB Dedicated, please [book a call] to learn more.
 
-## Pricing
-
-More information can be found on the [AuthZed pricing page].
-
-[authzed pricing page]: https://authzed.com/pricing
+[spicedb dedicated]: https://authzed.com/products/spicedb-dedicated
+[spicedb]: https://authzed.com/products/spicedb
+[book a call]: https://authzed.com/call
