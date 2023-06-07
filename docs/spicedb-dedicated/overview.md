@@ -1,6 +1,6 @@
 # SpiceDB Dedicated
 
-Our most popular offering [SpiceDB Dedicated], is a fully-managed private environment for deploying and managing isolated SpiceDB Enterprise Permissions Systems. SpiceDB Enterprise is built on top of our open-source project [SpiceDB], but provides additional capabilities like [Fine-Grained Access Management](/spicedb-dedicated/fgam) for API tokens.
+[SpiceDB Dedicated] is a fully-managed private environment for deploying and managing isolated SpiceDB Enterprise Permissions Systems. SpiceDB Enterprise is built on top of our open-source project [SpiceDB], but provides additional capabilities like [Fine-Grained Access Management](/spicedb-dedicated/fgam) for API tokens.
 
 ## Key benefits of SpiceDB Dedicated
 
