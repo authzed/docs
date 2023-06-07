@@ -187,6 +187,7 @@ func main() {
                 // grpcutil.WithBearerToken("{{ token }}"),
                 // grpcutil.WithSystemCerts(grpcutil.VerifyCA),
       	        grpcutil.WithInsecureBearerToken("{{ token }}"),
+      	        grpc.WithTransportCredentials(insecure.NewCredentials()),
     {% endif %}
 	)
 	if err != nil {
@@ -394,6 +395,8 @@ import (
 	pb "github.com/authzed/authzed-go/proto/authzed/api/v1"
 	"github.com/authzed/authzed-go/v1"
 	"github.com/authzed/grpcutil"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 ·
 func main() {
@@ -708,6 +711,8 @@ import (
 	pb "github.com/authzed/authzed-go/proto/authzed/api/v1"
 	"github.com/authzed/authzed-go/v1"
 	"github.com/authzed/grpcutil"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 ·
 func main() {
@@ -718,6 +723,7 @@ func main() {
 	        grpcutil.WithSystemCerts(grpcutil.VerifyCA),
     {% else %}
     	grpcutil.WithInsecureBearerToken("{{ token }}"),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
     {% endif %}
 	)
 	if err != nil {
