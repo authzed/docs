@@ -18,7 +18,7 @@ However, using the Playground for all development validation is not tenable: cha
 The examples below use the `zaml` suffix for the files containing schema, test relationships, assertions and expected relations. This is merely a convention, and the files are YAML. An example can be found at [test-schema.zaml]
 :::
 
-To support this use case, the [zed] CLI tool provides the `validate` command, which can be used to run the *same* validation as the Playground, over a downloaded Playground YAML file:
+To support this use case, the [zed] CLI tool provides the `validate` command, which can be used to run the _same_ validation as the Playground, over a downloaded Playground YAML file:
 
 ```sh
 $ zed validate schema-and-assertions.zaml
@@ -29,10 +29,10 @@ This functionality is also provided in the form of a [GitHub Action], for use in
 
 ```yaml
 steps:
-- uses: "actions/checkout@v3"
-- uses: "authzed/action-spicedb-validate@v1"
-  with:
-    validationfile: "myschema.zaml"
+  - uses: "actions/checkout@v3"
+  - uses: "authzed/action-spicedb-validate@v1"
+    with:
+      validationfile: "myschema.zaml"
 ```
 
 [Authzed Playground]: https://play.authzed.com
@@ -44,7 +44,7 @@ steps:
 
 In addition to schema validation, it is often important to test the actual API calls being made to [SpiceDB].
 
-To support this use case, the [SpiceDB] binary provides a specialized run mode called `serve-testing`, which runs SpiceDB in a *testing-only* mode:
+To support this use case, the [SpiceDB] binary provides a specialized run mode called `serve-testing`, which runs SpiceDB in a _testing-only_ mode:
 
 ```sh
 $ spicedb serve-testing
@@ -59,29 +59,55 @@ $ spicedb serve-testing
 
 ### Making API calls
 
-The `serve-testing` command starts SpiceDB in *Testing Mode*, which has a number of unique features:
+The `serve-testing` command starts SpiceDB in _Testing Mode_, which has a number of unique features:
 
 #### Ephemeral Data
 
-All data written is *ephemeral*: it will be lost when the process is shut down.
+All data written is _ephemeral_: it will be lost when the process is shut down.
 
 #### Normal and Read-Only API
 
-The API is served on *two* ports: By default, the normal API is served on port `50051` while a read-only version of the *same* API is served on port `50052`
+The API is served on _two_ ports: By default, the normal API is served on port `50051` while a read-only version of the _same_ API is served on port `50052`
 
 This allows for easy testing of SpiceDB in read-only mode.
 
-#### Token Isolation
+#### Authorization Header Token Isolation
 
 :::note
-It is **highly** recommended to use Token Isolation for testing
+It is **highly** recommended to use token isolation for testing
 :::
 
-If a token is provided to the API call, SpiceDB will create a **unique ephemeral datastore** for that token.
+If a token is provided to the API call in the Authorization header, SpiceDB will create a **unique ephemeral datastore** for that token.
 
-This means that multiple tests can make multiple API calls which read and write to their own **isolated version** of the Permissions System, simply by switching the token being sent to the server.
+This means that multiple tests can make multiple API calls which read and write to their own **isolated version** of the Permissions System, simply by switching the token being sent to the server in the authorization header.
 
 If no token is provided, a "default" datastore is used.
+
+##### Example
+
+```ts
+describe("some tests", () => {
+  it("should succeed", (done) => {
+    const client = NewClient(
+      "uniquetokenforthistest",
+      "localhost:50051",
+      ClientSecurity.INSECURE_LOCALHOST_ALLOWED,
+      PreconnectServices.PERMISSIONS_SERVICE | PreconnectServices.SCHEMA_SERVICE
+    );
+    ...
+  });
+
+  it("should also succeed", (done) => {
+    const client = NewClient(
+      "anotheruniquetoken",
+      "localhost:50051",
+      ClientSecurity.INSECURE_LOCALHOST_ALLOWED,
+      PreconnectServices.PERMISSIONS_SERVICE | PreconnectServices.SCHEMA_SERVICE
+    );
+    ...
+  });
+);
+```
 
 ### Preloading data
 
@@ -101,7 +127,6 @@ $ spicedb serve-testing --load-configs myschema.zaml
 The file format of the schema and test relationship data is the same as that used by the [validation tooling].
 
 [validation tooling]: #validation-of-schema-changes
-
 [SpiceDB]: https://github.com/authzed/spicedb
 
 ### Running via GitHub Action
@@ -110,9 +135,9 @@ The file format of the schema and test relationship data is the same as that use
 
 ```yaml
 steps:
-- uses: "authzed/action-spicedb@v1"
-  with:
-    version: "latest"
+  - uses: "authzed/action-spicedb@v1"
+    with:
+      version: "latest"
 ```
 
 [GitHub Action Form]: https://github.com/authzed/action-spicedb

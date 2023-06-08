@@ -61,9 +61,10 @@ Users that are willing to rely on subtle guarantees to mitigate the [New Enemy P
 
 The available strategies are:
 
-- `static` (default) - A single key (`--datastore-tx-overlap-key`) is used in all writes to ensure proper consistency
-- `prefix` (unsafe if misused) - A key with the prefix from the object type is used to protect writes with the same prefix
-- `insecure` (unsafe) - Disables the overlap strategy entirely leaving queries vulnerable to the New Enemy problem
+- `static` (default) - A single key (`--datastore-tx-overlap-key`) is used in all writes to ensure proper consistency. This has the least write throughput, but is simplest and safest.
+- `prefix` (unsafe if misused) - A key with the prefix from the object type is used to protect writes with the same prefix. For example, `subsystemA/user` would overlap with `subsystemA/document` but not `subsystemB/document`.
+- `request` (unsafe if misused) - The user provides an overlap key per request as a [gRPC request header](https://github.com/authzed/authzed-go/blob/d97cfb41027742d347391f583dd9c6d1d03ae32b/pkg/requestmeta/requestmeta.go#L26-L30). Only requests with the same overlap key will be protected. This allows an application to secure certain workflows, while getting full write performance elsewhere.
+- `insecure` (unsafe) - Disables the overlap strategy entirely, leaving queries vulnerable to the New Enemy problem, but provides the best write throughput possible on CockroachDB. Our docs on [insecure overlap](https://github.com/authzed/spicedb/blob/ec6f4ac8a298a9df2a419e46b7a9fd562bb37b33/internal/datastore/crdb/README.md) can help determine if the trade-offs of `insecure` are right for you.
 
 :::
 
