@@ -56,7 +56,14 @@ module.exports = {
       items: [
         'spicedb-dedicated/overview',
         'spicedb-dedicated/fgam',
-        'spicedb-dedicated/aws',
+        {
+          type: 'category',
+          label: 'Networking',
+          collapsed: true,
+          items: [
+            'spicedb-dedicated/networking/aws',
+          ],
+        },
         {
           type: 'category',
           label: 'Releases',
