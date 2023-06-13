@@ -56,7 +56,14 @@ module.exports = {
       items: [
         'spicedb-dedicated/overview',
         'spicedb-dedicated/fgam',
-        'spicedb-dedicated/gcp',
+        {
+          type: 'category',
+          label: 'Networking',
+          collapsed: true,
+          items: [
+            'spicedb-dedicated/networking/gcp',
+          ],
+        },
         {
           type: 'category',
           label: 'Releases',
