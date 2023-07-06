@@ -91,7 +91,7 @@ module.exports = {
         redirects: [
           { to: '/spicedb-dedicated/overview', from: '/products/dedicated' },
           { to: '/spicedb-self-hosted/overview', from: '/products/enterprise' },
-		  { to: '/spicedb-self-hosted/overview', from: '/spicedb-enterprise/overview' },
+          { to: '/spicedb-self-hosted/overview', from: '/spicedb-enterprise/overview' },
           { to: '/spicedb-serverless/overview', from: '/products/serverless' },
           { to: '/reference/clients', from: '/reference/zed' },
           {
@@ -112,6 +112,13 @@ module.exports = {
         ],
       },
     ],
+    [
+      '@docusaurus/plugin-google-gtag',
+      {
+        trackingID: env('GOOGLE_ANALYTICS_GA4', 'G-faketest'),
+        anonymizeIP: false,
+      },
+    ],
   ],
   presets: [
     [
@@ -124,9 +131,6 @@ module.exports = {
           routeBasePath: '/',
           sidebarPath: require.resolve('./sidebars.js'),
           editUrl: 'https://github.com/authzed/docs/edit/main',
-        },
-        googleAnalytics: {
-          trackingID: env('GOOGLE_ANALYTICS_UA', 'UA-faketest'),
         },
         sitemap: { changefreq: 'daily' },
         blog: false,
