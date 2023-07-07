@@ -15,6 +15,7 @@
     "@docusaurus/core": "^2.0.1",
     "@docusaurus/module-type-aliases": "^2.0.1",
     "@docusaurus/plugin-client-redirects": "^2.0.1",
+    "@docusaurus/plugin-google-gtag": "2.0.1",
     "@docusaurus/preset-classic": "^2.0.1",
     "@mdx-js/react": "^1.6.21",
     "amplitude-js": "^8.9.1",
