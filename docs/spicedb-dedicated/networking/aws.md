@@ -25,7 +25,7 @@ Before you can start using SpiceDB Dedicated, you'll need to [get in touch](http
 | IP address type    | IPV4 |
 | Security Group     | Choose a security group that allows inbound port 443 traffic from your clients |
 
-2\. Click ```Create endpoint```
+2. Click ```Create endpoint```
 
 ### Step 2: Enable DNS
 
