@@ -16,7 +16,7 @@ Before you can start using SpiceDB Dedicated, you'll need to [get in touch](http
 1. In your AWS management console for the account you want to connect to SpiceDB Dedicated, navigate to ```VPC``` → ```Endpoints``` → ```Create Endpoint``` and input the following info:
 
 | Option               | Selection            |
-| :------------------- | :------------------- |
+| :-------------------:| :-------------------:|
 | Name tag         | Choose whatever you want |
 | Service category   | Select “Other endpoint services” |
 | Service name       | Enter the "service name" provided to you by the AuthZed team |
