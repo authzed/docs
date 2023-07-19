@@ -31,7 +31,7 @@ Before you can start using SpiceDB Dedicated, you'll need to [get in touch](http
 
 1. Navigate to the Endpoint you just created
 2. Select the ```Actions``` drop down and then select ```Modify private DNS name``` from the dropdown
-3. Check ```enable for this endpoint```
+3. Check ```Enable for this endpoint```
 4. Click ```save changes```
 
 ## Verifying Connectivity
