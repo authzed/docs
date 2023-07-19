@@ -38,7 +38,7 @@ Before you can start using SpiceDB Dedicated, you'll need to [get in touch](http
 
 ### Step 3: Add a Permission System
 
-You can skip this section if you've already created a permission system.
+You can skip this section if you've already created a SpiceDB Permissions System.
 
 1. Login to your SpiceDB management console
 2. On the homepage, select ```Add Permission System```
