@@ -13,7 +13,7 @@ Before you can start using SpiceDB Dedicated, you'll need to [get in touch](http
 
 ### Step 1: Configure the VPC Endpoint
 
-1. In your AWS management console for the account you want to connect to SpiceDB, navigate to ```VPC``` → ```Endpoints``` → ```Create Endpoint``` and input the following info:
+1. In your AWS management console for the account you want to connect to SpiceDB Dedicated, navigate to ```VPC``` → ```Endpoints``` → ```Create Endpoint``` and input the following info:
 
 | Option               | Selection            |
 | :------------------- | :------------------- |
