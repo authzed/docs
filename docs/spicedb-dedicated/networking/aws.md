@@ -36,7 +36,7 @@ Before you can start using SpiceDB Dedicated, you'll need to [get in touch](http
 
 ## Verifying Connectivity
 
-### Step 3: Add a Permission System
+### Step 3: Add a Permissions System
 
 You can skip this section if you've already created a SpiceDB Permissions System.
 
