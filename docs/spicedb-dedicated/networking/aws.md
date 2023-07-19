@@ -54,7 +54,6 @@ zed context set permission_system_name example.com:443 sdbst_h256_123
 
 ``` zed
 zed schema write example.yaml
-```
 
 ``` zed
 zed schema read
