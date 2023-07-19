@@ -19,7 +19,7 @@ Before you can start using SpiceDB Dedicated, you'll need to [get in touch](http
 | :------------------- | :------------------- |
 | Name tag         | Choose whatever you want |
 | Service category   | Select “Other endpoint services” |
-| Service name       | Enter the "service name" provided to you by the Authzed team |
+| Service name       | Enter the "service name" provided to you by the AuthZed team |
 | VPC                | Choose the VPC from where you will deploy your SpiceDB client. DNS resolution for your SpiceDB cluster endpoint address will only be available from this VPC. |
 | Subnets            | You can deploy your VPC endpoint in one subnet per AZ. We recommend choosing all AZs where SpiceDB clients will exist. |
 | IP address type    | IPV4 |
