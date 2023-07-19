@@ -59,4 +59,4 @@ zed schema write example.yaml
 zed schema read
 ```
 
-The last Zed command should display the schema to your terminal. If you encounter an error with any of the Zed commands, reach out to us via [support@authzed.com](mailto:support@authzed.com) or via your shared Slack channel.
+If everything works, you should see a SpiceDB Schema in your terminal.
