@@ -52,7 +52,6 @@ To quickly verify connectivity from client machine with the [Zed CLI tool](https
 zed context set permission_system_name example.com:443 sdbst_h256_123
 ```
 
-``` zed
 zed schema write example.yaml
 
 zed schema read
