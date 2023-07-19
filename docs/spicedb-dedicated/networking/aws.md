@@ -1,7 +1,7 @@
 
 # AWS PrivateLink
 
-Most users of SpiceDB Dedicated privately connect to SpiceDB with AWS [PrivateLink](https://docs.aws.amazon.com/whitepapers/latest/aws-privatelink/aws-privatelink.html). PrivateLink enables private connections from your AWS accounts and VPCs to SpiceDB permission systems in your SpiceDB Dedicated environment. Users of SpiceDB Dedicated also have the option to configure SpiceDB to be accessed over the open internet.
+Most users of SpiceDB Dedicated privately connect to SpiceDB with AWS [PrivateLink](https://docs.aws.amazon.com/whitepapers/latest/aws-privatelink/aws-privatelink.html). PrivateLink enables private connections from your AWS accounts and VPCs to SpiceDB Permissions Systems in your SpiceDB Dedicated environment. Users of SpiceDB Dedicated can also have their SpiceDB Permissions Systems configured for access over the open internet.
 
 ## Connect to SpiceDB Dedicated with PrivateLink
 
