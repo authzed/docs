@@ -9,7 +9,7 @@ Most users of SpiceDB Dedicated privately connect to SpiceDB with AWS [PrivateLi
 
 ### Prerequisites
 
-Before you can start using SpiceDB Dedicated, you'll need to [get in touch](https://authzed.com/call) with the Authzed team.
+Before you can start using SpiceDB Dedicated, you'll need to [get in touch](https://authzed.com/call) with the AuthZed team.
 
 ### Step 1: Configure the VPC Endpoint
 
