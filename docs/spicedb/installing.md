@@ -83,7 +83,7 @@ A variety of [clients/tools] can be used to interact with the API.
 [zed] is available via brew on macOS and Linux.
 
 ```sh
-brew install authzed/tap/spicedb
+brew install authzed/tap/zed
 ```
 
 ```sh
