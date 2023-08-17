@@ -113,10 +113,10 @@ module.exports = {
       },
     ],
     [
-      '@docusaurus/plugin-google-gtag',
+      "@twilio-labs/docusaurus-plugin-segment",
       {
-        trackingID: env('GOOGLE_ANALYTICS_GA4', 'G-faketest'),
-        anonymizeIP: false,
+        writeKey: env('SEGMENT_WRITE_KEY', 'faketest'),
+        allowedInDev: false,
       },
     ],
   ],
