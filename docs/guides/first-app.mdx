@@ -177,18 +177,22 @@ definition {{ tenant }}/post {
 }\`
 ·
 func main() {
+{% if authzed %}
+	systemCerts, err := grpcutil.WithSystemCerts(grpcutil.VerifyCA)
+	if err != nil {
+		log.Fatalf("unable to load system CA certificates: %s", err)
+	}
+·
 	client, err := authzed.NewClient(
 		"{{ endpoint }}",
-    {% if authzed %}
-            grpcutil.WithBearerToken("{{ token }}"),
-	        grpcutil.WithSystemCerts(grpcutil.VerifyCA),
-    {% else %}
-            // NOTE: For SpiceDB behind TLS, use:
-                // grpcutil.WithBearerToken("{{ token }}"),
-                // grpcutil.WithSystemCerts(grpcutil.VerifyCA),
-      	        grpcutil.WithInsecureBearerToken("{{ token }}"),
-      	        grpc.WithTransportCredentials(insecure.NewCredentials()),
-    {% endif %}
+		grpcutil.WithBearerToken("{{ token }}"),
+		systemCerts,
+{% else %}
+	client, err := authzed.NewClient(
+		"{{ endpoint }}",
+		grpcutil.WithInsecureBearerToken("{{ token }}"),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+{% endif %}
 	)
 	if err != nil {
 		log.Fatalf("unable to initialize client: %s", err)
@@ -400,15 +404,22 @@ import (
 )
 ·
 func main() {
+{% if authzed %}
+	systemCerts, err := grpcutil.WithSystemCerts(grpcutil.VerifyCA)
+	if err != nil {
+		log.Fatalf("unable to load system CA certificates: %s", err)
+	}
+·
 	client, err := authzed.NewClient(
 		"{{ endpoint }}",
-    {% if authzed %}
-            grpcutil.WithBearerToken("{{ token }}"),
-	        grpcutil.WithSystemCerts(grpcutil.VerifyCA),
-    {% else %}
-    	grpcutil.WithInsecureBearerToken("{{ token }}"),
+		grpcutil.WithBearerToken("{{ token }}"),
+		systemCerts,
+{% else %}
+	client, err := authzed.NewClient(
+		"{{ endpoint }}",
+		grpcutil.WithInsecureBearerToken("{{ token }}"),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-    {% endif %}
+{% endif %}
 	)
 	if err != nil {
 		log.Fatalf("unable to initialize client: %s", err)
@@ -716,15 +727,22 @@ import (
 )
 ·
 func main() {
+{% if authzed %}
+	systemCerts, err := grpcutil.WithSystemCerts(grpcutil.VerifyCA)
+	if err != nil {
+		log.Fatalf("unable to load system CA certificates: %s", err)
+	}
+·
 	client, err := authzed.NewClient(
 		"{{ endpoint }}",
-    {% if authzed %}
-            grpcutil.WithBearerToken("{{ token }}"),
-	        grpcutil.WithSystemCerts(grpcutil.VerifyCA),
-    {% else %}
-    	grpcutil.WithInsecureBearerToken("{{ token }}"),
+		grpcutil.WithBearerToken("{{ token }}"),
+		systemCerts,
+{% else %}
+	client, err := authzed.NewClient(
+		"{{ endpoint }}",
+		grpcutil.WithInsecureBearerToken("{{ token }}"),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-    {% endif %}
+{% endif %}
 	)
 	if err != nil {
 		log.Fatalf("unable to initialize client: %s", err)
