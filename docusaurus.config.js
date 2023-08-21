@@ -1,4 +1,5 @@
-const env = (envvar, fallback) => typeof process.env[envvar] !== 'undefined' ? process.env[envvar] : fallback;
+const env = (envvar, fallback) =>
+  typeof process.env[envvar] !== 'undefined' ? process.env[envvar] : fallback;
 
 module.exports = {
   title: 'authzed',
@@ -91,7 +92,10 @@ module.exports = {
         redirects: [
           { to: '/spicedb-dedicated/overview', from: '/products/dedicated' },
           { to: '/spicedb-self-hosted/overview', from: '/products/enterprise' },
-          { to: '/spicedb-self-hosted/overview', from: '/spicedb-enterprise/overview' },
+          {
+            to: '/spicedb-self-hosted/overview',
+            from: '/spicedb-enterprise/overview',
+          },
           { to: '/spicedb-serverless/overview', from: '/products/serverless' },
           { to: '/reference/clients', from: '/reference/zed' },
           {
@@ -106,14 +110,28 @@ module.exports = {
               '/authz/rbac',
               '/authz/what-else',
               '/concepts/authz',
+              '/concepts/check',
+              '/concepts/namespaces',
+              '/concepts/relations',
               '/concepts/terminology',
+              '/concepts/tuples',
+              '/v0/concepts/,',
+            ],
+          },
+          {
+            to: '/',
+            from: [
+              '/authzed/pricing',
+              '/api/overview',
+              '/operator/installing',
+              '/v0/api',
             ],
           },
         ],
       },
     ],
     [
-      "@twilio-labs/docusaurus-plugin-segment",
+      '@twilio-labs/docusaurus-plugin-segment',
       {
         writeKey: env('SEGMENT_WRITE_KEY', 'faketest'),
         allowedInDev: false,
