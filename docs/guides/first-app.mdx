@@ -228,8 +228,7 @@ definition {{ tenant }}/post {
 ·
 client = Client(
     "{{ endpoint }}",
-    {% if authzed %}bearer_token_credentials("{{ token }}"),{% endif %}
-{% if not authzed %}# For SpiceDB behind TLS, use:
+    {% if not authzed %}# For SpiceDB behind TLS, use:
     # bearer_token_credentials("{{ token }}"),
     insecure_{% endif %}bearer_token_credentials("{{ token }}"),
 )
