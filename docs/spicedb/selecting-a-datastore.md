@@ -96,7 +96,7 @@ The available strategies are:
 
 ##### Why did I get a warning about the garbage collection window size?
 
-Cockroach DB has (as of Feb 2023) recently changed the [default garbage collection window] size to `1.5 hours` for CRDB Serverless and `4 hours` for CRDB Dedicated.
+Cockroach DB has (as of Feb 2023) recently changed the [default garbage collection window] size to `1.25 hours` for CRDB Serverless and `4 hours` for CRDB Dedicated.
 
 SpiceDB will read and use the setting _from CRDB_, but reports a warning if the (SpiceDB) configured window is larger in size.
 
