@@ -10,9 +10,9 @@ SpiceDB Enterprise comes with:
 * Early access to security patches
 * Additional enterprise-only functionality as it's released
 
-For self-hosted deployments using SpiceDB Open Source or SpiceDB Enterprise we recommend purchasing a [support package](/products/spicedb-sla-support).
+For self-hosted deployments using SpiceDB Open Source or SpiceDB Enterprise we recommend purchasing a [support package](https://authzed.com/products/spicedb-sla-support).
 
-For more information, please [schedule an introductory call](/call/?utm_source=docs).
+For more information, please [schedule an introductory call](https://authzed.com/call/?utm_source=docs).
 
 ## Accessing SpiceDB Enterprise 
 
