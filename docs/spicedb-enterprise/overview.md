@@ -1,7 +1,7 @@
 # Overview
 
 SpiceDB Enterprise is the production-ready version of SpiceDB we use in our managed services.
-You can license SpiceDB Enterprise to deploy into your own envionment. 
+You can license SpiceDB Enterprise to deploy into your own envionment.
 
 SpiceDB Enterprise comes with:
 
@@ -14,7 +14,7 @@ For self-hosted deployments using SpiceDB Open Source or SpiceDB Enterprise we r
 
 For more information, please [schedule an introductory call](https://authzed.com/call/?utm_source=docs).
 
-## Accessing SpiceDB Enterprise 
+## Accessing SpiceDB Enterprise
 
 SpiceDB Enterprise is made available via the [authzed-enterprise] GitHub organization as a container image stored in the [organization's registry].
 
