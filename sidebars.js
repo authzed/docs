@@ -109,6 +109,7 @@ module.exports = {
         'reference/zedtokens-and-zookies',
         'reference/glossary',
         'reference/caveats',
+        'reference/configuration_settings',
         {
           type: 'link',
           label: 'gRPC API Reference',
