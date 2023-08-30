@@ -2,7 +2,7 @@
 
 All configuration data in this reference can also be represented as environment variables. For example, the `--dashboard-addr` flag can be represented as `SPICEDB_DASHBOARD_ADDR`
 
-For the best experience, it is recommended to leave the defaults in place. 
+For the best experience, it is recommended to leave the defaults in place.
 
 ## `spicedb serve` Flags
 
@@ -51,7 +51,7 @@ For the best experience, it is recommended to leave the defaults in place.
 | --datastore-spanner-credentials | path to service account key credentials file with access to the cloud spanner instance (omit to use application default credentials) |  |
 | --datastore-spanner-emulator-host | URI of spanner emulator instance used for development and testing (e.g. localhost:9010) |  |
 | --datastore-tx-overlap-key | static key to touch when writing to ensure transactions overlap (only used if --datastore-tx-overlap-strategy=static is set; cockroach driver only) (default "key") |  |
-| --datastore-tx-overlap-strategy | strategy to generate transaction overlap keys ("request", "prefix", "static", "insecure") (cockroach driver only - see https://spicedb.dev/d/crdb-overlap for details)" | "static" |
+| --datastore-tx-overlap-strategy | strategy to generate transaction overlap keys ("request", "prefix", "static", "insecure") (cockroach driver only - see [https://spicedb.dev/d/crdb-overlap](https://spicedb.dev/d/crdb-overlap) for details)" | "static" |
 | --datastore-watch-buffer-length | how many events the watch buffer should queue before forcefully disconnecting reader | 1024 |
 | --disable-v1-schema-api | disables the V1 schema API |  |
 | --disable-version-response | disables version response support in the API |  |
@@ -109,7 +109,7 @@ For the best experience, it is recommended to leave the defaults in place.
 | --schema-prefixes-required | require prefixes on all object definitions in schemas |  |
 | --streaming-api-response-delay-timeout | max duration time elapsed between messages sent by the server-side to the client (responses) before the stream times out | 30s |
 | --telemetry-ca-override-path |  |  |
-| --telemetry-endpoint | endpoint to which telemetry is reported, empty string to disable | "https://telemetry.authzed.com/" |
+| --telemetry-endpoint | endpoint to which telemetry is reported, empty string to disable | [https://telemetry.authzed.com/](https://telemetry.authzed.com) |
 | --telemetry-interval | approximate period between telemetry reports, minimum |  |
 | --update-relationships-max-preconditions-per-call | maximum number of preconditions allowed for WriteRelationships and DeleteRelationships calls | 1000 |
 | --write-relationships-max-updates-per-call | maximum number of updates allowed for WriteRelationships calls | 1000 |
