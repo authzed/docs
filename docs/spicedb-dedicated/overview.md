@@ -1,4 +1,4 @@
-# SpiceDB Dedicated
+# Overview
 
 SpiceDB Dedicated is AuthZed's managed, hosted version of SpiceDB (with additional enterprise-grade features) for customers, with private, isolated clusters operated by our expert SRE team.
 

@@ -91,10 +91,10 @@ module.exports = {
       {
         redirects: [
           { to: '/spicedb-dedicated/overview', from: '/products/dedicated' },
-          { to: '/spicedb-self-hosted/overview', from: '/products/enterprise' },
+          { to: '/spicedb-enterprise/overview', from: '/products/enterprise' },
           {
-            to: '/spicedb-self-hosted/overview',
-            from: '/spicedb-enterprise/overview',
+            to: '/spicedb-enterprise/overview',
+            from: '/spicedb-self-hosted/overview',
           },
           { to: '/spicedb-serverless/overview', from: '/products/serverless' },
           { to: '/reference/clients', from: '/reference/zed' },

@@ -1,8 +1,8 @@
-# Fine-Grained Access Management in SpiceDB Self-Hosted
+# Fine-Grained Access Management
 
 The `spicedb-enterprise` binary exposes additional functionality through `Extenders`. These can be enabled via CLI arguments. FGAM is one such extender.
 
-## Enabling FGAM in SpiceDB Self-Hosted
+## Enabling FGAM in SpiceDB Enterprise
 
 The `spicedb-enterprise` exposes a CLI interface to run your Self-Hosted SpiceDB. It offers additional options not available in the upstream opensource SpiceDB.
 
