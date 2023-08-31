@@ -1,7 +1,7 @@
 # Overview
 
 SpiceDB Enterprise is the production-ready version of SpiceDB we use in our managed services.
-You can license SpiceDB Enterprise to deploy into your own envionment.
+You can license SpiceDB Enterprise to deploy into your own environment.
 
 SpiceDB Enterprise comes with:
 
@@ -22,7 +22,7 @@ SpiceDB Enterprise is made available via the [authzed-enterprise] GitHub organiz
 [organization's registry]: https://github.com/orgs/authzed-enterprise/packages
 
 Images are signed using [cosign], storing a signature of their digests alongside the image in the registry.
-They are also published publically to the [rekor transparency log] operated by the [Linux Foundation's] security-focused foundation, the [OpenSSF].
+They are also published publicly to the [rekor transparency log] operated by the [Linux Foundation's] security-focused foundation, the [OpenSSF].
 You can read more about keyless container signing and verification in the [cosign documentation].
 
 [cosign]: https://github.com/sigstore/cosign
@@ -31,24 +31,21 @@ You can read more about keyless container signing and verification in the [cosig
 [openssf]: https://openssf.org
 [cosign documentation]: https://github.com/sigstore/cosign/blob/main/KEYLESS.md
 
-## Recommended environment for SpiceDB Enterprise
+## Deployment Recommendations
 
-### Single-Region
+Use the <a href="https://github.com/authzed/spicedb-operator" target="_blank">spicedb-operator</a> to deploy and manage your SpiceDB Enterprise clusters.
 
-- SpiceDB Enterprise
-  - PostgreSQL datastore
-- Environment
-  - Kubernetes 1.24+
-    - 3 4-vCPU Nodes
-    - Project Contour Ingress 1.19+
-    - Certmanager 1.6+
+### Permissions Storage
 
-### Multi-Region
+* Single-Region
+  * PostgreSQL
+* Multi-Region
+  * <a href="https://www.cockroachlabs.com/product/" target="_blank">CockroachDB</a>
+  * <a href="https://cloud.google.com/spanner" target="_blank">Google's Cloud Spanner</a>
 
-- SpiceDB Enterprise
-  - CockroachDB or Cloud Spanner datastores
-- Environments
-  - Kubernetes 1.24+
-    - 3 4-vCPU Nodes
-    - Project Contour Ingress 1.19+
-    - Certmanager 1.6+
+### SpiceDB Environment
+
+* Kubernetes 1.24+
+  * 3 4-vCPU Nodes
+  * Project Contour Ingress 1.19+
+  * Certmanager 1.6+
