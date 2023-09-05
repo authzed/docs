@@ -46,6 +46,7 @@ module.exports = {
         'spicedb/enabling-watch-api',
         'spicedb/configuring-dispatch',
         'spicedb/updating',
+        'spicedb/configuration_settings',
       ],
     },
     'spicedb-serverless/overview',
@@ -109,7 +110,6 @@ module.exports = {
         'reference/zedtokens-and-zookies',
         'reference/glossary',
         'reference/caveats',
-        'reference/configuration_settings',
         {
           type: 'link',
           label: 'gRPC API Reference',
