@@ -2,9 +2,9 @@ const env = (envvar, fallback) =>
   typeof process.env[envvar] !== 'undefined' ? process.env[envvar] : fallback;
 
 module.exports = {
-  title: 'authzed',
+  title: 'SpiceDB and AuthZed Documentation',
   tagline:
-    'Documentation for Authzed, the planet-scale, serverless database platform for SpiceDB.',
+    'Documentation for SpiceDB, the open-source standard for building authZ services, and AuthZed.',
   favicon: 'img/favicon.svg',
   url: 'https://authzed.com',
   baseUrl: env('DOCUSAURUS_BASE_URL', '/'),
@@ -15,14 +15,14 @@ module.exports = {
     amplitudeApiKey: env('AMPLITUDE_API_KEY', ''),
   },
   themeConfig: {
-    announcementBar: {
-      id: 'github_star',
-      content:
-        '<a href="https://zanzibar.tech" target="_blank" style="text-decoration:none; display:inline-block;"><strong>The Zanzibar Paper, annotated by AuthZed</strong> 📰 <span style="display: inline-block">Read the seminal paper with expert commentary.</span></a>',
-      backgroundColor: '#842743',
-      textColor: '#fff',
-      isCloseable: false,
-    },
+    // announcementBar: {
+    //   id: 'github_star',
+    //   content:
+    //   '<a href="https://zanzibar.tech" target="_blank" style="text-decoration:none; display:inline-block;"><strong>The Zanzibar Paper, annotated by AuthZed</strong> 📰 <span style="display: inline-block">Read the seminal paper with expert commentary.</span></a>',,
+    //   backgroundColor: '#842743',
+    //   textColor: '#fff',
+    //   isCloseable: false,
+    // },
     colorMode: {
       disableSwitch: true,
       respectPrefersColorScheme: true,
@@ -36,7 +36,7 @@ module.exports = {
       title: '',
       logo: {
         alt: 'authzed',
-        src: 'img/authzed-logo.svg',
+        src: 'https://authzed.com/authzed-logo-multi.svg',
       },
       items: [
         {
