@@ -15,14 +15,14 @@ module.exports = {
     amplitudeApiKey: env('AMPLITUDE_API_KEY', ''),
   },
   themeConfig: {
-    // announcementBar: {
-    //   id: 'github_star',
-    //   content:
-    //   '<a href="https://zanzibar.tech" target="_blank" style="text-decoration:none; display:inline-block;"><strong>The Zanzibar Paper, annotated by AuthZed</strong> 📰 <span style="display: inline-block">Read the seminal paper with expert commentary.</span></a>',,
-    //   backgroundColor: '#842743',
-    //   textColor: '#fff',
-    //   isCloseable: false,
-    // },
+    announcementBar: {
+      id: 'github_star',
+      content:
+      '<span class="announcement-bar">📣 <span><strong>The Zanzibar Paper</strong>, annotated by AuthZed</span> <a href="https://zanzibar.tech" target="_blank" class="banner-button">Read Paper</a></span>',
+      backgroundColor: '#15131d',
+      textColor: '#fff',
+      isCloseable: false,
+    },
     colorMode: {
       disableSwitch: true,
       respectPrefersColorScheme: true,

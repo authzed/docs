@@ -18,6 +18,7 @@
 /* color-tertiary-v2      : #393B58; */
 
 html[data-theme='light'] {
+  --ifm-background-color: #F6F6F6;
   --ifm-button-color: #fff;
   --ifm-menu-color: #4C4965;
   --ifm-menu-color-active: #1C1B22;
@@ -27,6 +28,7 @@ html[data-theme='light'] {
   --ifm-breadcrumb-item-background-active: #E9E9ED;
   --ifm-color-primary: #1C1B22;
   --ifm-toc-link-color: #4C4965;
+  --ifm-link-color: #D066AA;
 }
 
 html[data-theme='dark'] {
@@ -58,6 +60,7 @@ html[data-theme='dark'] {
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css');
 
 :root {
+  --ifm-color-emphasis-100: #2c283e;
   --ifm-color-primary: #D066AA;
   --ifm-color-primary-dark: #77233c;
   --ifm-color-primary-darker: #702139;
@@ -69,7 +72,6 @@ html[data-theme='dark'] {
   --ifm-color-secondary: #A3A5C3;
   --ifm-color-tertiary: #393B58;
 
-  --ifm-background-color: #F6F6F6;
   --ifm-color-danger: #FF5C77;
   --ifm-color-warning: #EFBA57;
   --ifm-color-info: #75B7E6;
@@ -96,6 +98,33 @@ html[data-theme='dark'] {
 .breadcrumbs__item.breadcrumbs__item--active {
   font-weight: bold;
 }
+
+.announcement-bar {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 0px 20px;
+}
+
+.banner-button {
+  text-decoration: none !important;
+  font-size: .9em !important;
+  font-weight: 500;
+  display: flex;
+  padding: 2px 12px;
+  align-items: flex-start;
+  gap: 10px;
+  border-radius: 42px;
+  border: 1px solid #FF5C61;
+  background-color: #AC5184;
+  transition: background-color 200ms ease-in-out;
+}
+
+.banner-button:hover {
+  background-color: #FF5C61;
+}
+
+.b
 
 pre.prism-code {
   background-color: #201D2D;
