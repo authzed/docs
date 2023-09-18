@@ -98,6 +98,13 @@ module.exports = {
           },
           { to: '/spicedb-serverless/overview', from: '/products/serverless' },
           { to: '/reference/clients', from: '/reference/zed' },
+          { to: '/reference/glossary#object', from: '/concepts/namespaces'},
+          { to: '/reference/glossary#relation',
+            from: [
+              '/concepts/relations',
+              '/concepts/tuples',
+            ]
+          },
           {
             to: '/reference/glossary',
             from: [
@@ -111,10 +118,7 @@ module.exports = {
               '/authz/what-else',
               '/concepts/authz',
               '/concepts/check',
-              '/concepts/namespaces',
-              '/concepts/relations',
               '/concepts/terminology',
-              '/concepts/tuples',
               '/v0/concepts/,',
             ],
           },
