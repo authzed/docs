@@ -392,3 +392,7 @@ table td {
 .overview-top-buttons a {
   text-decoration: none !important;
 }
+
+.DocSearch-Hit[aria-selected=true] a {
+  background-color: #2C283E
+}
