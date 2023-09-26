@@ -43,13 +43,14 @@ function BreadcrumbsItem({ children, active, index, addMicrodata }) {
         itemScope: true,
         itemProp: 'itemListElement',
         itemType: 'https://schema.org/ListItem',
-        position: index
+        position: index + 1,
       })}
       className={clsx('breadcrumbs__item', {
         'breadcrumbs__item--active': active,
       })}
     >
       {children}
+      {addMicrodata && <meta itemProp="position" content={String(index + 1)} />}
     </li>
   );
 }
