@@ -92,6 +92,14 @@ html[data-theme='dark'] {
   --ifm-navbar-link-hover-color: #fff;
 }
 
+[data-theme='dark'] .DocSearch {
+  --docsearch-highlight-color: #2C283E;
+}
+
+[data-theme='light'] .DocSearch {
+  --docsearch-highlight-color: #2C283E;
+}
+
 .navbar__link--active,
 .menu__link--active,
 .table-of-contents__link--active,
@@ -391,8 +399,4 @@ table td {
 
 .overview-top-buttons a {
   text-decoration: none !important;
-}
-
-.DocSearch-Hit[aria-selected=true] a {
-  background-color: #2C283E
 }
