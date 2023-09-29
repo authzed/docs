@@ -47,6 +47,7 @@ module.exports = {
         'spicedb/configuring-dispatch',
         'spicedb/updating',
         'spicedb/deploy-on-eks',
+        'spicedb/configuration_settings',
       ],
     },
     'spicedb-serverless/overview',
