@@ -1,3 +1,9 @@
+---
+title: Fine-Grained Access Management for SpiceDB Dedicated
+description: Learn how to configure Fine Grained Access Management in SpiceDB Dedicated.
+sidebar_label: Fine-Grained Access Management
+---
+
 # Fine-Grained Access Management in SpiceDB Dedicated
 
 Fine-Grained Access Management is an optional feature for managing access to your SpiceDB Permissions Systems deployed with SpiceDB Dedicated and SpiceDB Enterprise. Those familiar with configuring IAM on any major cloud provider should feel comfortable with the basic concepts:
