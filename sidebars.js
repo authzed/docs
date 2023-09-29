@@ -46,6 +46,7 @@ module.exports = {
         'spicedb/enabling-watch-api',
         'spicedb/configuring-dispatch',
         'spicedb/updating',
+        'spicedb/configuration_settings',
       ],
     },
     'spicedb-serverless/overview',
