@@ -1,6 +1,6 @@
 ---
 title: Fine-Grained Access Management for SpiceDB Enterprise
-description: Learn how to configure Fine Grained Access Management for SpiceDB Enterprise.
+description: Learn how to configure Fine-Grained Access Management for SpiceDB Enterprise.
 sidebar_label: Fine-Grained Access Management
 ---
 
