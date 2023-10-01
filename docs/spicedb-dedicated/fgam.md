@@ -1,6 +1,6 @@
 ---
 title: Fine-Grained Access Management for SpiceDB Dedicated
-description: Learn how to configure Fine Grained Access Management in SpiceDB Dedicated.
+description: Learn how to configure Fine-Grained Access Management in SpiceDB Dedicated.
 sidebar_label: Fine-Grained Access Management
 ---
 
