@@ -1,3 +1,9 @@
+---
+title: Fine-Grained Access Management for SpiceDB Enterprise
+description: Learn how to configure Fine-Grained Access Management for SpiceDB Enterprise.
+sidebar_label: Fine-Grained Access Management
+---
+
 # Fine-Grained Access Management in SpiceDB Enterprise
 
 The `spicedb-enterprise` binary exposes additional functionality through `Extenders`. These can be enabled via CLI arguments. FGAM is one such extender.

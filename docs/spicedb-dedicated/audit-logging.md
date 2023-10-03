@@ -1,17 +1,23 @@
+---
+title: Audit Logging in SpiceDB Dedicated
+description: Learn how to configure audit logging in SpiceDB Dedicated.
+sidebar_label: Audit Logging
+---
+
 # Audit Logging in SpiceDB Dedicated
 
-:::note
-Audit Logging is still an in-preview feature, which means it does not have full UI for configuration
-:::
+Audit Logging allows you to capture a log of all API calls made to SpiceDB, and is available in SpiceDB Enterprise, the licensable binary we use to power SpiceDB Dedicated.
 
-Audit Logging is an optional feature for logging of all API made operations to a Permissions System, when deployed with SpiceDB Dedicated and SpiceDB Enterprise.
+When enabled and properly configured, SpiceDB Enterprise will asynchronously log every API call made to it and emit a stream to your preferred log sink. The logs contain full details related to a request, including a hash of the API token, RPC, payload, request IP, response and any possible errors.
 
-When enabled and properly configured, SpiceDB Dedicated/Enterprise will (asynchronously) log every API call made to the cluster to the log sink of your choice.
+For assistance in configuring Audit Logging please [contact us](/contact-us) or reach out to your dedicated account team.
 
 ## Supported Log Sink Types
 
-Currently supported log sink types (with more coming soon):
+Currently supported log sink types:
 
 - Kafka
 - Kinesis
 - Firehose
+
+If you'd like to see additional log sinks please [contact us](/contact-us).
