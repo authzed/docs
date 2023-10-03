@@ -5,7 +5,7 @@ Most users of SpiceDB Dedicated privately connect to SpiceDB with AWS [PrivateLi
 
 ## Connect to SpiceDB Dedicated with PrivateLink
 
-![/img/aws_dedicated_diagram.png](/img/aws_dedicated_diagram.png)
+<img src={require("/img/aws_dedicated_diagram.png").default} alt="Network Diagram" />
 
 ### Prerequisites
 

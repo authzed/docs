@@ -10,7 +10,7 @@ Examples of object types include resources, users, groups, documents, or any kin
 
 For the exhaustive description of the language used to write schemas, check out the [schema language reference].
 
-[schema language reference]: /reference/schema-lang
+[schema language reference]: ../reference/schema-lang.md
 [spicedb]: https://github.com/authzed/spicedb
 [authzed]: https://app.authzed.com
 
@@ -100,7 +100,7 @@ Can a specific user read the specific document?
 To add this question for validation in the Authzed Playground, we must translate the question into the _Test Relationships_ and the _Assertions_.
 
 [checkpermission]: https://buf.build/authzed/api/docs/main:authzed.api.v1#CheckPermission
-[subject]: /guides/defining-a-subject-type
+[subject]: /guides/defining-a-subject-type.md
 
 ### Creating test relationships
 

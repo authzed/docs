@@ -94,7 +94,7 @@ definition document {
 }
 ```
 
-[wildcards]: /reference/schema-lang#wildcards
+[wildcards]: /reference/schema-lang.md#wildcards
 
 :::note
 It is recommended to use *wildcard* with an anonymous user definition if there is ever a need to differentiate between anonymous users based on their object IDs.

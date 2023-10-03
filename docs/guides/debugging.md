@@ -2,8 +2,8 @@
 
 While it is recommended that SpiceDB [schema] be [validated and tested] before production deployment, there are many scenarios in which being able to see the _actual_ paths taken against production data is incredibly important.
 
-[schema]: schema
-[validated and tested]: validation-and-testing
+[schema]: ./schema.md
+[validated and tested]: ./validation-and-testing.md
 
 To support this use case the CheckPermission API supports a special debug header which can be used to retrieve the _full_ set of relations and permission traversed in order to compute the result.
 

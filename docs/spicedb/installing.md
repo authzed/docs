@@ -13,7 +13,7 @@ The recommended way to install SpiceDB for a production system is with the opera
 
 The other installation options below can be helpful to test SpiceDB locally, or to run on a non-Kubernetes system.
 
-[operator docs]: /spicedb/operator
+[operator docs]: /spicedb/operator.md
 
 ## Other install options
 
@@ -46,7 +46,7 @@ brew install authzed/tap/spicedb
 spicedb serve --grpc-preshared-key "somerandomkeyhere"
 ```
 
-[selecting a datastore]: /spicedb/selecting-a-datastore
+[selecting a datastore]: /spicedb/selecting-a-datastore.md
 
 ### Download the binary
 
@@ -75,7 +75,7 @@ A variety of [clients/tools] can be used to interact with the API.
 
 [zed] is the official CLI client and can be used to check that SpiceDB is running, write schema and relationships, and perform other operations against SpiceDB:
 
-[clients/tools]: /reference/clients
+[clients/tools]: /reference/clients.md
 [zed]: https://github.com/authzed/zed
 
 ### Running via brew
@@ -117,5 +117,5 @@ Config values are parsed with the following precedence:
 
 Continue with the [Protecting Your First App] guide to learn how to use SpiceDB to protect your application and read [Configuring Dispatching] to learn more about how to configure your SpiceDB for production-level dispatching and caching.
 
-[protecting your first app]: /guides/first-app
-[configuring dispatching]: /spicedb/configuring-dispatch
+[protecting your first app]: /guides/first-app.mdx
+[configuring dispatching]: /spicedb/configuring-dispatch.md

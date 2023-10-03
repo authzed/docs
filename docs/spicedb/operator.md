@@ -38,7 +38,7 @@ For example, TLS is disabled and data is not persisted when SpiceDB is shut down
 See the guide for [selecting a datastore].
 :::
 
-[selecting a datastore]: /spicedb/selecting-a-datastore
+[selecting a datastore]: /spicedb/selecting-a-datastore.md
 
 You can now create and configure SpiceDB clusters by writing a `SpiceDBCluster` objects.
 For example:
@@ -80,7 +80,7 @@ A variety of [clients/tools] can be used to interact with the API.
 
 [zed] is the official CLI client and can be used to check that SpiceDB is running, write schema and relationships, and perform other operations against SpiceDB:
 
-[clients/tools]: /reference/clients
+[clients/tools]: /reference/clients.md
 [zed]: https://github.com/authzed/zed
 
 #### Running via brew

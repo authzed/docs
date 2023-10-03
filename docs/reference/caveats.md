@@ -278,8 +278,8 @@ CheckPermissionRequest {
 
 The [Assertions] and [Expected Relations] definitions for validation of schema support caveats as well.
 
-[assertions]: /guides/schema#writing-assertions
-[expected relations]: /guides/schema#writing-expected-relations
+[assertions]: /guides/schema.md#writing-assertions
+[expected relations]: /guides/schema.md#writing-expected-relations
 
 ### Assertions
 

@@ -27,7 +27,7 @@ spicedb migrate head --datastore-engine $DESIRED_ENGINE --datastore-conn-uri $CO
 If you want to use the Watch API with CockroachDB, an additional capability must be enabled within the database. See [Enabling Watch API for CRDB]
 :::
 
-[enabling watch api for crdb]: enabling-watch-api#crdb
+[enabling watch api for crdb]: enabling-watch-api.md#crdb
 
 ### Usage Notes
 
@@ -211,7 +211,7 @@ Example: `--datastore-conn-uri="username:password@(localhost:3306)/spicedb?parse
 If you want to use the Watch API with PostgreSQL, an additional capability must be enabled within the database. See [Enabling Watch API for PostgreSQL]
 :::
 
-[enabling watch api for postgresql]: enabling-watch-api#postgres
+[enabling watch api for postgresql]: enabling-watch-api.md#postgres
 
 :::note
 The minimum supported PostgreSQL version is 13.8
@@ -271,7 +271,7 @@ The minimum supported PostgreSQL version is 13.8
 If you need an ephemeral datastore designed for validation or testing, see the test server system in [Validating and Testing]
 :::
 
-[validating and testing]: /guides/validation-and-testing
+[validating and testing]: /guides/validation-and-testing.md
 
 ### Developer Notes
 

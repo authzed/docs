@@ -61,8 +61,8 @@ No matter which service you select, zero-downtime migrations are always performe
 If you are operating SpiceDB yourself, the recommended update workflow is to use the [SpiceDB Operator].
 Please see the [operator-specific update docs] for various update options.
 
-[SpiceDB Operator]: /spicedb/operator
-[operator-specific update docs]: /spicedb/operator#updating-managed-spicedbclusters
+[SpiceDB Operator]: /spicedb/operator.md
+[operator-specific update docs]: /spicedb/operator.md#updating-managed-spicedbclusters
 
 ### Sequential Updates
 
