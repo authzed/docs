@@ -21,8 +21,8 @@ Additionally, the following can be purchased by SpiceDB Dedicated users:
 
 For more information, you can review the [pricing page] or [schedule an introductory call]
 
-[gold support]: /support#gold-support
-[silver support]: /support#silver-support
+[gold support]: /support.md#gold-support
+[silver support]: /support.md#silver-support
 [pricing page]: https://authzed.com/pricing
 [schedule an introductory call]: https://authzed.com/contact/?utm_source=docs
 

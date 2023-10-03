@@ -4,7 +4,7 @@
 If you are deploying SpiceDB under Kubernetes, it is recommended to use the [SpiceDB Operator], which will configure dispatching automatically
 :::
 
-[spicedb operator]: /spicedb/operator
+[spicedb operator]: /spicedb/operator.md
 
 ## What is Dispatching?
 

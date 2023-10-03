@@ -105,15 +105,14 @@ Log into the [Authzed dashboard] to create a serverless SpiceDB instance or [run
 Join us on [Discord] to discuss any questions you may have!
 
 [discord]: https://authzed.com/discord
-[run spicedb]: /spicedb/installing
+[run spicedb]: spicedb/installing.md
 [authzed]: https://authzed.com
 [authzed dashboard]: https://app.authzed.com
 [spicedb]: https://github.com/authzed/spicedb
-[developing a schema]: /guides/schema
+[developing a schema]: guides/schema.md
 [watch a video]: https://www.youtube.com/watch?v=x3-B9-ICj0w
 [design documentation]: https://authzed.com/docs/reference/schema-lang
 [jump into the playground]: https://play.authzed.com
-[protecting your first app]: /guides/first-app
 [buf registry]: https://buf.build/authzed/api/docs
 [install zed]: https://github.com/authzed/zed
 [read the authzed blog]: https://authzed.com/blog

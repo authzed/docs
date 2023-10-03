@@ -3,7 +3,7 @@
 The [Watch API] is by default enabled for most [datastores].
 
 [watch api]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.WatchService.Watch
-[datastores]: selecting-a-datastore
+[datastores]: selecting-a-datastore.md
 
 However, Postgres and CockroachDB require special flags in order to enable the watch API, as they depend upon features not enabled by default in most installations.
 
