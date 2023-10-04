@@ -1,20 +1,20 @@
 # Overview
 
-SpiceDB Dedicated is a complete environment for deploying and managing your own SpiceDB Permissions Systems using [SpiceDB Enterprise](/spicedb-enterprise/overview).
+SpiceDB Dedicated is a complete environment for deploying and managing your own SpiceDB Permissions Systems using [SpiceDB Enterprise](/spicedb-enterprise/overview.md).
 
 - Provision multiple isolated SpiceDB Enterprise Permissions Systems
-- Create [Fine-Grained Access Tokens](/spicedb-dedicated/fgam) for your clients
+- Create [Fine-Grained Access Tokens](/spicedb-dedicated/fgam.md) for your clients
 - Capture full audit logs with [SpiceDB request audit logging](/spicedb-dedicated/audit-logging)
 - Multi-region support
 - Visualize key performance indicators
 - Scale by adding more Compute & Storage
-- Includes [SpiceDB Enterprise](/spicedb-enterprise/overview)
+- Includes [SpiceDB Enterprise](/spicedb-enterprise/overview.md)
 - SOC 2 Compliant & backed by our uptime SLA
 - Deployed to be highly available and across multiple AZs
 - Connect privately from your VPC
 - Includes AuthZed Silver Support
 
-SpiceDB Dedicated comes with a management console accessible via SSO that lets you create and manage SpiceDB Permissions systems: a collection of clusters of SpiceDB Enterprise instances. They can be deployed in a single cloud region or across multiple regions.
+SpiceDB Dedicated comes with a management console accessible via SSO that lets you create and manage SpiceDB Permissions Systems: a collection of clusters of SpiceDB Enterprise instances. They can be deployed in a single cloud region or across multiple regions.
 
 Please [schedule a call](https://authzed.com/call) to learn more.
 
