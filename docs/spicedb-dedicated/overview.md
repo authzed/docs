@@ -4,7 +4,7 @@ SpiceDB Dedicated is a complete environment for deploying and managing your own 
 
 - Provision multiple isolated SpiceDB Enterprise Permissions Systems
 - Create [Fine-Grained Access Tokens](/spicedb-dedicated/fgam.md) for your clients
-- Capture full audit logs with [SpiceDB request audit logging](/spicedb-dedicated/audit-logging)
+- Capture full audit logs with [SpiceDB request audit logging](/spicedb-dedicated/audit-logging.md)
 - Multi-region support
 - Visualize key performance indicators
 - Scale by adding more Compute & Storage
