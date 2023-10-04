@@ -85,7 +85,7 @@ Policies bind [Roles](#roles-and-permissions) to [Service Accounts](#service-acc
 Let's illustrate how you can create a `read-only` Role for your Service Account.
 Start by ensuring your Permissions System has enabled _Fine-Grained Access Management_. You can do this by enabling the corresponding option while creating a Permissions System.
 
-![/img/fgam/create-ps-fgam.png](/img/fgam/create-ps-fgam.png)
+<img src={require("/img/fgam/create-ps-fgam.png").default} alt="Create a Permission System" />
 
 ### Create a Service Account
 
@@ -96,7 +96,7 @@ Now you’ll see the information page, with the global ID of the Service Account
 
 Go back to see the Service Account page, which now lists the new Service. To remove the Service, use the bin icon on the right side of the entry.
 
-![/img/fgam/create-service-account.gif](/img/fgam/create-service-account.gif)
+<img src={require("/img/fgam/create-service-account.gif").default} alt="Create a service account" />
 
 ### Create a Role
 
@@ -109,7 +109,7 @@ Leave the _Optional Expression_ empty for now.
 
 Now go back to the Role page, and you'll see your new `read-only` Role listed. To remove the Role, use the bin icon on the right side of the entry.
 
-![/img/fgam/create-role.gif](/img/fgam/create-role.gif)
+<img src={require("/img/fgam/create-role.gif").default} alt="Network Diagram" />
 
 You can now grant the Role to any Service Account by binding them with a Policy.
 
@@ -120,7 +120,7 @@ Head to the Policy page, which gives you an overview of all existing Policies.
 Hit _Create Policy_, and select the Principal and Assigned Role.
 Choose the Service Account you created above and hit _Create Policy_.
 
-![/img/fgam/create-policy.gif](/img/fgam/create-policy.gif)
+<img src={require("/img/fgam/create-policy.gif").default} alt="Create a policy" />
 
 ### Create a Token
 
@@ -130,6 +130,6 @@ The last step is to issue a Token for your Service Account.
 Head to `Access Management > Service Accounts` and choose your Service Account.
 Hit _Tokens_ from the left navigation menu on the Service Account page. Click _Create Token_.
 
-![/img/fgam/create-token.gif](/img/fgam/create-token.gif)
+<img src={require("/img/fgam/create-token.gif").default} alt="Create a token" />
 
 That's it! You can now make restricted calls from your workload to your SpiceDB Permissions System.

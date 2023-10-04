@@ -14,11 +14,11 @@ The `spicedb-enterprise` exposes a CLI interface to run your Self-Hosted SpiceDB
 
 The entrypoint is discovering how things work via the `--help` flag
 
-![spicedb-enterprise --help](/img/fgam/self-hosted/serve-command.png)
+<img src={require("/img/fgam/self-hosted/serve-command.png").default} alt="spicedb-enterprise --help" />
 
 The `serve` command is the entry point to running SpiceDB, and you can see it exposes some additional flags to configure `Extenders`.
 
-![spicedb-enterprise serve --help](/img/fgam/self-hosted/serve-help.png)
+<img src={require("/img/fgam/self-hosted/serve-help.png").default} alt="spicedb-enterprise serve --help" />
 
 - The `extender-enabled` lets you enable or disable extenders. Some are enabled by default and cannot be disabled. To enable FGAM set the flag like `--extender-enabled authzed-fgam`.
 - `--extender-authzed-fgam-endpoint` let's you define a reference to a YAML configuration file that statically defines the FGAM configuration and as is expected to be handled via a GitOps proceses. The host SpiceDB is pointed to this configuration YAML file, and will be able to spawn an embedded in-memory SpiceDB. That instance is immutable and runs the extremely fast memory datastore to minimize the overhead.
