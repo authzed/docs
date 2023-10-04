@@ -2,7 +2,7 @@
 
 In [SpiceDB], a permissions system is defined by two items: the [schema] which defines *how* data can be represented, and the *relationships*, defining the way the objects are actually related to one another.
 
-[schema]: /guides/schema
+[schema]: /guides/schema.md
 [SpiceDB]: https://github.com/authzed/spicedb
 
 It is the application's responsibility to keep the relationships within SpiceDB up-to-date and reflecting the state of the application; how an application does so can vary based on the specifics of the application, so below we outline a few approaches.
@@ -51,14 +51,14 @@ try:
   tx = db.transaction()
 
   # Write relationships during a transaction so that it can be aborted on exception
-  resp = spicedb_client.WriteRelationships(...) 
+  resp = spicedb_client.WriteRelationships(...)
 
   tx.add(db_models.Document(
     id=request.document_id,
     owner=user_id,
     zedtoken=resp.written_at
-  )) 
-  tx.commit() 
+  ))
+  tx.commit()
 except:
   # Delete relationships written to SpiceDB and re-raise the exception
   tx.abort()

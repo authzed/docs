@@ -50,7 +50,7 @@ Objects are used to represent both resources and subjects.
 
 See the [caveats guide] to learn more about caveats.
 
-[caveats guide]: /reference/caveats
+[caveats guide]: /reference/caveats.md
 
 ## Relations
 

@@ -5,3 +5,7 @@ no-duplicate-heading: false
 no-hard-tabs: false
 no-inline-html: false
 MD029: false
+# MD025/single-title/single-h1 - Multiple top-level headings in the same document
+MD025:
+  # Ignore title in front matter blocks
+  front_matter_title: ""

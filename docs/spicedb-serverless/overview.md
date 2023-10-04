@@ -14,9 +14,9 @@ The billing model for this service is **usage-based**.
 
 Customers are **charged monthly** based on two dimensions: the number of [relationships] stored in Authzed, and the number of [dispatched operations] made when performing [API] calls.
 
-[relationships]: /reference/glossary#relationship
+[relationships]: /reference/glossary.md#relationship
 [dispatched operations]: #what-counts-as-a-dispatched-operation
-[api]: /reference/api
+[api]: /reference/api.md
 [authzed]: https://app.authzed.com
 
 | Dimension             | Price Per 1 miliion |
@@ -46,7 +46,7 @@ A **dispatched operation** is a single _non-cached_ operation performed by Authz
 
 The number of dispatched operations depends heavily on the type of [API] being called, the complexity of the permissions system's [schema] and how many of those operations have been cached from previous [API] calls.
 
-[schema]: /guides/schema
+[schema]: /guides/schema.md
 
 #### API Dispatch Estimation
 
