@@ -7,7 +7,8 @@ module.exports = {
     'Documentation for SpiceDB, the open-source standard for building authZ services, and AuthZed.',
   favicon: 'img/favicon.svg',
   url: 'https://authzed.com',
-  baseUrl: env('DOCUSAURUS_BASE_URL', '/'),
+  // Oct 1,2023 dsieczko: baseURL is /docs
+  baseUrl: env('DOCUSAURUS_BASE_URL', '/docs/'),
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'throw',
   staticDirectories: ['static'],
@@ -37,6 +38,8 @@ module.exports = {
       logo: {
         alt: 'authzed',
         src: 'https://authzed.com/authzed-logo-multi.svg',
+        href: 'https://authzed.com',
+        target: '_self'
       },
       items: [
         {
@@ -51,7 +54,7 @@ module.exports = {
         },
         {
           to: 'https://app.authzed.com',
-          label: 'Authzed Dashboard',
+          label: 'Log In',
           position: 'left',
         },
         {
@@ -86,50 +89,6 @@ module.exports = {
   },
   plugins: [
     './webpack-fallbacks-plugin',
-    [
-      '@docusaurus/plugin-client-redirects',
-      {
-        redirects: [
-          { to: '/spicedb-dedicated/overview', from: '/products/dedicated' },
-          { to: '/spicedb-enterprise/overview', from: '/products/enterprise' },
-          {
-            to: '/spicedb-enterprise/overview',
-            from: '/spicedb-self-hosted/overview',
-          },
-          { to: '/spicedb-serverless/overview', from: '/products/serverless' },
-          { to: '/reference/clients', from: '/reference/zed' },
-          {
-            to: '/reference/glossary',
-            from: [
-              '/authz/abac',
-              '/authz/acl-filtering',
-              '/authz/authn-authz',
-              '/authz/new-enemy',
-              '/authz/oidc',
-              '/authz/policy-engine',
-              '/authz/rbac',
-              '/authz/what-else',
-              '/concepts/authz',
-              '/concepts/check',
-              '/concepts/namespaces',
-              '/concepts/relations',
-              '/concepts/terminology',
-              '/concepts/tuples',
-              '/v0/concepts/,',
-            ],
-          },
-          {
-            to: '/',
-            from: [
-              '/authzed/pricing',
-              '/api/overview',
-              '/operator/installing',
-              '/v0/api',
-            ],
-          },
-        ],
-      },
-    ],
     [
       '@twilio-labs/docusaurus-plugin-segment',
       {
