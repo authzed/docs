@@ -46,6 +46,7 @@ module.exports = {
         'spicedb/enabling-watch-api',
         'spicedb/configuring-dispatch',
         'spicedb/updating',
+        'spicedb/deploy-on-eks',
         'spicedb/configuration_settings',
       ],
     },
