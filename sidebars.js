@@ -114,7 +114,7 @@ module.exports = {
     'support',
     {
       type: 'link',
-      label: 'Talk to an Expert',
+      label: 'Talk with an Expert',
       href: 'https://authzed.com/call?utm_source=docs',
     },
   ],

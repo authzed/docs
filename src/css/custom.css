@@ -134,6 +134,25 @@ html[data-theme='dark'] {
   background-color: #111;
   color: #eee;
 }
+@media screen and (max-width: 640px) {
+  .announcement-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-bottom: 8px;
+  }
+}
+@media screen and (min-width: 0px) and (max-width: 479px) {
+  .announcement-bar {
+    display: none;
+  }
+  div[class^='announcementBar_'] {
+    min-height: 0rem !important;
+  }
+  div[class^='content_'] {
+    padding: 0;
+  }
+}
 
 .banner-button {
   text-decoration: none !important;
