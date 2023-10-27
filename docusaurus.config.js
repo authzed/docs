@@ -18,7 +18,7 @@ module.exports = {
     announcementBar: {
       id: 'github_star',
       content:
-        '<div class="announcement-bar"><div class="announcement-bar-left">📣 <span><strong>The Zanzibar Paper</strong>, annotated by AuthZed</span> <a href="https://authzed.com/zanzibar" target="_blank" class="banner-button">Read Paper</a></div><div><a class="outline" href="https://authzed.com/call?utm_source=docs" target="_blank">Talk to an Expert</a></div></div>',
+        '<div class="announcement-bar"><div class="announcement-bar-left">📣 <span><strong>The Zanzibar Paper</strong>, annotated by AuthZed</span> <a href="https://authzed.com/zanzibar" target="_blank" class="banner-button">Read Paper</a></div><div><a class="outline" href="https://authzed.com/call?utm_source=docs" target="_blank">Talk to an Expert <i class="fa-solid fa-phone-flip"></i></a></div></div>',
       backgroundColor: '#15131d',
       textColor: '#fff',
       isCloseable: false,
