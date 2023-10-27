@@ -110,8 +110,48 @@ html[data-theme='dark'] {
 .announcement-bar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
+.announcement-bar-left {
+  display: flex;
+  align-items: center;
   gap: 15px;
-  padding: 0px 20px;
+}
+
+.announcement-bar a.outline {
+  text-decoration: none;
+  background-color: #eee;
+  color: #111;
+  padding: 6px 16px;
+  border-radius: 8px;
+  transition: background-color 300ms ease-in-out;
+
+}
+.announcement-bar a.outline:hover {
+  border: 1px solid #fff;
+  background-color: #111;
+  color: #eee;
+}
+@media screen and (max-width: 640px) {
+  .announcement-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-bottom: 8px;
+  }
+}
+@media screen and (min-width: 0px) and (max-width: 479px) {
+  .announcement-bar {
+    display: none;
+  }
+  div[class^='announcementBar_'] {
+    min-height: 0rem !important;
+  }
+  div[class^='content_'] {
+    padding: 0;
+  }
 }
 
 .banner-button {
@@ -131,8 +171,6 @@ html[data-theme='dark'] {
 .banner-button:hover {
   background-color: #FF5C61;
 }
-
-.b
 
 pre.prism-code {
   background-color: #201D2D;

@@ -9,8 +9,8 @@ module.exports = {
     {
       type: 'link',
       label: 'REST API Reference',
-     href: 'https://www.postman.com/authzed/workspace/spicedb/overview',
-   },
+      href: 'https://www.postman.com/authzed/workspace/spicedb/overview',
+    },
     {
       type: 'category',
       label: 'Getting Started',
@@ -51,7 +51,7 @@ module.exports = {
       ],
     },
     'spicedb-serverless/overview',
-  	{
+    {
       type: 'category',
       label: 'SpiceDB Dedicated',
       collapsed: true,
@@ -63,9 +63,7 @@ module.exports = {
           type: 'category',
           label: 'Networking',
           collapsed: true,
-          items: [
-            'spicedb-dedicated/networking/aws',
-          ],
+          items: ['spicedb-dedicated/networking/aws'],
         },
       ],
     },
@@ -114,5 +112,10 @@ module.exports = {
       ],
     },
     'support',
+    {
+      type: 'link',
+      label: 'Talk with an Expert',
+      href: 'https://authzed.com/call?utm_source=docs',
+    },
   ],
 };
