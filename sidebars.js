@@ -59,6 +59,7 @@ module.exports = {
         'spicedb-dedicated/overview',
         'spicedb-dedicated/fgam',
         'spicedb-dedicated/audit-logging',
+        'spicedb-dedicated/dedicated-configuration',
         {
           type: 'category',
           label: 'Networking',
