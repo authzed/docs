@@ -39,7 +39,7 @@ There are two rollout strategies: `rolling update` and `immediate`.
 
 ### Define Cluster(s)
 
-![Alt text](image-4.png)
+<img src={require("/img/define-clusters.png").default} alt="define clusters" />
 
 #### Single region deployment
 
