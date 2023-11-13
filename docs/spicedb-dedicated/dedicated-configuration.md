@@ -14,7 +14,7 @@ Please select the choice (Production or Development) that is appropriate for the
 
 <img src={require("/img/datastore-config.png").default} alt="datastore configuration" />
 
-Your SpiceDB Dedicated environment can be provisioned with multiple isolated databases. If you have more than one, choose the database that is appropriate for the Permission System you are deploying.
+Your SpiceDB Dedicated environment can be provisioned with multiple isolated datastores. If you have more than one, choose the datastore that is appropriate for the Permission System you are deploying.
 
 ### Update Channel
 
@@ -27,6 +27,8 @@ SpiceDB Dedicated has two update channels: `rapid` and `regular` . You can selec
 `regular` - trails behind `rapid` by at least one release.
 
 After you’ve deployed your Permission System, you can choose to keep up to date with a channel automatically, or you can “pin” to a version by un-checking the automatic updates box. If you uncheck the automatic release box, you’ll still be able to update, but will have to pick the next version manually.
+
+<img src={require("/img/update-box.png").default} alt="update box" />
 
 ### Rollout Strategy
 
@@ -51,4 +53,4 @@ Define a cluster for every region you want to deploy into.
 
 #### Cluster Class
 
-For production clusters, we recommend selecting the Cluster Class with the largest number of replicas and processing units. For non-production clusters, you can select whatever Cluster Class is appropriate for your workload. If you have questions about your overall utilization or would like to provision a custom Cluster Class, please reach out to your Authzed account team.
+For production clusters, we recommend selecting the Cluster Class with the largest number of replicas and processing units. For non-production clusters, you can select whatever Cluster Class is appropriate for your workload. If you have questions about your overall utilization or would like to provision a custom Cluster Class, please reach out to your AuthZed account team.
