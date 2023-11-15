@@ -8,7 +8,7 @@ The choice of how to represent subjects can have large downstream effects on the
 
 ## Representing users as subjects
 
-The most common kind of subjects found within a permissions system are some form of **user**.
+The most common kind of subjects found within permissions systems are some form of **user**.
 
 Users in SpiceDB/Authzed are [modeled as object types], same as resources.
 
@@ -31,7 +31,7 @@ check resource:someresource view user:goog|487306745603273
 As the `sub` field is **guaranteed** to be stable for that particular user (if a compliant OIDC implementation), it is safe to use for checking permissions, as there is no risk that the `sub` will somehow represent a different user later.
 
 :::note
-If you have *multiple* authentication provides, then the recommendation is to define a subject type for *each* provider, to ensure a clean namespace:
+If you have *multiple* authentication providers, then the recommendation is to define a subject type for *each* provider, to ensure a clean namespace:
 
 ```zed
 /** githubuser represents a user from GitHub */
@@ -61,13 +61,13 @@ Some databases allow various sequences to reuse IDs.
 ### What about e-mail addresses?
 
 :::warning
-It is typically **not recommended** to use an e-mail address to represent a user as as a subject in Authzed/SpiceDB.
+It is typically **not recommended** to use an e-mail address to represent a user as a subject in Authzed/SpiceDB.
 :::
 
-This is for a number of reasons:
+This is for some reasons:
 
-- E-mail addresses are not universally stable and, often times, services allow them to be reused
-- E-mail addresses are not universally verified and, often times, a caller of the [CheckPermission] may not be *certain* that the user has that e-mail address
+- E-mail addresses are not universally stable and, oftentimes, services allow them to be reused
+- E-mail addresses are not universally verified and, oftentimes, a caller of the [CheckPermission] may not be *certain* that the user has that e-mail address
 - Authzed/SpiceDB does not allow for `@` characters within object IDs
 
 If you know for **certain** that the e-mail address for a user is both stable and verified, and still wish to use it as the subject ID, then we recommend base64 encoding (with padding removed) the e-mail address to use it within Authzed/SpiceDB.
@@ -76,7 +76,7 @@ If you know for **certain** that the e-mail address for a user is both stable an
 
 Some applications allow for *anonymous* access to view (and occasionally, edit) various resources.
 
-Representing an anonymous visitor in Authzed/SpiceDB can be done via simply defining another subject type to represent the unauthenticated users:
+Representing an anonymous visitor in Authzed/SpiceDB can be done by simply defining another subject type to represent the unauthenticated users:
 
 ```zed
 /** user represents a specific authenticated user */
@@ -99,7 +99,7 @@ definition document {
 :::note
 It is recommended to use *wildcard* with an anonymous user definition if there is ever a need to differentiate between anonymous users based on their object IDs.
 
-As an example, an anonymous user of a commenting system might be assigned a unique ID that is stored in their browser's cookies, enabling permission for editing a previously posted comment.
+As an example, an anonymous user of a commenting system might be assigned a unique ID that is stored in their browser's cookies, enabling permission to edit a previously posted comment.
 :::
 
 ## Representing services as subjects
