@@ -4,7 +4,7 @@ This guide provides information about the configuration options available to you
 
 ## Configuration Options
 
-### Permission System Type
+### Permissions System Type
 
 <img src={require("/img/ps-type.png").default} alt="permissions system type" />
 
@@ -20,7 +20,7 @@ Your SpiceDB Dedicated environment can be provisioned with multiple isolated [da
 
 <img src={require("/img/channels-config.png").default} alt="channels config" />
 
-SpiceDB Dedicated has two update channels: `rapid` and `regular` . You can select the update channel either when you launch the Permissios System or in the settings page after you’ve launched it.
+SpiceDB Dedicated has two update channels: `rapid` and `regular` . You can select the update channel either when you launch the Permissions System or in the settings page after you’ve launched it.
 
 `rapid` - gets every release that is not a release candidate.
 
@@ -36,7 +36,7 @@ After you’ve deployed your Permissions System, you can choose to keep up to da
 
 There are two rollout strategies: `rolling update` and `immediate`.
 
-- `rolling update` is a zero downtime strategy for upgrading to a new version. This is recommended for prod permissions systems.
+- `rolling update` is a zero downtime strategy for upgrading to a new version. This is recommended for prod Permissions Systems.
 - `immediate` involves downtime, but is faster than `rolling update`.
 
 ### Define Cluster(s)
