@@ -20,7 +20,7 @@ Your SpiceDB Dedicated environment can be provisioned with multiple isolated [da
 
 <img src={require("/img/channels-config.png").default} alt="channels config" />
 
-SpiceDB Dedicated has two update channels: `rapid` and `regular` . You can select the update channel either when you launch the Permissions System or in the settings page after you’ve launched it.
+SpiceDB Dedicated has two update channels: `rapid` and `regular` . You can select the update channel when you launch the Permissions System or in the settings page after you’ve launched it.
 
 `rapid` - gets every release that is not a release candidate.
 
@@ -55,4 +55,4 @@ Define a cluster for every region you want to deploy into.
 
 For production clusters, we recommend selecting the Cluster Class with the largest number of replicas and processing units. For non-production clusters, you can select whatever Cluster Class is appropriate for your workload. If you have questions about your overall utilization or would like to provision a custom Cluster Class, please reach out to your AuthZed account team.
 
-If you're ready to get started with SpiceDB Dedicated, [schedule a call](https://authzed.com/call).
+If you're ready to get started with SpiceDB Dedicated, [reach out to your AuthZed account team](https://authzed.com/call).
