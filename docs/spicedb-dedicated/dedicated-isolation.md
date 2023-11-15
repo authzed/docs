@@ -8,4 +8,4 @@ By default, API tokens are scoped to a particular Permissions System. [Fine Grai
 
 The below diagram gives an overview of the SpiceDB Dedicated isolation model.
 
-<img src={require("/img/dedicated_isolation_v2.png").default} alt="dedicated isolation model" />
+<img src={require("/img/dedicated_isolation_v3.png").default} alt="dedicated isolation model" />
