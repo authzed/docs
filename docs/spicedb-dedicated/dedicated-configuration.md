@@ -53,6 +53,4 @@ Define a cluster for every region you want to deploy into.
 
 #### Cluster Class
 
-For production clusters, we recommend selecting the Cluster Class with the largest number of replicas and processing units. For non-production clusters, you can select whatever Cluster Class is appropriate for your workload. If you have questions about your overall utilization or would like to provision a custom Cluster Class, please reach out to your AuthZed account team.
-
-If you're ready to get started with SpiceDB Dedicated, [reach out to your AuthZed account team](https://authzed.com/call).
+For production clusters, we recommend selecting the Cluster Class with the largest number of replicas and processing units. For non-production clusters, you can select whatever Cluster Class is appropriate for your workload. If you have questions about your overall utilization or would like to provision a custom Cluster Class, please [reach out to your AuthZed account team](https://authzed.com/call).
