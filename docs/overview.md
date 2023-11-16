@@ -14,7 +14,7 @@ summary: "Documentation for Authzed, the planet-scale, serverless database platf
     <i class="fa-solid fa-cubes"></i>
     Install the Operator
 </a>
-<a href="/guides/first-app" class="btn with-left-margin">
+<a href="/docs/guides/first-app" class="btn with-left-margin">
     <i class="fa fa-play"></i>
     Get Started Protecting Your App
 </a>
