@@ -10,7 +10,7 @@ Audit Logging allows you to capture a log of all API calls made to SpiceDB, and 
 
 When enabled and properly configured, SpiceDB Enterprise will asynchronously log every API call made to it and emit a stream to your preferred log sink. The logs contain full details related to a request, including a hash of the API token, RPC, payload, request IP, response and any possible errors.
 
-For assistance in configuring Audit Logging please [contact us](/contact-us) or reach out to your dedicated account team.
+For assistance in configuring Audit Logging please [contact us](https://authzed.com/contact-us) or reach out to your dedicated account team.
 
 ## Supported Log Sink Types
 
@@ -20,4 +20,4 @@ Currently supported log sink types:
 - Kinesis
 - Firehose
 
-If you'd like to see additional log sinks please [contact us](/contact-us).
+If you'd like to see additional log sinks please [contact us](https://authzed.com/contact-us).

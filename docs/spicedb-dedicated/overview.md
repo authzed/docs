@@ -20,7 +20,7 @@ Please [schedule a call](https://authzed.com/call) to learn more.
 
 ## How is SpiceDB Dedicated deployed?
 
-AuthZed provisions and manages an environment for you in a private account within  our cloud provider organization. It comes with everything needed to run single and multi-region SpiceDB Permissions Systems in a cloud of your choice. We support AWS and GCP today, with Azure support coming. All resources are fully isolated and dedicated to you.
+AuthZed provisions and manages an environment for you in a private account within  our cloud provider organization. It comes with everything needed to run single and multi-region SpiceDB Permissions Systems in a cloud of your choice. We support AWS and GCP today, with Azure support coming. [All resources are fully isolated and dedicated to you.](/spicedb-dedicated/dedicated-isolation.md)
 
 ## Pricing
 
