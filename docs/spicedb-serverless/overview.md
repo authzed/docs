@@ -8,6 +8,15 @@
 
 [spicedb serverless]: https://app.authzed.com/?utm_source=docs&utm_content=spicedb+serverless
 
+## Endpoints
+
+Your permission systems will be reachable via gRPC and HTTP endpoints:
+
+- gRPC: grpc.authzed.com
+- HTTP REST: [gateway-alpha.authzed.com](https://gateway-alpha.authzed.com)
+
+A [Postman Collection](https://www.postman.com/authzed/workspace/spicedb/api) exists to help folks getting started with the REST API.
+
 ## Pricing
 
 The billing model for this service is **usage-based**.
