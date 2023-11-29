@@ -1,3 +1,7 @@
+---
+title: Overview | SpiceDB and AuthZed Documentation for SpiceDB Dedicated
+---
+
 # Overview
 
 SpiceDB Dedicated is a complete environment for deploying and managing your own SpiceDB Permissions Systems using [SpiceDB Enterprise](/spicedb-enterprise/overview.md).
