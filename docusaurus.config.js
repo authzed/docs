@@ -10,6 +10,24 @@ module.exports = {
   baseUrl: env('DOCUSAURUS_BASE_URL', '/docs/'),
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'throw',
+  headTags: [
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'alternate',
+        hreflang: 'en',
+        href: 'https://www.authzed/docs/',
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'alternate',
+        hreflang: 'x-default',
+        href: 'https://www.authzed/docs/',
+      },
+    },
+  ],
   staticDirectories: ['static'],
   customFields: {
     amplitudeApiKey: env('AMPLITUDE_API_KEY', ''),
