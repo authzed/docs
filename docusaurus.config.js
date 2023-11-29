@@ -7,7 +7,7 @@ module.exports = {
     'Documentation for SpiceDB, the open-source standard for building authZ services, and AuthZed.',
   url: 'https://authzed.com',
   // Oct 1,2023 dsieczko: baseURL is /docs
-  baseUrl: env('DOCUSAURUS_BASE_URL', '/docs/'),
+  baseUrl: env('DOCUSAURUS_BASE_URL', '/'),
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'throw',
   headTags: [
