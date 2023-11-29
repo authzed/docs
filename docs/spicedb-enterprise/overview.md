@@ -1,3 +1,7 @@
+---
+title: Overview | SpiceDB and AuthZed Documentation for SpiceDB Enterprise
+---
+
 # Overview
 
 SpiceDB Enterprise is the production-ready version of SpiceDB we use in our managed services.
