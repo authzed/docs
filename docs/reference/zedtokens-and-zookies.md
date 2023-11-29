@@ -1,3 +1,8 @@
+---
+description: A ZedToken is a token representing a point-in-time of the SpiceDB datastore, encoded for easy storage and transmission.
+---
+
+
 # ZedTokens
 
 ## Overview

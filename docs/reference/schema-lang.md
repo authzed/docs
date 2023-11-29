@@ -1,3 +1,7 @@
+---
+description: The Schema of SpiceDB or a Permissions System in Authzed defines the types of objects found, how those objects relate to one another, and the permissions that can be computed off of those relations.
+---
+
 # Schema Language
 
 import {InlinePlayground} from '../../src/components/InlinePlayground';
