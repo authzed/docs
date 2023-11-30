@@ -9,7 +9,7 @@ You can license SpiceDB Enterprise to deploy into your own environment.
 
 SpiceDB Enterprise comes with:
 
-* [Fine-Grained Access Management tokens for your service accounts](/spicedb-enterprise/fgam)
+* [Fine-Grained Access Management tokens for your service accounts](/docs/spicedb-enterprise/fgam)
 * Full SpiceDB request audit logging
 * Early access to security patches
 * Additional enterprise-only functionality as it's released

@@ -10,7 +10,7 @@ summary: "Documentation for Authzed, the planet-scale, serverless database platf
 !['Relationships'](/graph.svg)
 
 <div class="overview-top-buttons">
-<a href="/spicedb/operator" class="btn">
+<a href="/docs/spicedb/operator" class="btn">
     <i class="fa-solid fa-cubes"></i>
     Install the Operator
 </a>
@@ -46,7 +46,7 @@ SpiceDB acts as a centralized service that stores authorization data: Once store
 Log into the [Authzed dashboard] to create a serverless SpiceDB instance or [run SpiceDB] yourself, and then:
 
 <div class="next-steps-grid">
-    <a href="/guides/first-app">
+    <a href="/docs/guides/first-app">
         <Button class="btn btn-large">
             <i class="fa fa-play"></i>
             Start Protecting Your App
