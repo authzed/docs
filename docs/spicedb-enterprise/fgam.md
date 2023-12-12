@@ -100,7 +100,7 @@ sdbst_<hash_function>_<secret>
 - The only hash function supported right now is SHA256 (denoted with `h256`), and new functions might be added as the need arises.
 - The plain-text secret. Follow your organizations best-practices around strong password generation
 
-In the YAML file you'd need to define your by applying the hash function only the secret portion - the prefixes are excluded of the hash.
+In the YAML file you'd need to define your token by applying the hash function only the secret portion - the prefixes are excluded of the hash.
 
 To generate the hash for your secret, you can run:
 
@@ -108,10 +108,10 @@ To generate the hash for your secret, you can run:
 echo -n thisisnotaverysecuresecret | sha256sum
 ```
 
-The token would look like this:
+The token to be provided in API calls by the client would look like this:
 
 ```
-sdbst_h256_71c73ba92f2032416b18a4f4fffb2a825755bea6a8430f2622ab1f3fb35a10d0
+sdbst_h256_thisisnotaverysecuresecret
 ```
 
 And the result of introducing it in the YAML configuration would be:
