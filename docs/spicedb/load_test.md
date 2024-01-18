@@ -62,6 +62,10 @@ Here is an illustration of how SpiceDB walks the graph in our example:
 
 <img src={require("/img/load-test.gif").default} alt="subproblem gif" />
 
+:::note
+Subproblems are computed in parallel.
+:::
+
 The concept of computing subproblems for intermediary objects, like we did for groups, is referred to as “fanning out” or “fanout”. If more groups were related, to `somedocument`, it’s likely that more subproblems will be calculated to determine `view` permission; however, the query will stop calculating subproblems (”short circuit”) if it positively satisfies the permission check before all paths are exhausted ([intersections](/docs/reference/schema-lang#-intersection) `&` and [exclusions](/docs/reference/schema-lang#--exclusion) `-` are the exception to this).
 
 While fanout is almost always unavoidable, fanout can result in an exponential increase to the the number of subproblems that must be computed, therefore, when performing a load test it’s critical to make requests to a SpiceDB instance that is seeded with relationship data that closely mimics real world data.
