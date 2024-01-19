@@ -1,6 +1,15 @@
 const env = (envvar, fallback) =>
   typeof process.env[envvar] !== 'undefined' ? process.env[envvar] : fallback;
 
+const scripts = process.env.NODE_ENV === 'production' ? [
+  {
+    src: '/js/script.js',
+    defer: true,
+    'data-domain': 'authzed.com',
+    'data-api': '/api/event',
+  },
+] : [];
+
 module.exports = {
   title: 'SpiceDB and AuthZed Documentation',
   tagline:
@@ -32,6 +41,7 @@ module.exports = {
   customFields: {
     amplitudeApiKey: env('AMPLITUDE_API_KEY', ''),
   },
+  scripts: scripts,
   themeConfig: {
     announcementBar: {
       id: 'github_star',
