@@ -48,7 +48,7 @@ module.exports = {
         'spicedb/updating',
         'spicedb/deploy-on-eks',
         'spicedb/configuration_settings',
-        'spicedb/load_test',
+        'spicedb/load-test',
       ],
     },
     'spicedb-serverless/overview',

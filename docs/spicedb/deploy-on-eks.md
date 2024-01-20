@@ -1,6 +1,6 @@
 # Deploy SpiceDB on EKS
 
-This guide will show you how to deploy a highly available and secure SpiceDB cluster on EKS. If you’d rather quickly try out SpiceDB, check out our [getting started guide](/docs/guides/first-app).
+This guide will show you how to deploy a highly available and secure SpiceDB cluster on EKS. If you’d rather quickly try out SpiceDB, check out our [getting started guide](../guides/first-app.mdx).
 
 ## Prerequisites
 
