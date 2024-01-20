@@ -66,7 +66,7 @@ Here is an illustration of how SpiceDB walks the graph in our example:
 Subproblems are computed in parallel.
 :::
 
-The concept of computing subproblems for intermediary objects, like we did for groups, is referred to as “fanning out” or “fanout”. If more groups were related, to `somedocument`, it’s likely that more subproblems will be calculated to determine `view` permission; however, the query will stop calculating subproblems (”short circuit”) if it positively satisfies the permission check before all paths are exhausted ([intersections](/docs/reference/schema-lang#-intersection) `&` and [exclusions](/docs/reference/schema-lang#--exclusion) `-` are the exception to this).
+The concept of computing subproblems for intermediary objects, like we did for groups, is referred to as “fanning out” or “fanout”. If more groups were related, to `somedocument`, it’s likely that more subproblems will be calculated to determine `view` permission; however, the query will stop calculating subproblems (”short circuit”) if it positively satisfies the permission check before all paths are exhausted ([intersections](../reference/schema-lang#-intersection) `&` and [exclusions](../reference/schema-lang#--exclusion) `-` are the exception to this).
 
 While fanout is almost always unavoidable, fanout can result in an exponential increase to the the number of subproblems that must be computed, therefore, when performing a load test it’s critical to make requests to a SpiceDB instance that is seeded with relationship data that closely mimics real world data.
 
@@ -183,7 +183,7 @@ The SpiceDB quantization interval setting is used to specify the window of time 
 
 ### Consistency
 
-Consistency has a significant effect on cache utilization and thus performance.  Cache utilization is specified on a per request basis. Before conducting a load test, it’s important you understand the performance and staleness implications of the consistency message(s) you are using. The majority of SpiceDB users are using `minimize_latency` for every request.  The Authzed team almost always recommends against `fully_consistent`, in lieu of `fully_consistent` we recommend using `at_least_as_fresh` so that you can utilize the cache when it’s safe to do so. You can read more about consistency [here](/docs/reference/api-consistency).
+Consistency has a significant effect on cache utilization and thus performance.  Cache utilization is specified on a per request basis. Before conducting a load test, it’s important you understand the performance and staleness implications of the consistency message(s) you are using. The majority of SpiceDB users are using `minimize_latency` for every request.  The Authzed team almost always recommends against `fully_consistent`, in lieu of `fully_consistent` we recommend using `at_least_as_fresh` so that you can utilize the cache when it’s safe to do so. You can read more about consistency [here](../reference/api-consistency).
 
 ## Load Generation Tooling
 
