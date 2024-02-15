@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import { DocsThemeConfig } from 'nextra-theme-docs';
+import { DocsThemeConfig, useConfig } from 'nextra-theme-docs';
 import { NavCTA, TocCTA } from './components/cta';
 import Footer from './components/footer';
 import { Logo } from './components/logo';
@@ -80,11 +80,23 @@ const config: DocsThemeConfig = {
   project: { link: 'https://github.com/authzed/spicedb' },
   useNextSeoProps() {
     const { asPath } = useRouter();
-    if (asPath !== '/') {
-      return {
-        titleTemplate: '%s – AuthZed Docs',
-      };
-    }
+    const { title, frontMatter } = useConfig();
+    const desc =
+      frontMatter.description ||
+      'Welcome to the SpiceDB and AuthZed docs site.';
+
+    const defaultConfig = {
+      defaultTitle: 'AuthZed Docs',
+      titleTemplate: '%s – AuthZed Docs',
+      description: desc,
+      canonical: `https://authzed.com/docs${asPath}`, // NOTE: Update this if the base dir ever changes
+      openGraph: {
+        title,
+        description: desc,
+      },
+    };
+
+    return defaultConfig;
   },
   darkMode: true,
   primaryHue: { dark: 25, light: 290 },
