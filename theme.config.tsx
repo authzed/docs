@@ -98,6 +98,22 @@ const config: DocsThemeConfig = {
 
     return defaultConfig;
   },
+  head: () => {
+    const isProd = process.env.VERCEL_ENV === 'production';
+
+    return (
+      <>
+        {isProd && (
+          <script
+            defer
+            data-domain="authzed.com"
+            data-api="/api/event"
+            src="/js/script.js"
+          ></script>
+        )}
+      </>
+    );
+  },
   darkMode: true,
   primaryHue: { dark: 25, light: 290 },
   primarySaturation: { dark: 100, light: 100 },
