@@ -1,0 +1,10 @@
+{
+  "consistency": "Consistency",
+  "commands": "Commands",
+  "datastores": "Datastores",
+  "datastore-migrations": "Datastore Migrations",
+  "dispatch": "Dispatch",
+  "relationships": "Relationships",
+  "caveats": "Relationship Caveats",
+  "schema": "Schema Language"
+}

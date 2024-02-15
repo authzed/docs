@@ -1,0 +1,177 @@
+import { Cards, Card, Steps } from 'nextra/components'
+import YouTube from 'react-youtube'
+import { faTerminal, faServer, faQuestion, faHand, faDollarSign, faPhone } from '@fortawesome/free-solid-svg-icons'
+import { faDocker, faAws } from '@fortawesome/free-brands-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+
+import { InlinePlayground } from '@/components/playground'
+
+# SpiceDB Documentation
+
+Welcome to the official documentation for the SpiceDB ecosystem.
+
+<Cards>
+  <Card arrow={true} icon={<FontAwesomeIcon icon={faHand} />} title="New? Follow our first steps guide" href="#first-steps" />
+  <Card arrow={true} icon={<FontAwesomeIcon icon={faQuestion} />} title="Got questions? Our FAQ has answers" href="faq" />
+  <Card arrow={true} icon={<FontAwesomeIcon icon={faDollarSign} />} title="Paid products? That's the AuthZed docs" href="../../authzed" />
+</Cards>
+
+## What is SpiceDB?
+
+SpiceDB is an open source, [Google Zanzibar]-inspired database system for real-time, security-critical [application permissions].
+
+Developers create and apply a [schema] that models their application's resources and permissions.
+From their applications, [client libraries] are used to insert [relationships] or check permissions in their applications.
+
+Building modern authorization from scratch is non-trivial and requires years of development from domain experts.
+Until SpiceDB, the only developers with access to these workflows were employed by massive tech companies that could invest in building mature, but proprietary solutions.
+Now we have a community organized around sharing this technology so that the entire industry can benefit.
+
+In some scenarios, SpiceDB can be challenging to operate because it is a critical, low-latency, distirbuted system.
+For folks interested in a managed SpiceDB services and enterprise functionality, there are [AuthZed's products][authzed-products].
+
+[Google Zanzibar]: https://authzed.com/blog/what-is-zanzibar/
+[application permissions]: ./faq#what-are-application-permissions
+[schema]: https://authzed.com/docs/guides/schema
+[client libraries]: https://github.com/authzed/awesome-spicedb#clients
+[relationships]: ../concepts/relationships
+[authzed-products]: ../../authzed/guides/picking-a-product
+
+### A brief SpiceDB history lesson
+
+In August 2020, the founders of AuthZed left [Red Hat], who had acquired their previous company [CoreOS].
+In the following month, they would write the first API-complete implementation of Zanzibar; project Arrakis was written in lazily-evaluated, type-annotated Python.
+In September, Arrakis was demoed as a part of their [YCombinator] application.
+In March 2021, Arrakis was rewritten in Go, a project code-named Caladan.
+This rewrite would eventually be open-sourced in September 2021 under the name [SpiceDB].
+
+You can read also read the [history of Google's Zanzibar project][zanzibar-history], which is the spirtual predecessor and inspiration for SpiceDB.
+
+[Red Hat]: https://redhat.com
+[CoreOS]: https://www.redhat.com/en/technologies/cloud-computing/openshift/what-was-coreos
+[YCombinator]: https://www.ycombinator.com/companies/authzed
+[SpiceDB]: https://authzed.com/blog/spicedb-is-open-source-zanzibar
+[zanzibar-history]: ../concepts/zanzibar#history
+
+### SpiceDB Features
+
+Features that distinguish SpiceDB from other systems include:
+
+- Expressive [gRPC] and [HTTP/JSON] APIs for checking permissions, listing access, and powering devtools
+- A distributed, parallel graph-engine faithful to the architecture described in [Google's Zanzibar paper]
+- A flexible consistency model configurable [per-request] that includes resistance to the [New Enemy Problem]
+- An expressive [schema language] with a [playground] and CI/CD integrations for [validation] and [integration testing]
+- A pluggable [storage system] supporting [in-memory], [Spanner], [CockroachDB], [PostgreSQL] and [MySQL]
+- Deep observability with [Prometheus] metrics, [pprof] profiles, structured logging, and [OpenTelemetry] tracing
+
+[gRPC]: https://buf.build/authzed/api/docs/main:authzed.api.v1
+[HTTP/JSON]: https://app.swaggerhub.com/apis-docs/authzed/authzed/1.0
+
+[per-request]: https://docs.authzed.com/reference/api-consistency
+[New Enemy Problem]: https://authzed.com/blog/new-enemies/
+
+[schema language]: https://docs.authzed.com/guides/schema
+[playground]: https://play.authzed.com
+[validation]: https://github.com/authzed/action-spicedb-validate
+[integration testing]: https://github.com/authzed/action-spicedb
+
+[storage system]: https://authzed.com/docs/spicedb/selecting-a-datastore
+[in-memory]: https://github.com/hashicorp/go-memdb
+[PostgreSQL]: https://www.postgresql.org
+[Spanner]: https://cloud.google.com/spanner
+[CockroachDB]: https://github.com/cockroachdb/cockroach
+[MySQL]: https://www.mysql.com
+
+[Prometheus]: https://prometheus.io
+[pprof]: https://jvns.ca/blog/2017/09/24/profiling-go-with-pprof/
+[OpenTelemetry]: https://opentelemetry.io
+
+[Google's Zanzibar paper]: https://authzed.com/zanzibar
+
+## First steps
+
+<Steps>
+  ### Dive into some videos!
+
+  SpiceDB developers and community members have recorded videos explaining concepts, modeling familiar applications, and deep diving on the tech powering everything!
+
+  <br />
+  <YouTube videoId="p8xh_z6PUqE" opts={{playerVars:{start: 228}}} />
+  <YouTube videoId="WTfZsRPDv9Q" />
+  <YouTube videoId="x3-B9-ICj0w" />
+
+  ### Join the SpiceDB Discord
+
+  Thousands of community members chat interactively in our [Discord][discord].
+  Why not ask them a question or two?
+
+  <br />
+  <iframe src="https://e.widgetbot.io/channels/844600078504951838/844600078948630559" allow="clipboard-write; fullscreen" height="600" width="800"></iframe>
+
+  [discord]: https://discord.gg/spicedb
+
+  ### Install the SpiceDB toolchain
+
+  SpiceDB and Zed run on Linux, macOS, and Windows on both AMD64 and ARM64 architectures.
+  
+  Follow the instructions below install to your development machine:
+
+  <Cards>
+    <Card arrow={true} icon={<FontAwesomeIcon icon={faServer} />} title="Install the SpiceDB server binary" href="/spicedb/getting-started/installing-spicedb" />
+    <Card arrow={true} icon={<FontAwesomeIcon icon={faTerminal} />} title="Install the SpiceDB CLI tool: Zed" href="/spicedb/getting-started/installing-zed" />
+  </Cards>
+
+  ### Learn the concepts
+
+  We've documented the concepts SpiceDB users should understand:
+
+  <Cards>
+    <Card arrow={true} title="Zanzibar" href="../concepts/zanzibar" />
+    <Card arrow={true} title="Schema" href="../concepts/schema" />
+    <Card arrow={true} title="Relationships" href="../concepts/relationships" />
+  </Cards>
+
+  After these, we recommend these concepts for running SpiceDB:
+
+  <Cards>
+    <Card arrow={true} title="Commands" href="../concepts/commands" />
+    <Card arrow={true} title="Datastores" href="../concepts/datastores" />
+    <Card arrow={true} title="Datastore Migrations" href="../concepts/datastore-migrations" />
+    <Card arrow={true} title="Observability" href="../ops/observability" />
+    <Card arrow={true} title="Operator" href="../concepts/operator" />
+  </Cards>
+
+  Finally, there are some more advanced concepts that are still fundamental:
+
+  <Cards>
+    <Card arrow={true} title="Consistency" href="../concepts/consistency" />
+    <Card arrow={true} title="Caveats" href="../concepts/caveats" />
+    <Card arrow={true} title="Dispatch" href="../concepts/dispatch" />
+  </Cards>
+
+  ### Experiment in the Playground
+
+  You can experiment with and share schema and data snippets on the [Playground][pg].
+
+  When you're done, you can easily import these into a real SpiceDB instance using `zed import`.
+
+  Here's a very example to toy with:
+
+  <br /><InlinePlayground reference="m1lRfaaYf9XP" />
+
+  [pg]: https://play.authzed.com
+
+  ### Take SpiceDB to Production
+
+  Once you're ready to take things into production, you can reference our guides or explore a managed solution with AuthZed.
+
+  Even if you aren't interested in paid products, you can still schedule a call or reach out on Discord.
+
+  <Cards>
+    <Card arrow={true} icon={<FontAwesomeIcon icon={faDocker} />} title="Deploy the Operator on Kubernetes" href="/spicedb/ops/deploying-spicedb-operator" />
+    <Card arrow={true} icon={<FontAwesomeIcon icon={faAws} />} title="Deploy a SpiceDB cluster on Amazon EKS" href="/spicedb/ops/deploying-spicedb-on-eks" />
+    <Card arrow={true} icon={<FontAwesomeIcon icon={faPhone} />} title="Schedule a call with AuthZed" href="https://authzed.com/call?utm_source=docs_discovering_spicedb" />
+  </Cards>
+
+</Steps>
+

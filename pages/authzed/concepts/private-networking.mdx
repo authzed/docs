@@ -1,0 +1,17 @@
+# Private Networking
+
+Private Networking is functionality exclusive to AuthZed Dedicated that restricts network access to internal networks. When enabled, connections that are not configured are rejected.
+
+By adding this additional layer of security, entire classes of security risk are eliminated because only trusted networks have access to the software powering your authorization systems.
+
+While completely optional, we recommend all users to secure their connections to SpiceDB using Private Networking.
+
+In the scenario you choose not to use Private Networking, AuthZed Dedicated can alternatively be configured for access over the open internet.
+
+## Architecture 
+
+The following diagram models Private Networking on AWS using AWS PrivateLink:
+
+![Diagram displaying PrivateLink connecting AWS accounts](/images/aws-dedicated-diagram.png)
+
+

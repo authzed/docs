@@ -1,0 +1,233 @@
+import YouTube from 'react-youtube'
+import ObjectTypeDiagram from '@/public/images/object-type-regex.svg'
+import ObjectIDDiagram from '@/public/images/object-id-regex.svg'
+import { Callout } from 'nextra/components'
+
+# Google Zanzibar
+
+Zanzibar is the internal authorization system at Google.
+
+A [research paper] publicly documenting the system was published at [2019 USENIX Annual Technical Conference][usenix].
+
+[research paper]: https://authzed.com/zanzibar
+[usenix]: https://www.usenix.org/conference/atc19
+
+## History
+
+In the 2010s, a team at Google was formed to secure objects across SaaS products and internal systems.
+Because a single object could be handled by multiple systems (e.g. the core product and a search system), making the problem one of distributed access control, properly handling end-user access controls required architecting a new system.
+
+In the summer of 2019, researchers at Google published a paper called "Zanzibar: Google's Consistent, Global Authorization system".
+This paper documented the design and success of the project that went on to handle authorization logic across Google's product portfolio.
+
+Before landing on the name Zanzibar, the project was internally referred to as "Spice".
+At Google, their mission was to ensure the "ACLs must flow", a reference to ["the spice must flow"][spice-must-flow].
+This theme was chosen because Lea Kissner, one of the co-creators, is a [Dune fan][lea-dune].
+In homeage, AuthZed maintained a Dune-related naming scheme for their own projects.
+
+[lea-dune]: https://twitter.com/LeaKissner/status/1304457030044794880
+[spice-must-flow]: https://fictionhorizon.com/the-meaning-of-dunes-the-spice-must-flow-quote/
+
+## Significance
+
+### Popularizing ReBAC
+
+**Re**lationship-**b**ased **A**ccess **C**ontrol (ReBAC) is a one of the paradigms for the design of authorization systems.
+The core idea behind ReBAC is that the existence of a chain relationships between a subject and a resource defines access.
+This abstraction alone is able to model all other existing authorization paradigms including the very popular RBAC and ABAC designs.
+The concept was originally described by Carrie E. Gates in a 2006 paper entitled [Access Control Requirements for Web 2.0 Security and Privacy][web2-paper] with Facebook cited as an early adopter of this paradigm. However, it wouldn't be until the publication of the Zanzibar paper in 2019 that ReBAC would achieve popularity outside of applications that weren't already leveraging graph abstractions for their data.
+
+As [Broken Access Control][broken] now tops the OWASP Top 10, [ReBAC has become the recommended method for building correct authorization systems][owasp-rec].
+
+For more information on ReBAC, see the [documentation for Relationships][rels].
+
+[web2-paper]: https://www.researchgate.net/profile/Carrie-Gates-2/publication/240787391_Access_Control_Requirements_for_Web_20_Security_and_Privacy/links/540e6f670cf2d8daaacd4adf/Access-Control-Requirements-for-Web-20-Security-and-Privacy.pdf
+[broken]: https://owasp.org/Top10/A01_2021-Broken_Access_Control/
+[owasp-rec]: https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html#prefer-attribute-and-relationship-based-access-control-over-rbac
+[rels]: ./relationships
+
+### New Enemy Problem
+
+The New Enemy Problem is scenario where unauthorized access can occur when changes to permissions and the resources they protect are not updated together [consistently].
+SpiceDB solves this problem with configurable consistency and ZedTokens, its version of Zookies.
+
+This term was first introduced in the Zanzibar paper where solving this problem was a fundamental design goal:
+
+>ACL checks must respect the order in which users modify ACLs and object contents to avoid unexpected sharing behaviors.
+>Specifically, our clients care about preventing the "new enemy" problem, which can arise when we fail to respect the ordering between ACL updates or when we apply old ACLs to new content.
+>Consider these two examples:
+>
+>**Example B: Misapplying old ACL to new content**
+>1. Alice removes Bob from the ACL of a folder;
+>2. Alice then asks Charlie to move new documents to the folder, where document ACLs inherit from folder ACLs;
+>3. Bob should not be able to see the new documents, but may do so if the ACL check neglects the ordering between the two ACL changes.
+>
+>**Example B: Misapplying old ACL to new content**
+>1. Alice removes Bob from the ACL of a document;
+>2. Alice then asks Charlie to add new contents to the document;
+>3. Bob should not be able to see the new contents, but may do so if the ACL check is evaluated with a stale ACL from before Bob's removal.
+>
+> — [Zanzibar, 2.2 Consistency Model](https://authzed.com/zanzibar#2.2-consistency-model)
+
+To dig deeper on the New Enemy Problem and the greater topic of consistency, you can read the following:
+
+- [SpiceDB Consistency Documentation][consistently]
+- [Enforcing Causal Ordering in Distributed Systems: The Importance of Permissions Checking](https://authzed.com/blog/new-enemies)
+
+[consistently]: ./consistency
+
+### Papers We Love Presentation
+
+On June 28th 2021, Zanzibar was presented to the [Papers We Love] New York City chapter:
+
+<br /><YouTube videoId="WTfZsRPDv9Q" />
+
+[Papers We Love]: https://paperswelove.org
+
+## Differences with SpiceDB
+
+<Callout type="info">
+  The Annotated Zanzibar paper has multiple sets of annotations!
+
+  You can read it with [annotations highlighting the differences between SpiceDB and Zanzibar][paper-diff], too!
+
+  [paper-diff]: https://authzed.com/zanzibar/#annotations/spicedb
+</Callout>
+
+### Schema Language
+
+The Zanzibar paper provides examples of Namespace Configs using the Protocol Buffers text-format.
+Internally, Google has a plethora of Protocol Buffer tooling to aid developers in generating Namespace Configs.
+
+SpiceDB instead offers a [Schema Language][schema] that internally compiles into Namespace Configs.
+
+[schema]: ./schema
+
+### Distinguishing Relations from Permissions
+
+Zanzibar [does not disambiguate][disambiguate] between relations that define access and those that exist purely in the abstract.
+
+SpiceDB introduces new terms and syntax to differentiate relations into two concepts Relations and Permissions.
+
+Permissions are best thought of "public API" being consumed by applications to check access.
+Permissions are defined using set semantics referred to in Zanzibar parlance as
+"computed usersets".
+
+Relations are purely abstract relationships between objects stored in SpiceDB.
+They can be queried by the API, but we highly recommend only ever calling Permissions from the API because Permissions can be updated to compute access backwards compatibly.
+
+This disambiguation also allowed SpiceDB to drop the confusing `_this` keyword used in Zanzibar userset rewrites.
+
+[disambiguate]: https://authzed.com/zanzibar/#annotations/spicedb/relations-vs-permissions
+
+### Reverse Indices
+
+Both Zanzibar and [SpiceDB][spicedb-expand] implement a ["Reverse Index Expand" API][expand].
+This API responds with a tree structure that can be awkward for applications to consume, especially when it's ideal to avoid co-mingling permissions logic and application code.
+
+As a result, SpiceDB supports additional APIs to simplify consuming [Reverse Indices] without structure.
+In practice, we find that folks prefer a flattened list of results.
+
+[spicedb-expand]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.ExpandPermissionTree
+[expand]: https://authzed.com/zanzibar/2DaJ2vLfht:0.Tk3KF4i94:4S
+[reverse indices]: ../getting-started/faq#what-is-a-reverse-index
+
+### Datastores
+
+Zanzibar only supports Google's internal [Spanner] service for tuple-storage.
+
+SpiceDB supports a variety of datastores; including [Cloud Spanner].
+
+You can learn more about datastores in the [Datastore documentation].
+
+[Spanner]: https://static.googleusercontent.com/media/research.google.com/en//archive/spanner-osdi2012.pdf
+[Cloud Spanner]: https://cloud.google.com/spanner/
+[Datastore documentation]: ./datastores
+
+### Consistency
+
+Zanzibar supports a [ContentChangeCheck API][ccc-api] and the ability specify "at least as fresh" as a Zookie.
+
+SpiceDB simplifies this workflow by allowing API requests to specify their consistency behavior in addition to implementing ZedTokens, the analogue of Zanzibar's Zookies.
+
+[ccc-api]: https://zanzibar.tech/#annotations/spicedb/content-change-check
+
+### Identifiers
+
+SpiceDB is a bit more flexible with the character-set allowed for Object IDs.
+
+Object Types follow the following Regular Expression:
+
+```
+^([a-z][a-z0-9_]{1,61}[a-z0-9]\/)*[a-z][a-z0-9_]{1,62}[a-z0-9]$
+```
+
+<ObjectTypeDiagram />
+
+Object IDs follow the following Regular Expression:
+
+```
+^(([a-zA-Z0-9/_|\\\-=+]{1,})|\\*)$
+```
+
+<ObjectIDDiagram />
+
+### Users
+
+At Google, all users and services are registered with a service called GAIA (Google Accounts and ID Administration).
+GAIA provides unique identifiers for every entity in the form of a 64-bit integer.
+Zanzibar is designed with the assumption that any user can be represented using their GAIA ID.
+
+Because users are not as rigidly defined outside of Google, SpiceDB treats users just like any other object.
+This allows SpiceDB to support more complex user systems and perform more powerful queries.
+
+A simple example is a SpiceDB schema modeling both users and API keys:
+
+```zed
+definition ApiKey {}
+definition User {
+  relation keys: ApiKey
+}
+```
+
+You can now model relations and permissions with either type:
+
+```zed {4}
+definition Post {
+  relation viewer: User
+  ...
+  permission view = viewer + viewer->keys
+}
+```
+
+Now developers don't have to implement logic in every app that resolves API Keys because SpiceDB already knows how to resolve them.
+
+### Terminology
+
+| Zanzibar Term    | SpiceDB Term        |
+| ---------------- | ------------------- |
+| Tuple            | Relationship        |
+| Namespace        | Object Type         |
+| Namespace Config | Object Definition   |
+| Userset          | Subject Reference   |
+| User             | Subject Reference   |
+| Zookie           | ZedToken            |
+| Tupleset         | Relationship Set    |
+| Tupleset Filter  | Relationship Filter |
+
+## Recommended Reading
+
+- [Annotated Zanzibar Paper](https://authzed.com/zanzibar)
+- [Lea Kissner's Zanzibar Description](https://docs.google.com/document/d/1KbJ8Gc65mTkSQXFqBalbiCbGuQClTQDRmKCg1BExAN4/edit)
+
+### Related Technologies
+
+- [Spanner]: the datastore used by Zanzibar
+- [CockroachDB]: an open-source database inspired by Spanner and used by SpiceDB
+- [Slicer]: the dynamic sharding system used by Zanzibar to avoid hotspots
+- [F1]: Google Ads backend cited for performance metrics in the Spanner paper
+
+[Spanner]: https://static.googleusercontent.com/media/research.google.com/en//archive/spanner-osdi2012.pdf
+[CockroachDB]: https://dl.acm.org/doi/pdf/10.1145/3318464.3386134
+[Slicer]: https://www.usenix.org/system/files/conference/osdi16/osdi16-adya.pdf
+[F1]: https://storage.googleapis.com/pub-tools-public-publication-data/pdf/41344.pdf

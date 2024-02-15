@@ -1,0 +1,132 @@
+import { Callout, Steps } from 'nextra/components'
+
+# Deploying the SpiceDB Operator
+
+The [SpiceDB Operator] is the best way to run SpiceDB in production.
+
+This guide will walk you through the steps to deploy the SpiceDB Operator to a [Kubernetes] cluster and confirm it's functional by creating a simple SpiceDB deployment.
+
+[SpiceDB Operator]: ../concepts/operator
+[Kubernetes]: https://kubernetes.io
+
+## Steps
+
+<Steps>
+
+### Create or Configure a Kubernetes Cluster
+
+The rest of this guide assumes [kubectl] is configured to use an available Kubernetes cluster.
+
+For production use-cases, we recommend using your cloud provider's managed Kubernetes services (e.g. [EKS], [GKE], or [AKS]).
+
+If you want to run a Kubernetes cluster locally, we recommend one of:
+
+- [kind](https://kind.sigs.k8s.io)
+- [OrbStack](https://orbstack.dev)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- [minikube](https://minikube.sigs.k8s.io)
+
+[kubectl]: https://kubernetes.io/docs/tasks/tools/#kubectl
+[EKS]: https://docs.aws.amazon.com/eks/latest/userguide/what-is-eks.html
+[GKE]: https://cloud.google.com/kubernetes-engine/
+[AKS]: https://learn.microsoft.com/en-us/azure/aks/
+
+### Applying the Operator manifests
+
+Before modifying any cluster, we recommend double-checking that your current context is configured for the target cluster:
+
+```sh
+kubectl config current-context
+```
+
+Now you're ready to apply the manifests that install the SpiceDB Operator:
+
+```sh
+kubectl apply --server-side -k github.com/authzed/spicedb-operator/config
+```
+
+All resources are created in the `spicedb-operator` namespace.
+
+If you'd like to confirm that the deployment is running, you can run the following command:
+
+```sh
+kubectl -n spicedb-operator get pods
+```
+
+### Create a SpiceDBCluster
+
+You can now create and configure SpiceDB clusters by applying `SpiceDBCluster` resources.
+
+<Callout type="warning">
+  The following manifests configure a simple deployment, not a secure one.
+
+  Do not use these values in production.
+</Callout>
+
+Apply a SpiceDBCluster and required [Secret] using the following command:
+
+```sh
+kubectl apply --server-side -f - <<EOF
+apiVersion: authzed.com/v1alpha1
+kind: SpiceDBCluster
+metadata:
+  name: dev
+spec:
+  config:
+    datastoreEngine: memory
+  secretName: dev-spicedb-config
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dev-spicedb-config
+stringData:
+  preshared_key: "averysecretpresharedkey"
+EOF
+```
+[secret]: https://kubernetes.io/docs/concepts/configuration/secret/
+
+### Connect & Verify
+
+In order to verify our SpiceDB deployment is healthy, we're going to need access to ports where it's serving traffic.
+
+The easiest way is to forward the port using kubectl:
+
+```sh
+kubectl port-forward deployment/dev-spicedb 50051:50051
+```
+
+There are a variety of ways to interact with the SpiceDB API, but for this guide we'll be using the official command-line client, [Zed].
+
+If you don't already have zed installed, you can follow [this guide][install-zed].
+
+For zed to connect to SpiceDB, we'll first have to create an insecure context named `local` for connecting to our locally forwarded port:
+
+```sh
+zed context set local localhost:50051 "somerandomkeyhere" --insecure
+```
+With our context set, we're free to make requests to our new, empty SpiceDB deployment:
+
+```sh
+zed schema read
+```
+
+If all is successful, reading the schema should have thrown an error:
+
+```
+code = NotFound
+desc = No schema has been defined; please call WriteSchema to start
+```
+
+[zed]: https://github.com/authzed/zed
+[install-zed]: ./installing-zed
+
+### Taking things to production
+
+This guide creates a single-node deployment of SpiceDB with no persistent storage; to really take things into production, it's just a matter of configuration.
+
+To learn more about configuring the SpiceDB Operator, you can reference the [SpiceDB Operator docs][SpiceDB Operator] or reference the [community examples GitHub repository][examples] which has more deployment examples including TLS, connecting to datastore backends, and configuring ingress.
+
+[examples]: https://github.com/authzed/examples
+
+</Steps>

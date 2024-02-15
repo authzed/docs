@@ -1,0 +1,158 @@
+import { Callout } from 'nextra/components'
+
+## Relationships
+
+Relationships bind together two Objects (a Subject and a Resource) via a Relation.
+The concept behind ReBAC authorization systems is that by following a chain of relationships, one can determine access.
+
+In SpiceDB, a functioning Permissions System is the combination of [Schema], which defines the structure of data, and Relationships which are the data.
+
+[schema]: ./schema
+
+## Understanding Relationships
+
+At its core, authorization logic fundamentally reduces to asking a single question:
+
+> Is this actor allowed to perform this action on this resource?
+
+This question can be broken down into core components:
+
+```
+Is this actor allowed to perform this action on this resource?
+   /¯¯¯¯¯¯¯/                     /¯¯¯¯¯¯¯¯¯/    /¯¯¯¯¯¯¯¯¯¯¯/
+    object                      permission or      object
+   (subject)                     relation        (resource)
+```
+
+In SpiceDB parlance, _this actor_ and _this resource_ are both [Objects] and _this action_ is a [Permission] or [Relation] (consider them equivalant for now).
+By focusing solely on these components of the question, it becomes clear that this is the same structure as a Relationship: two Objects and a Relation.
+
+The power of ReBAC comes from transforming this basic question into another one:
+
+> Does there exist a chain of relationships starting at this resource through this relation that ultimately reaches this subject?
+
+This new question is one of [graph reachability].
+General purpose graph databases optimize for a couple different types of graph traversals; usually [breadth-first search] and [depth-first search], but ReBAC systems are optimized for scalably and efficiently computing reachability along with all of the assumptions that come with the domain of authorization.
+
+The syntax used for relationships in the [paper that popularized ReBAC](./zanzibar) is as follows:
+
+```
+document:readme#editor@user:emilia
+```
+
+Here it is with labels explaining each section around the delimiters:
+
+```
+        resource      subject
+           ID          type
+         \ˍˍˍˍˍ\       \ˍˍ\
+ document:readme#editor@user:emilia
+/¯¯¯¯¯¯¯/       /¯¯¯¯¯/     /¯¯¯¯¯/
+resource      permission   subject
+  type        or relation    ID
+```
+
+<Callout type="info">
+  In a real system, Object IDs are most likely a computer-friendly string than something human readable.
+  Many use-cases use UUIDs or unsigned integers representing the primary key from that data's canonical datastore.
+
+  Users are no exception to this pattern and can be [represented in various ways][modeling-users], such as the `sub` field of an JWT from an Identity Provider.
+
+  Regardless of their representation, Object IDs must be **unique and stable** within the set of IDs for an Object Type.
+</Callout>
+
+Relationships are powerful because of their duality: they are both the question and, when written in aggregate, the answer.
+
+[Objects]: ./schema#object-type-definitions
+[Permission]: ./schema#permissions
+[Relation]: ./schema#relations
+[graph reachability]: https://en.wikipedia.org/wiki/Reachability
+[breadth-first search]: https://en.wikipedia.org/wiki/Breadth-first_search
+[depth-first search]: https://en.wikipedia.org/wiki/Depth-first_search
+[modeling-users]: ../modeling/representing-users
+
+## Writing Relationships
+
+It is the application's responsibility to keep the relationships within SpiceDB up-to-date and reflecting the state of the application; how an application does so can vary based on the specifics of the application, so below we outline a few approaches.
+
+<Callout type="info">
+  Want to learn more about writing relationships to SpiceDB, the various strategies and their pros and cons?
+
+  Read our [blog post about writing relationships][write-blog].
+
+  [write-blog]: https://authzed.com/blog/writing-relationships-to-spicedb/
+</Callout>
+
+### SpiceDB-only relationships
+
+Sometimes an application does not even need to store permissions-related relationships in its relational database.
+
+Consider a permissions system that allows for teams of users to be created and used to access a resource.
+In SpiceDB's schema, this could be represented as:
+
+```zed
+definition user {}
+
+definition team {
+  relation member: user
+}
+
+definition resource {
+  relation reader: user | team#member
+  permission view = reader
+}
+```
+
+In the above example, the relationship between a resource and its teams, as well as a team and its members does not need to be stored in the application's database **at all**.
+
+Rather, this information can be stored solely in SpiceDB, and accessed by the application via a [ReadRelationships] or [ExpandPermissionsTree] call when necessary.
+
+[ReadRelationships]: https://buf.build/authzed/api/docs/main:authzed.api.v1#ReadRelationships
+[ExpandPermissionsTree]: https://buf.build/authzed/api/docs/main:authzed.api.v1#ExpandPermissionTree
+
+### Two writes & commit
+
+The most common and straightforward way to store relationships in SpiceDB is to use a 2 phase commit-like approach, making use of a transaction from the relational database along with a [WriteRelationships] call to SpiceDB.
+
+[WriteRelationships]: https://buf.build/authzed/api/docs/main:authzed.api.v1#WriteRelationships
+
+```python title='Example of a 2PC-like approach'
+try:
+  tx = db.transaction()
+
+  # Write relationships during a transaction so that it can be aborted on exception
+  resp = spicedb_client.WriteRelationships(...)
+
+  tx.add(db_models.Document(
+    id=request.document_id,
+    owner=user_id,
+    zedtoken=resp.written_at
+  ))
+  tx.commit()
+except:
+  # Delete relationships written to SpiceDB and re-raise the exception
+  tx.abort()
+  spicedb_client.DeleteRelationships(...)
+  raise
+```
+
+### Streaming commits
+
+Another approach is to stream updates to both a relational database and SpiceDB via a third party streaming system such as [Kafka], using a pattern known as [Command Query Responsibility Segregation] (CQRS)
+
+[Kafka]: https://kafka.apache.org/
+[Command Query Responsibility Segregation]: https://www.confluent.io/blog/event-sourcing-cqrs-stream-processing-apache-kafka-whats-connection/
+
+In this design, any updates to the relationships in both databases are published as **events** to the streaming service, with each event being consumed by a system which performs the updates in both the database and in SpiceDB.
+
+### Asynchronous Updates
+
+<Callout type="warning">
+  Before adopting an asynchronous system, you should deeply consider the [consistency] implications.
+
+  [consistency]: ./consistency
+</Callout>
+
+If an application does not require up-to-the-second consistent permissions checking, and some replication lag in permissions checking is acceptable, then asynchronous updates of the relationships in SpiceDB can be used.
+
+In this design, a synchronization process, typically running in the background, is used to write relationships to SpiceDB in reaction to any changes that occur in the primary relational database.
