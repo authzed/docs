@@ -1,0 +1,164 @@
+import YouTube from 'react-youtube'
+import { Callout } from 'nextra/components'
+
+# Consistency
+
+Consistency is a fundamental concept in distributed systems, databases, and authorization.
+
+SpiceDB is no exception! In fact, the paper that inspired SpiceDB is entitled "Zanzibar: Google's __**Consistent**__, Global Authorization System".
+
+## What is consistency?
+
+The following presentation submitted to the [CNCF] gives an overview and examples of consistency and why it's important:
+
+<br /><YouTube videoId="cbZusvT3PLs" />
+
+[CNCF]: https://cncf.io
+
+## Consistency in SpiceDB
+In SpiceDB, there is a requirement for both proper consistency, as well as excellent performance.
+
+To achieve performance, SpiceDB implements a number of levels of caching, to ensure that repeated permissions checks do not need to be recomputed over and over again, so long as the underlying relationships behind those permissions have not changed.
+
+However, all caches suffer from the risk of becoming stale.
+If a relationship has changed, and all the caches have not been updated or cleared, there is a risk of returning incorrect permission information; this problem is known as the [New Enemy Problem].
+
+SpiceDB's solution is to leverage the [v1 API][v1-api]'s ability to specify the desired [consistency][consistency] level on a per-request basis by using [ZedTokens](#zedtokens).
+This allows for the API consumers dynamically trade-off less fresh data for more performance when possible.
+
+Consistency is provided via the [Consistency message][msg] on supported API calls.
+
+[v1-api]: https://buf.build/authzed/api/tree/main/authzed/api/v1
+[consistency]: https://en.wikipedia.org/wiki/Data_consistency
+[msg]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.Consistency
+
+### Defaults
+
+| API                   | Default Consistency |
+|-----------------------|---------------------|
+| `WriteRelationships`  | `fully_consistent`  |
+| `DeleteRelationships` | `fully_consistent`  |
+| `ReadSchema`          | `fully_consistent`  |
+| `WriteSchema`         | `fully_consistent`  |
+| All other APIs        | `minimize_latency`  |
+
+### Levels
+
+#### Minimize Latency
+
+`minimize_latency` will attempt to minimize the latency of the API call by selecting data that is most likely exist in the cache.
+
+<Callout type="warning">
+  If used exclusively, this can lead to a window of time where the [New Enemy Problem] can occur.
+</Callout>
+
+[New Enemy Problem]: ./zanzibar#new-enemy-problem
+
+```proto
+Consistency { minimize_latency: true }
+```
+
+#### At Least As Fresh
+
+`at_least_as_fresh` will ensure that all data used for computing the response is at least as fresh as the point-in-time specified in the [ZedToken].
+
+If newer information is available, it will be used.
+
+```proto
+Consistency { at_least_as_fresh: ZedToken { token: "..." } }
+```
+
+[ZedToken]: #zedtokens
+
+#### At Exact Snapshot
+
+`at_exact_snapshot` will ensure that all data used for computing the response is that found at the *exact* point-in-time specified in the [ZedToken].
+
+<Callout type="warning">
+  Requests specifying `at_exact_snapshot` can fail with a _Snapshot Expired_ error because SpiceDB eventually collects garbage over time.
+
+  It is recommended to only use this option if you are paginating over results within a short window.
+  This window is determined by the `--datastore-gc-window` flag.
+</Callout>
+
+```proto
+Consistency { at_exact_snapshot: ZedToken { token: "..." } }
+```
+
+[ZedToken]: #zedtokens
+
+#### Fully Consistent
+
+`fully_consistent` will ensure that all data used is fully consistent with the latest data available within the SpiceDB datastore.
+
+Note that the snapshot used will be loaded at the beginning of the API call, and that new data written *after* the API starts executing will be ignored.
+
+<Callout type="warning">
+  This consistency mode explicitly bypasses caching, dramatically impacting latency.
+
+  If you need read-after-write consistency, consider using a [ZedToken]
+
+  [ZedToken]: #zedtokens
+</Callout>
+
+```proto
+Consistency { fully_consistent: true }
+```
+
+## ZedTokens
+
+A ZedToken is an opaque token representing a point-in-time of the SpiceDB datastore, encoded for easy storage and transmission.
+ZedTokens are used for data consistency guarantees when using the SpiceDB API.
+
+ZedToken is the SpiceDB equivalant of Google Zanzibar's [Zookie] concept which protects users from the [New Enemy Problem].
+
+SpiceDB returns ZedTokens from the APIs that perform permission checks or modify data:
+- [CheckPermission]
+- [BulkCheckPermission]
+- [WriteRelationships]
+- [DeleteRelationships]
+
+[Zookie]: https://authzed.com/zanzibar/2Dv_Aat_2Q:0.Py6NWBPg8:2U
+[New Enemy Problem]: zanzibar#new-enemy-problem
+[CheckPermission]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.CheckPermission
+[BulkCheckPermission]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.ExperimentalService.BulkCheckPermission
+[WriteRelationships]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.WriteRelationships
+[DeleteRelationships]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.DeleteRelationships
+
+### Storing ZedTokens
+
+There are scenarios where it makes sense to store ZedTokens in an applications primary database.
+The goal of this workflow is to ensure the application can query SpiceDB with consistency that is causally tied to the content of the protected resource.
+
+Stored ZedTokens should be updated under these events:
+- The resource is created or deleted
+- The contents of the resource changes
+- Adding or removing access to the resource (e.g. writing a relationship)
+
+When these events happen, a new ZedToken is either returned or it should be requested by performing a check with full consistency.
+The result should be stored alongside the newly updated content in the application database.
+
+<Callout type="info">
+  For this purpose, Google's Zanzibar has a [ContentChangeCheck API][ccc-api] because it doesn't support configurable consistency like SpiceDB.
+
+  [ccc-api]: https://authzed.com/zanzibar#annotations/intro/content-change-check
+</Callout>
+
+Data can be complex and designed with hierachies in mind.
+In these scenarios, the parent resource must be referenced.
+
+A simpler alternative is to perform read-after-write queries to SpiceDB with full consistency.
+This is great for experimentation and getting started, but might not be ideal for production workloads.
+
+### Ignoring ZedTokens
+
+Some workloads and domains might not be sensitive to wall-clock-based permission races.
+In those scenarios, you're free to totally ignore ZedTokens.
+
+You can configure the staleness window to a tolerable duration for your domain with the `spicedb serve --datastore-revision-quantization-interval` flag.
+
+## Further Reading
+
+- [Hotspot Caching in Google Zanzibar and SpiceDB](https://authzed.com/blog/hotspot-caching-in-google-zanzibar-and-spicedb)
+- [Zed Tokens, Zookies, Consistency for Authorization](https://authzed.com/blog/zedtokens)
+- [The One Crucial Difference Between Spanner and CockroachDB](https://authzed.com/blog/prevent-newenemy-cockroachdb)

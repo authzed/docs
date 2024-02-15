@@ -1,0 +1,112 @@
+# Frequently-asked Questions
+
+## SpiceDB Questions
+
+### Is SpiceDB Open Source?
+
+SpiceDB is developed as an [Apache 2.0-licensed][apache] open-source, community-first effort.
+
+Large contributions must follow a proposal and feedback process regardless of whether the authors are maintainers, AuthZed employees, or brand new to the community.
+
+Other AuthZed open source projects are typically licensed [Apache 2.0][apache] unless they are a fork of another codebase.
+Example code is [MIT-licensed][mit] so that they can be modified and adopted into any codebase.
+
+Not all code produced at AuthZed is open source.
+There are two conditions under which code is kept proprietary:
+
+- Functionality is minimally applicable to the community and is directly tied to enterprise environments
+- Functionality is tied to AuthZed's infrastructure and is not widely applicable to all deployments
+
+[apache]: https://www.tldrlegal.com/license/apache-license-2-0-apache-2-0
+[mit]: https://www.tldrlegal.com/license/mit-license
+
+### What programming languages does SpiceDB support?
+
+SpiceDB is primarily accessed by a [gRPC] API and thus client libraries can be generated for any programming language.
+
+AuthZed builds and maintains client libraries for the following languages:
+
+- [Go](https://github.com/authzed/authzed-go)
+- [Node](https://github.com/authzed/authzed-node)
+- [Python](https://github.com/authzed/authzed-py)
+- [Ruby](https://github.com/authzed/authzed-rb)
+- [Java](https://github.com/authzed/authzed-java)
+
+AuthZed also develops [zed], a command-line client for interacting with the SpiceDB API.
+
+You can find more languages and integrations maintained by the community in the [Clients section] of the [Awesome SpiceDB] repository.
+
+[grpc]: https://grpc.io
+[zed]: https://github.com/authzed/zed
+[clients section]: https://github.com/authzed/awesome-spicedb#clients
+[awesome spicedb]: https://github.com/authzed/awesome-spicedb
+
+### Does SpiceDB secure IT infrastructure?
+
+SpiceDB is a database designed to be integrated into applications.
+
+There are some organizations with homegrown IT use-cases that use SpiceDB.
+However, for most IT use cases, this is probably more low-level than what you need.
+
+We recommend looking into tools designed around specific IT workflows such as auditing ([Orca], [PrismaCloud]), goverance, access management ([Indent], [ConductorOne]).
+
+[Orca]: https://orca.security/platform/cloud-security-posture-management-cspm/
+[PrismaCloud]: https://www.paloaltonetworks.com/prisma/cloud
+[Indent]: https://indent.com
+[ConductorOne]: https://conductorone.com
+
+### Is SpiceDB a policy engine?
+
+SpiceDB is not a policy engine.
+
+SpiceDB was inspired by Zanzibar, which popularized the concept of Relationship-based access control (ReBAC).
+ReBAC systems offer correctness, performance, and scaling guarantees that are not possible in systems designed purely around policy.
+Notably, policy engines cannot implement [Reverse Indices].
+
+However, there are some scenarios where ReBAC systems can benefit from dynamic enforcement.
+For these scenarios, SpiceDB supports [Caveats] as a light-weight form of policy that avoids pitfalls present in many other systems.
+
+[Reverse Indices]: #what-is-a-reverse-index
+[caveats]: ../concepts/caveats
+
+### How can I get involved with SpiceDB?
+
+The best first step is to join [Discord].
+
+Discord is a great place to chat with other community members and the maintainers of the software.
+
+If you're looking to contribute code, you can read [CONTRIBUTING.md] in our open source projects for details how to contribute, good first issues, and common development workflows.
+
+[Discord]: https://discord.gg/spicedb
+[CONTRIBUTING.md]: https://github.com/authzed/spicedb/blob/main/CONTRIBUTING.md
+
+## Zanzibar Questions
+
+### What is a Reverse Index?
+
+>Reverse-index expand answers the question "what does this employee have access to?", which most organizations validate as part of meeting those compliance obligations.
+>But, even more critically, organizations use this information to debug access issues and as baseline data to ensure careful data handling.
+>
+> — Lea Kissner, Zanzibar Coauthor
+
+In SpiceDB, reverse indices often refer to the [LookupResources] and [LookupSubjects] APIs which are designed to answer the following questions, respectively:
+- "What are all of the resources this subject can access?"
+- "What are all of the subjects with access to this resource?"
+
+[LookupResources]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.LookupResources
+[LookupSubjects]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.LookupSubjects
+
+### How does SpiceDB improve on Google's Zanzibar?
+
+At a high-level, SpiceDB attempts to remain true to Zanzibar's design principles, but without any assumptions around Google's internal infrastructure and use cases.
+As a result, many things in SpiceDB are more flexible to accomodate different kinds of users with different software stacks. For example, [modeling complex user systems][model-users] is possible in SpiceDB, but in Zanzibar all users must be a uint64 identifier.
+
+Because SpiceDB is not forced on developers as company-wide requirement, the project also values developer experience and making the tooling pleasant to work with.
+You can see this in our [Schema Language] and [Playground] which vastly improves the user experience of directly manipulating Protocol Buffers at Google.
+
+For more specific details, see the documentation on the [Zanzibar][z-diff].
+
+[model-users]: ../modeling/representing-users
+[Schema Language]: ../concepts/schema
+[Playground]: https://play.authzed.com
+[z-diff]: ../concepts/zanzibar#differences-with-spicedb

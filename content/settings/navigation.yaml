@@ -1,0 +1,87 @@
+footer:
+  - label: Docs & Resources
+    isGroup: true
+    items:
+      - label: Learn
+        isDivider: true
+      - label: Playground
+        url: https://play.authzed.com
+        isDivider: false
+        columnBreak: false
+      - label: Docs
+        url: /docs
+        isDivider: false
+      - label: Demo
+        url: /demo
+      - label: Blog
+        url: /blog
+      - label: Support
+        isDivider: true
+        columnBreak: true
+      - label: Security
+        url: https://security.authzed.com
+      - label: Status Page
+        url: https://status.authzed.com/
+      - label: Submit a Ticket
+        url: /contact
+      - label: Schedule a Call
+        url: /call
+    columnCount: 2
+  - label: Products
+    isGroup: true
+    items:
+      - label: Managed Services
+        isDivider: true
+      - label: SpiceDB Serverless
+        url: /products/spicedb-serverless
+      - label: SpiceDB Dedicated
+        columnBreak: false
+        url: /products/spicedb-dedicated
+      - label: Self-Hosted
+        isDivider: true
+        columnBreak: true
+      - label: SpiceDB SLA Support
+        url: /products/spicedb-sla-support
+      - label: SpiceDB Self-Hosted
+        columnBreak: false
+        url: /products/spicedb-self-hosted
+      - label: Open Source
+        isDivider: true
+        columnBreak: true
+      - label: SpiceDB
+        url: /products/spicedb
+      - label: SpiceDB Operator
+        url: /products/spicedb-operator
+      - label: SpiceDB Clients
+        columnBreak: false
+        url: /products/spicedb-clients
+    columnCount: 3
+  - label: Company
+    isGroup: true
+    items:
+      - label: Info
+        isDivider: true
+      - label: About Us
+        url: /about
+      - label: Join the Team
+        url: https://www.workatastartup.com/companies/authzed
+      - label: Legal
+        isDivider: true
+      - label: Privacy Policy
+        url: /privacy-policy
+      - label: Terms & Conditions
+        url: /terms-conditions
+  - label: Community
+    isGroup: true
+    items:
+      - label: Discord
+        url: https://authzed.com/discord
+      - label: GitHub
+        url: https://github.com/authzed
+      - label: Twitter
+        url: https://twitter.com/authzed
+      - label: YouTube
+        url: https://www.youtube.com/channel/UCFeSgZf0rPqQteiTQNGgTPg
+      - label: LinkedIn
+        url: https://www.linkedin.com/company/authzed/
+    columnCount: 2

@@ -1,0 +1,16 @@
+{
+  "schedule": {
+    "title": "Schedule a Call",
+    "href": "https://authzed.com/call?utm_source=docs"
+  },
+  "security-policies": {
+    "title": "Security Policies",
+    "href": "https://security.authzed.com",
+    "newWindow": true
+  },
+  "status": {
+    "title": "Serverless Status Page",
+    "href": "https://status.authzed.com",
+    "newWindow": true
+  }
+}

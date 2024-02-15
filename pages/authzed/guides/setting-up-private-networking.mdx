@@ -1,0 +1,96 @@
+import { Steps } from 'nextra/components'
+
+# Setting up Private Networking
+
+This guide walks through setting up AuthZed Dedicated [Private Networking].
+
+
+[Private Networking]: ../concepts/private-networking
+
+## AWS Steps
+
+<Steps>
+
+### Onboarding
+
+The customer success team at AuthZed should reach out about Private Networking during onboarding.
+
+In the case where there's any miscommunication, please reach out via Slack or [schedule a call][call].
+
+[call]: https://authzed.com/call
+
+### Creating a VPC Endpoint
+
+[AWS PrivateLink] is the core technology involved in this process.
+
+[AWS PrivateLink]: https://docs.aws.amazon.com/whitepapers/latest/aws-privatelink/aws-privatelink.html
+
+Log into the AWS web console for the account you plan to peer.
+
+Navigate to `VPC` → `Endpoints` → `Create Endpoint` and input the following info:
+
+| Option               | Selection            |
+| :-------------------:| :-------------------:|
+| Name tag         | Choose whatever you want |
+| Service category   | Select “Other endpoint services” |
+| Service name       | Enter the "service name" provided to you by the AuthZed team |
+| VPC                | Choose the VPC from where you will deploy your SpiceDB client. DNS resolution for your SpiceDB cluster endpoint address will only be available from this VPC. |
+| Subnets            | You can deploy your VPC endpoint in one subnet per AZ. We recommend choosing all AZs where SpiceDB clients will exist. |
+| IP address type    | IPV4 |
+| Security Group     | Choose a security group that allows inbound port 443 traffic from your clients |
+
+When you're ready to create the new resource, click `Create endpoint`
+
+### Enabling DNS for the Endpoint
+
+By default, VPC Endpoints do not have access to public DNS.
+This is a reasonable default for internal networking, but AuthZed publishes public DNS.
+In order to make connections from your systems resilient to changing IP addresses, we will enable it.
+
+Navigate to the Endpoint that was just created, select `Actions` from the drop-down menu, and select `Modify private DNS name` from the next drop-down menu.
+
+Check `Enable for this endpoint` and then click `Save changes` to persist this setting.
+
+### Create a Permissions System
+
+You can skip this section if you've already created a Permissions System.
+
+1. Login to your SpiceDB management console
+2. On the homepage, select `Add Permissions System`
+3. Configure your permission system to your liking and create it
+
+### Verify Connectivity
+
+Ensure the next steps are executed on a machine that is in your internal network.
+This might be your local machine, if your corporate VPN is peered with your cloud networks otherwise you'll probably have to create a container or EC2 instance in the network.
+
+There are a variety of ways to interact with the SpiceDB API, but for this guide we'll be using the official command-line client, [Zed].
+
+If you don't already have zed installed, you can follow [this guide][install-zed].
+
+For zed to connect to SpiceDB, we'll first have to create an context named `network-test` for connecting to our locally forwarded port:
+
+```sh
+zed context set network-test example.us-east-1.aws.authzed.net:443 sdbst_h256_cef4fc239bf...
+```
+With our context set, we're free to make requests to our Permission System:
+
+```sh
+zed schema read
+```
+
+If all is successful, you should see your schema or an empty Permission System should have thrown an error:
+
+```
+code = NotFound
+desc = No schema has been defined; please call WriteSchema to start
+```
+
+[zed]: https://github.com/authzed/zed
+[install-zed]: ../../spicedb/guides/installing-zed
+
+</Steps>
+
+## GCP Steps
+
+Coming Soon

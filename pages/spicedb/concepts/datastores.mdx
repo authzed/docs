@@ -1,0 +1,310 @@
+import { Callout } from 'nextra/components'
+
+# Datastores
+
+In order to reduce operational complexity, SpiceDB leverages existing, popular systems for persisting data.
+
+Each datastore implementation comes with various trade-offs.
+
+- [CockroachDB](#cockroachdb) - Recommended for planet-scale, multi-region deployments
+- [Cloud Spanner](#cloud-spanner) - Recommended for Google Cloud deployments
+- [PostgreSQL](#postgresql) - Recommended for single-region deployments
+- [MySQL](#mysql) - Not recommended; only use if you cannot use PostgreSQL
+- [memdb](#memdb) - Recommended for local development and integration testing against applications
+
+## Migrations
+
+Before a datastore can be used by SpiceDB or before running a new version of SpiceDB, you must execute all available migrations.
+
+<Callout type="info">
+  The only exception is the [memdb datastore](#memdb) because it does not persist any data.
+</Callout>
+
+In order to migrate a datastore, run the following command with your desired values:
+
+```
+spicedb migrate head \
+    --datastore-engine $DESIRED_ENGINE \
+    --datastore-conn-uri $CONNECTION_STRING
+```
+
+For more information, refer to the [Datastore Migration documentation](/spicedb/concepts/datastore-migrations).
+
+## CockroachDB
+
+### Usage Notes
+
+<Callout type="warning">
+  SpiceDB's Watch API requires CockroachDB's [Experimental Changefeed] to be enabled.
+
+  [Experimental Changefeed]: https://www.cockroachlabs.com/docs/v22.1/changefeed-for
+</Callout>
+
+- Recommended for multi-region deployments, with configurable region awareness
+- Enables horizonally scalablity by adding more SpiceDB and CockroachDB instances
+- Resiliency to individual CockroachDB instance failures
+- Query and data balanced across the CockroachDB
+- Setup and operational complexity of running CockroachDB
+
+### Developer Notes
+
+- Code can be found [here][crdb-code]
+- Documentation can be found [here][crdb-godoc]
+- Implemented using [pgx][pgx] for a SQL driver and connection pooling
+- Has a native changefeed
+- Stores migration revisions using the same strategy as [Alembic][alembic]
+
+[crdb-code]: https://github.com/authzed/spicedb/tree/main/internal/datastore/crdb
+[crdb-godoc]: https://pkg.go.dev/github.com/authzed/spicedb/internal/datastore/crdb
+[pgx]: https://pkg.go.dev/gopkg.in/jackc/pgx.v3
+[alembic]: https://alembic.sqlalchemy.org/en/latest/
+
+### Configuration
+
+#### Required Parameters
+
+| Parameter            | Description                               | Example                                                                                   |
+| -------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `datastore-engine`   | the datastore engine                      | `--datastore-engine=cockroachdb`                                                          |
+| `datastore-conn-uri` | connection string used to connect to CRDB | `--datastore-conn-uri="postgres://user:password@localhost:26257/spicedb?sslmode=disable"` |
+
+#### Optional Parameters
+
+| Parameter                                | Description                                                                           | Example                                         |
+| ---------------------------------------- | ------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `datastore-max-tx-retries`               | Maximum number of times to retry a query before raising an error                      | `--datastore-max-tx-retries=50`                 |
+| `datastore-tx-overlap-strategy`          | The overlap strategy to prevent New Enemy on CRDB (see below)                         | `--datastore-tx-overlap-strategy=static`        |
+| `datastore-tx-overlap-key`               | The key to use for the overlap strategy (see below)                                   | `--datastore-tx-overlap-key="foo"`              |
+| `datastore-conn-max-idletime`            | Maximum idle time for a connection before it is recycled                              | `--datastore-conn-max-idletime=60s`             |
+| `datastore-conn-max-lifetime`            | Maximum lifetime for a connection before it is recycled                               | `--datastore-conn-max-lifetime=300s`            |
+| `datastore-conn-max-open`                | Maximum number of concurrent connections to open                                      | `--datastore-conn-max-open=10`                  |
+| `datastore-conn-min-open`                | Minimum number of concurrent connections to open                                      | `--datastore-conn-min-open=1`                   |
+| `datastore-query-split-size`             | The (estimated) query size at which to split a query into multiple queries            | `--datastore-query-split-size=5kb`              |
+| `datastore-gc-window`                    | Sets the window outside of which overwritten relationships are no longer accessible   | `--datastore-gc-window=1s`                      |
+| `datastore-revision-fuzzing-duration`    | Sets a fuzzing window on all zookies/zedtokens                                        | `--datastore-revision-fuzzing-duration=50ms`    |
+| `datastore-readonly`                     | Places the datastore into readonly mode                                               | `--datastore-readonly=true`                     |
+| `datastore-follower-read-delay-duration` | Amount of time to subtract from non-sync revision timestamps to ensure follower reads | `--datastore-follower-read-delay-duration=4.8s` |
+
+#### Overlap Strategy
+
+In distributed systems, you can trade-off consistency for performance.
+
+CockroachDB datastore users that are willing to rely on more subtle guarantees to mitigate the [New Enemy Problem] can configure `--datastore-tx-overlap-strategy`.
+
+[New Enemy Problem]: /spicedb/concepts/new-enemy-problem
+
+The available strategies are:
+
+| Strategy | Description |
+| --- | --- |
+| `static` (default) | All writes overlap to guarantee safety at the cost of write throughput |
+| `prefix` | Only writes that contain objects with same prefix overlap (e.g. `tenant1/user` and `tenant2/user` can be written in concurrently) |
+| `request` | Only writes with the same `io.spicedb.requestoverlapkey` header overlap enabling applications to decide on-the-fly which writes have causual dependencies. Writes without any header act the same as `insecure`. |
+| `insecure` | No writes overlap, providing the best write throughput, but possibly leaving you vulnerable to the [New Enemy Problem] |
+
+For more information, refer to the [CockroachDB datastore README][crdb-readme] or our blog post "[The One Crucial Difference Between Spanner and CockroachDB][crdb-blog]".
+
+[crdb-readme]: https://github.com/authzed/spicedb/blob/main/internal/datastore/crdb/README.md
+[crdb-blog]: https://authzed.com/blog/prevent-newenemy-cockroachdb
+
+#### Garbage Collection Window
+
+<Callout type="info">
+  As of February 2023, the [default garbage collection window] has changed to `1.25 hours` for CockroachDB Serverless and `4 hours` for CockroachDB Dedicated.
+
+  [default garbage collection window]: https://github.com/cockroachdb/cockroach/issues/89233
+</Callout>
+
+SpiceDB warns if the garbage collection window as configured in CockroachDB is smaller than the SpiceDB configuration.
+
+If you need a longer time window for the Watch API or querying at exact snapshots, you can [adjust the value in CockroachDB][crdb-gc]:
+
+```sql
+ALTER ZONE default CONFIGURE ZONE USING gc.ttlseconds = 90000;
+```
+[crdb-gc]: https://www.cockroachlabs.com/docs/stable/configure-replication-zones.html#replication-zone-variables
+
+## Cloud Spanner
+
+### Usage Notes
+
+- Requires a Google Cloud Account with an active Cloud Spanner instance
+- Take advantage of Google's TrueTime. The Spanner driver assumes the database is linearizable and skips the transaction overlap strategy required by CockroachDB.
+
+### Developer Notes
+
+- Code can be found [here][spanner-code]
+- Documentation can be found [here][spanner-godoc]
+- Starts a background [GC worker][gc-process] to clean up old entries from the manually-generated changelog table
+
+[spanner-code]: https://github.com/authzed/spicedb/tree/main/internal/datastore/spanner
+[spanner-godoc]: https://pkg.go.dev/github.com/authzed/spicedb/internal/datastore/spanner
+[gc-process]: https://github.com/authzed/spicedb/blob/main/internal/datastore/spanner/gc.go
+
+### Configuration
+
+- The [Cloud Spanner docs][spanner-docs] outline how to set up an instance
+- Authentication via service accounts: The service account that runs migrations must have `Cloud Spanner Database Admin`; SpiceDB (non-migrations) must have `Cloud Spanner Database User`.
+
+[spanner-docs]: https://cloud.google.com/spanner
+
+#### Required Parameters
+
+| Parameter            | Description                           | Example                                                                                  |
+| -------------------- | ------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `datastore-engine`   | the datastore engine                  | `--datastore-engine=spanner`                                                             |
+| `datastore-conn-uri` | the cloud spanner database identifier | `--datastore-conn-uri="projects/project-id/instances/instance-id/databases/database-id"` |
+
+#### Optional Parameters
+
+| Parameter                                | Description                                                                                                                         | Example                                          |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `datastore-spanner-credentials`          | JSON service account token (omit to use [application default credentials](https://cloud.google.com/docs/authentication/production)) | `--datastore-spanner-credentials=./spanner.json` |
+| `datastore-gc-interval`                  | Amount of time to wait between garbage collection passes                                                                            | `--datastore-gc-interval=3m`                     |
+| `datastore-gc-window`                    | Sets the window outside of which overwritten relationships are no longer accessible                                                 | `--datastore-gc-window=1s`                       |
+| `datastore-revision-fuzzing-duration`    | Sets a fuzzing window on all zookies/zedtokens                                                                                      | `--datastore-revision-fuzzing-duration=50ms`     |
+| `datastore-readonly`                     | Places the datastore into readonly mode                                                                                             | `--datastore-readonly=true`                      |
+| `datastore-follower-read-delay-duration` | Amount of time to subtract from non-sync revision timestamps to ensure stale reads                                                  | `--datastore-follower-read-delay-duration=4.8s`  |
+
+## PostgreSQL
+
+### Usage Notes
+
+- Recommended for single-region deployments
+- Postgres 15 or newer is required for optimal performance
+- Resiliency to failures only when PostgreSQL is operating with a follower and proper failover
+- Setup and operational complexity of running PostgreSQL
+- Does not rely on any non-standard PostgreSQL extensions
+- Compatible with managed PostgreSQL services (e.g. AWS RDS)
+
+<Callout type="warning">
+  SpiceDB's Watch API requires PostgreSQL's [Commit Timestamp tracking][commit-ts] to be enabled.
+
+  This can be done by providing the `--track_commit_timestamp=on` flag, configuring `postgresql.conf`, or executing `ALTER SYSTEM SET track_commit_timestamp = on;` and restarting the instance.
+
+  [commit-ts]: https://www.postgresql.org/docs/current/runtime-config-replication.html#GUC-TRACK-COMMIT-TIMESTAMP
+</Callout>
+
+
+### Developer Notes
+
+- Code can be found [here][pg-code]
+- Documentation can be found [here][pg-godoc]
+- Implemented using [pgx][pgx] for a SQL driver and connection pooling
+- Stores migration revisions using the same strategy as [Alembic][alembic]
+- Implements its own [MVCC][mvcc] model by storing its data with transaction IDs
+
+[pg-code]: https://github.com/authzed/spicedb/tree/main/internal/datastore/postgres
+[pg-godoc]: https://pkg.go.dev/github.com/authzed/spicedb/internal/datastore/postgres
+[mvcc]: https://en.wikipedia.org/wiki/Multiversion_concurrency_control
+
+### Configuration
+
+#### Required Parameters
+
+| Parameter            | Description                                     | Example                                                                                      |
+| -------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `datastore-engine`   | the datastore engine                            | `--datastore-engine=postgres`                                                                |
+| `datastore-conn-uri` | connection string used to connect to PostgreSQL | `--datastore-conn-uri="postgres://postgres:password@localhost:5432/spicedb?sslmode=disable"` |
+
+#### Optional Parameters
+
+| Parameter                             | Description                                                                         | Example                                      |
+| ------------------------------------- | ----------------------------------------------------------------------------------- | -------------------------------------------- |
+| `datastore-conn-max-idletime`         | Maximum idle time for a connection before it is recycled                            | `--datastore-conn-max-idletime=60s`          |
+| `datastore-conn-max-lifetime`         | Maximum lifetime for a connection before it is recycled                             | `--datastore-conn-max-lifetime=300s`         |
+| `datastore-conn-max-open`             | Maximum number of concurrent connections to open                                    | `--datastore-conn-max-open=10`               |
+| `datastore-conn-min-open`             | Minimum number of concurrent connections to open                                    | `--datastore-conn-min-open=1`                |
+| `datastore-query-split-size`          | The (estimated) query size at which to split a query into multiple queries          | `--datastore-query-split-size=5kb`           |
+| `datastore-gc-window`                 | Sets the window outside of which overwritten relationships are no longer accessible | `--datastore-gc-window=1s`                   |
+| `datastore-revision-fuzzing-duration` | Sets a fuzzing window on all zookies/zedtokens                                      | `--datastore-revision-fuzzing-duration=50ms` |
+| `datastore-readonly`                  | Places the datastore into readonly mode                                             | `--datastore-readonly=true`                  |
+
+## MySQL
+
+### Usage Notes
+
+- Recommended for single-region deployments
+- Setup and operational complexity of running MySQL
+- Does not rely on any non-standard MySQL extensions
+- Compatible with managed MySQL services
+
+### Developer Notes
+
+- Code can be found [here][mysql-code]
+- Documentation can be found [here][mysql-godoc]
+- Implemented using [Go-MySQL-Driver][go-mysql-driver] for a SQL driver
+- Query optimizations are documented [here][mysql-executor]
+- Implements its own [MVCC][mysql-mvcc] model by storing its data with transaction IDs
+
+[mysql-code]: https://github.com/authzed/spicedb/tree/main/internal/datastore/mysql
+[mysql-godoc]: https://pkg.go.dev/github.com/authzed/spicedb/internal/datastore/mysql
+[go-mysql-driver]: https://github.com/go-sql-driver/mysql
+[mysql-executor]: https://github.com/authzed/spicedb/blob/main/internal/datastore/mysql/datastore.go#L317
+[mysql-mvcc]: https://en.wikipedia.org/wiki/Multiversion_concurrency_control
+
+### Configuration
+
+#### Required Parameters
+
+| Parameter            | Description                                | Example                                                                                       |
+| -------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| `datastore-engine`   | the datastore engine                       | `--datastore-engine=mysql`                                                                    |
+| `datastore-conn-uri` | connection string used to connect to MySQL | `--datastore-conn-uri="user:password@(localhost:3306)/spicedb?parseTime=True"`                |
+
+<Callout type="warning">
+  SpiceDB requires `--datastore-conn-uri` to contain the query parameter `parseTime=True`.
+</Callout>
+
+#### Optional Parameters
+
+| Parameter                             | Description                                                                         | Example                                      |
+| ------------------------------------- | ----------------------------------------------------------------------------------- | -------------------------------------------- |
+| `datastore-conn-max-idletime`         | Maximum idle time for a connection before it is recycled                            | `--datastore-conn-max-idletime=60s`          |
+| `datastore-conn-max-lifetime`         | Maximum lifetime for a connection before it is recycled                             | `--datastore-conn-max-lifetime=300s`         |
+| `datastore-conn-max-open`             | Maximum number of concurrent connections to open                                    | `--datastore-conn-max-open=10`               |
+| `datastore-query-split-size`          | The (estimated) query size at which to split a query into multiple queries          | `--datastore-query-split-size=5kb`           |
+| `datastore-gc-window`                 | Sets the window outside of which overwritten relationships are no longer accessible | `--datastore-gc-window=1s`                   |
+| `datastore-revision-fuzzing-duration` | Sets a fuzzing window on all zookies/zedtokens                                      | `--datastore-revision-fuzzing-duration=50ms` |
+| `datastore-mysql-table-prefix string` | Prefix to add to the name of all SpiceDB database tables                            | `--datastore-mysql-table-prefix=spicedb`     |
+| `datastore-readonly`                  | Places the datastore into readonly mode                                             | `--datastore-readonly=true`                  |
+
+## memdb
+
+### Usage Notes
+
+- Fully ephemeral; _all_ data is lost when the process is terminated
+- Intended for usage with SpiceDB itself and testing application integrations
+- Cannot be ran highly-available as multiple instances will not share the same in-memory data
+
+<Callout type="info">
+  If you need an ephemeral datastore designed for validation or testing, see the test server system in [Validating and Testing]
+</Callout>
+
+[validating and testing]: /guides/validation-and-testing
+
+### Developer Notes
+
+- Code can be found [here][memdb-code]
+- Documentation can be found [here][memdb-godoc]
+- Implements its own [MVCC][mvcc] model by storing its data with transaction IDs
+
+[memdb-code]: https://github.com/authzed/spicedb/tree/main/internal/datastore/memdb
+[memdb-godoc]: https://pkg.go.dev/github.com/authzed/spicedb/internal/datastore/memdb
+
+### Configuration
+
+#### Required Parameters
+
+| Parameter          | Description          | Example                     |
+| ------------------ | -------------------- | --------------------------- |
+| `datastore-engine` | the datastore engine | `--datastore-engine memory` |
+
+#### Optional Parameters
+
+| Parameter                             | Description                                                                         | Example                                      |
+| ------------------------------------- | ----------------------------------------------------------------------------------- | -------------------------------------------- |
+| `datastore-revision-fuzzing-duration` | Sets a fuzzing window on all zookies/zedtokens                                      | `--datastore-revision-fuzzing-duration=50ms` |
+| `datastore-gc-window`                 | Sets the window outside of which overwritten relationships are no longer accessible | `--datastore-gc-window=1s`                   |
+| `datastore-readonly`                  | Places the datastore into readonly mode                                             | `--datastore-readonly=true`                  |
+

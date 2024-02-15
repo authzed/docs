@@ -1,0 +1,61 @@
+import { Callout } from 'nextra/components'
+
+# Security Embargo
+
+All AuthZed products operate under a security embargo program.
+
+You can find a listing of public vulnerabilities for SpiceDB on [GitHub], [NVD], and anywhere else that syndicates vulnerabilities published to the [MITRE CVE List].
+
+<Callout type="info">
+  **Info:**
+  You can find AuthZed's Security Response Policy and other policies at [security.authzed.com][sec].
+
+  [sec]: https://security.authzed.com
+</Callout>
+
+[GitHub]: https://github.com/authzed/spicedb/security/advisories
+[NVD]: https://nvd.nist.gov/vuln/search/results?query=spicedb
+[MITRE CVE List]: https://cve.mitre.org/cve/
+
+## What is a security embargo program?
+
+A security embargo program is a defined process under which security issues are privately reported, analyzed for applicability, notice is given, and a resolution is created and distributed.
+The issue is only made public once those affected in the embargo program have enough time to address the issue or have accepted the risks.
+
+Security embargos an industry best practice for ensuring that there are not critical software deployments with well documentated exploitation instructions.
+
+## Reporting a security issue
+
+An email to security [AT] authzed.com should be used to notify the security team of any issues.
+Be a good witness.
+Behave as if you were reporting a crime and include specific details about what you have discovered.
+
+### Low and Medium Severity
+
+Issues meeting this severity are simply suspicions or odd behaviors.
+They are not verified and require further investigation.
+There is no clear indicator that systems have tangible risk and do not require emergency response.
+This includes suspicious emails, outages, strange activity on a laptop that can be tracked back to our software.
+
+### High Severity
+
+High severity issues relate to problems where an adversary or active exploitation hasn’t been proven yet, and may not have happened, but likely to happen.
+This may include vulnerabilities with direct risk of exploitation, threats with risk or adversarial persistence on our systems (e.g. backdoors, malware), malicious access of business data (e.g. passwords, vulnerability data, payments information), or threats that put any individual at risk of physical harm.
+
+Emails reporting high severity issues should include "Urgent" in the subject line.
+
+### Critical Severity
+
+Critical issues relate to actively exploited risks and involve a malicious actor.
+Identification of active exploitation is critical to this severity category.
+
+Emails reporting critical severity issues should include "Critical" in the subject line.
+Continue escalation until you receive acknowledgement.
+
+## How long until a vulnerability goes public?
+
+When vulnerabilities are reported, AuthZed works with the reporter to develop a resolution timeline.
+Some vulnerabilities are reported by research firms that have strict policies to encourage a quick response and other reports are from individuals that may be more flexible with resolution time.
+
+Once a report has been verified and a timeline has been established, AuthZed customers are informed.
+In the absense of a strict deadline, vulnerabilities are made public once every possibly affected AuthZed customer has either resolved the issue or accepted the risk to continuing to operate.

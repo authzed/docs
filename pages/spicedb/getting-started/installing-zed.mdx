@@ -1,0 +1,113 @@
+import { Callout } from 'nextra/components'
+
+# Installing Zed
+
+Zed is built as a standalone executable file which simplifies installation.
+
+However, one should prefer one of the recommended installation methods detailed below.
+
+## Recommended methods
+
+### Debian packages
+
+[Debian-based Linux] users can install SpiceDB packages by adding an additional apt source.
+
+First ensure the following dependencies are installed:
+
+```sh
+sudo apt update && sudo apt install -y curl ca-certificates gpg
+```
+
+Next, we can add, trust, and update the official SpiceDB apt source:
+
+```sh
+curl https://pkg.authzed.com/apt/gpg.key | sudo apt-key add -
+sudo sh -c 'echo "deb https://pkg.authzed.com/apt/ * *" > /etc/apt/sources.list.d/authzed.list'
+sudo apt update
+```
+
+Install as usual:
+
+```sh
+sudo apt install -y zed
+```
+
+[Debian-based Linux]: https://en.wikipedia.org/wiki/List_of_Linux_distributions#Debian-based
+
+### RPM packages
+
+[RPM-based Linux] users can install packages by adding a new yum repository:
+
+```sh
+sudo cat << EOF >> /etc/yum.repos.d/Authzed-Fury.repo
+[authzed-fury]
+name=AuthZed Fury Repository
+baseurl=https://pkg.authzed.com/yum/
+enabled=1
+gpgcheck=0
+EOF
+```
+
+Install as usual:
+
+```sh
+sudo dnf install -y zed
+```
+
+[RPM-based Linux]: https://en.wikipedia.org/wiki/List_of_Linux_distributions#RPM-based
+
+### Homebrew (macOS)
+
+macOS users can install packages by adding a [Homebrew tap]:
+
+```sh
+brew install authzed/tap/zed
+```
+
+[Homebrew tap]: https://docs.brew.sh/Taps
+
+## Other methods
+
+### Docker
+
+Container images are available for AMD64 and ARM64 architectures on the following registries:
+
+- [authzed/zed](https://hub.docker.com/r/authzed/zed)
+- [ghcr.io/authzed/zed](https://github.com/authzed/zed/pkgs/container/zed)
+- [quay.io/authzed/zed](https://quay.io/authzed/zed)
+
+You can pull down the latest stable release:
+
+```sh
+docker pull authzed/zed
+```
+
+Afterwards, you can run it with `docker run`:
+
+```sh
+docker run --rm authzed/zed version
+```
+
+### Downloading the binary
+
+Visit the GitHub release page for the [latest release](https://github.com/authzed/zed/releases/latest).
+Scroll down to the `Assets` section and download the appropriate artifact.
+
+### Source
+
+Clone the GitHub repository:
+
+```sh
+git clone git@github.com:authzed/zed.git
+```
+
+Enter the directory and build the binary using mage:
+
+```sh
+cd zed
+go build ./cmd/zed
+```
+
+You can find more commands for tasks such as testing, linting in the repository's [CONTRIBUTING.md].
+
+[CONTRIBUTING.md]: https://github.com/authzed/zed/blob/main/CONTRIBUTING.md
