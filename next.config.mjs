@@ -56,18 +56,4 @@ export default withNextra({
     );
     return config;
   },
-  redirects: async () => {
-    return [
-      {
-        source: '/',
-        destination: '/spicedb/getting-started/discovering-spicedb',
-        permanent: false,
-      },
-      {
-        source: '/authzed',
-        destination: '/authzed/guides/picking-a-product',
-        permanent: false,
-      },
-    ];
-  },
 });
