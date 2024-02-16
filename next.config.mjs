@@ -40,6 +40,10 @@ const withNextra = nextra({
 
 export default withNextra({
   basePath: process.env.BASE_DIR ?? undefined,
+  assetPrefix:
+    process.env.VERCEL_ENV === 'production'
+      ? 'https://docs-authzed.vercel.app'
+      : undefined,
   webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
     config.module.rules.push(
       ...[
