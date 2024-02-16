@@ -68,12 +68,12 @@
     },
     {
       "source": "/",
-      "destination": "/spicedb/getting-started/discovering-spicedb",
+      "destination": "/docs/spicedb/getting-started/discovering-spicedb",
       "permanent": false
     },
     {
       "source": "/authzed",
-      "destination": "/authzed/guides/picking-a-product",
+      "destination": "/docs/authzed/guides/picking-a-product",
       "permanent": false
     }
   ]
