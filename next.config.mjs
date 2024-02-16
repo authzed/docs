@@ -42,7 +42,7 @@ export default withNextra({
   basePath: process.env.BASE_DIR ?? undefined,
   assetPrefix:
     process.env.VERCEL_ENV === 'production'
-      ? 'https://docs-authzed.vercel.app'
+      ? 'https://docs-authzed.vercel.app/docs'
       : undefined,
   webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
     config.module.rules.push(
