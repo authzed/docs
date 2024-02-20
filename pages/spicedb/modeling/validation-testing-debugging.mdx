@@ -1,0 +1,163 @@
+import { Callout } from 'nextra/components'
+import YouTube from 'react-youtube'
+
+# Validation, Testing, Debugging SpiceDB Schemas
+
+Whether you're designing the first iteration of your schema or you're running SpiceDB in production, you'll want tools to build confidence in performance, correctness, and design choices.
+Tools for validation, testing, and debugging are often overlooked by those building bespoke systems because they can only dedicate enough engineering resources to solving their problem, rather than creating the proper foundation they'll need to continue to be successful in the future.
+
+SpiceDB has been designed with an eye towards being a foundation for authorization and subsequently provides various tools for working.
+
+## SpiceDB
+
+### Integration Test Server
+
+In order for applications to more easily perform integration tests against SpiceDB, there is a command in SpiceDB for running an integration test server.
+The integration test server provides an isolated, empty datastore for each unique preshared key used to authenticate an API request.
+The result of this design is that applications can run integration tests in parallel all against a single SpiceDB so long as they provide a unique credential per test.
+By default, the server runs on port `50051` and also runs an additional read-only server on port `50052`.
+
+You can run the integration test server by executing `spicedb serve-testing` or by using our [GitHub Action][integration-action] that runs the same command.
+
+[integration-action]: #authzedaction-spicedb
+
+### CheckPermission Tracing Header
+
+While it is recommended that SpiceDB schema be validated and tested before production deployment, there are many scenarios where being able to see the actual paths taken against production data is incredibly important.
+
+To support this, SpiceDB's v1 CheckPermission API supports a debug header that will cause SpiceDB to trace the full set of relations and permission traversed while computing the check.
+
+<Callout type="warning">
+  **Warning:**
+  Collecting these traces has a notable performance overhead.
+
+  We do not recommend configuring your applications to enable this when debugging.
+  Instead, we recommend using [zed's explain flag] for this purpose.
+
+  [zed's explain flag]: #explain-flag
+</Callout>
+
+Configuring this header is done by setting the header `io.spicedb.requestdebuginfo` to the string `true`.
+
+The response will include a trailer, `io.spicedb.respmeta.debuginfo`, with a JSON-encoded tree.
+## Playground
+
+### Assertions
+
+In order to ensure that particular invariants are maintained in a schema, assertions about permissionship can be made.
+
+Assertions come in two flavors: positive and negative.
+Assertions are written as a YAML list containing zero or more relationships.
+
+```yaml
+assertTrue:
+  - "document:validation-testing-debugging#reader@user:you"
+assertFalse: []
+```
+
+### Check Watches
+
+Check Watches are type of assertion that updates in real-time with changes in the Playground.
+This enables an even tighter feedback-loop when developing a schema.
+
+Below is an example of configuring a Check Watch:
+
+<br /><YouTube videoId="UmvGPU8iQ-0" />
+
+### Expected Relations
+
+Expected Relations are a type of assertion that can be used to enumerate access to a specific relation.
+This is useful when you want to exhaustively determine all the possible ways that one might acquire access.
+
+Expected Relations are written as YAML lists for each relation:
+
+```yaml
+document:validation-testing-debugging#reader:
+  - "[user:you] is <document:validation-testing-debugging#reader>"
+```
+
+Because access can be transitive, Expected Relations include how they achieved access.
+For example, if a schema is modeled hierarchically with a _platform_, _organization_, and _project_, Expected Relations for projects will include subjects from all points of the hierarchy that have access:
+
+```yaml
+project:docs#admin:
+  - "[organization:authzed] is <project:docs#owner>"
+  - "[user:rauchg] is <platform:vercel#admin>"
+```
+
+## Zed
+
+### Zed Validate
+
+Files exported from the [Playground](#playground) can also be validated by the `zed validate` command.
+This is particularly useful for testing locally or checking into a CI/CD workflow.
+If you're using GitHub, there's [GitHub Action][validate-action] for running this validation.
+
+[validate-action]: #authzedaction-spicedb-validate
+
+Here's an example using `zed validate`:
+
+```
+$ zed validate schema-and-assertions.yaml
+Success! - 3 relationships loaded, 4 assertions run, 2 expected relations validated
+```
+
+### Explain Flag
+
+The `zed permission check` command has an optional flag, `--explain`, that will cause SpiceDB to collect the actual paths taken against the live system to compute a permission check.
+If you're interested in learning more about this functionality in SpiceDB, you can read about the [tracing header] above.
+
+Here's an example using `--explain`:
+
+ ```ansi
+$ zed permission check --explain document:firstdoc view user:fred
+true
+[32m✓[0m [37mdocument[0m:[37mfirstdoc[0m [38;5;35mview[0m (66.333µs)
+├── [31m⨉[0m [90mdocument[0m:[90mfirstdoc[0m [90mwriter[0m (12.375µs)
+└── [32m✓[0m [37mdocument[0m:[37mfirstdoc[0m [38;5;166mreader[0m (20.667µs)
+    └── [38;5;99muser:fred [0m
+```
+
+This command will also highlight which parts of the traversal were cached and if a cycle is detected.
+
+[tracing header]: #checkpermission-tracing-header
+
+## SpiceDB GitHub Actions
+
+### [authzed/action-spicedb](https://github.com/marketplace/actions/spicedb-test-server)
+
+This GitHub Action runs the [SpiceDB Integration Test Server] for your workflows with the ability to configure different versions of SpiceDB.
+
+Here's an example snippet of a GitHub Workflow:
+
+```yaml
+steps:
+  - uses: "authzed/action-spicedb@v1"
+    with:
+      version: "latest"
+```
+
+[SpiceDB Integration Test Server]: #integration-test-server
+
+### [authzed/action-spicedb-validate](https://github.com/marketplace/actions/validate-spicedb-schema)
+
+<Callout type="info">
+  **Info:**
+  This tool is highly recommended because it can prevent deployments of unverified changes.
+</Callout>
+
+The Playground offers a variety of tools that are useful for validating a design, but running the playground isn't designed for operating within a typical CI/CD environment.
+
+Zed provides a command for validation of files exported from the playground which is a perfect fit for being executed within a typical CI/CD environment.
+
+This GitHub Action runs the zed validation command on a provided file for your workflows.
+
+Here's an example snippet of a GitHub Workflow:
+
+```yaml
+steps:
+  - uses: "actions/checkout@v4"
+  - uses: "authzed/action-spicedb-validate@v1"
+    with:
+      validationfile: "your-schema.yaml"
+```

@@ -1,6 +1,5 @@
 {
   "observability": "Observability Tooling",
   "deploying-spicedb-operator": "Deploying the SpiceDB Operator",
-  "deploying-spicedb-on-eks": "Deploying SpiceDB on AWS EKS",
-  "debugging-requests": "Debugging Requests"
+  "deploying-spicedb-on-eks": "Deploying SpiceDB on AWS EKS"
 }
