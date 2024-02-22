@@ -1,5 +1,6 @@
 import { useRouter } from 'next/router';
 import { DocsThemeConfig, useConfig } from 'nextra-theme-docs';
+import Banner from './components/banner';
 import { NavCTA, TocCTA } from './components/cta';
 import Footer from './components/footer';
 import { Logo } from './components/logo';
@@ -120,13 +121,8 @@ const config: DocsThemeConfig = {
   chat: { link: 'https://discord.gg/spicedb' },
   docsRepositoryBase: 'https://github.com/authzed/docs',
   banner: {
-    dismissible: true,
-    text: (
-      <a href="https://authzed.com/zanzibar">
-        Have you read Google's Zanzibar paper? We annotated it additional
-        context and comparisons with SpiceDB ↗
-      </a>
-    ),
+    dismissible: false,
+    text: <Banner />,
   },
   navbar: {
     extraContent: <NavCTA />,
