@@ -115,7 +115,7 @@ const config: DocsThemeConfig = {
     );
   },
   darkMode: true,
-  primaryHue: { dark: 25, light: 290 },
+  primaryHue: { dark: 45, light: 290 },
   primarySaturation: { dark: 100, light: 100 },
   chat: { link: 'https://discord.gg/spicedb' },
   docsRepositoryBase: 'https://github.com/authzed/docs',
