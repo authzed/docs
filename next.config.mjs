@@ -69,7 +69,7 @@ export default withNextra({
             has: [
               {
                 type: 'host',
-                value: '*.vercel.app',
+                value: '.*.vercel.app',
               },
             ],
             destination: '/docs',
