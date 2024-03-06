@@ -14,9 +14,9 @@ One of:
 - A [running instance] of [SpiceDB][SpiceDB] with the configured preshared key for SpiceDB
 
 [Authzed]: https://app.authzed.com
-[API Token]: /reference/api#authentication
+[API Token]: /authzed/concepts/restricted-api-access#tokens
 [SpiceDB]: https://github.com/authzed/spicedb
-[running instance]: /spicedb/installing
+[running instance]: /spicedb/getting-started/installing-spicedb
 
 ## Installation
 
@@ -128,11 +128,11 @@ With a schema designed, we can now move on using our client to to apply that sch
   <Tabs.Tab>
     ```js
     import { v1 } from '@authzed/authzed-node';
-    
+
     const { promises: client } = v1.NewClient(
       't_your_token_here_1234567deadbeef',
     );
-    
+
     const schema = `
     definition user {}
     definition post {
@@ -141,11 +141,11 @@ With a schema designed, we can now move on using our client to to apply that sch
 	    permission read = reader + writer
 	    permission write = writer
     }`;
-    
+
     const schemaRequest = v1.WriteSchemaRequest.create({
       schema: schema,
     });
-    
+
     const schemaResponse = await client.writeSchema(schemaRequest)
     console.log(schemaResponse)
     ```
@@ -154,18 +154,18 @@ With a schema designed, we can now move on using our client to to apply that sch
   <Tabs.Tab>
     ```go
     package main
-    
+
     import (
 	    "context"
 	    "log"
-    
+
 	    pb "github.com/authzed/authzed-go/proto/authzed/api/v1"
 	    "github.com/authzed/authzed-go/v1"
 	    "github.com/authzed/grpcutil"
 	    "google.golang.org/grpc"
 	    "google.golang.org/grpc/credentials/insecure"
     )
-    
+
     const schema = `definition user {}
     definition post {
 	    relation reader: user
@@ -173,15 +173,15 @@ With a schema designed, we can now move on using our client to to apply that sch
 	    permission read = reader + writer
 	    permission write = writer
     }`
-    
+
     const spicedbEndpoint = "grpc.authzed.com:443"
-    
+
     func main() {
 	    systemCerts, err := grpcutil.WithSystemCerts(grpcutil.VerifyCA)
 	    if err != nil {
 		    log.Fatalf("unable to load system CA certificates: %s", err)
 	    }
-    
+
 	    client, err := authzed.NewClient(
 		    spicedbEndpoint,
 		    grpcutil.WithBearerToken("t_your_token_here_1234567deadbeef"),
@@ -190,7 +190,7 @@ With a schema designed, we can now move on using our client to to apply that sch
 	    if err != nil {
 		    log.Fatalf("unable to initialize client: %s", err)
 	    }
-    
+
 	    request := &pb.WriteSchemaRequest{Schema: schema}
 	    _, err = client.WriteSchema(context.Background(), request)
 	    if err != nil {
@@ -204,7 +204,7 @@ With a schema designed, we can now move on using our client to to apply that sch
     ```py
     from authzed.api.v1 import Client, WriteSchemaRequest
     from grpcutil import bearer_token_credentials
-    
+
     SCHEMA = """definition user {}
     definition post {
         relation reader: user
@@ -212,10 +212,10 @@ With a schema designed, we can now move on using our client to to apply that sch
         permission read = reader + writer
         permission write = writer
     }"""
-    
+
     ENDPOINT = "grpc.authzed.com:443"
     CREDENTIALS = bearer_token_credentials("t_your_token_here_1234567deadbeef")
-    
+
     client = Client(ENDPOINT, CREDENTIALS)
     resp = client.WriteSchema(WriteSchemaRequest(schema=SCHEMA))
     ```
@@ -224,7 +224,7 @@ With a schema designed, we can now move on using our client to to apply that sch
   <Tabs.Tab>
     ```rb
     require 'authzed'
-    
+
     schema = <<~SCHEMA
         definition user {}
         definition post {
@@ -234,15 +234,15 @@ With a schema designed, we can now move on using our client to to apply that sch
           permission write = writer
         }
         SCHEMA
-    
+
     endpoint = 'grpc.authzed.com:443'
     credentials = Authzed::GrpcUtil::BearerToken.new(token: 't_your_token_here_1234567deadbeef')
-    
+
     client = Authzed::Api::V1::Client.new(
         target: endpoint,
         interceptors: [credentials],
     )
-    
+
     resp = client.schema_service.write_schema(
       Authzed::Api::V1::WriteSchemaRequest.new(schema: schema)
     )
@@ -255,18 +255,18 @@ With a schema designed, we can now move on using our client to to apply that sch
     import com.authzed.api.v1.SchemaServiceOuterClass.*;
     import com.authzed.grpcutil.BearerToken;
     import io.grpc.*;
-    
+
     public class App {
       public static void main(String[] args) {
         ManagedChannel channel = ManagedChannelBuilder
                 .forTarget("grpc.authzed.com:443")
                 .useTransportSecurity()
                 .build();
-    
+
         BearerToken bearerToken = new BearerToken("t_your_token_here_1234567deadbeef");
         SchemaServiceGrpc.SchemaServiceBlockingStub schemaService = SchemaServiceGrpc.newBlockingStub(channel)
                 .withCallCredentials(bearerToken);
-    
+
         String schema = """
                 definition user {}
                 definition post {
@@ -276,12 +276,12 @@ With a schema designed, we can now move on using our client to to apply that sch
                     permission write = writer
                 }
                 """;
-    
+
         WriteSchemaRequest request = WriteSchemaRequest
                 .newBuilder()
                 .setSchema(schema)
                 .build();
-    
+
         WriteSchemaResponse response;
         try {
           response = schemaService.writeSchema(request);
@@ -305,7 +305,7 @@ When applications modify or create rows in their database, they will also typica
   Writing relationships returns a [ZedToken] which is critical to ensuring performance and [consistency].
 </Callout>
 
-[ZedToken]: /spicedb/concepts/zedtokens
+[ZedToken]: /spicedb/concepts/consistency#zedtokens
 [consistency]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.Consistency
 
 In the following example, we'll be creating two relationships: one making Emilia a writer of the first post and another making Beatrice a reader of the first post.
@@ -324,27 +324,27 @@ You can also [touch and delete] relationships, but those are not as immediately 
   <Tabs.Tab>
     ```js
     import { v1 } from '@authzed/authzed-node';
-    
+
     const { promises: client } = v1.NewClient(
       't_your_token_here_1234567deadbeef',
       'grpc.authzed.com:50051',
     );
-    
+
     const resource = v1.ObjectReference.create({
       objectType: 'post',
       objectId: '1',
     });
-    
+
     const emilia = v1.ObjectReference.create({
       objectType: 'user',
       objectId: 'emilia',
     });
-    
+
     const beatrice = v1.ObjectReference.create({
       objectType: 'user',
       objectId: 'beatrice',
     });
-    
+
     const writeRequest = v1.WriteRelationshipsRequest.create({
       updates: [
         // Emilia is a Writer on Post 1
@@ -367,9 +367,9 @@ You can also [touch and delete] relationships, but those are not as immediately 
         }),
       ],
     });
-    
+
     const response = await client.writeRelationships(writeRequest)
-    
+
     console.log(response)
     ```
   </Tabs.Tab>
@@ -377,30 +377,30 @@ You can also [touch and delete] relationships, but those are not as immediately 
   <Tabs.Tab>
     ```go
     package main
-     
+
     import (
 	    "context"
 	    "fmt"
 	    "log"
-     
+
 	    pb "github.com/authzed/authzed-go/proto/authzed/api/v1"
 	    "github.com/authzed/authzed-go/v1"
 	    "github.com/authzed/grpcutil"
 	    "google.golang.org/grpc"
 	    "google.golang.org/grpc/credentials/insecure"
     )
-    
+
     const (
 	    spicedbEndpoint = "grpc.authzed.com:443"
 	    token = "t_your_token_here_1234567deadbeef"
     )
-     
+
     func main() {
 	    systemCerts, err := grpcutil.WithSystemCerts(grpcutil.VerifyCA)
 	    if err != nil {
 		    log.Fatalf("unable to load system CA certificates: %s", err)
 	    }
-     
+
 	    client, err := authzed.NewClient(
 		    spicedbEndpoint,
 		    grpcutil.WithBearerToken(token),
@@ -412,7 +412,7 @@ You can also [touch and delete] relationships, but those are not as immediately 
 	    if err != nil {
 		    log.Fatalf("unable to initialize client: %s", err)
 	    }
-     
+
 	    request := &pb.WriteRelationshipsRequest{Updates: []*pb.RelationshipUpdate{
 		    { // Emilia is a Writer on Post 1
 			    Operation: pb.RelationshipUpdate_OPERATION_CREATE,
@@ -447,7 +447,7 @@ You can also [touch and delete] relationships, but those are not as immediately 
 			    },
 		    },
 	    }}
-     
+
 	    resp, err := client.WriteRelationships(context.Background(), request)
 	    if err != nil {
 		    log.Fatalf("failed to write relations: %s", err)
@@ -468,12 +468,12 @@ You can also [touch and delete] relationships, but those are not as immediately 
         WriteRelationshipsRequest,
     )
     from grpcutil import bearer_token_credentials
-    
+
     client = Client(
         "grpc.authzed.com:443",
         bearer_token_credentials("t_your_token_here_1234567deadbeef"),
     )
-    
+
     resp = client.WriteRelationships(
         WriteRelationshipsRequest(
             updates=[
@@ -508,7 +508,7 @@ You can also [touch and delete] relationships, but those are not as immediately 
             ]
         )
     )
-    
+
     print(resp.written_at.token)
     ```
   </Tabs.Tab>
@@ -516,12 +516,12 @@ You can also [touch and delete] relationships, but those are not as immediately 
   <Tabs.Tab>
     ```rb
     require 'authzed'
-    
+
     client = Authzed::Api::V1::Client.new(
       target: 'grpc.authzed.com:443',
       interceptors: [Authzed::GrpcUtil::BearerToken.new(token: 't_your_token_here_1234567deadbeef')],
     )
-    
+
     resp = client.permissions_service.write_relationships(
       Authzed::Api::V1::WriteRelationshipsRequest.new(
         updates: [
@@ -550,7 +550,7 @@ You can also [touch and delete] relationships, but those are not as immediately 
         ]
       )
     )
-    
+
     puts resp.written_at.token
     ```
   </Tabs.Tab>
@@ -562,18 +562,18 @@ You can also [touch and delete] relationships, but those are not as immediately 
     import com.authzed.grpcutil.BearerToken;
     import com.authzed.api.v1.Core.*;
     import io.grpc.*;
-    
+
     public class App {
       public static void main(String[] args) {
         ManagedChannel channel = ManagedChannelBuilder
                 .forTarget("grpc.authzed.com:443")
-                .useTransportSecurity()  
+                .useTransportSecurity()
                 .build();
-      
+
         BearerToken bearerToken = new BearerToken("t_your_token_here_1234567deadbeef");
         PermissionsServiceGrpc.PermissionsServiceBlockingStub permissionsService = PermissionsServiceGrpc.newBlockingStub(channel)
                 .withCallCredentials(bearerToken);
-    
+
         PermissionService.WriteRelationshipsRequest request = PermissionService.WriteRelationshipsRequest.newBuilder()
                 .addUpdates(
                         RelationshipUpdate.newBuilder()
@@ -597,7 +597,7 @@ You can also [touch and delete] relationships, but those are not as immediately 
                                                 .build())
                                 .build())
                 .build();
-    
+
         PermissionService.WriteRelationshipsResponse response;
         try {
           response = permissionsService.writeRelationships(request);
@@ -626,8 +626,8 @@ For example, in our example schema, writers have both write and read, so there's
 <Callout type="warning">
   In order to get read-after-write consistency, you must provide a [ZedToken] from the WriteRelationships response or request [full consistency].
 
-  [ZedToken]: /spicedb/concepts/zedtokens
-  [full consistency]: /spicedb/concepts/zedtokens#what-happens-if-i-dont-use-a-zedtoken-at-all
+  [ZedToken]: /spicedb/concepts/consistency#zedtokens
+  [full consistency]: /spicedb/concepts/consistency#fully-consistent
 </Callout>
 
 The following examples demonstrate the transitive property of checks:
@@ -639,36 +639,36 @@ The following examples demonstrate the transitive property of checks:
     zed permission check post:1 write user:emilia   --revision "zedtokenfromwriterel" # true
     zed permission check post:1 read  user:beatrice --revision "zedtokenfromwriterel" # true
     zed permission check post:1 write user:beatrice --revision "zedtokenfromwriterel" # false
-    
+
     ```
   </Tabs.Tab>
 
   <Tabs.Tab>
     ```js
     import { v1 } from '@authzed/authzed-node';
-    
+
     const { promises: client } = v1.NewClient(
       't_your_token_here_1234567deadbeef',
       'grpc.authzed.com:50051',
       // NOTE: Remove if SpiceDB is behind TLS
       v1.ClientSecurity.INSECURE_PLAINTEXT_CREDENTIALS
     );
-    
+
     const resource = v1.ObjectReference.create({
       objectType: 'post',
       objectId: '1',
     });
-    
+
     const emilia = v1.ObjectReference.create({
       objectType: 'user',
       objectId: 'emilia',
     });
-    
+
     const beatrice = v1.ObjectReference.create({
       objectType: 'user',
       objectId: 'beatrice',
     });
-    
+
     const emiliaCanRead = await client.checkPermission(v1.CheckPermissionRequest.create({
       resource,
       permission: 'read',
@@ -677,7 +677,7 @@ The following examples demonstrate the transitive property of checks:
       }),
     }));
     console.log(emiliaCanRead.permissionship === v1.CheckPermissionResponse_Permissionship.HAS_PERMISSION);
-    
+
     const emiliaCanWrite = await client.checkPermission(v1.CheckPermissionRequest.create({
       resource,
       permission: 'write',
@@ -686,7 +686,7 @@ The following examples demonstrate the transitive property of checks:
       }),
     }));
     console.log(emiliaCanWrite.permissionship === v1.CheckPermissionResponse_Permissionship.HAS_PERMISSION);
-    
+
     const beatriceCanRead = await client.checkPermission(v1.CheckPermissionRequest.create({
       resource,
       permission: 'read',
@@ -695,7 +695,7 @@ The following examples demonstrate the transitive property of checks:
       }),
     }));
     console.log(beatriceCanRead.permissionship === v1.CheckPermissionResponse_Permissionship.HAS_PERMISSION);
-    
+
     const beatriceCanWrite = await client.checkPermission(v1.CheckPermissionRequest.create({
       resource,
       permission: 'write',
@@ -710,26 +710,26 @@ The following examples demonstrate the transitive property of checks:
   <Tabs.Tab>
     ```go
     package main
-    
+
     import (
 	    "context"
 	    "log"
-    
+
 	    pb "github.com/authzed/authzed-go/proto/authzed/api/v1"
 	    "github.com/authzed/authzed-go/v1"
 	    "github.com/authzed/grpcutil"
 	    "google.golang.org/grpc"
 	    "google.golang.org/grpc/credentials/insecure"
     )
-    
+
     const spicedbEndpoint = "grpc.authzed.com:443"
-    
+
     func main() {
 	    systemCerts, err := grpcutil.WithSystemCerts(grpcutil.VerifyCA)
 	    if err != nil {
 		    log.Fatalf("unable to load system CA certificates: %s", err)
 	    }
-    
+
 	    client, err := authzed.NewClient(
 		    spicedbEndpoint,
 		    grpcutil.WithBearerToken("t_your_token_here_1234567deadbeef"),
@@ -741,24 +741,24 @@ The following examples demonstrate the transitive property of checks:
 	    if err != nil {
 		    log.Fatalf("unable to initialize client: %s", err)
 	    }
-    
+
 	    ctx := context.Background()
-    
+
 	    emilia := &pb.SubjectReference{Object: &pb.ObjectReference{
 		    ObjectType: "user",
 		    ObjectId:  "emilia",
 	    }}
-    
+
 	    beatrice := &pb.SubjectReference{Object: &pb.ObjectReference{
 		    ObjectType: "user",
 		    ObjectId:  "beatrice",
 	    }}
-    
+
 	    firstPost := &pb.ObjectReference{
 		    ObjectType: "post",
 		    ObjectId: "1",
 	    }
-    
+
 	    resp, err := client.CheckPermission(ctx, &pb.CheckPermissionRequest{
 		    Resource: firstPost,
 		    Permission: "read",
@@ -768,7 +768,7 @@ The following examples demonstrate the transitive property of checks:
 		    log.Fatalf("failed to check permission: %s", err)
 	    }
 	    // resp.Permissionship == pb.CheckPermissionResponse_PERMISSIONSHIP_HAS_PERMISSION
-    
+
 	    resp, err = client.CheckPermission(ctx, &pb.CheckPermissionRequest{
 		    Resource: firstPost,
 		    Permission: "write",
@@ -778,7 +778,7 @@ The following examples demonstrate the transitive property of checks:
 		    log.Fatalf("failed to check permission: %s", err)
 	    }
 	    // resp.Permissionship == pb.CheckPermissionResponse_PERMISSIONSHIP_HAS_PERMISSION
-    
+
 	    resp, err = client.CheckPermission(ctx, &pb.CheckPermissionRequest{
 		    Resource: firstPost,
 		    Permission: "read",
@@ -788,7 +788,7 @@ The following examples demonstrate the transitive property of checks:
 		    log.Fatalf("failed to check permission: %s", err)
 	    }
 	    // resp.Permissionship == pb.CheckPermissionResponse_PERMISSIONSHIP_HAS_PERMISSION
-    
+
 	    resp, err = client.CheckPermission(ctx, &pb.CheckPermissionRequest{
 		    Resource: firstPost,
 		    Permission: "write",
@@ -812,12 +812,12 @@ The following examples demonstrate the transitive property of checks:
         SubjectReference,
     )
     from grpcutil import insecure_bearer_token_credentials
-    
+
     client = Client(
         "grpc.authzed.com:50051",
         insecure_bearer_token_credentials("t_your_token_here_1234567deadbeef"),
     )
-    
+
     emilia = SubjectReference(
         object=ObjectReference(
             object_type="user",
@@ -830,9 +830,9 @@ The following examples demonstrate the transitive property of checks:
             object_id="beatrice",
         )
     )
-    
+
     post_one = ObjectReference(object_type="post", object_id="1")
-    
+
     resp = client.CheckPermission(
         CheckPermissionRequest(
             resource=post_one,
@@ -841,7 +841,7 @@ The following examples demonstrate the transitive property of checks:
         )
     )
     assert resp.permissionship == CheckPermissionResponse.PERMISSIONSHIP_HAS_PERMISSION
-    
+
     resp = client.CheckPermission(
         CheckPermissionRequest(
             resource=post_one,
@@ -850,7 +850,7 @@ The following examples demonstrate the transitive property of checks:
         )
     )
     assert resp.permissionship == CheckPermissionResponse.PERMISSIONSHIP_HAS_PERMISSION
-    
+
     resp = client.CheckPermission(
         CheckPermissionRequest(
             resource=post_one,
@@ -859,7 +859,7 @@ The following examples demonstrate the transitive property of checks:
         )
     )
     assert resp.permissionship == CheckPermissionResponse.PERMISSIONSHIP_HAS_PERMISSION
-    
+
     resp = client.CheckPermission(
         CheckPermissionRequest(
             resource=post_one,
@@ -874,7 +874,7 @@ The following examples demonstrate the transitive property of checks:
   <Tabs.Tab>
     ```rb
     require 'authzed'
-    
+
     emilia = Authzed::Api::V1::SubjectReference.new(object: Authzed::Api::V1::ObjectReference.new(
       object_type: 'user',
       object_id: 'emilia',
@@ -884,13 +884,13 @@ The following examples demonstrate the transitive property of checks:
       object_id: 'beatrice',
     ))
     first_post = Authzed::Api::V1::ObjectReference.new(object_type: 'post', object_id: '1')
-    
+
     client = Authzed::Api::V1::Client.new(
         target: 'grpc.authzed.com:50051',
         interceptors: [Authzed::GrpcUtil::BearerToken.new(token: 't_your_token_here_1234567deadbeef')],
         credentials: :this_channel_is_insecure,
     )
-    
+
     resp = client.permissions_service.check_permission(Authzed::Api::V1::CheckPermissionRequest.new(
       resource: first_post,
       permission: 'read',
@@ -898,7 +898,7 @@ The following examples demonstrate the transitive property of checks:
     ))
     raise unless Authzed::Api::V1::CheckPermissionResponse::Permissionship.resolve(resp.permissionship) ==
       Authzed::Api::V1::CheckPermissionResponse::Permissionship::PERMISSIONSHIP_HAS_PERMISSION
-    
+
     resp = client.permissions_service.check_permission(Authzed::Api::V1::CheckPermissionRequest.new(
       resource: first_post,
       permission: 'write',
@@ -906,7 +906,7 @@ The following examples demonstrate the transitive property of checks:
     ))
     raise unless Authzed::Api::V1::CheckPermissionResponse::Permissionship.resolve(resp.permissionship) ==
       Authzed::Api::V1::CheckPermissionResponse::Permissionship::PERMISSIONSHIP_HAS_PERMISSION
-    
+
     resp = client.permissions_service.check_permission(Authzed::Api::V1::CheckPermissionRequest.new(
       resource: first_post,
       permission: 'read',
@@ -914,7 +914,7 @@ The following examples demonstrate the transitive property of checks:
     ))
     raise unless Authzed::Api::V1::CheckPermissionResponse::Permissionship.resolve(resp.permissionship) ==
       Authzed::Api::V1::CheckPermissionResponse::Permissionship::PERMISSIONSHIP_HAS_PERMISSION
-    
+
     resp = client.permissions_service.check_permission(Authzed::Api::V1::CheckPermissionRequest.new(
       resource: first_post,
       permission: 'write',
@@ -932,23 +932,23 @@ The following examples demonstrate the transitive property of checks:
     import com.authzed.grpcutil.BearerToken;
     import com.authzed.api.v1.Core.*;
     import io.grpc.*;
-    
+
     public class App {
       public static void main(String[] args) {
         ManagedChannel channel = ManagedChannelBuilder
                 .forTarget("grpc.authzed.com:50051")
-                .usePlaintext()  
+                .usePlaintext()
                 .build();
-      
+
         BearerToken bearerToken = new BearerToken("t_your_token_here_1234567deadbeef");
-    
+
         PermissionsServiceGrpc.PermissionsServiceBlockingStub permissionsService = PermissionsServiceGrpc.newBlockingStub(channel)
                 .withCallCredentials(bearerToken);
-    
+
         ZedToken zedToken = ZedToken.newBuilder()
                 .setToken("zed_token_value")
                 .build();
-    
+
         PermissionService.CheckPermissionRequest request = PermissionService.CheckPermissionRequest.newBuilder()
                 .setConsistency(
                         PermissionService.Consistency.newBuilder()
@@ -969,7 +969,7 @@ The following examples demonstrate the transitive property of checks:
                                 .build())
                 .setPermission("read")
                 .build();
-    
+
         PermissionService.CheckPermissionResponse response;
         try {
           response = permissionsService.checkPermission(request);
