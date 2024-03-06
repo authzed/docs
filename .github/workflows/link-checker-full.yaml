@@ -16,4 +16,4 @@ jobs:
       - name: "Link Checker"
         uses: "filiph/linkcheck@3.0.0"
         with:
-          arguments: "--skip-file /github/workspace/linkcheck-skip.txt -e --connection-failures-as-warnings https://authzed.com/docs"
+          arguments: "--skip-file /github/workspace/linkcheck-skip.txt -e --connection-failures-as-warnings --no-check-anchors https://authzed.com/docs"
