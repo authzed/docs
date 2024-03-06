@@ -1,4 +1,5 @@
 .*/_next/.*
+/js/script.js
 https://authzed.com/zanzibar/.*
 https://pkg.go.dev/.*
 https://pprof.me
