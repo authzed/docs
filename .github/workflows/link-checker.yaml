@@ -1,5 +1,5 @@
 ---
-name: "Link Checker (Fail Fast)"
+name: "Link Checker"
 
 on:
   push:
@@ -20,6 +20,7 @@ jobs:
           token: "${{ secrets.GITHUB_TOKEN }}"
           check_interval: 30
           max_timeout: 600
+          allow_inactive: true
 
   link_checker:
     name: "Link Checker"
@@ -29,7 +30,6 @@ jobs:
     steps:
       - uses: "actions/checkout@v3"
       - name: "Link Checker"
-        uses: "lycheeverse/lychee-action@v1.9.0"
+        uses: "filiph/linkcheck@3.0.0"
         with:
-          fail: true
-          args: "--verbose --no-progress --exclude '^https://github.com/.*.mdx' ${{ needs.preview.outputs.preview_url }}"
+          arguments: "--skip-file /github/workspace/linkcheck-skip.txt ${{ needs.preview.outputs.preview_url }}"

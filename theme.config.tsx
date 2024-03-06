@@ -119,7 +119,7 @@ const config: DocsThemeConfig = {
   primaryHue: { dark: 45, light: 290 },
   primarySaturation: { dark: 100, light: 100 },
   chat: { link: 'https://discord.gg/spicedb' },
-  docsRepositoryBase: 'https://github.com/authzed/docs',
+  docsRepositoryBase: 'https://github.com/authzed/docs/blob/main',
   banner: {
     dismissible: false,
     text: <Banner />,
@@ -140,7 +140,6 @@ const config: DocsThemeConfig = {
       </span>
     ),
   },
-  editLink: { text: null },
   toc: { backToTop: true, extraContent: <TocCTA /> },
   footer: {
     component: <Footer />,

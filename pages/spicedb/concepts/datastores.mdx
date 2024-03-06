@@ -91,7 +91,7 @@ In distributed systems, you can trade-off consistency for performance.
 
 CockroachDB datastore users that are willing to rely on more subtle guarantees to mitigate the [New Enemy Problem] can configure `--datastore-tx-overlap-strategy`.
 
-[New Enemy Problem]: /spicedb/concepts/new-enemy-problem
+[New Enemy Problem]: /spicedb/concepts/zanzibar#new-enemy-problem
 
 The available strategies are:
 
@@ -139,7 +139,7 @@ ALTER ZONE default CONFIGURE ZONE USING gc.ttlseconds = 90000;
 
 [spanner-code]: https://github.com/authzed/spicedb/tree/main/internal/datastore/spanner
 [spanner-godoc]: https://pkg.go.dev/github.com/authzed/spicedb/internal/datastore/spanner
-[gc-process]: https://github.com/authzed/spicedb/blob/main/internal/datastore/spanner/gc.go
+[gc-process]: https://github.com/authzed/spicedb/blob/main/internal/datastore/common/gc.go
 
 ### Configuration
 
@@ -281,7 +281,7 @@ ALTER ZONE default CONFIGURE ZONE USING gc.ttlseconds = 90000;
   If you need an ephemeral datastore designed for validation or testing, see the test server system in [Validating and Testing]
 </Callout>
 
-[validating and testing]: /guides/validation-and-testing
+[validating and testing]: /spicedb/modeling/validation-testing-debugging
 
 ### Developer Notes
 
