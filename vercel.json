@@ -65,6 +65,17 @@
       ],
       "destination": "https://authzed.com/docs/:match*",
       "permanent": true
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": ".*.vercel.app"
+        }
+      ],
+      "destination": "/docs",
+      "permanent": false
     }
   ]
 }

@@ -60,22 +60,4 @@ export default withNextra({
     );
     return config;
   },
-  async redirects() {
-    // Redirect production vercel hostnames to the /docs directory
-    return process.env.VERCEL_ENV === 'production'
-      ? [
-          {
-            source: '/',
-            has: [
-              {
-                type: 'host',
-                value: '.*.vercel.app',
-              },
-            ],
-            destination: '/docs',
-            permanent: false,
-          },
-        ]
-      : [];
-  },
 });
