@@ -1,5 +1,6 @@
 .*/_next/.*
-https://authzed.com/zanizbar/.*
+https://authzed.com/zanzibar/.*
 https://pkg.go.dev/.*
 https://pprof.me
 https://www.researchgate.net/profile/Carrie-Gates-2/publication/240787391_Access_Control_Requirements_for_Web_20_Security_and_Privacy/links/540e6f670cf2d8daaacd4adf/Access-Control-Requirements-for-Web-20-Security-and-Privacy.pdf
+https://support.authzed.com
