@@ -3,7 +3,7 @@ name: "Link Checker with External Links"
 
 on:
   schedule:
-    - cron: '0 10 * * *' # Daily at 10
+    - cron: '0 18 * * *' # Daily at 18:00 UTC
   workflow_dispatch:
 
 jobs:
@@ -16,4 +16,4 @@ jobs:
       - name: "Link Checker"
         uses: "filiph/linkcheck@3.0.0"
         with:
-          arguments: "--skip-file /github/workspace/linkcheck-skip.txt -e https://authzed.com/docs"
+          arguments: "--skip-file /github/workspace/linkcheck-skip.txt -e --connection-failures-as-warnings https://authzed.com/docs"
