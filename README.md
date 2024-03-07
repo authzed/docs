@@ -26,5 +26,5 @@ pnpm install
 Run a development server:
 
 ```
-pnpm run start
+pnpm run dev
 ```
