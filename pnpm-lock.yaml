@@ -20,6 +20,9 @@ dependencies:
   '@radix-ui/react-slot':
     specifier: ^1.0.2
     version: 1.0.2(@types/react@18.2.55)(react@18.2.0)
+  '@segment/in-eu':
+    specifier: ^0.4.0
+    version: 0.4.0
   '@svgr/webpack':
     specifier: ^8.1.0
     version: 8.1.0(typescript@4.9.5)
@@ -1976,6 +1979,12 @@ packages:
       react: 18.2.0
     dev: false
 
+  /@segment/in-eu@0.4.0:
+    resolution: {integrity: sha512-4JM6fMRMy1nZQk5x1nB1R4iIFOkcyCiUNOPQo161nUUsNE+U97l46v4xLIqQJAMjXjfxnULFFp+9uf6PYdnLtQ==}
+    dependencies:
+      jstz: 2.1.1
+    dev: false
+
   /@svgr/babel-plugin-add-jsx-attribute@8.0.0(@babel/core@7.23.9):
     resolution: {integrity: sha512-b9MIk7yhdS1pMCZM8VeNfUlSKVRhsHZNMl5O9SfaX0l0t5wjdgu4IDzGB8bpnGBBOjGST3rRFVsaaEtI4W6f7g==}
     engines: {node: '>=14'}
@@ -3771,6 +3780,11 @@ packages:
 
   /jsonc-parser@3.2.1:
     resolution: {integrity: sha512-AilxAyFOAcK5wA1+LeaySVBrHsGQvUFCDWXKpZjzaL0PqW+xfBOttn8GNtWKFWqneyMZj41MWF9Kl6iPWLwgOA==}
+
+  /jstz@2.1.1:
+    resolution: {integrity: sha512-8hfl5RD6P7rEeIbzStBz3h4f+BQHfq/ABtoU6gXKQv5OcZhnmrIpG7e1pYaZ8hS9e0mp+bxUj08fnDUbKctYyA==}
+    engines: {node: '>=0.10'}
+    dev: false
 
   /katex@0.16.9:
     resolution: {integrity: sha512-fsSYjWS0EEOwvy81j3vRA8TEAhQhKiqO+FQaKWp0m39qwOzHVBgAUBIXWj1pB+O2W3fIpNa6Y9KSKCVbfPhyAQ==}
