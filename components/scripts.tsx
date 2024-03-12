@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 export default function Scripts() {
   const [loadReo, setLoadReo] = useState(false);
   const [afterLoad, setAfterLoad] = useState(false);
-  const isProd = process.env.VERCEL_ENV === 'production';
+  const isProd = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production';
 
   useEffect(() => {
     if (window) {
