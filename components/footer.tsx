@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { LogoIcon } from './logo';
+import Scripts from './scripts';
 
 export default function Footer() {
   return (
@@ -19,6 +20,7 @@ export default function Footer() {
           </div>
         </div>
       </div>
+      <Scripts />
     </div>
   );
 }
