@@ -24,13 +24,13 @@ export default function Scripts() {
   }, [afterLoad]);
 
   return (
-    <>
+    <div>
       {isProd && loadReo && (
         <Script
           src="https://static.reo.dev/bf9727b30a874e3/reo.js"
           onLoad={() => setAfterLoad(true)}
         ></Script>
       )}
-    </>
+    </div>
   );
 }
