@@ -1,5 +1,5 @@
-import { Callout } from 'nextra/components'
-import YouTube from 'react-youtube'
+import { Callout } from "nextra/components";
+import YouTube from "react-youtube";
 
 # Validation, Testing, Debugging SpiceDB Schemas
 
@@ -31,15 +31,17 @@ To support this, SpiceDB's v1 CheckPermission API supports a debug header that w
   **Warning:**
   Collecting these traces has a notable performance overhead.
 
-  We do not recommend configuring your applications to enable this when debugging.
-  Instead, we recommend using [zed's explain flag] for this purpose.
+We do not recommend configuring your applications to enable this when debugging.
+Instead, we recommend using [zed's explain flag] for this purpose.
 
-  [zed's explain flag]: #explain-flag
+[zed's explain flag]: #explain-flag
+
 </Callout>
 
 Configuring this header is done by setting the header `io.spicedb.requestdebuginfo` to the string `true`.
 
 The response will include a trailer, `io.spicedb.respmeta.debuginfo`, with a JSON-encoded tree.
+
 ## Playground
 
 ### Assertions
@@ -62,7 +64,8 @@ This enables an even tighter feedback-loop when developing a schema.
 
 Below is an example of configuring a Check Watch:
 
-<br /><YouTube videoId="UmvGPU8iQ-0" />
+<br />
+<YouTube videoId="UmvGPU8iQ-0" />
 
 ### Expected Relations
 
@@ -84,6 +87,13 @@ project:docs#admin:
   - "[organization:authzed] is <project:docs#owner>"
   - "[user:rauchg] is <platform:vercel#admin>"
 ```
+
+## Check Tracing
+
+SpiceDB supports tracing of check requests to view the path(s) taken to compute the result, as well as timing information.
+
+This information is requested via a header (versions older than v1.31.0) or setting `with_tracing: true` (v1.31.0 or later), and
+the trace information can be found in the footer as JSON (versions older than v1.31.0) or in the response message itself (v1.31.0 or later).
 
 ## Zed
 
@@ -109,13 +119,13 @@ If you're interested in learning more about this functionality in SpiceDB, you c
 
 Here's an example using `--explain`:
 
- ```ansi
+```ansi
 $ zed permission check --explain document:firstdoc view user:fred
 true
 [32m✓[0m [37mdocument[0m:[37mfirstdoc[0m [38;5;35mview[0m (66.333µs)
 ├── [31m⨉[0m [90mdocument[0m:[90mfirstdoc[0m [90mwriter[0m (12.375µs)
 └── [32m✓[0m [37mdocument[0m:[37mfirstdoc[0m [38;5;166mreader[0m (20.667µs)
-    └── [38;5;99muser:fred [0m
+   └── [38;5;99muser:fred [0m
 ```
 
 This command will also highlight which parts of the traversal were cached and if a cycle is detected.
@@ -142,8 +152,8 @@ steps:
 ### [authzed/action-spicedb-validate](https://github.com/marketplace/actions/validate-spicedb-schema)
 
 <Callout type="info">
-  **Info:**
-  This tool is highly recommended because it can prevent deployments of unverified changes.
+  **Info:** This tool is highly recommended because it can prevent deployments
+  of unverified changes.
 </Callout>
 
 The Playground offers a variety of tools that are useful for validating a design, but running the playground isn't designed for operating within a typical CI/CD environment.
