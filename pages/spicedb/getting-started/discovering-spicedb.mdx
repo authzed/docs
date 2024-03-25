@@ -18,17 +18,17 @@ Welcome to the official documentation for the SpiceDB ecosystem.
 
 ## What is SpiceDB?
 
-SpiceDB is an open source, [Google Zanzibar]-inspired database system for real-time, security-critical application permissions.
+SpiceDB is an open-source, [Google Zanzibar]-inspired database system for real-time, security-critical application permissions.
 
 Developers create and apply a [schema] that models their application's resources and permissions.
 From their applications, [client libraries] are used to insert [relationships] or check permissions in their applications.
 
 Building modern authorization from scratch is non-trivial and requires years of development from domain experts.
 Until SpiceDB, the only developers with access to these workflows were employed by massive tech companies that could invest in building mature, but proprietary solutions.
-Now we have a community organized around sharing this technology so that the entire industry can benefit.
+Now we have a community organized around sharing this technology so the entire industry can benefit.
 
-In some scenarios, SpiceDB can be challenging to operate because it is a critical, low-latency, distirbuted system.
-For folks interested in a managed SpiceDB services and enterprise functionality, there are [AuthZed's products][authzed-products].
+In some scenarios, SpiceDB can be challenging to operate because it is a critical, low-latency, distributed system.
+For folks interested in managed SpiceDB services and enterprise functionality, there are [AuthZed's products][authzed-products].
 
 [Google Zanzibar]: https://authzed.com/blog/what-is-zanzibar/
 [schema]: https://authzed.com/docs/guides/schema
@@ -39,12 +39,12 @@ For folks interested in a managed SpiceDB services and enterprise functionality,
 ### A brief SpiceDB history lesson
 
 In August 2020, the founders of AuthZed left [Red Hat], who had acquired their previous company [CoreOS].
-In the following month, they would write the first API-complete implementation of Zanzibar; project Arrakis was written in lazily-evaluated, type-annotated Python.
+In the following month, they would write the first API-complete implementation of Zanzibar; project Arrakis was written in lazily evaluated, type-annotated Python.
 In September, Arrakis was demoed as a part of their [YCombinator] application.
 In March 2021, Arrakis was rewritten in Go, a project code-named Caladan.
 This rewrite would eventually be open-sourced in September 2021 under the name [SpiceDB].
 
-You can read also read the [history of Google's Zanzibar project][zanzibar-history], which is the spirtual predecessor and inspiration for SpiceDB.
+You can also read the [history of Google's Zanzibar project][zanzibar-history], the spiritual predecessor and inspiration for SpiceDB.
 
 [Red Hat]: https://redhat.com
 [CoreOS]: https://www.redhat.com/en/technologies/cloud-computing/openshift/what-was-coreos
@@ -57,8 +57,8 @@ You can read also read the [history of Google's Zanzibar project][zanzibar-histo
 Features that distinguish SpiceDB from other systems include:
 
 - Expressive [gRPC] and [HTTP/JSON] APIs for checking permissions, listing access, and powering devtools
-- A distributed, parallel graph-engine faithful to the architecture described in [Google's Zanzibar paper]
-- A flexible consistency model configurable [per-request] that includes resistance to the [New Enemy Problem]
+- A distributed, parallel graph engine faithful to the architecture described in [Google's Zanzibar paper]
+- A flexible consistency model configurable [per request] that includes resistance to the [New Enemy Problem]
 - An expressive [schema language] with a [playground] and CI/CD integrations for [validation] and [integration testing]
 - A pluggable [storage system] supporting [in-memory], [Spanner], [CockroachDB], [PostgreSQL] and [MySQL]
 - Deep observability with [Prometheus] metrics, [pprof] profiles, structured logging, and [OpenTelemetry] tracing
@@ -92,7 +92,7 @@ Features that distinguish SpiceDB from other systems include:
 <Steps>
   ### Dive into some videos!
 
-  SpiceDB developers and community members have recorded videos explaining concepts, modeling familiar applications, and deep diving on the tech powering everything!
+  SpiceDB developers and community members have recorded videos explaining concepts, modeling familiar applications, and deep-diving into the tech powering everything!
 
   <br />
   <YouTube videoId="p8xh_z6PUqE" className="youtubeContainer" opts={{playerVars:{start: 228}}} />
@@ -113,7 +113,7 @@ Features that distinguish SpiceDB from other systems include:
 
   SpiceDB and Zed run on Linux, macOS, and Windows on both AMD64 and ARM64 architectures.
 
-  Follow the instructions below install to your development machine:
+  Follow the instructions below to install to your development machine:
 
   <Cards>
     <Card arrow={true} icon={<FontAwesomeIcon icon={faServer} />} title="Install the SpiceDB server binary" href="/spicedb/getting-started/installing-spicedb" />
