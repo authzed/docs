@@ -1,5 +1,5 @@
-import { Callout } from "nextra/components";
-import YouTube from "react-youtube";
+import { Callout } from 'nextra/components';
+import YouTube from 'react-youtube';
 
 # Validation, Testing, Debugging SpiceDB Schemas
 
@@ -92,8 +92,13 @@ project:docs#admin:
 
 SpiceDB supports tracing of check requests to view the path(s) taken to compute the result, as well as timing information.
 
-This information is requested via a header (versions older than v1.31.0) or setting `with_tracing: true` (v1.31.0 or later), and
-the trace information can be found in the footer as JSON (versions older than v1.31.0) or in the response message itself (v1.31.0 or later).
+### Versions older than v1.31.0
+
+Request tracing information via a header and the information is found in the response footer as JSON.
+
+### v1.31.0 or later
+
+Request tracing information by setting `with_tracing: true` in the request message and the information is found in the response message.
 
 ## Zed
 
