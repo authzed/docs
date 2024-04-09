@@ -92,13 +92,15 @@ project:docs#admin:
 
 SpiceDB supports tracing of check requests to view the path(s) taken to compute the result, as well as timing information.
 
-### Versions older than v1.31.0
+Request tracing information by setting `with_tracing: true` in the request message and the information will be found in the response message.
 
-Request tracing information via a header and the information is found in the response footer as JSON.
+<Callout type="warning">
+  **Warning:**
+  Versions older than v1.31.0
 
-### v1.31.0 or later
+Request tracing information via a header and the information will be found in the response footer as JSON.
 
-Request tracing information by setting `with_tracing: true` in the request message and the information is found in the response message.
+</Callout>
 
 ## Zed
 
