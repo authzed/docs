@@ -1,0 +1,9 @@
+{
+  "version": "https://jsonfeed.org/version/1",
+  "title": "AuthZed Blog",
+  "home_page_url": "https://authzed.com",
+  "feed_url": "https://authzed.com/feed/json",
+  "description": "The AuthZed blog: Articles from the AuthZed team about SpiceDB, Fine Grained Authorization, Google Zanzibar, and engineering culture.",
+  "icon": "https://authzed.com/authzed-logo-multi.svg",
+  "items": []
+}
