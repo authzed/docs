@@ -1,4 +1,5 @@
 import { Callout } from 'nextra/components'
+import YouTube from 'react-youtube';
 import { InlinePlayground } from '@/components/playground'
 
 # Schema Language
@@ -7,9 +8,15 @@ A SpiceDB schema defines the types of objects found, how those objects relate to
 
 The schema language's extension for use on a file system is `.zed`.
 
-<Callout type="info">
-  You can experiment with schemas in real-time with the [Playground](https://play.authzed.com).
-</Callout>
+You can experiment with schemas in real-time with the [Playground](https://play.authzed.com).
+
+The following video provides an overview of schema development using the Playground:
+
+<br /><YouTube videoId="AoK0LrkGFDY" />
+
+After studying this page's content, you may want to also read the [Developing a Schema] doc.
+
+[Developing a Schema]: ../modeling/developing-a-schema
 
 ## Definitions
 
@@ -380,7 +387,3 @@ If a non-recursive resource is used as the starting point for a recursive lookup
 **very important** that the permission name used on the right side of the arrow is the **same** in both the starting resource type and the parent resource type(s):
 
 <InlinePlayground reference="EWVhjM3vGxE6"/>
-
-## Try it out
-
-
