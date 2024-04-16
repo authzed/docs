@@ -90,7 +90,7 @@ const config: DocsThemeConfig = {
       defaultTitle: 'AuthZed Docs',
       titleTemplate: '%s – AuthZed Docs',
       description: desc,
-      canonical: `https://authzed.com/docs${asPath}`, // NOTE: Update this if the base dir ever changes
+      canonical: `https://authzed.com${process.env.BASE_DIR ?? ''}${asPath}`, // NOTE: Update this if the base dir ever changes
       openGraph: {
         title,
         description: desc,
