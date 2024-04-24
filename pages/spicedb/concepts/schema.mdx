@@ -113,7 +113,8 @@ definition group {
 
 ### Wildcards
 
-Relations can also specify wildcards to indicate that a grant can be made to the resource _type_ as a whole, rather than a particular resource. This allows _public_ access to be granted to a particular subject type.
+Relations can also specify wildcards to indicate that a grant can be made to the resource _type_ as a whole, rather than a particular resource.
+This allows _public_ access to be granted to a particular subject type.
 
 For example, a `viewer` might indicate that _all_ users can be granted the ability to view the resource:
 
@@ -156,7 +157,8 @@ Examples:
 
 ## Permissions
 
-A `permission` defines a _computed set of subjects_ that have a permission of some kind on the parent object. For example, is a user within the set of users that can `edit` a document.
+A `permission` defines a _computed set of subjects_ that have a permission of some kind on the parent object.
+For example, is a user within the set of users that can `edit` a document.
 
 Permissions are always defined with a _name_ and an _expression_ defining how that permission's allowed set of subjects is computed:
 

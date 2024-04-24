@@ -53,7 +53,6 @@ If more groups were related, to `document:somedocument`, it's likely that more s
 
 Notable exceptions to short-circuiting (thus negatively impacting overall performance) are usages of [Intersections (&)] and [Exclusions (-)].
 
-
 While fanout is mostly unavoidable, it can result in an exponential increase to the the number of sub-problems that must be computed.
 Therefore, when performing a load test it's critical to have a SpiceDB instance seeded with relationship data that closely mimics real world data.
 
@@ -66,11 +65,17 @@ After reading the above section, you should have an understanding of why relatio
 This section offers tips for getting the relationship distribution correct when seeding relationship data for a load test.
 Here are some helpful tips (these tips assume you already have a schema finalized):
 
-- Generate a list of object types and their relationships. In the example above we have two: `document#group@group` and `group#viewer@user`.
-- Identify how many objects of each type exist. In our scenario, we’ll need to determine how many objects of type `document`, `group`, and `user` exist.
-- If a resource object has multiple relations defined on it, decide what percentage of resource objects have a relationship defined with the first relation, what percentage of resource objects will have a relationship defined with the second relation, and so on. Keep in mind that it’s possible for resource objects to have relationships written from multiple relations. (e.g. a single resource object can have a relationship(s) written for both the first and second relation)
-- Identify the distribution of the relationships for specific relations. You’ll need to identify what percentage of the resource objects relate to what percentage of the subject objects through a specific relation. If you can’t identify the distribution of your relationships for specific relations, we recommend using a Pareto distribution as an approximation. (e.g. 80% of `document` objects are related to 20% of `group` objects through the `group` relation)
-- Codify it! Now that you’ve completed the thought exercise, you’ll need to codify this information in relationship generating code.
+- Generate a list of object types and their relationships.
+  In the example above we have two: `document#group@group` and `group#viewer@user`.
+- Identify how many objects of each type exist.
+  In our scenario, we’ll need to determine how many objects of type `document`, `group`, and `user` exist.
+- If a resource object has multiple relations defined on it, decide what percentage of resource objects have a relationship defined with the first relation, what percentage of resource objects will have a relationship defined with the second relation, and so on.
+  Keep in mind that it’s possible for resource objects to have relationships written from multiple relations (e.g. a single resource object can have a relationship(s) written for both the first and second relation).
+- Identify the distribution of the relationships for specific relations.
+  You’ll need to identify what percentage of the resource objects relate to what percentage of the subject objects through a specific relation.
+  If you can’t identify the distribution of your relationships for specific relations, we recommend using a Pareto distribution as an approximation (e.g. 80% of `document` objects are related to 20% of `group` objects through the `group` relation).
+- Codify it!
+  Now that you’ve completed the thought exercise, you’ll need to codify this information in relationship generating code.
 
 <Callout type="info">
   **Info:**

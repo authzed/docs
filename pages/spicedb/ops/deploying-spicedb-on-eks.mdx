@@ -4,7 +4,8 @@ import { Callout, Steps } from 'nextra/components'
 
 [AWS EKS] is the managed Kubernetes service provided by Amazon and is the best way to run SpiceDB on AWS.
 
-This guide walks through creating a highly-available SpiceDB deployment on an existing EKS cluster. TLS configuration is managed by [cert-manager] and [AWS Route53].
+This guide walks through creating a highly-available SpiceDB deployment on an existing EKS cluster.
+TLS configuration is managed by [cert-manager] and [AWS Route53].
 
 [AWS EKS]: https://docs.aws.amazon.com/eks/latest/userguide/what-is-eks.html
 [cert-manager]: https://cert-manager.io
@@ -199,7 +200,8 @@ EOF
 
 ### Deploying a Datastore
 
-Deploy a Postgres RDS datastore that is network reachable from SpiceDB’s EKS cluster. SpiceDB will connect to your Postgres DB with a connection string.
+Deploy a Postgres RDS datastore that is network reachable from SpiceDB’s EKS cluster.
+SpiceDB will connect to your Postgres DB with a connection string.
 
 ### Configuring and Deploy SpiceDB
 

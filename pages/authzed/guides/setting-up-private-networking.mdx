@@ -4,7 +4,6 @@ import { Steps } from 'nextra/components'
 
 This guide walks through setting up AuthZed Dedicated [Private Networking].
 
-
 [Private Networking]: ../concepts/private-networking
 
 ## AWS Steps
@@ -73,6 +72,7 @@ For zed to connect to SpiceDB, we'll first have to create an context named `netw
 ```sh
 zed context set network-test example.us-east-1.aws.authzed.net:443 sdbst_h256_cef4fc239bf...
 ```
+
 With our context set, we're free to make requests to our Permission System:
 
 ```sh

@@ -9,6 +9,7 @@ Under the hood, all managed AuthZed products leverage the SpiceDB Operator.
 Once the SpiceDB Operator is installed, Kubernetes clusters have a new [Resource] named `SpiceDBCluster`.
 
 Clusters created with SpiceDBCluster resource have features including:
+
 - Centralized management for cluster configurations
 - Automated SpiceDB upgrades
 - Zero-downtime, automated datastore migrations when upgrading SpiceDB
@@ -16,7 +17,6 @@ Clusters created with SpiceDBCluster resource have features including:
 [SpiceDB Operator]: ../concepts/operator
 [kubernetes operator]: https://kubernetes.io/docs/concepts/extend-kubernetes/operator/
 [resource]: https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#custom-resources
-
 
 ## Configuration
 
@@ -37,7 +37,8 @@ spec:
 ```
 
 Any CLI flag for SpiceDB can be set in `config` by converting the name of the flag to camelCase and removing dashes.
-For example: `--log-level` becomes `logLevel`, `--datastore-engine` becomes `datastoreEngine`, and so on. The values for these flags are expected to be strings, unless the operator has implemented special support for a specific flag.
+For example: `--log-level` becomes `logLevel`, `--datastore-engine` becomes `datastoreEngine`, and so on.
+The values for these flags are expected to be strings, unless the operator has implemented special support for a specific flag.
 This allows the operator to be forward-compatible with new versions of SpiceDB, even if it doesn't know about new features and flags.
 There may be exceptions to this rule, but they will be documented in release notes if and when they occur.
 
@@ -150,4 +151,3 @@ Although the operator attempts to be forward-compatible as much as possible, the
 We recommend updating SpiceDB operator before updating SpiceDB whenever possible.
 
 [spicedb release]: https://github.com/authzed/spicedb/releases/
-

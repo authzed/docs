@@ -90,6 +90,7 @@ If you're looking to contribute code, you can read [CONTRIBUTING.md] in our open
 > — Lea Kissner, Zanzibar Coauthor
 
 In SpiceDB, reverse indices often refer to the [LookupResources] and [LookupSubjects] APIs which are designed to answer the following questions, respectively:
+
 - "What are all of the resources this subject can access?"
 - "What are all of the subjects with access to this resource?"
 
@@ -99,7 +100,8 @@ In SpiceDB, reverse indices often refer to the [LookupResources] and [LookupSubj
 ### How does SpiceDB improve on Google's Zanzibar?
 
 At a high-level, SpiceDB attempts to remain true to Zanzibar's design principles, but without any assumptions around Google's internal infrastructure and use cases.
-As a result, many things in SpiceDB are more flexible to accomodate different kinds of users with different software stacks. For example, [modeling complex user systems][model-users] is possible in SpiceDB, but in Zanzibar all users must be a uint64 identifier.
+As a result, many things in SpiceDB are more flexible to accomodate different kinds of users with different software stacks.
+For example, [modeling complex user systems][model-users] is possible in SpiceDB, but in Zanzibar all users must be a uint64 identifier.
 
 Because SpiceDB is not forced on developers as company-wide requirement, the project also values developer experience and making the tooling pleasant to work with.
 You can see this in our [Schema Language] and [Playground] which vastly improves the user experience of directly manipulating Protocol Buffers at Google.

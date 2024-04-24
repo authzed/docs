@@ -280,9 +280,10 @@ Note that the contents of the angled brackets for `differentuser` and `specificu
 
 ### Preparing to inherit permissions
 
-As we've seen above, we can use `permission` to define _implicit_ permissions, such as a `view` permission consisting of users either the `reader` or `writer` role. Implicit permissions on a specific object type, however, are often insufficient: Sometimes permissions need to be **inherited** between object types.
+As we've seen above, we can use `permission` to define _implicit_ permissions, such as a `view` permission consisting of users either the `reader` or `writer` role.
+Implicit permissions on a specific object type, however, are often insufficient: Sometimes permissions need to be **inherited** between object types.
 
-As an example: Imagine that we add the concept of an `organization` to our permissions system, where any user that is an administrator of an organization automatically gains the ability to `view` any `document` within that organization... how would we define such a permissions schema?
+As an example: Imagine that we add the concept of an `organization` to our permissions system, where any user that is an administrator of an organization automatically gains the ability to `view` any `document` within that organization; how would we define such a permissions schema?
 
 ### Defining the organization type
 
@@ -313,7 +314,8 @@ definition document {
 
 ### Connecting organizations and documents
 
-In order for our inheritance to function, we must define a way to indicate that a document "lives" under an organization. Fortunately, this is just another relationship (between a `document` and its parent `organization`), so we can use another relation within the `document` type:
+In order for our inheritance to function, we must define a way to indicate that a document "lives" under an organization.
+Fortunately, this is just another relationship (between a `document` and its parent `organization`), so we can use another relation within the `document` type:
 
 ```zed title="Schema"
 /** user represents a registered user's account in our application */

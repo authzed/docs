@@ -10,6 +10,7 @@ Instead of introducing an unfamiliar example app and altering various locations 
 ## Prerequisites
 
 One of:
+
 - An [Authzed] Permission System and associated [API Token] with `admin` access
 - A [running instance] of [SpiceDB][SpiceDB] with the configured preshared key for SpiceDB
 
@@ -25,53 +26,59 @@ The first step to integrating any software is ensuring you have an API client.
 Each tool is installed with its ecosystem's package management tools:
 
 <Tabs items={['zed', 'Node', 'Go', 'Python', 'Ruby', 'Java']}>
-  <Tabs.Tab>
-    ```sh
-    brew install authzed/tap/zed
-    zed context set blog grpc.authzed.com:443 t_your_token_here_1234567deadbeef
-    ```
-  </Tabs.Tab>
+<Tabs.Tab>
 
-  <Tabs.Tab>
-    ```sh
-    # JavaScript and TypeScript
-    npm i @authzed/authzed-node
-    ```
-  </Tabs.Tab>
+```sh
+brew install authzed/tap/zed
+zed context set blog grpc.authzed.com:443 t_your_token_here_1234567deadbeef
+```
 
-  <Tabs.Tab>
-    ```sh
-    mkdir first_app && cd first_app
-    go mod init first_app
-    go get github.com/authzed/authzed-go
-    go get github.com/authzed/grpcutil
-    go mod tidy
-    ```
-  </Tabs.Tab>
+</Tabs.Tab>
+<Tabs.Tab>
 
-  <Tabs.Tab>
-    ```sh
-    pip install authzed
-    ```
-  </Tabs.Tab>
+```sh
+# JavaScript and TypeScript
+npm i @authzed/authzed-node
+```
 
-  <Tabs.Tab>
-    ```sh
-    gem install authzed
-    ```
-  </Tabs.Tab>
+</Tabs.Tab>
+<Tabs.Tab>
 
+```sh
+mkdir first_app && cd first_app
+go mod init first_app
+go get github.com/authzed/authzed-go
+go get github.com/authzed/grpcutil
+go mod tidy
+```
 
-  <Tabs.Tab>
-    ```groovy
-    // build.gradle
-    dependencies {
-      implementation "com.authzed.api:authzed:0.6.0"
-      implementation 'io.grpc:grpc-protobuf:1.54.1'
-      implementation 'io.grpc:grpc-stub:1.54.1'
-    }
-    ```
-  </Tabs.Tab>
+</Tabs.Tab>
+<Tabs.Tab>
+
+```sh
+pip install authzed
+```
+
+</Tabs.Tab>
+<Tabs.Tab>
+
+```sh
+gem install authzed
+```
+
+</Tabs.Tab>
+<Tabs.Tab>
+
+```groovy
+// build.gradle
+dependencies {
+  implementation "com.authzed.api:authzed:0.6.0"
+  implementation 'io.grpc:grpc-protobuf:1.54.1'
+  implementation 'io.grpc:grpc-stub:1.54.1'
+}
+```
+
+</Tabs.Tab>
 </Tabs>
 
 ## Defining and Applying a Schema
@@ -105,193 +112,195 @@ Feel free to start with design to modify and test your own experiments in the [p
 With a schema designed, we can now move on using our client to to apply that schema to the Permission System.
 
 <Callout type="info">
-  Similar to applying schema changes for relational databases, all changes to a schema must be backwards compatible.
+Similar to applying schema changes for relational databases, all changes to a schema must be backwards compatible.
 
-  In production environments where relations change, you will likely want to write data migrations and apply those changes using a schema migration toolchain.
+In production environments where relations change, you will likely want to write data migrations and apply those changes using a schema migration toolchain.
 </Callout>
 
 <Tabs items={['zed', 'Node', 'Go', 'Python', 'Ruby', 'Java']}>
-  <Tabs.Tab>
-    ```sh
-    zed schema write <(cat << EOF
-    definition user {}
-    definition post {
-        relation reader: user
-        relation writer: user
-        permission read = reader + writer
-        permission write = writer
+<Tabs.Tab>
+
+```sh
+zed schema write <(cat << EOF
+definition user {}
+definition post {
+    relation reader: user
+    relation writer: user
+    permission read = reader + writer
+    permission write = writer
+}
+EOF)
+```
+
+</Tabs.Tab>
+<Tabs.Tab>
+
+```js
+import { v1 } from '@authzed/authzed-node';
+
+const { promises: client } = v1.NewClient(
+  't_your_token_here_1234567deadbeef',
+);
+
+const schema = `
+definition user {}
+definition post {
+	relation reader: user
+	relation writer: user
+	permission read = reader + writer
+	permission write = writer
+}`;
+
+const schemaRequest = v1.WriteSchemaRequest.create({
+  schema: schema,
+});
+
+const schemaResponse = await client.writeSchema(schemaRequest)
+console.log(schemaResponse)
+```
+
+</Tabs.Tab>
+<Tabs.Tab>
+
+```go
+package main
+
+import (
+	"context"
+	"log"
+
+	pb "github.com/authzed/authzed-go/proto/authzed/api/v1"
+	"github.com/authzed/authzed-go/v1"
+	"github.com/authzed/grpcutil"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+)
+
+const schema = `definition user {}
+definition post {
+	relation reader: user
+	relation writer: user
+	permission read = reader + writer
+	permission write = writer
+}`
+
+const spicedbEndpoint = "grpc.authzed.com:443"
+
+func main() {
+	systemCerts, err := grpcutil.WithSystemCerts(grpcutil.VerifyCA)
+	if err != nil {
+		log.Fatalf("unable to load system CA certificates: %s", err)
+	}
+
+	client, err := authzed.NewClient(
+		spicedbEndpoint,
+		grpcutil.WithBearerToken("t_your_token_here_1234567deadbeef"),
+		systemCerts,
+	)
+	if err != nil {
+		log.Fatalf("unable to initialize client: %s", err)
+	}
+
+	request := &pb.WriteSchemaRequest{Schema: schema}
+	_, err = client.WriteSchema(context.Background(), request)
+	if err != nil {
+		log.Fatalf("failed to write schema: %s", err)
+	}
+}
+```
+
+</Tabs.Tab>
+<Tabs.Tab>
+
+```py
+from authzed.api.v1 import Client, WriteSchemaRequest
+from grpcutil import bearer_token_credentials
+
+SCHEMA = """definition user {}
+definition post {
+	relation reader: user
+	relation writer: user
+	permission read = reader + writer
+	permission write = writer
+}"""
+
+ENDPOINT = "grpc.authzed.com:443"
+CREDENTIALS = bearer_token_credentials("t_your_token_here_1234567deadbeef")
+
+client = Client(ENDPOINT, CREDENTIALS)
+resp = client.WriteSchema(WriteSchemaRequest(schema=SCHEMA))
+```
+
+</Tabs.Tab>
+<Tabs.Tab>
+
+```rb
+require 'authzed'
+
+schema = <<~SCHEMA
+definition user {}
+definition post {
+	relation reader: user
+	relation writer: user
+	permission read = reader + writer
+	permission write = writer
+}
+SCHEMA
+
+endpoint = 'grpc.authzed.com:443'
+credentials = Authzed::GrpcUtil::BearerToken.new(token: 't_your_token_here_1234567deadbeef')
+
+client = Authzed::Api::V1::Client.new(
+  target: endpoint,
+  interceptors: [credentials],
+)
+
+resp = client.schema_service.write_schema(
+  Authzed::Api::V1::WriteSchemaRequest.new(schema: schema)
+)
+```
+
+</Tabs.Tab>
+<Tabs.Tab>
+
+```java
+import com.authzed.api.v1.SchemaServiceGrpc;
+import com.authzed.api.v1.SchemaServiceOuterClass.*;
+import com.authzed.grpcutil.BearerToken;
+import io.grpc.*;
+public class App {
+  public static void main(String[] args) {
+    ManagedChannel channel = ManagedChannelBuilder
+            .forTarget("grpc.authzed.com:443")
+            .useTransportSecurity()
+            .build();
+    BearerToken bearerToken = new BearerToken("t_your_token_here_1234567deadbeef");
+    SchemaServiceGrpc.SchemaServiceBlockingStub schemaService = SchemaServiceGrpc.newBlockingStub(channel)
+            .withCallCredentials(bearerToken);
+    String schema = """
+            definition user {}
+            definition post {
+                relation reader: user
+                relation writer: user
+                permission read = reader + writer
+                permission write = writer
+            }
+            """;
+    WriteSchemaRequest request = WriteSchemaRequest
+            .newBuilder()
+            .setSchema(schema)
+            .build();
+    WriteSchemaResponse response;
+    try {
+      response = schemaService.writeSchema(request);
+    } catch (Exception e) {
+      // Uh oh!
     }
-    EOF)
-    ```
-  </Tabs.Tab>
+  }
+}
+```
 
-  <Tabs.Tab>
-    ```js
-    import { v1 } from '@authzed/authzed-node';
-
-    const { promises: client } = v1.NewClient(
-      't_your_token_here_1234567deadbeef',
-    );
-
-    const schema = `
-    definition user {}
-    definition post {
-	    relation reader: user
-	    relation writer: user
-	    permission read = reader + writer
-	    permission write = writer
-    }`;
-
-    const schemaRequest = v1.WriteSchemaRequest.create({
-      schema: schema,
-    });
-
-    const schemaResponse = await client.writeSchema(schemaRequest)
-    console.log(schemaResponse)
-    ```
-  </Tabs.Tab>
-
-  <Tabs.Tab>
-    ```go
-    package main
-
-    import (
-	    "context"
-	    "log"
-
-	    pb "github.com/authzed/authzed-go/proto/authzed/api/v1"
-	    "github.com/authzed/authzed-go/v1"
-	    "github.com/authzed/grpcutil"
-	    "google.golang.org/grpc"
-	    "google.golang.org/grpc/credentials/insecure"
-    )
-
-    const schema = `definition user {}
-    definition post {
-	    relation reader: user
-	    relation writer: user
-	    permission read = reader + writer
-	    permission write = writer
-    }`
-
-    const spicedbEndpoint = "grpc.authzed.com:443"
-
-    func main() {
-	    systemCerts, err := grpcutil.WithSystemCerts(grpcutil.VerifyCA)
-	    if err != nil {
-		    log.Fatalf("unable to load system CA certificates: %s", err)
-	    }
-
-	    client, err := authzed.NewClient(
-		    spicedbEndpoint,
-		    grpcutil.WithBearerToken("t_your_token_here_1234567deadbeef"),
-		    systemCerts,
-	    )
-	    if err != nil {
-		    log.Fatalf("unable to initialize client: %s", err)
-	    }
-
-	    request := &pb.WriteSchemaRequest{Schema: schema}
-	    _, err = client.WriteSchema(context.Background(), request)
-	    if err != nil {
-		    log.Fatalf("failed to write schema: %s", err)
-	    }
-    }
-    ```
-  </Tabs.Tab>
-
-  <Tabs.Tab>
-    ```py
-    from authzed.api.v1 import Client, WriteSchemaRequest
-    from grpcutil import bearer_token_credentials
-
-    SCHEMA = """definition user {}
-    definition post {
-        relation reader: user
-        relation writer: user
-        permission read = reader + writer
-        permission write = writer
-    }"""
-
-    ENDPOINT = "grpc.authzed.com:443"
-    CREDENTIALS = bearer_token_credentials("t_your_token_here_1234567deadbeef")
-
-    client = Client(ENDPOINT, CREDENTIALS)
-    resp = client.WriteSchema(WriteSchemaRequest(schema=SCHEMA))
-    ```
-  </Tabs.Tab>
-
-  <Tabs.Tab>
-    ```rb
-    require 'authzed'
-
-    schema = <<~SCHEMA
-        definition user {}
-        definition post {
-          relation reader: user
-          relation writer: user
-          permission read = reader + writer
-          permission write = writer
-        }
-        SCHEMA
-
-    endpoint = 'grpc.authzed.com:443'
-    credentials = Authzed::GrpcUtil::BearerToken.new(token: 't_your_token_here_1234567deadbeef')
-
-    client = Authzed::Api::V1::Client.new(
-        target: endpoint,
-        interceptors: [credentials],
-    )
-
-    resp = client.schema_service.write_schema(
-      Authzed::Api::V1::WriteSchemaRequest.new(schema: schema)
-    )
-    ```
-  </Tabs.Tab>
-
-  <Tabs.Tab>
-    ```java
-    import com.authzed.api.v1.SchemaServiceGrpc;
-    import com.authzed.api.v1.SchemaServiceOuterClass.*;
-    import com.authzed.grpcutil.BearerToken;
-    import io.grpc.*;
-
-    public class App {
-      public static void main(String[] args) {
-        ManagedChannel channel = ManagedChannelBuilder
-                .forTarget("grpc.authzed.com:443")
-                .useTransportSecurity()
-                .build();
-
-        BearerToken bearerToken = new BearerToken("t_your_token_here_1234567deadbeef");
-        SchemaServiceGrpc.SchemaServiceBlockingStub schemaService = SchemaServiceGrpc.newBlockingStub(channel)
-                .withCallCredentials(bearerToken);
-
-        String schema = """
-                definition user {}
-                definition post {
-                    relation reader: user
-                    relation writer: user
-                    permission read = reader + writer
-                    permission write = writer
-                }
-                """;
-
-        WriteSchemaRequest request = WriteSchemaRequest
-                .newBuilder()
-                .setSchema(schema)
-                .build();
-
-        WriteSchemaResponse response;
-        try {
-          response = schemaService.writeSchema(request);
-        } catch (Exception e) {
-          // Uh oh!
-        }
-      }
-    }
-    ```
-  </Tabs.Tab>
+</Tabs.Tab>
 </Tabs>
 
 ## Storing Relationships
@@ -302,7 +311,7 @@ Because the relationships stored in the system can change at runtime, this is a 
 When applications modify or create rows in their database, they will also typically create or update relationships.
 
 <Callout type="info">
-  Writing relationships returns a [ZedToken] which is critical to ensuring performance and [consistency].
+Writing relationships returns a [ZedToken] which is critical to ensuring performance and [consistency].
 </Callout>
 
 [ZedToken]: /spicedb/concepts/consistency#zedtokens
@@ -314,301 +323,308 @@ You can also [touch and delete] relationships, but those are not as immediately 
 [touch and delete]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.RelationshipUpdate
 
 <Tabs items={['zed', 'Node', 'Go', 'Python', 'Ruby', 'Java']}>
-  <Tabs.Tab>
-    ```shell zed
-    zed relationship create post:1 writer user:emilia
-    zed relationship create post:1 reader user:beatrice
-    ```
-  </Tabs.Tab>
+<Tabs.Tab>
 
-  <Tabs.Tab>
-    ```js
-    import { v1 } from '@authzed/authzed-node';
+```shell zed
+zed relationship create post:1 writer user:emilia
+zed relationship create post:1 reader user:beatrice
+```
 
-    const { promises: client } = v1.NewClient(
-      't_your_token_here_1234567deadbeef',
-      'grpc.authzed.com:50051',
-    );
+</Tabs.Tab>
+<Tabs.Tab>
 
-    const resource = v1.ObjectReference.create({
-      objectType: 'post',
-      objectId: '1',
-    });
+```js
+import { v1 } from '@authzed/authzed-node';
 
-    const emilia = v1.ObjectReference.create({
-      objectType: 'user',
-      objectId: 'emilia',
-    });
+const { promises: client } = v1.NewClient(
+  't_your_token_here_1234567deadbeef',
+  'grpc.authzed.com:50051',
+);
 
-    const beatrice = v1.ObjectReference.create({
-      objectType: 'user',
-      objectId: 'beatrice',
-    });
+const resource = v1.ObjectReference.create({
+  objectType: 'post',
+  objectId: '1',
+});
 
-    const writeRequest = v1.WriteRelationshipsRequest.create({
-      updates: [
-        // Emilia is a Writer on Post 1
-        v1.RelationshipUpdate.create({
-          relationship: v1.Relationship.create({
-            resource: resource,
-            relation: 'writer',
-            subject: v1.SubjectReference.create({ object: emilia }),
-          }),
-          operation: v1.RelationshipUpdate_Operation.CREATE,
-        }),
-        //  Beatrice is a Reader on Post 1
-        v1.RelationshipUpdate.create({
-          relationship: v1.Relationship.create({
-            resource: resource,
-            relation: 'reader',
-            subject: v1.SubjectReference.create({ object: beatrice }),
-          }),
-          operation: v1.RelationshipUpdate_Operation.CREATE,
-        }),
-      ],
-    });
+const emilia = v1.ObjectReference.create({
+  objectType: 'user',
+  objectId: 'emilia',
+});
 
-    const response = await client.writeRelationships(writeRequest)
+const beatrice = v1.ObjectReference.create({
+  objectType: 'user',
+  objectId: 'beatrice',
+});
 
-    console.log(response)
-    ```
-  </Tabs.Tab>
+const writeRequest = v1.WriteRelationshipsRequest.create({
+  updates: [
+    // Emilia is a Writer on Post 1
+    v1.RelationshipUpdate.create({
+      relationship: v1.Relationship.create({
+        resource: resource,
+        relation: 'writer',
+        subject: v1.SubjectReference.create({ object: emilia }),
+      }),
+      operation: v1.RelationshipUpdate_Operation.CREATE,
+    }),
+    //  Beatrice is a Reader on Post 1
+    v1.RelationshipUpdate.create({
+      relationship: v1.Relationship.create({
+        resource: resource,
+        relation: 'reader',
+        subject: v1.SubjectReference.create({ object: beatrice }),
+      }),
+      operation: v1.RelationshipUpdate_Operation.CREATE,
+    }),
+  ],
+});
 
-  <Tabs.Tab>
-    ```go
-    package main
+const response = await client.writeRelationships(writeRequest)
 
-    import (
-	    "context"
-	    "fmt"
-	    "log"
+console.log(response)
+```
 
-	    pb "github.com/authzed/authzed-go/proto/authzed/api/v1"
-	    "github.com/authzed/authzed-go/v1"
-	    "github.com/authzed/grpcutil"
-	    "google.golang.org/grpc"
-	    "google.golang.org/grpc/credentials/insecure"
-    )
+</Tabs.Tab>
+<Tabs.Tab>
 
-    const (
-	    spicedbEndpoint = "grpc.authzed.com:443"
-	    token = "t_your_token_here_1234567deadbeef"
-    )
+```go
+package main
 
-    func main() {
-	    systemCerts, err := grpcutil.WithSystemCerts(grpcutil.VerifyCA)
-	    if err != nil {
-		    log.Fatalf("unable to load system CA certificates: %s", err)
-	    }
+import (
+	"context"
+	"fmt"
+	"log"
 
-	    client, err := authzed.NewClient(
-		    spicedbEndpoint,
-		    grpcutil.WithBearerToken(token),
-		    systemCerts,
-		    // These options are if you're self-hosting and don't want TLS:
-		    // grpcutil.WithInsecureBearerToken(token),
-		    // grpc.WithTransportCredentials(insecure.NewCredentials()),
-	    )
-	    if err != nil {
-		    log.Fatalf("unable to initialize client: %s", err)
-	    }
+	pb "github.com/authzed/authzed-go/proto/authzed/api/v1"
+	"github.com/authzed/authzed-go/v1"
+	"github.com/authzed/grpcutil"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+)
 
-	    request := &pb.WriteRelationshipsRequest{Updates: []*pb.RelationshipUpdate{
-		    { // Emilia is a Writer on Post 1
-			    Operation: pb.RelationshipUpdate_OPERATION_CREATE,
-			    Relationship: &pb.Relationship{
-				    Resource: &pb.ObjectReference{
-					    ObjectType: "post",
-					    ObjectId: "1",
-				    },
-				    Relation: "writer",
-				    Subject: &pb.SubjectReference{
-					    Object: &pb.ObjectReference{
-						    ObjectType: "user",
-						    ObjectId: "emilia",
-					    },
-				    },
-			    },
-		    },
-		    { // Beatrice is a Reader on Post 1
-			    Operation: pb.RelationshipUpdate_OPERATION_CREATE,
-			    Relationship: &pb.Relationship{
-				    Resource: &pb.ObjectReference{
-					    ObjectType: "post",
-					    ObjectId: "1",
-				    },
-				    Relation: "reader",
-				    Subject: &pb.SubjectReference{
-					    Object: &pb.ObjectReference{
-						    ObjectType: "user",
-						    ObjectId: "beatrice",
-					    },
-				    },
-			    },
-		    },
-	    }}
+const (
+	spicedbEndpoint = "grpc.authzed.com:443"
+	token = "t_your_token_here_1234567deadbeef"
+)
 
-	    resp, err := client.WriteRelationships(context.Background(), request)
-	    if err != nil {
-		    log.Fatalf("failed to write relations: %s", err)
-	    }
-	    fmt.Println(resp.WrittenAt.Token)
-    }
-    ```
-  </Tabs.Tab>
+func main() {
+	systemCerts, err := grpcutil.WithSystemCerts(grpcutil.VerifyCA)
+	if err != nil {
+		log.Fatalf("unable to load system CA certificates: %s", err)
+	}
 
-  <Tabs.Tab>
-    ```py
-    from authzed.api.v1 import (
-        Client,
-        ObjectReference,
-        Relationship,
-        RelationshipUpdate,
-        SubjectReference,
-        WriteRelationshipsRequest,
-    )
-    from grpcutil import bearer_token_credentials
+	client, err := authzed.NewClient(
+		spicedbEndpoint,
+		grpcutil.WithBearerToken(token),
+		systemCerts,
+		// These options are if you're self-hosting and don't want TLS:
+		// grpcutil.WithInsecureBearerToken(token),
+		// grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		log.Fatalf("unable to initialize client: %s", err)
+	}
 
-    client = Client(
-        "grpc.authzed.com:443",
-        bearer_token_credentials("t_your_token_here_1234567deadbeef"),
-    )
+	request := &pb.WriteRelationshipsRequest{Updates: []*pb.RelationshipUpdate{
+		{ // Emilia is a Writer on Post 1
+			Operation: pb.RelationshipUpdate_OPERATION_CREATE,
+			Relationship: &pb.Relationship{
+				Resource: &pb.ObjectReference{
+					ObjectType: "post",
+					ObjectId: "1",
+				},
+				Relation: "writer",
+				Subject: &pb.SubjectReference{
+					Object: &pb.ObjectReference{
+						ObjectType: "user",
+						ObjectId: "emilia",
+					},
+				},
+			},
+		},
+		{ // Beatrice is a Reader on Post 1
+			Operation: pb.RelationshipUpdate_OPERATION_CREATE,
+			Relationship: &pb.Relationship{
+				Resource: &pb.ObjectReference{
+					ObjectType: "post",
+					ObjectId: "1",
+				},
+				Relation: "reader",
+				Subject: &pb.SubjectReference{
+					Object: &pb.ObjectReference{
+						ObjectType: "user",
+						ObjectId: "beatrice",
+					},
+				},
+			},
+		},
+	}}
 
-    resp = client.WriteRelationships(
-        WriteRelationshipsRequest(
-            updates=[
-                # Emilia is a Writer on Post 1
-                RelationshipUpdate(
-                    operation=RelationshipUpdate.Operation.OPERATION_CREATE,
-                    relationship=Relationship(
-                        resource=ObjectReference(object_type="post", object_id="1"),
-                        relation="writer",
-                        subject=SubjectReference(
-                            object=ObjectReference(
-                                object_type="user",
-                                object_id="emilia",
-                            )
-                        ),
+	 resp, err := client.WriteRelationships(context.Background(), request)
+	 if err != nil {
+		log.Fatalf("failed to write relations: %s", err)
+	}
+	fmt.Println(resp.WrittenAt.Token)
+}
+```
+
+</Tabs.Tab>
+<Tabs.Tab>
+
+```py
+from authzed.api.v1 import (
+    Client,
+    ObjectReference,
+    Relationship,
+    RelationshipUpdate,
+    SubjectReference,
+    WriteRelationshipsRequest,
+)
+from grpcutil import bearer_token_credentials
+
+client = Client(
+    "grpc.authzed.com:443",
+    bearer_token_credentials("t_your_token_here_1234567deadbeef"),
+)
+
+resp = client.WriteRelationships(
+    WriteRelationshipsRequest(
+        updates=[
+            # Emilia is a Writer on Post 1
+            RelationshipUpdate(
+                operation=RelationshipUpdate.Operation.OPERATION_CREATE,
+                relationship=Relationship(
+                    resource=ObjectReference(object_type="post", object_id="1"),
+                    relation="writer",
+                    subject=SubjectReference(
+                        object=ObjectReference(
+                            object_type="user",
+                            object_id="emilia",
+                        )
                     ),
                 ),
-                # Beatrice is a Reader on Post 1
-                RelationshipUpdate(
-                    operation=RelationshipUpdate.Operation.OPERATION_CREATE,
-                    relationship=Relationship(
-                        resource=ObjectReference(object_type="post", object_id="1"),
-                        relation="reader",
-                        subject=SubjectReference(
-                            object=ObjectReference(
-                                object_type="user",
-                                object_id="beatrice",
-                            )
-                        ),
+            ),
+            # Beatrice is a Reader on Post 1
+            RelationshipUpdate(
+                operation=RelationshipUpdate.Operation.OPERATION_CREATE,
+                relationship=Relationship(
+                    resource=ObjectReference(object_type="post", object_id="1"),
+                    relation="reader",
+                    subject=SubjectReference(
+                        object=ObjectReference(
+                            object_type="user",
+                            object_id="beatrice",
+                        )
                     ),
                 ),
-            ]
-        )
-    )
-
-    print(resp.written_at.token)
-    ```
-  </Tabs.Tab>
-
-  <Tabs.Tab>
-    ```rb
-    require 'authzed'
-
-    client = Authzed::Api::V1::Client.new(
-      target: 'grpc.authzed.com:443',
-      interceptors: [Authzed::GrpcUtil::BearerToken.new(token: 't_your_token_here_1234567deadbeef')],
-    )
-
-    resp = client.permissions_service.write_relationships(
-      Authzed::Api::V1::WriteRelationshipsRequest.new(
-        updates: [
-          # Emilia is a Writer on Post 1
-          Authzed::Api::V1::RelationshipUpdate.new(
-            operation: Authzed::Api::V1::RelationshipUpdate::Operation::OPERATION_CREATE,
-            relationship: Authzed::Api::V1::Relationship.new(
-              resource: Authzed::Api::V1::ObjectReference.new(object_type: 'post', object_id: '1'),
-              relation: 'writer',
-              subject: Authzed::Api::V1::SubjectReference.new(
-                object: Authzed::Api::V1::ObjectReference.new(object_type: 'user', object_id: 'emilia'),
-              ),
             ),
-          ),
-          # Beatrice is a Reader on Post 1
-          Authzed::Api::V1::RelationshipUpdate.new(
-            operation: Authzed::Api::V1::RelationshipUpdate::Operation::OPERATION_CREATE,
-            relationship: Authzed::Api::V1::Relationship.new(
-              resource: Authzed::Api::V1::ObjectReference.new(object_type: 'post', object_id: '1'),
-              relation: 'reader',
-              subject: Authzed::Api::V1::SubjectReference.new(
-                object: Authzed::Api::V1::ObjectReference.new(object_type: 'user', object_id: 'beatrice'),
-              ),
-            ),
-          ),
         ]
-      )
     )
+)
 
-    puts resp.written_at.token
-    ```
-  </Tabs.Tab>
+print(resp.written_at.token)
+```
 
-  <Tabs.Tab>
-    ```java
-    import com.authzed.api.v1.PermissionService;
-    import com.authzed.api.v1.PermissionsServiceGrpc;
-    import com.authzed.grpcutil.BearerToken;
-    import com.authzed.api.v1.Core.*;
-    import io.grpc.*;
+</Tabs.Tab>
+<Tabs.Tab>
 
-    public class App {
-      public static void main(String[] args) {
-        ManagedChannel channel = ManagedChannelBuilder
-                .forTarget("grpc.authzed.com:443")
-                .useTransportSecurity()
-                .build();
+```rb
+require 'authzed'
 
-        BearerToken bearerToken = new BearerToken("t_your_token_here_1234567deadbeef");
-        PermissionsServiceGrpc.PermissionsServiceBlockingStub permissionsService = PermissionsServiceGrpc.newBlockingStub(channel)
-                .withCallCredentials(bearerToken);
+client = Authzed::Api::V1::Client.new(
+  target: 'grpc.authzed.com:443',
+  interceptors: [Authzed::GrpcUtil::BearerToken.new(token: 't_your_token_here_1234567deadbeef')],
+)
 
-        PermissionService.WriteRelationshipsRequest request = PermissionService.WriteRelationshipsRequest.newBuilder()
-                .addUpdates(
-                        RelationshipUpdate.newBuilder()
-                                .setOperation(RelationshipUpdate.Operation.OPERATION_CREATE)
-                                .setRelationship(
-                                        Relationship.newBuilder()
-                                                .setResource(
-                                                        ObjectReference.newBuilder()
-                                                                .setObjectType("post")
-                                                                .setObjectId("1")
-                                                                .build())
-                                                .setRelation("writer")
-                                                .setSubject(
-                                                        SubjectReference.newBuilder()
-                                                                .setObject(
-                                                                        ObjectReference.newBuilder()
-                                                                                .setObjectType("user")
-                                                                                .setObjectId("emilia")
-                                                                                .build())
-                                                                .build())
-                                                .build())
-                                .build())
-                .build();
+resp = client.permissions_service.write_relationships(
+  Authzed::Api::V1::WriteRelationshipsRequest.new(
+    updates: [
+      # Emilia is a Writer on Post 1
+      Authzed::Api::V1::RelationshipUpdate.new(
+        operation: Authzed::Api::V1::RelationshipUpdate::Operation::OPERATION_CREATE,
+        relationship: Authzed::Api::V1::Relationship.new(
+          resource: Authzed::Api::V1::ObjectReference.new(object_type: 'post', object_id: '1'),
+          relation: 'writer',
+          subject: Authzed::Api::V1::SubjectReference.new(
+            object: Authzed::Api::V1::ObjectReference.new(object_type: 'user', object_id: 'emilia'),
+          ),
+        ),
+      ),
+      # Beatrice is a Reader on Post 1
+      Authzed::Api::V1::RelationshipUpdate.new(
+        operation: Authzed::Api::V1::RelationshipUpdate::Operation::OPERATION_CREATE,
+        relationship: Authzed::Api::V1::Relationship.new(
+          resource: Authzed::Api::V1::ObjectReference.new(object_type: 'post', object_id: '1'),
+          relation: 'reader',
+          subject: Authzed::Api::V1::SubjectReference.new(
+            object: Authzed::Api::V1::ObjectReference.new(object_type: 'user', object_id: 'beatrice'),
+          ),
+        ),
+      ),
+    ]
+  )
+)
 
-        PermissionService.WriteRelationshipsResponse response;
-        try {
-          response = permissionsService.writeRelationships(request);
-          String zedToken = response.getWrittenAt().getToken();
-        } catch (Exception e) {
-          // Uh oh!
-        }
-      }
+puts resp.written_at.token
+```
+
+</Tabs.Tab>
+<Tabs.Tab>
+
+```java
+import com.authzed.api.v1.PermissionService;
+import com.authzed.api.v1.PermissionsServiceGrpc;
+import com.authzed.grpcutil.BearerToken;
+import com.authzed.api.v1.Core.*;
+import io.grpc.*;
+
+public class App {
+  public static void main(String[] args) {
+    ManagedChannel channel = ManagedChannelBuilder
+            .forTarget("grpc.authzed.com:443")
+            .useTransportSecurity()
+            .build();
+
+    BearerToken bearerToken = new BearerToken("t_your_token_here_1234567deadbeef");
+    PermissionsServiceGrpc.PermissionsServiceBlockingStub permissionsService = PermissionsServiceGrpc.newBlockingStub(channel)
+            .withCallCredentials(bearerToken);
+
+    PermissionService.WriteRelationshipsRequest request = PermissionService.WriteRelationshipsRequest.newBuilder()
+            .addUpdates(
+                    RelationshipUpdate.newBuilder()
+                            .setOperation(RelationshipUpdate.Operation.OPERATION_CREATE)
+                            .setRelationship(
+                                    Relationship.newBuilder()
+                                            .setResource(
+                                                    ObjectReference.newBuilder()
+                                                            .setObjectType("post")
+                                                            .setObjectId("1")
+                                                            .build())
+                                            .setRelation("writer")
+                                            .setSubject(
+                                                    SubjectReference.newBuilder()
+                                                            .setObject(
+                                                                    ObjectReference.newBuilder()
+                                                                            .setObjectType("user")
+                                                                            .setObjectId("emilia")
+                                                                            .build())
+                                                            .build())
+                                            .build())
+                            .build())
+            .build();
+
+    PermissionService.WriteRelationshipsResponse response;
+    try {
+      response = permissionsService.writeRelationships(request);
+      String zedToken = response.getWrittenAt().getToken();
+    } catch (Exception e) {
+      // Uh oh!
     }
-    ```
-  </Tabs.Tab>
+  }
+}
+```
+
+</Tabs.Tab>
 </Tabs>
 
 ## Checking Permissions
@@ -618,367 +634,374 @@ Checks do not only test for the existence of direct relationships, but will also
 For example, in our example schema, writers have both write and read, so there's no need to create a read relationship for a subject that is already a writer.
 
 <Callout type="info">
-  In addition to checking _permissions_, it is also possible to perform checks on _relations_ to determine membership.
+In addition to checking _permissions_, it is also possible to perform checks on _relations_ to determine membership.
 
-  However, this goes against best practice: permissions can be redefined in backwards compatible ways by changing schema, so it's ideal to rely on permissions as the contract between SpiceDB and applications querying SpiceDB.
+However, this goes against best practice: permissions can be redefined in backwards compatible ways by changing schema, so it's ideal to rely on permissions as the contract between SpiceDB and applications querying SpiceDB.
 </Callout>
 
 <Callout type="warning">
-  In order to get read-after-write consistency, you must provide a [ZedToken] from the WriteRelationships response or request [full consistency].
+In order to get read-after-write consistency, you must provide a [ZedToken] from the WriteRelationships response or request [full consistency].
 
-  [ZedToken]: /spicedb/concepts/consistency#zedtokens
-  [full consistency]: /spicedb/concepts/consistency#fully-consistent
+[ZedToken]: /spicedb/concepts/consistency#zedtokens
+[full consistency]: /spicedb/concepts/consistency#fully-consistent
 </Callout>
 
 The following examples demonstrate the transitive property of checks:
 
 <Tabs items={['zed', 'Node', 'Go', 'Python', 'Ruby', 'Java']}>
-  <Tabs.Tab>
-    ```sh
-    zed permission check post:1 read  user:emilia   --revision "zedtokenfromwriterel" # true
-    zed permission check post:1 write user:emilia   --revision "zedtokenfromwriterel" # true
-    zed permission check post:1 read  user:beatrice --revision "zedtokenfromwriterel" # true
-    zed permission check post:1 write user:beatrice --revision "zedtokenfromwriterel" # false
+<Tabs.Tab>
 
-    ```
-  </Tabs.Tab>
+```sh
+zed permission check post:1 read  user:emilia   --revision "zedtokenfromwriterel" # true
+zed permission check post:1 write user:emilia   --revision "zedtokenfromwriterel" # true
+zed permission check post:1 read  user:beatrice --revision "zedtokenfromwriterel" # true
+zed permission check post:1 write user:beatrice --revision "zedtokenfromwriterel" # false
+```
 
-  <Tabs.Tab>
-    ```js
-    import { v1 } from '@authzed/authzed-node';
+</Tabs.Tab>
+<Tabs.Tab>
 
-    const { promises: client } = v1.NewClient(
-      't_your_token_here_1234567deadbeef',
-      'grpc.authzed.com:50051',
-      // NOTE: Remove if SpiceDB is behind TLS
-      v1.ClientSecurity.INSECURE_PLAINTEXT_CREDENTIALS
-    );
+```js
+import { v1 } from '@authzed/authzed-node';
 
-    const resource = v1.ObjectReference.create({
-      objectType: 'post',
-      objectId: '1',
-    });
+const { promises: client } = v1.NewClient(
+  't_your_token_here_1234567deadbeef',
+  'grpc.authzed.com:50051',
+  // NOTE: Remove if SpiceDB is behind TLS
+  v1.ClientSecurity.INSECURE_PLAINTEXT_CREDENTIALS
+);
 
-    const emilia = v1.ObjectReference.create({
-      objectType: 'user',
-      objectId: 'emilia',
-    });
+const resource = v1.ObjectReference.create({
+  objectType: 'post',
+  objectId: '1',
+});
 
-    const beatrice = v1.ObjectReference.create({
-      objectType: 'user',
-      objectId: 'beatrice',
-    });
+const emilia = v1.ObjectReference.create({
+  objectType: 'user',
+  objectId: 'emilia',
+});
 
-    const emiliaCanRead = await client.checkPermission(v1.CheckPermissionRequest.create({
-      resource,
-      permission: 'read',
-      subject: v1.SubjectReference.create({
-        object: emilia,
-      }),
-    }));
-    console.log(emiliaCanRead.permissionship === v1.CheckPermissionResponse_Permissionship.HAS_PERMISSION);
+const beatrice = v1.ObjectReference.create({
+  objectType: 'user',
+  objectId: 'beatrice',
+});
 
-    const emiliaCanWrite = await client.checkPermission(v1.CheckPermissionRequest.create({
-      resource,
-      permission: 'write',
-      subject: v1.SubjectReference.create({
-        object: emilia,
-      }),
-    }));
-    console.log(emiliaCanWrite.permissionship === v1.CheckPermissionResponse_Permissionship.HAS_PERMISSION);
+const emiliaCanRead = await client.checkPermission(v1.CheckPermissionRequest.create({
+  resource,
+  permission: 'read',
+  subject: v1.SubjectReference.create({
+    object: emilia,
+  }),
+}));
+console.log(emiliaCanRead.permissionship === v1.CheckPermissionResponse_Permissionship.HAS_PERMISSION);
 
-    const beatriceCanRead = await client.checkPermission(v1.CheckPermissionRequest.create({
-      resource,
-      permission: 'read',
-      subject: v1.SubjectReference.create({
-        object: beatrice,
-      }),
-    }));
-    console.log(beatriceCanRead.permissionship === v1.CheckPermissionResponse_Permissionship.HAS_PERMISSION);
+const emiliaCanWrite = await client.checkPermission(v1.CheckPermissionRequest.create({
+  resource,
+  permission: 'write',
+  subject: v1.SubjectReference.create({
+    object: emilia,
+  }),
+}));
+console.log(emiliaCanWrite.permissionship === v1.CheckPermissionResponse_Permissionship.HAS_PERMISSION);
 
-    const beatriceCanWrite = await client.checkPermission(v1.CheckPermissionRequest.create({
-      resource,
-      permission: 'write',
-      subject: v1.SubjectReference.create({
-        object: beatrice,
-      }),
-    }));
-    console.log(beatriceCanWrite.permissionship === v1.CheckPermissionResponse_Permissionship.HAS_PERMISSION);
-    ```
-  </Tabs.Tab>
+const beatriceCanRead = await client.checkPermission(v1.CheckPermissionRequest.create({
+  resource,
+  permission: 'read',
+  subject: v1.SubjectReference.create({
+    object: beatrice,
+  }),
+}));
+console.log(beatriceCanRead.permissionship === v1.CheckPermissionResponse_Permissionship.HAS_PERMISSION);
 
-  <Tabs.Tab>
-    ```go
-    package main
+const beatriceCanWrite = await client.checkPermission(v1.CheckPermissionRequest.create({
+  resource,
+  permission: 'write',
+  subject: v1.SubjectReference.create({
+    object: beatrice,
+  }),
+}));
+console.log(beatriceCanWrite.permissionship === v1.CheckPermissionResponse_Permissionship.HAS_PERMISSION);
+```
 
-    import (
-	    "context"
-	    "log"
+</Tabs.Tab>
+<Tabs.Tab>
 
-	    pb "github.com/authzed/authzed-go/proto/authzed/api/v1"
-	    "github.com/authzed/authzed-go/v1"
-	    "github.com/authzed/grpcutil"
-	    "google.golang.org/grpc"
-	    "google.golang.org/grpc/credentials/insecure"
+```go
+package main
+
+import (
+	"context"
+ 	"log"
+
+ 	pb "github.com/authzed/authzed-go/proto/authzed/api/v1"
+ 	"github.com/authzed/authzed-go/v1"
+ 	"github.com/authzed/grpcutil"
+ 	"google.golang.org/grpc"
+ 	"google.golang.org/grpc/credentials/insecure"
+)
+
+const spicedbEndpoint = "grpc.authzed.com:443"
+
+func main() {
+	systemCerts, err := grpcutil.WithSystemCerts(grpcutil.VerifyCA)
+	if err != nil {
+		log.Fatalf("unable to load system CA certificates: %s", err)
+	}
+
+	client, err := authzed.NewClient(
+		spicedbEndpoint,
+		grpcutil.WithBearerToken("t_your_token_here_1234567deadbeef"),
+		systemCerts,
+		// These options are if you're self-hosting and don't want TLS:
+		// grpcutil.WithInsecureBearerToken("t_your_token_here_1234567deadbeef"),
+		// grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		log.Fatalf("unable to initialize client: %s", err)
+	}
+
+	ctx := context.Background()
+
+	emilia := &pb.SubjectReference{Object: &pb.ObjectReference{
+		ObjectType: "user",
+		ObjectId:  "emilia",
+	}}
+
+	beatrice := &pb.SubjectReference{Object: &pb.ObjectReference{
+		ObjectType: "user",
+		ObjectId:  "beatrice",
+	}}
+
+	firstPost := &pb.ObjectReference{
+		ObjectType: "post",
+		ObjectId: "1",
+	}
+
+	resp, err := client.CheckPermission(ctx, &pb.CheckPermissionRequest{
+		Resource: firstPost,
+		Permission: "read",
+		Subject: emilia,
+	})
+	if err != nil {
+		log.Fatalf("failed to check permission: %s", err)
+	}
+	// resp.Permissionship == pb.CheckPermissionResponse_PERMISSIONSHIP_HAS_PERMISSION
+
+	resp, err = client.CheckPermission(ctx, &pb.CheckPermissionRequest{
+		Resource: firstPost,
+		Permission: "write",
+		Subject: emilia,
+	})
+	if err != nil {
+		log.Fatalf("failed to check permission: %s", err)
+	}
+	// resp.Permissionship == pb.CheckPermissionResponse_PERMISSIONSHIP_HAS_PERMISSION
+
+	resp, err = client.CheckPermission(ctx, &pb.CheckPermissionRequest{
+		Resource: firstPost,
+		Permission: "read",
+		Subject: beatrice,
+	})
+	if err != nil {
+		log.Fatalf("failed to check permission: %s", err)
+	}
+	// resp.Permissionship == pb.CheckPermissionResponse_PERMISSIONSHIP_HAS_PERMISSION
+
+	resp, err = client.CheckPermission(ctx, &pb.CheckPermissionRequest{
+		Resource: firstPost,
+		Permission: "write",
+		Subject: beatrice,
+	})
+	if err != nil {
+		log.Fatalf("failed to check permission: %s", err)
+	}
+	// resp.Permissionship == pb.CheckPermissionResponse_PERMISSIONSHIP_NO_PERMISSION
+}
+```
+
+</Tabs.Tab>
+<Tabs.Tab>
+
+```py
+from authzed.api.v1 import (
+    CheckPermissionRequest,
+    CheckPermissionResponse,
+    Client,
+    ObjectReference,
+    SubjectReference,
+)
+from grpcutil import insecure_bearer_token_credentials
+
+client = Client(
+    "grpc.authzed.com:50051",
+    insecure_bearer_token_credentials("t_your_token_here_1234567deadbeef"),
+)
+
+emilia = SubjectReference(
+    object=ObjectReference(
+        object_type="user",
+        object_id="emilia",
     )
+)
+beatrice = SubjectReference(
+    object=ObjectReference(
+        object_type="user",
+        object_id="beatrice",
+    )
+)
 
-    const spicedbEndpoint = "grpc.authzed.com:443"
+post_one = ObjectReference(object_type="post", object_id="1")
 
-    func main() {
-	    systemCerts, err := grpcutil.WithSystemCerts(grpcutil.VerifyCA)
-	    if err != nil {
-		    log.Fatalf("unable to load system CA certificates: %s", err)
-	    }
+resp = client.CheckPermission(
+    CheckPermissionRequest(
+        resource=post_one,
+        permission="read",
+        subject=emilia,
+    )
+)
+assert resp.permissionship == CheckPermissionResponse.PERMISSIONSHIP_HAS_PERMISSION
 
-	    client, err := authzed.NewClient(
-		    spicedbEndpoint,
-		    grpcutil.WithBearerToken("t_your_token_here_1234567deadbeef"),
-		    systemCerts,
-		    // These options are if you're self-hosting and don't want TLS:
-		    // grpcutil.WithInsecureBearerToken("t_your_token_here_1234567deadbeef"),
-		    // grpc.WithTransportCredentials(insecure.NewCredentials()),
-	    )
-	    if err != nil {
-		    log.Fatalf("unable to initialize client: %s", err)
-	    }
+resp = client.CheckPermission(
+    CheckPermissionRequest(
+        resource=post_one,
+        permission="write",
+        subject=emilia,
+    )
+)
+assert resp.permissionship == CheckPermissionResponse.PERMISSIONSHIP_HAS_PERMISSION
 
-	    ctx := context.Background()
+resp = client.CheckPermission(
+    CheckPermissionRequest(
+        resource=post_one,
+        permission="read",
+        subject=beatrice,
+    )
+)
+assert resp.permissionship == CheckPermissionResponse.PERMISSIONSHIP_HAS_PERMISSION
 
-	    emilia := &pb.SubjectReference{Object: &pb.ObjectReference{
-		    ObjectType: "user",
-		    ObjectId:  "emilia",
-	    }}
+resp = client.CheckPermission(
+    CheckPermissionRequest(
+        resource=post_one,
+        permission="write",
+        subject=beatrice,
+    )
+)
+assert resp.permissionship == CheckPermissionResponse.PERMISSIONSHIP_NO_PERMISSION
+```
 
-	    beatrice := &pb.SubjectReference{Object: &pb.ObjectReference{
-		    ObjectType: "user",
-		    ObjectId:  "beatrice",
-	    }}
+</Tabs.Tab>
+<Tabs.Tab>
 
-	    firstPost := &pb.ObjectReference{
-		    ObjectType: "post",
-		    ObjectId: "1",
-	    }
+```rb
+require 'authzed'
 
-	    resp, err := client.CheckPermission(ctx, &pb.CheckPermissionRequest{
-		    Resource: firstPost,
-		    Permission: "read",
-		    Subject: emilia,
-	    })
-	    if err != nil {
-		    log.Fatalf("failed to check permission: %s", err)
-	    }
-	    // resp.Permissionship == pb.CheckPermissionResponse_PERMISSIONSHIP_HAS_PERMISSION
+emilia = Authzed::Api::V1::SubjectReference.new(object: Authzed::Api::V1::ObjectReference.new(
+  object_type: 'user',
+  object_id: 'emilia',
+))
+beatrice = Authzed::Api::V1::SubjectReference.new(object: Authzed::Api::V1::ObjectReference.new(
+  object_type: 'user',
+  object_id: 'beatrice',
+))
+first_post = Authzed::Api::V1::ObjectReference.new(object_type: 'post', object_id: '1')
 
-	    resp, err = client.CheckPermission(ctx, &pb.CheckPermissionRequest{
-		    Resource: firstPost,
-		    Permission: "write",
-		    Subject: emilia,
-	    })
-	    if err != nil {
-		    log.Fatalf("failed to check permission: %s", err)
-	    }
-	    // resp.Permissionship == pb.CheckPermissionResponse_PERMISSIONSHIP_HAS_PERMISSION
+client = Authzed::Api::V1::Client.new(
+    target: 'grpc.authzed.com:50051',
+    interceptors: [Authzed::GrpcUtil::BearerToken.new(token: 't_your_token_here_1234567deadbeef')],
+    credentials: :this_channel_is_insecure,
+)
 
-	    resp, err = client.CheckPermission(ctx, &pb.CheckPermissionRequest{
-		    Resource: firstPost,
-		    Permission: "read",
-		    Subject: beatrice,
-	    })
-	    if err != nil {
-		    log.Fatalf("failed to check permission: %s", err)
-	    }
-	    // resp.Permissionship == pb.CheckPermissionResponse_PERMISSIONSHIP_HAS_PERMISSION
+resp = client.permissions_service.check_permission(Authzed::Api::V1::CheckPermissionRequest.new(
+  resource: first_post,
+  permission: 'read',
+  subject: emilia,
+))
+raise unless Authzed::Api::V1::CheckPermissionResponse::Permissionship.resolve(resp.permissionship) ==
+  Authzed::Api::V1::CheckPermissionResponse::Permissionship::PERMISSIONSHIP_HAS_PERMISSION
 
-	    resp, err = client.CheckPermission(ctx, &pb.CheckPermissionRequest{
-		    Resource: firstPost,
-		    Permission: "write",
-		    Subject: beatrice,
-	    })
-	    if err != nil {
-		    log.Fatalf("failed to check permission: %s", err)
-	    }
-	    // resp.Permissionship == pb.CheckPermissionResponse_PERMISSIONSHIP_NO_PERMISSION
+resp = client.permissions_service.check_permission(Authzed::Api::V1::CheckPermissionRequest.new(
+  resource: first_post,
+  permission: 'write',
+  subject: emilia,
+))
+raise unless Authzed::Api::V1::CheckPermissionResponse::Permissionship.resolve(resp.permissionship) ==
+  Authzed::Api::V1::CheckPermissionResponse::Permissionship::PERMISSIONSHIP_HAS_PERMISSION
+
+resp = client.permissions_service.check_permission(Authzed::Api::V1::CheckPermissionRequest.new(
+  resource: first_post,
+  permission: 'read',
+  subject: beatrice,
+))
+raise unless Authzed::Api::V1::CheckPermissionResponse::Permissionship.resolve(resp.permissionship) ==
+  Authzed::Api::V1::CheckPermissionResponse::Permissionship::PERMISSIONSHIP_HAS_PERMISSION
+
+resp = client.permissions_service.check_permission(Authzed::Api::V1::CheckPermissionRequest.new(
+  resource: first_post,
+  permission: 'write',
+  subject: beatrice,
+))
+raise unless Authzed::Api::V1::CheckPermissionResponse::Permissionship.resolve(resp.permissionship) ==
+  Authzed::Api::V1::CheckPermissionResponse::Permissionship::PERMISSIONSHIP_NO_PERMISSION
+```
+
+</Tabs.Tab>
+
+<Tabs.Tab>
+
+```java
+import com.authzed.api.v1.PermissionService;
+import com.authzed.api.v1.PermissionsServiceGrpc;
+import com.authzed.grpcutil.BearerToken;
+import com.authzed.api.v1.Core.*;
+import io.grpc.*;
+
+public class App {
+  public static void main(String[] args) {
+    ManagedChannel channel = ManagedChannelBuilder
+            .forTarget("grpc.authzed.com:50051")
+            .usePlaintext()
+            .build();
+
+    BearerToken bearerToken = new BearerToken("t_your_token_here_1234567deadbeef");
+
+    PermissionsServiceGrpc.PermissionsServiceBlockingStub permissionsService = PermissionsServiceGrpc.newBlockingStub(channel)
+            .withCallCredentials(bearerToken);
+
+    ZedToken zedToken = ZedToken.newBuilder()
+            .setToken("zed_token_value")
+            .build();
+
+    PermissionService.CheckPermissionRequest request = PermissionService.CheckPermissionRequest.newBuilder()
+            .setConsistency(
+                    PermissionService.Consistency.newBuilder()
+                            .setAtLeastAsFresh(zedToken)
+                            .build())
+            .setResource(
+                    ObjectReference.newBuilder()
+                            .setObjectType("post")
+                            .setObjectId("1")
+                            .build())
+            .setSubject(
+                    SubjectReference.newBuilder()
+                            .setObject(
+                                    ObjectReference.newBuilder()
+                                            .setObjectType("user")
+                                            .setObjectId("emilia")
+                                            .build())
+                            .build())
+            .setPermission("read")
+            .build();
+
+    PermissionService.CheckPermissionResponse response;
+    try {
+      response = permissionsService.checkPermission(request);
+      response.getPermissionship();
+    } catch (Exception e) {
+      // Uh oh!
     }
-    ```
-  </Tabs.Tab>
+  }
+}
+```
 
-  <Tabs.Tab>
-    ```py
-    from authzed.api.v1 import (
-        CheckPermissionRequest,
-        CheckPermissionResponse,
-        Client,
-        ObjectReference,
-        SubjectReference,
-    )
-    from grpcutil import insecure_bearer_token_credentials
-
-    client = Client(
-        "grpc.authzed.com:50051",
-        insecure_bearer_token_credentials("t_your_token_here_1234567deadbeef"),
-    )
-
-    emilia = SubjectReference(
-        object=ObjectReference(
-            object_type="user",
-            object_id="emilia",
-        )
-    )
-    beatrice = SubjectReference(
-        object=ObjectReference(
-            object_type="user",
-            object_id="beatrice",
-        )
-    )
-
-    post_one = ObjectReference(object_type="post", object_id="1")
-
-    resp = client.CheckPermission(
-        CheckPermissionRequest(
-            resource=post_one,
-            permission="read",
-            subject=emilia,
-        )
-    )
-    assert resp.permissionship == CheckPermissionResponse.PERMISSIONSHIP_HAS_PERMISSION
-
-    resp = client.CheckPermission(
-        CheckPermissionRequest(
-            resource=post_one,
-            permission="write",
-            subject=emilia,
-        )
-    )
-    assert resp.permissionship == CheckPermissionResponse.PERMISSIONSHIP_HAS_PERMISSION
-
-    resp = client.CheckPermission(
-        CheckPermissionRequest(
-            resource=post_one,
-            permission="read",
-            subject=beatrice,
-        )
-    )
-    assert resp.permissionship == CheckPermissionResponse.PERMISSIONSHIP_HAS_PERMISSION
-
-    resp = client.CheckPermission(
-        CheckPermissionRequest(
-            resource=post_one,
-            permission="write",
-            subject=beatrice,
-        )
-    )
-    assert resp.permissionship == CheckPermissionResponse.PERMISSIONSHIP_NO_PERMISSION
-    ```
-  </Tabs.Tab>
-
-  <Tabs.Tab>
-    ```rb
-    require 'authzed'
-
-    emilia = Authzed::Api::V1::SubjectReference.new(object: Authzed::Api::V1::ObjectReference.new(
-      object_type: 'user',
-      object_id: 'emilia',
-    ))
-    beatrice = Authzed::Api::V1::SubjectReference.new(object: Authzed::Api::V1::ObjectReference.new(
-      object_type: 'user',
-      object_id: 'beatrice',
-    ))
-    first_post = Authzed::Api::V1::ObjectReference.new(object_type: 'post', object_id: '1')
-
-    client = Authzed::Api::V1::Client.new(
-        target: 'grpc.authzed.com:50051',
-        interceptors: [Authzed::GrpcUtil::BearerToken.new(token: 't_your_token_here_1234567deadbeef')],
-        credentials: :this_channel_is_insecure,
-    )
-
-    resp = client.permissions_service.check_permission(Authzed::Api::V1::CheckPermissionRequest.new(
-      resource: first_post,
-      permission: 'read',
-      subject: emilia,
-    ))
-    raise unless Authzed::Api::V1::CheckPermissionResponse::Permissionship.resolve(resp.permissionship) ==
-      Authzed::Api::V1::CheckPermissionResponse::Permissionship::PERMISSIONSHIP_HAS_PERMISSION
-
-    resp = client.permissions_service.check_permission(Authzed::Api::V1::CheckPermissionRequest.new(
-      resource: first_post,
-      permission: 'write',
-      subject: emilia,
-    ))
-    raise unless Authzed::Api::V1::CheckPermissionResponse::Permissionship.resolve(resp.permissionship) ==
-      Authzed::Api::V1::CheckPermissionResponse::Permissionship::PERMISSIONSHIP_HAS_PERMISSION
-
-    resp = client.permissions_service.check_permission(Authzed::Api::V1::CheckPermissionRequest.new(
-      resource: first_post,
-      permission: 'read',
-      subject: beatrice,
-    ))
-    raise unless Authzed::Api::V1::CheckPermissionResponse::Permissionship.resolve(resp.permissionship) ==
-      Authzed::Api::V1::CheckPermissionResponse::Permissionship::PERMISSIONSHIP_HAS_PERMISSION
-
-    resp = client.permissions_service.check_permission(Authzed::Api::V1::CheckPermissionRequest.new(
-      resource: first_post,
-      permission: 'write',
-      subject: beatrice,
-    ))
-    raise unless Authzed::Api::V1::CheckPermissionResponse::Permissionship.resolve(resp.permissionship) ==
-      Authzed::Api::V1::CheckPermissionResponse::Permissionship::PERMISSIONSHIP_NO_PERMISSION
-    ```
-  </Tabs.Tab>
-
-  <Tabs.Tab>
-    ```java
-    import com.authzed.api.v1.PermissionService;
-    import com.authzed.api.v1.PermissionsServiceGrpc;
-    import com.authzed.grpcutil.BearerToken;
-    import com.authzed.api.v1.Core.*;
-    import io.grpc.*;
-
-    public class App {
-      public static void main(String[] args) {
-        ManagedChannel channel = ManagedChannelBuilder
-                .forTarget("grpc.authzed.com:50051")
-                .usePlaintext()
-                .build();
-
-        BearerToken bearerToken = new BearerToken("t_your_token_here_1234567deadbeef");
-
-        PermissionsServiceGrpc.PermissionsServiceBlockingStub permissionsService = PermissionsServiceGrpc.newBlockingStub(channel)
-                .withCallCredentials(bearerToken);
-
-        ZedToken zedToken = ZedToken.newBuilder()
-                .setToken("zed_token_value")
-                .build();
-
-        PermissionService.CheckPermissionRequest request = PermissionService.CheckPermissionRequest.newBuilder()
-                .setConsistency(
-                        PermissionService.Consistency.newBuilder()
-                                .setAtLeastAsFresh(zedToken)
-                                .build())
-                .setResource(
-                        ObjectReference.newBuilder()
-                                .setObjectType("post")
-                                .setObjectId("1")
-                                .build())
-                .setSubject(
-                        SubjectReference.newBuilder()
-                                .setObject(
-                                        ObjectReference.newBuilder()
-                                                .setObjectType("user")
-                                                .setObjectId("emilia")
-                                                .build())
-                                .build())
-                .setPermission("read")
-                .build();
-
-        PermissionService.CheckPermissionResponse response;
-        try {
-          response = permissionsService.checkPermission(request);
-          response.getPermissionship();
-        } catch (Exception e) {
-          // Uh oh!
-        }
-      }
-    }
-    ```
-  </Tabs.Tab>
+</Tabs.Tab>
 </Tabs>

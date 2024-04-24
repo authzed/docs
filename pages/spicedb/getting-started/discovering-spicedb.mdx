@@ -11,9 +11,9 @@ import { InlinePlayground } from '@/components/playground'
 Welcome to the official documentation for the SpiceDB ecosystem.
 
 <Cards>
-  <Card arrow={true} icon={<FontAwesomeIcon icon={faHand} />} title="New? Follow our first steps guide" href="#first-steps" />
-  <Card arrow={true} icon={<FontAwesomeIcon icon={faQuestion} />} title="Got questions? Our FAQ has answers" href="faq" />
-  <Card arrow={true} icon={<FontAwesomeIcon icon={faDollarSign} />} title="Paid products? That's the AuthZed docs" href="../../authzed/guides/picking-a-product" />
+<Card arrow={true} icon={<FontAwesomeIcon icon={faHand} />} title="New? Follow our first steps guide" href="#first-steps" />
+<Card arrow={true} icon={<FontAwesomeIcon icon={faQuestion} />} title="Got questions? Our FAQ has answers" href="faq" />
+<Card arrow={true} icon={<FontAwesomeIcon icon={faDollarSign} />} title="Paid products? That's the AuthZed docs" href="../../authzed/guides/picking-a-product" />
 </Cards>
 
 ## What is SpiceDB?
@@ -90,87 +90,87 @@ Features that distinguish SpiceDB from other systems include:
 ## First steps
 
 <Steps>
-  ### Dive into some videos!
 
-  SpiceDB developers and community members have recorded videos explaining concepts, modeling familiar applications, and deep diving on the tech powering everything!
+### Dive into some videos
 
-  <br />
-  <YouTube videoId="p8xh_z6PUqE" className="youtubeContainer" opts={{playerVars:{start: 228}}} />
-  <YouTube videoId="WTfZsRPDv9Q" className="youtubeContainer" />
-  <YouTube videoId="x3-B9-ICj0w" className="youtubeContainer" />
+SpiceDB developers and community members have recorded videos explaining concepts, modeling familiar applications, and deep diving on the tech powering everything!
 
-  ### Join the SpiceDB Discord
+<br />
+<YouTube videoId="p8xh_z6PUqE" className="youtubeContainer" opts={{playerVars:{start: 228}}} />
+<YouTube videoId="WTfZsRPDv9Q" className="youtubeContainer" />
+<YouTube videoId="x3-B9-ICj0w" className="youtubeContainer" />
 
-  Thousands of community members chat interactively in our [Discord][discord].
-  Why not ask them a question or two?
+### Join the SpiceDB Discord
 
-  <br />
-  <iframe src="https://e.widgetbot.io/channels/844600078504951838/844600078948630559" allow="clipboard-write; fullscreen" className="w-full min-h-[400px] lg:min-h-[600px]"></iframe>
+Thousands of community members chat interactively in our [Discord][discord].
+Why not ask them a question or two?
 
-  [discord]: https://discord.gg/spicedb
+<br />
+<iframe src="https://e.widgetbot.io/channels/844600078504951838/844600078948630559" allow="clipboard-write; fullscreen" className="w-full min-h-[400px] lg:min-h-[600px]"></iframe>
 
-  ### Install the SpiceDB toolchain
+[discord]: https://discord.gg/spicedb
 
-  SpiceDB and Zed run on Linux, macOS, and Windows on both AMD64 and ARM64 architectures.
+### Install the SpiceDB toolchain
 
-  Follow the instructions below install to your development machine:
+SpiceDB and Zed run on Linux, macOS, and Windows on both AMD64 and ARM64 architectures.
 
-  <Cards>
-    <Card arrow={true} icon={<FontAwesomeIcon icon={faServer} />} title="Install the SpiceDB server binary" href="/spicedb/getting-started/installing-spicedb" />
-    <Card arrow={true} icon={<FontAwesomeIcon icon={faTerminal} />} title="Install the SpiceDB CLI tool: Zed" href="/spicedb/getting-started/installing-zed" />
-  </Cards>
+Follow the instructions below install to your development machine:
 
-  ### Learn the concepts
+<Cards>
+<Card arrow={true} icon={<FontAwesomeIcon icon={faServer} />} title="Install the SpiceDB server binary" href="/spicedb/getting-started/installing-spicedb" />
+<Card arrow={true} icon={<FontAwesomeIcon icon={faTerminal} />} title="Install the SpiceDB CLI tool: Zed" href="/spicedb/getting-started/installing-zed" />
+</Cards>
 
-  We've documented the concepts SpiceDB users should understand:
+### Learn the concepts
 
-  <Cards>
-    <Card arrow={true} title="Zanzibar" href="../concepts/zanzibar" />
-    <Card arrow={true} title="Schema" href="../concepts/schema" />
-    <Card arrow={true} title="Relationships" href="../concepts/relationships" />
-  </Cards>
+We've documented the concepts SpiceDB users should understand:
 
-  After these, we recommend these concepts for running SpiceDB:
+<Cards>
+<Card arrow={true} title="Zanzibar" href="../concepts/zanzibar" />
+<Card arrow={true} title="Schema" href="../concepts/schema" />
+<Card arrow={true} title="Relationships" href="../concepts/relationships" />
+</Cards>
 
-  <Cards>
-    <Card arrow={true} title="Commands" href="../concepts/commands" />
-    <Card arrow={true} title="Datastores" href="../concepts/datastores" />
-    <Card arrow={true} title="Datastore Migrations" href="../concepts/datastore-migrations" />
-    <Card arrow={true} title="Observability" href="../ops/observability" />
-    <Card arrow={true} title="Operator" href="../concepts/operator" />
-  </Cards>
+After these, we recommend these concepts for running SpiceDB:
 
-  Finally, there are some more advanced concepts that are still fundamental:
+<Cards>
+<Card arrow={true} title="Commands" href="../concepts/commands" />
+<Card arrow={true} title="Datastores" href="../concepts/datastores" />
+<Card arrow={true} title="Datastore Migrations" href="../concepts/datastore-migrations" />
+<Card arrow={true} title="Observability" href="../ops/observability" />
+<Card arrow={true} title="Operator" href="../concepts/operator" />
+</Cards>
 
-  <Cards>
-    <Card arrow={true} title="Consistency" href="../concepts/consistency" />
-    <Card arrow={true} title="Caveats" href="../concepts/caveats" />
-    <Card arrow={true} title="Dispatch" href="../concepts/dispatch" />
-  </Cards>
+Finally, there are some more advanced concepts that are still fundamental:
 
-  ### Experiment in the Playground
+<Cards>
+<Card arrow={true} title="Consistency" href="../concepts/consistency" />
+<Card arrow={true} title="Caveats" href="../concepts/caveats" />
+<Card arrow={true} title="Dispatch" href="../concepts/dispatch" />
+</Cards>
 
-  You can experiment with and share schema and data snippets on the [Playground][pg].
+### Experiment in the Playground
 
-  When you're done, you can easily import these into a real SpiceDB instance using `zed import`.
+You can experiment with and share schema and data snippets on the [Playground][pg].
 
-  Here's a very example to toy with:
+When you're done, you can easily import these into a real SpiceDB instance using `zed import`.
 
-  <br /><InlinePlayground reference="m1lRfaaYf9XP" />
+Here's a very example to toy with:
 
-  [pg]: https://play.authzed.com
+<br /><InlinePlayground reference="m1lRfaaYf9XP" />
 
-  ### Take SpiceDB to Production
+[pg]: https://play.authzed.com
 
-  Once you're ready to take things into production, you can reference our guides or explore a managed solution with AuthZed.
+### Take SpiceDB to Production
 
-  Even if you aren't interested in paid products, you can still schedule a call or reach out on Discord.
+Once you're ready to take things into production, you can reference our guides or explore a managed solution with AuthZed.
 
-  <Cards>
-    <Card arrow={true} icon={<FontAwesomeIcon icon={faDocker} />} title="Deploy the Operator on Kubernetes" href="/spicedb/ops/deploying-spicedb-operator" />
-    <Card arrow={true} icon={<FontAwesomeIcon icon={faAws} />} title="Deploy a SpiceDB cluster on Amazon EKS" href="/spicedb/ops/deploying-spicedb-on-eks" />
-    <Card arrow={true} icon={<FontAwesomeIcon icon={faPhone} />} title="Schedule a call with AuthZed" href="https://authzed.com/call?utm_source=docs_discovering_spicedb" />
-  </Cards>
+Even if you aren't interested in paid products, you can still schedule a call or reach out on Discord.
+
+<Cards>
+<Card arrow={true} icon={<FontAwesomeIcon icon={faDocker} />} title="Deploy the Operator on Kubernetes" href="/spicedb/ops/deploying-spicedb-operator" />
+<Card arrow={true} icon={<FontAwesomeIcon icon={faAws} />} title="Deploy a SpiceDB cluster on Amazon EKS" href="/spicedb/ops/deploying-spicedb-on-eks" />
+<Card arrow={true} icon={<FontAwesomeIcon icon={faPhone} />} title="Schedule a call with AuthZed" href="https://authzed.com/call?utm_source=docs_discovering_spicedb" />
+</Cards>
 
 </Steps>
-
