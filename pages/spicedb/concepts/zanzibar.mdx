@@ -35,7 +35,8 @@ In homeage, AuthZed maintained a Dune-related naming scheme for their own projec
 **Re**lationship-**b**ased **A**ccess **C**ontrol (ReBAC) is a one of the paradigms for the design of authorization systems.
 The core idea behind ReBAC is that the existence of a chain relationships between a subject and a resource defines access.
 This abstraction alone is able to model all other existing authorization paradigms including the very popular RBAC and ABAC designs.
-The concept was originally described by Carrie E. Gates in a 2006 paper entitled [Access Control Requirements for Web 2.0 Security and Privacy][web2-paper] with Facebook cited as an early adopter of this paradigm. However, it wouldn't be until the publication of the Zanzibar paper in 2019 that ReBAC would achieve popularity outside of applications that weren't already leveraging graph abstractions for their data.
+The concept was originally described by Carrie Gates in a 2006 paper entitled [Access Control Requirements for Web 2.0 Security and Privacy][web2-paper] with Facebook cited as an early adopter of this paradigm.
+However, it wouldn't be until the publication of the Zanzibar paper in 2019 that ReBAC would achieve popularity outside of applications that weren't already leveraging graph abstractions for their data.
 
 As [Broken Access Control][broken] now tops the OWASP Top 10, [ReBAC has become the recommended method for building correct authorization systems][owasp-rec].
 
@@ -58,11 +59,13 @@ This term was first introduced in the Zanzibar paper where solving this problem 
 >Consider these two examples:
 >
 >**Example B: Misapplying old ACL to new content**
+>
 >1. Alice removes Bob from the ACL of a folder;
 >2. Alice then asks Charlie to move new documents to the folder, where document ACLs inherit from folder ACLs;
 >3. Bob should not be able to see the new documents, but may do so if the ACL check neglects the ordering between the two ACL changes.
 >
 >**Example B: Misapplying old ACL to new content**
+>
 >1. Alice removes Bob from the ACL of a document;
 >2. Alice then asks Charlie to add new contents to the document;
 >3. Bob should not be able to see the new contents, but may do so if the ACL check is evaluated with a stale ACL from before Bob's removal.

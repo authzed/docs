@@ -113,8 +113,10 @@ WriteRelationshipsRequest {
 
 A few important notes:
 
-- The **Context** of a caveat is defined both by the values written in the `Relationship`, as well as those provided in the `CheckPermissionRequest`: if empty, then only the context specified on a CheckPermission request will be used. Otherwise, the values in the `Relationship` take precedence over those in the `CheckPermissionRequest`.
-  - Context of a caveat provided in `Relationship` is stored alongside the relationship and is provided to the caveat expression at runtime. This allows for **partial** binding of data at write time.
+- The **Context** of a caveat is defined both by the values written in the `Relationship`, as well as those provided in the `CheckPermissionRequest`: if empty, then only the context specified on a CheckPermission request will be used.
+  Otherwise, the values in the `Relationship` take precedence over those in the `CheckPermissionRequest`.
+  - Context of a caveat provided in `Relationship` is stored alongside the relationship and is provided to the caveat expression at runtime.
+    This allows for **partial** binding of data at write time.
 - The Context is a `structpb`, which is defined by Google and represents JSON-like data: [https://pkg.go.dev/google.golang.org/protobuf/types/known/structpb](https://pkg.go.dev/google.golang.org/protobuf/types/known/structpb)
   - To send 64-bit integers, encode them as strings.
 - A relationship cannot be duplicated, with or without a caveat, e.g. two relationships that differ only on their use of a caveat cannot both exist.

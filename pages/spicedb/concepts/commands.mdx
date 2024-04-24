@@ -21,7 +21,6 @@ The following are configuration flags that can be provided to every SpiceDB comm
 | --skip-release-check | if true, skips checking for new SpiceDB releases |  |
 | --termination-log-path | define the path to the termination log file, which contains a JSON payload to surface as reason for termination - disabled by default |  |
 
-
 ## Migrate
 
 ### Flags
@@ -37,14 +36,12 @@ The following are configuration flags that can be provided to every SpiceDB comm
 | --migration-backfill-batch-size | number of items to migrate per iteration of a datastore backfill (default 1000) |  |
 | --migration-timeout | defines a timeout for the execution of the migration, set to 1 hour by default (default 1h0m0s) |  |
 
-
 ## Serve
 
 The `serve` command is the primary command for running SpiceDB.
 This command serves the gRPC and HTTP APIs by default.
 
 ### Flags
-
 
 | Flag | Description | Default |
 | --- | --- | --- |
@@ -157,4 +154,3 @@ This command serves the gRPC and HTTP APIs by default.
 ## Serve-Testing
 
 ### Flags
-

@@ -122,6 +122,7 @@ If you need a longer time window for the Watch API or querying at exact snapshot
 ```sql
 ALTER ZONE default CONFIGURE ZONE USING gc.ttlseconds = 90000;
 ```
+
 [crdb-gc]: https://www.cockroachlabs.com/docs/stable/configure-replication-zones.html#replication-zone-variables
 
 ## Cloud Spanner
@@ -129,7 +130,8 @@ ALTER ZONE default CONFIGURE ZONE USING gc.ttlseconds = 90000;
 ### Usage Notes
 
 - Requires a Google Cloud Account with an active Cloud Spanner instance
-- Take advantage of Google's TrueTime. The Spanner driver assumes the database is linearizable and skips the transaction overlap strategy required by CockroachDB.
+- Take advantage of Google's TrueTime.
+  The Spanner driver assumes the database is linearizable and skips the transaction overlap strategy required by CockroachDB.
 
 ### Developer Notes
 
@@ -184,7 +186,6 @@ ALTER ZONE default CONFIGURE ZONE USING gc.ttlseconds = 90000;
 
   [commit-ts]: https://www.postgresql.org/docs/current/runtime-config-replication.html#GUC-TRACK-COMMIT-TIMESTAMP
 </Callout>
-
 
 ### Developer Notes
 
@@ -307,4 +308,3 @@ ALTER ZONE default CONFIGURE ZONE USING gc.ttlseconds = 90000;
 | `datastore-revision-fuzzing-duration` | Sets a fuzzing window on all zookies/zedtokens                                      | `--datastore-revision-fuzzing-duration=50ms` |
 | `datastore-gc-window`                 | Sets the window outside of which overwritten relationships are no longer accessible | `--datastore-gc-window=1s`                   |
 | `datastore-readonly`                  | Places the datastore into readonly mode                                             | `--datastore-readonly=true`                  |
-

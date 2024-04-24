@@ -84,6 +84,7 @@ stringData:
   preshared_key: "averysecretpresharedkey"
 EOF
 ```
+
 [secret]: https://kubernetes.io/docs/concepts/configuration/secret/
 
 ### Connect & Verify
@@ -105,6 +106,7 @@ For zed to connect to SpiceDB, we'll first have to create an insecure context na
 ```sh
 zed context set local localhost:50051 "somerandomkeyhere" --insecure
 ```
+
 With our context set, we're free to make requests to our new, empty SpiceDB deployment:
 
 ```sh

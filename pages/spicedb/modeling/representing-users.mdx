@@ -33,15 +33,17 @@ check resource:someresource view user:goog|487306745603273
 As the `sub` field is **guaranteed** to be stable for that particular user (if a compliant OIDC implementation), it is safe to use for checking permissions, as there is no risk that the `sub` will somehow represent a different user later.
 
 <Callout type="info">
-  If you have *multiple* authentication provides, then the recommendation is to define a subject type for *each* provider, to ensure a clean namespace:
 
-  ```zed
-  /** githubuser represents a user from GitHub */
-  definition githubuser {}
+If you have *multiple* authentication provides, then the recommendation is to define a subject type for *each* provider, to ensure a clean namespace:
 
-  /** gitlabuser represents a user from Gitlab */
-  definition gitlabuser {}
-  ```
+```zed
+/** githubuser represents a user from GitHub */
+definition githubuser {}
+
+/** gitlabuser represents a user from Gitlab */
+definition gitlabuser {}
+```
+
 </Callout>
 
 ### Using a primary key
@@ -55,14 +57,18 @@ check resource:someresource view user:1337
 ```
 
 <Callout type="warning">
-  If using an auto-generated or auto-incrementing integer, make sure it cannot be reused.
-  Some databases allow various sequences to reuse IDs.
+
+If using an auto-generated or auto-incrementing integer, make sure it cannot be reused.
+Some databases allow various sequences to reuse IDs.
+
 </Callout>
 
 ### What about e-mail addresses?
 
 <Callout type="warning">
-  It is typically **not recommended** to use an e-mail address to represent a user as as a subject in SpiceDB.
+
+It is typically **not recommended** to use an e-mail address to represent a user as as a subject in SpiceDB.
+
 </Callout>
 
 This is for a number of reasons:
@@ -91,16 +97,18 @@ To grant access to anonymous users to a resource, either a single **static** obj
 
 ```zed document with anonymous user wildcard allowed
 definition document {
-  relation reader: user | anonymoususer:*
+	relation reader: user | anonymoususer:*
 }
 ```
 
 [wildcards]: /spicedb/concepts/schema#wildcards
 
 <Callout type="info">
-  It is recommended to use *wildcard* with an anonymous user definition if there is ever a need to differentiate between anonymous users based on their object IDs.
 
-  As an example, an anonymous user of a commenting system might be assigned a unique ID that is stored in their browser's cookies, enabling permission for editing a previously posted comment.
+It is recommended to use *wildcard* with an anonymous user definition if there is ever a need to differentiate between anonymous users based on their object IDs.
+
+As an example, an anonymous user of a commenting system might be assigned a unique ID that is stored in their browser's cookies, enabling permission for editing a previously posted comment.
+
 </Callout>
 
 ## Representing services as subjects
@@ -113,7 +121,7 @@ For example, you might represent a service directly:
 definition service {}
 
 definition resource {
-    relation viewer: service
+	relation viewer: service
 }
 ```
 
@@ -123,10 +131,10 @@ Or via a token it was granted, by use of a reference to a *subject relation*:
 definition token {}
 
 definition service {
-    relation token: token
+	relation token: token
 }
 
 definition resource {
-    relation viewer: service#token
+	relation viewer: service#token
 }
 ```

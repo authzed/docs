@@ -5,7 +5,8 @@ import { Callout } from 'nextra/components'
 
 Consistency is a fundamental concept in distributed systems, databases, and authorization.
 
-SpiceDB is no exception! In fact, the paper that inspired SpiceDB is entitled "Zanzibar: Google's __**Consistent**__, Global Authorization System".
+SpiceDB is no exception!
+In fact, the paper that inspired SpiceDB is entitled "Zanzibar: Google's __**Consistent**__, Global Authorization System".
 
 ## What is consistency?
 
@@ -16,6 +17,7 @@ The following presentation submitted to the [CNCF] gives an overview and example
 [CNCF]: https://cncf.io
 
 ## Consistency in SpiceDB
+
 In SpiceDB, there is a requirement for both proper consistency, as well as excellent performance.
 
 To achieve performance, SpiceDB implements a number of levels of caching, to ensure that repeated permissions checks do not need to be recomputed over and over again, so long as the underlying relationships behind those permissions have not changed.
@@ -113,6 +115,7 @@ ZedTokens are used for data consistency guarantees when using the SpiceDB API.
 ZedToken is the SpiceDB equivalant of Google Zanzibar's [Zookie] concept which protects users from the [New Enemy Problem].
 
 SpiceDB returns ZedTokens from the APIs that perform permission checks or modify data:
+
 - [CheckPermission]
 - [BulkCheckPermission]
 - [WriteRelationships]
@@ -131,6 +134,7 @@ There are scenarios where it makes sense to store ZedTokens in an applications p
 The goal of this workflow is to ensure the application can query SpiceDB with consistency that is causally tied to the content of the protected resource.
 
 Stored ZedTokens should be updated under these events:
+
 - The resource is created or deleted
 - The contents of the resource changes
 - Adding or removing access to the resource (e.g. writing a relationship)
