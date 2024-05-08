@@ -4,13 +4,6 @@ import { Callout, Tabs } from 'nextra/components'
 
 Audit Logging is functionality exclusive to AuthZed products that publishes logs of SpiceDB API operations to a log sink.
 
-<Callout type="info">
-  **Info:**
-  Audit Logging is currently in Early Access.
-
-  Early Access functionality is production-ready, but requires coordination with your success team to set-up.
-</Callout>
-
 ## Log Format
 
 Logs contain the full details related to a request including:
@@ -28,7 +21,7 @@ Logs contain the full details related to a request including:
 {
   "specversion": "1.0",
   "id": "35cdd6662882bd387292ef78a650d18b",
-  "source": "spicedb",
+  "source": "/ps/dev-ps/rc/us-east-1/p/dev-ps-abcd1234",
   "type": "/authzed.api.v1.SchemaService/ReadSchema",
   "datacontenttype": "application/json",
   "time": "2023-12-18T17:32:47.234247Z",
@@ -55,13 +48,6 @@ Logs contain the full details related to a request including:
 ## Log Sinks
 
 Log Sinks are the targets where logs will be shipped in order to be persisted.
-In order to configure a log sink, you must file a request with your AuthZed customer success team.
-
-The following are the supported log sinks:
-
-- [Apache Kafka](https://kafka.apache.org)
-- [AWS Kinesis](https://aws.amazon.com/kinesis)
-- [AWS Kinesis Firehose](https://docs.aws.amazon.com/firehose/latest/dev/what-is-this-service.html)
 
 <Callout type="info">
   **Info:**
@@ -69,3 +55,74 @@ The following are the supported log sinks:
 
   Please reach out to your success team with any requests.
 </Callout>
+
+### AWS Kinesis and Kinesis Firehose
+
+As a prerequisite to use [Kinesis] or [Kinesis Firehose] as a log sink, an IAM role must exist in the AWS account
+with the necessary permissions to write to the Kinesis stream or Firehose delivery stream.
+
+This is an example policy that grants the necessary permissions to write to a Firehose delivery stream:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "",
+            "Effect": "Allow",
+            "Action": [
+                "firehose:PutRecord"
+            ],
+            "Resource": "EXAMPLE_FIREHOSE_ARN"
+        }
+    ]
+} 
+```
+
+[Kinesis]: https://aws.amazon.com/kinesis
+[Kinesis Firehose]: https://docs.aws.amazon.com/firehose/latest/dev/what-is-this-service.html
+
+#### Dedicated
+
+For Dedicated customers, this role will also need a trust policy which allows the role to be assumed by the AuthZed account
+in order to deliver logs to the stream.
+
+To find the Dedicated AWS account ID, navigate to the Permission System's settings page, find the Audit Log settings,
+and choose "AWS Kinesis" or "AWS Kinesis Firehose" as the log sink.
+The account ID will be displayed in the configuration.
+
+This is an example trust policy that allows the AuthZed account to assume the role:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "EXAMPLE_AUTHZED_ACCOUNT_ID"
+            },
+            "Action": "sts:AssumeRole",
+            "Condition": {
+                "StringEquals": {
+                    "sts:ExternalId": "EXAMPLE_EXTERNAL_ID"
+                }
+            }
+        }
+    ]
+}
+```
+
+## Configuration
+
+The process for setting up audit logging varies depending on the AuthZed product you're using.
+Find the instructions for your product below.
+
+### Dedicated
+
+Using the web dashboard, navigate to the Permission System's settings page to find the Audit Log settings.
+
+### Self-Hosted
+
+Audit logging is configured using command-line flags.
+See the full list of flags in the [Extenders section](extenders#flags).
