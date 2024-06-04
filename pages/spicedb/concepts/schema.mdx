@@ -4,7 +4,7 @@ import { InlinePlayground } from '@/components/playground';
 
 # Schema Language
 
-A SpiceDB schema defines the types of objects found, how those objects relate to one another, and the permissions that can be computed off of those relations.
+A SpiceDB schema defines the types of objects found, how those objects relate to one another, and the permissions that can be computed from those relations.
 
 The schema language's extension for use on a file system is `.zed`.
 
@@ -21,7 +21,7 @@ After studying this page's content, you may want to also read the [Developing a 
 
 ## Definitions
 
-The top level of a Schema consists of zero or more [Object Type definitions](#object-type-definitions) and [Caveats](./caveats).
+The top level of a schema consists of zero or more [Object Type definitions](#object-type-definitions) and [Caveats](./caveats).
 
 ```zed
 /**
@@ -52,7 +52,7 @@ It might help to think about Object Type definitions as similar to a class defin
 
 ### Caveat Definitions
 
-Caveats are a feature within SpiceDB that allows for relationships to be defined conditionally: the relationship will only be considered present if the caveat expression evaluates to true at query time.
+Caveats are a feature of SpiceDB that allows for relationships to be defined conditionally: the relationship will only be considered present if the caveat expression evaluates to true at query time.
 
 See the [Caveats documentation][caveats] to learn more.
 
@@ -113,7 +113,7 @@ definition group {
 
 ### Wildcards
 
-Relations can also specify wildcards to indicate that a grant can be made to the resource _type_ as a whole, rather than a particular resource.
+Relations can also specify wildcards to indicate that access can be granted to the resource _type_ as a whole, rather than a particular resource.
 This allows _public_ access to be granted to a particular subject type.
 
 For example, a `viewer` might indicate that _all_ users can be granted the ability to view the resource:
@@ -158,7 +158,7 @@ Examples:
 ## Permissions
 
 A `permission` defines a _computed set of subjects_ that have a permission of some kind on the parent object.
-For example, is a user within the set of users that can `edit` a document.
+For example, a permission would determine whether a user within the set of users that can `edit` a document.
 
 Permissions are always defined with a _name_ and an _expression_ defining how that permission's allowed set of subjects is computed:
 
@@ -187,9 +187,9 @@ Permissions support four kinds of operations: **union**, **intersection**, **exc
 
 #### `+` (Union)
 
-Unions together the relations/permissions referenced
+A union operation _unions together_ relations/permissions in an expression.
 
-Union is the most common operation and is used to join different relations or permissions together to form a set of allowed subjects.
+Union is the most common operation and joins together different relations or permissions together to form a set of allowed subjects.
 
 For example, to grant a permission to both the `reader`s and `writer`s of a document:
 
@@ -199,9 +199,9 @@ permission combined = reader + writer
 
 #### `&` (Intersection)
 
-Intersects the set of subjects found for the relations/permissions referenced
+An intersection operation _intersects the set of subjects_ found for the relations/permissions in an expression.
 
-Intersection allows for a permission to only include those subjects that were found in **both** relations/permissions.
+Permissions defined using intersections only include subjects found in **both** relations/permissions.
 
 For example, to grant a permission to a user that is both a `reader` and a `writer` of a document:
 
@@ -211,9 +211,9 @@ permission read_and_write = reader & writer
 
 #### `-` (Exclusion)
 
-Excludes the set of subjects found for the right side relation/permission from those found in the left side relation/permission
+An exclusion operation _excludes the set of subjects_ found for the right side relation/permission from those found in the left side relation/permission.
 
-Exclusion allows for computing the difference between two sets of relations/permissions
+Exclusions compute the difference between two sets of relations/permissions.
 
 For example, to grant a permission to a user that is `reader` but not the `writer` of a document:
 
