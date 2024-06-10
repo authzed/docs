@@ -289,7 +289,7 @@ As an example: Imagine that we add the concept of an `organization` to our permi
 
 To begin, we must first define the object type that represents our organization, including the `administrator` relation, to represent the administrator role for users:
 
-```zed title="Schema"
+```zed filename="Schema"
 /** user represents a registered user's account in our application */
 definition user {}
 
@@ -317,7 +317,7 @@ definition document {
 In order for our inheritance to function, we must define a way to indicate that a document "lives" under an organization.
 Fortunately, this is just another relationship (between a `document` and its parent `organization`), so we can use another relation within the `document` type:
 
-```zed title="Schema"
+```zed filename="Schema"
 /** user represents a registered user's account in our application */
 definition user {}
 
@@ -349,7 +349,7 @@ Here we've chosen to call this relation `docorg`, but it could be called anythin
 
 Now that we've defined the `relation` to hold our new relationship, we can add a test relationship in our test relationships:
 
-```relationship title="Test Relationships"
+```relationship filename="Test Relationships"
 document:specificdocument#docorg@organization:someorg
 ```
 
@@ -364,7 +364,7 @@ Now that we have a means of stating that a document is owned by an organization,
 
 To do so, we make use of the arrow operator (`->`), which allows for referencing permissions _across_ another relation or permission:
 
-```zed title="Schema"
+```zed filename="Schema"
 /** user represents a registered user's account in our application */
 definition user {}
 
@@ -408,7 +408,7 @@ of relations.
 
 Now that we've declared that all users in `administrator` on the organization are also granted the `view` permission, let's define at least one user in our test data to be an adminstrator:
 
-```relationship title="Test Relationships"
+```relationship filename="Test Relationships"
 organization:someorg#administrator@user:someadminuser
 ```
 
@@ -416,7 +416,7 @@ organization:someorg#administrator@user:someadminuser
 
 Finally, we can add the user to the declarations in Assertions and Expected Relations and verify that the inheritance works:
 
-```yaml title="Assertions"
+```yaml filename="Assertions"
 assertTrue:
   - "document:specificdocument#reader@user:specificuser"
   - "document:specificdocument#writer@user:differentuser"
@@ -428,7 +428,7 @@ assertFalse:
   - "document:specificdocument#writer@user:specificuser"
 ```
 
-```yaml title="Expected Relations"
+```yaml filename="Expected Relations"
 document:specificdocument#reader:
   - "[user:specificuser] is <document:specificdocument#reader>"
 document:specificdocument#view:
