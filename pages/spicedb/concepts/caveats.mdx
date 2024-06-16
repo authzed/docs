@@ -103,7 +103,7 @@ WriteRelationshipsRequest {
         Subject: …,
         OptionalCaveat: {
            CaveatName: "ip_allowlist",
-           Context: structpb{ "cidr": "1.2.3.0" }
+           Context: structpb{ "cidr": "1.2.3.0/24" }
         }
       }
     }
@@ -189,7 +189,7 @@ WriteRelationshipsRequest {
         },
         OptionalCaveat: {
            CaveatName: "has_valid_ip",
-           Context: structpb{ "allowed_range": "10.20.30.0" }
+           Context: structpb{ "allowed_range": "10.20.30.0/24" }
         }
       }
     }
