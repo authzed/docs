@@ -218,6 +218,30 @@ Now developers don't have to implement logic in every app that resolves API Keys
 | Tupleset         | Relationship Set    |
 | Tupleset Filter  | Relationship Filter |
 
+## FAQ
+
+### What is Google Zanzibar?
+
+Google Zanzibar is a revolutionary authorization system developed by Google to handle the massive scale and complexity of their services.
+It's designed to provide consistent, secure, and reliable authorization decisions across Google's vast network of applications and users.
+Google published a paper (check out our [annotated copy](https://zanzibar.tech/)) describing the concepts behind its design and implementation.
+
+You may recognize the system if you’ve ever shared access with another user to a Google product like Google Docs or Gmail.
+
+### Is Zanzibar the same as ReBAC?
+
+While Zanzibar is closely associated with ReBAC (Relationship-Based Access Control), it's not exactly the same thing.
+While Zanzibar is the authorization system designed by Google, ReBAC is an authorization model focused on relationships between objects to determine access.
+
+Zanzibar uses ReBAC as its underlying authorization model.
+So, you could say that Zanzibar is a ReBAC system, but it's more than that.
+It also encompasses the infrastructure, algorithms, and optimizations that allow it to operate at Google's immense scale.
+
+### How does SpiceDB relate to Google Zanzibar?
+
+SpiceDB is an open source authorization system inspired by Google Zanzibar, designed to provide similar functionality with a focus on being accessible and adaptable to a wider range of use cases.
+It shares Zanzibar's core principles,including relationship-based access control (ReBAC), scalability, performance, and strong consistency.
+
 ## Recommended Reading
 
 - [Annotated Zanzibar Paper](https://authzed.com/zanzibar)
