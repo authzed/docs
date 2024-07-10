@@ -1,0 +1,59 @@
+# Installing SpiceDB on Ubuntu or Debian
+
+This document outlines how to install SpiceDB for systems running [Debian-like Linux distributions][debianlike].
+
+Every release of SpiceDB publishes `.deb` packages, [snap] packages, and tarballs for AMD64 and ARM64 Linux.
+
+Looking for `.rpm` packages?
+Visit the doc on [Installing SpiceDB on RHEL/Centos][rhel]
+
+[debianlike]: https://en.wikipedia.org/wiki/List_of_Linux_distributions#Debian-based
+[rhel]: ./rhel
+[snap]: https://snapcraft.io/spicedb
+
+## Installing SpiceDB using apt-get
+
+Before installing SpiceDB, you must first install the following dependencies:
+
+```sh
+sudo apt update && sudo apt install -y curl ca-certificates gpg
+```
+
+These dependencies are used to verify and trust the official SpiceDB Debian repository.
+We'll do that by running the following commands:
+
+```sh
+curl https://pkg.authzed.com/apt/gpg.key | sudo apt-key add -
+sudo sh -c 'echo "deb https://pkg.authzed.com/apt/ * *" > /etc/apt/sources.list.d/authzed.list'
+sudo apt update
+```
+
+Once the apt has updated with our newly added source for SpiceDB packages, it can be installed just like any other package:
+
+```sh
+sudo apt install -y spicedb
+```
+
+## Installing SpiceDB using snap
+
+SpiceDB is available in the [Snap Store][snap] making it a single command to install:
+
+```sh
+sudo snap install spicedb
+```
+
+## Manually installing SpiceDB binary for Linux
+
+Manual installations of SpiceDB can use the following command to download the latest release for their platform and architecture:
+
+```sh
+curl https://api.github.com/repos/authzed/spicedb/releases | \
+jq --arg platform $(uname | tr '[:upper:]' '[:lower:]') --arg arch $(uname -m) '.[0].assets.[] | select (.name | contains($platform+"_"+$arch)) | .browser_download_url' -r | \
+xargs curl -LO
+```
+
+Afterwards, it is up to the user to extract the archive and decide where to place its contents on their systems.
+
+We recommend following the [XDG Base Directory Specification][xdg] if you're not trying to install SpiceDB system-wide.
+
+[xdg]: https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
