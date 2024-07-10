@@ -1,0 +1,39 @@
+# Installing SpiceDB on macOS
+
+This document outlines how to install SpiceDB for systems running Apple's macOS.
+
+Every release of SpiceDB publishes for both Intel (AMD64) and M-series (ARM64) versions of macOS.
+
+## Installing SpiceDB using Homebrew
+
+The quickest way to get started with SpiceDB on macOS is to use Homebrew.
+This will install both the zed, the command-line tool, and the SpiceDB server binary.
+
+```sh
+brew install authzed/tap/spicedb authzed/tap/zed
+```
+
+## Updating SpiceDB using Homebrew
+
+SpiceDB will log a warning if you are running an out-of-date version.
+To ensure that you are using the latest stable release, you can run the following command to upgrade an existing installation of SpiceDB:
+
+```sh
+brew upgrade authzed/tap/spicedb
+```
+
+## Manually installing SpiceDB binary for macOS
+
+Manual installations of SpiceDB for macOS can use the following command to download the latest release for their platform and architecture:
+
+```sh
+curl https://api.github.com/repos/authzed/spicedb/releases | \
+jq --arg platform $(uname | tr '[:upper:]' '[:lower:]') --arg arch $(uname -m) '.[0].assets.[] | select (.name | contains($platform+"_"+$arch)) | .browser_download_url' -r | \
+xargs curl -LO
+```
+
+Afterwards, it is up to the user to extract the archive and decide where to place its contents on their systems.
+
+We recommend following the [XDG Base Directory Specification][xdg] if you're not trying to install SpiceDB system-wide.
+
+[xdg]: https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html

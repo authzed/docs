@@ -1,142 +1,18 @@
-import { Callout } from 'nextra/components'
+import { faDharmachakra } from '@fortawesome/free-solid-svg-icons'
+import { faDocker, faWindows, faApple, faDebian, faRedhat } from '@fortawesome/free-brands-svg-icons'
+import { Cards, Card, Steps } from 'nextra/components'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 # Installing SpiceDB
 
-SpiceDB is built as a standalone executable file which simplifies installation.
+SpiceDB can be installed on many platforms and architectures.
+Pick yours below:
 
-However, one should prefer one of the recommended installation methods detailed below.
-
-<Callout type="info">
-  Looking to deploy SpiceDB to a staging or production environment?
-
-  [Authzed Serverless] is the fastest and most production-ready way to deploy SpiceDB.
-
-  Self-hosted installations should deploy the [SpiceDB Operator].
-
-  There are also [community-maintained examples] for demo environments.
-
-  [Authzed Serverless]: https://app.authzed.com
-  [SpiceDB Operator]: /spicedb/ops/deploying-spicedb-operator
-  [community-maintained examples]: https://github.com/authzed/examples
-</Callout>
-
-## Recommended methods
-
-### Docker
-
-Container images are available for AMD64 and ARM64 architectures on the following registries:
-
-- [authzed/spicedb](https://hub.docker.com/r/authzed/spicedb)
-- [ghcr.io/authzed/spicedb](https://github.com/authzed/spicedb/pkgs/container/spicedb)
-- [quay.io/authzed/spicedb](https://quay.io/authzed/spicedb)
-
-You can pull down the latest stable release:
-
-```sh
-docker pull authzed/spicedb
-```
-
-Afterwards, you can run it with `docker run`:
-
-```sh
-docker run \
-    --name spicedb \
-    -p 50051:50051 \
-    authzed/spicedb \
-    serve \
-    --grpc-preshared-key "somerandomkeyhere"
-```
-
-The entrypoint of the container image is set to the SpiceDB binary to allow for easily running different commands and providing flags:
-
-```sh
-docker run \
-    --name spicedb-testing \
-    -p 50051:50051 \
-    authzed/spicedb \
-    serve-testing
-```
-
-### Debian packages
-
-[Debian-based Linux] users can install SpiceDB packages by adding an additional apt source.
-
-First ensure the following dependencies are installed:
-
-```sh
-sudo apt update && sudo apt install -y curl ca-certificates gpg
-```
-
-Next, we can add, trust, and update the official SpiceDB apt source:
-
-```sh
-curl https://pkg.authzed.com/apt/gpg.key | sudo apt-key add -
-sudo sh -c 'echo "deb https://pkg.authzed.com/apt/ * *" > /etc/apt/sources.list.d/authzed.list'
-sudo apt update
-```
-
-Install as usual:
-
-```sh
-sudo apt install -y spicedb
-```
-
-[Debian-based Linux]: https://en.wikipedia.org/wiki/List_of_Linux_distributions#Debian-based
-
-### RPM packages
-
-[RPM-based Linux] users can install SpiceDB packages by adding a new yum repository:
-
-```sh
-sudo cat << EOF >> /etc/yum.repos.d/Authzed-Fury.repo
-[authzed-fury]
-name=AuthZed Fury Repository
-baseurl=https://pkg.authzed.com/yum/
-enabled=1
-gpgcheck=0
-EOF
-```
-
-Install as usual:
-
-```sh
-sudo dnf install -y spicedb
-```
-
-[RPM-based Linux]: https://en.wikipedia.org/wiki/List_of_Linux_distributions#RPM-based
-
-### Homebrew (macOS)
-
-macOS users can install SpiceDB packages by adding a [Homebrew tap]:
-
-```sh
-brew install authzed/tap/spicedb
-```
-
-[Homebrew tap]: https://docs.brew.sh/Taps
-
-## Other methods
-
-### Downloading the binary
-
-Visit the GitHub release page for the [latest release](https://github.com/authzed/spicedb/releases/latest).
-Scroll down to the `Assets` section and download the appropriate artifact.
-
-### Source
-
-Clone the GitHub repository:
-
-```sh
-git clone git@github.com:authzed/spicedb.git
-```
-
-Enter the directory and build the binary using mage:
-
-```sh
-cd spicedb
-go run mage.go build
-```
-
-You can find more commands for tasks such as testing, linting in the repository's [CONTRIBUTING.md].
-
-[CONTRIBUTING.md]: https://github.com/authzed/spicedb/blob/main/CONTRIBUTING.md
+<Cards>
+  <Card arrow={true} icon={<FontAwesomeIcon icon={faApple} />} title="macOS" href="./install/macos" />
+  <Card arrow={true} icon={<FontAwesomeIcon icon={faDocker} />} title="Docker" href="./install/docker" />
+  <Card arrow={true} icon={<FontAwesomeIcon icon={faDharmachakra} />} title="Kubernetes" href="./install/kubernetes" />
+  <Card arrow={true} icon={<FontAwesomeIcon icon={faDebian} />} title="Ubuntu/Debian" href="./install/debian" />
+  <Card arrow={true} icon={<FontAwesomeIcon icon={faRedhat} />} title="RHEL/CentOS" href="./install/rhel" />
+  <Card arrow={true} icon={<FontAwesomeIcon icon={faWindows} />} title="Windows" href="./install/windows" />
+</Cards>

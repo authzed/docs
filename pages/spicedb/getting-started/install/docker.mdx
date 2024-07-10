@@ -1,0 +1,48 @@
+import { Callout } from 'nextra/components'
+
+# Installing SpiceDB with Docker
+
+This document outlines how to install SpiceDB for systems running Docker (or similar container runtimes).
+
+Every release of SpiceDB publishes AMD64 and ARM64 images to multiple public registries:
+
+- [authzed/spicedb](https://hub.docker.com/r/authzed/spicedb)
+- [ghcr.io/authzed/spicedb](https://github.com/authzed/spicedb/pkgs/container/spicedb)
+- [quay.io/authzed/spicedb](https://quay.io/authzed/spicedb)
+
+While the SpiceDB image on Docker Hub has millions of downloads, for production usage we recommend pushing a copy of the SpiceDB image to your own registry to avoid any outages or rate-limits impacting your deployment.
+
+## Pulling the latest SpiceDB Docker image
+
+You can install the latest version of SpiceDB by using the standard pull command with your registry of choice.
+
+```sh
+docker pull authzed/spicedb:latest
+```
+
+<Callout type="warning">
+  **Warning:**
+  Production deployments should never use the `latest` tag.
+  
+  Instead, opt for a tag referencing a specific release.
+  For automated upgrades consider deploying the [SpiceDB Operator].
+
+  [SpiceDB Operator]: /spicedb/concepts/operator
+</Callout>
+
+## Pulling the latest SpiceDB Debug image
+
+By default, SpiceDB images are based on [Chainguard Images][cgi] in order to remain minimal and secure.
+
+However, this can complicate debugging because there are no tools within the image if you need to debug.
+
+If you want to execute a user session into a running SpiceDB container and install packages for debugging, you can use one of our debug images:
+
+```sh
+docker pull authzed/spicedb:latest-debug
+```
+
+Every release of SpiceDB has a corresponding debug image.
+Add `-debug` any release tag to pull it.
+
+[cgi]: https://github.com/chainguard-images/images
