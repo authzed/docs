@@ -28,8 +28,11 @@ The following are configuration flags that can be provided to every SpiceDB comm
 | Flag | Description | Default |
 | --- | --- | --- |
 | --datastore-conn-uri | connection string used by remote datastores (e.g. "postgres://postgres:password@localhost:5432/spicedb") |  |
+| --datastore-credentials-provider-name | retrieve datastore credentials dynamically using (%s) |  |
 | --datastore-engine | type of datastore to initialize ("cockroachdb", "mysql", "postgres", "spanner") | `memory` |
 | --datastore-mysql-table-prefix | prefix to add to the name of all SpiceDB database tables |  |
+| --—datastore-read-replica-conn-uri | connection string used by remote datastores for read replicas (e.g. \"postgres://postgres:password@localhost:5432/spicedb\"). Only supported for postgres and mysql. |  |
+| --—datastore-read-replica-credentials-provider-name | retrieve datastore credentials dynamically using (%s) |  |
 | --datastore-spanner-credentials | path to service account key credentials file with access to the cloud spanner instance (omit to use application default credentials) |  |
 | --datastore-spanner-emulator-host | URI of spanner emulator instance used for development and testing (e.g. localhost:9010) |  |
 | -h, --help | help for serve |  |
@@ -74,6 +77,7 @@ This command serves the gRPC and HTTP APIs by default.
 | --datastore-mysql-table-prefix | prefix to add to the name of all SpiceDB database tables |  |
 | --datastore-prometheus-metrics | set to false to disabled prometheus metrics from the datastore | `true` |
 | --datastore-query-userset-batch-size | number of usersets after which a relationship query will be split into multiple queries | `1024` |
+| --datastore-read-replica-conn-pool |  |  |
 | --datastore-readonly | set the service to read-only mode |  |
 | --datastore-request-hedging | enable request hedging | `true` |
 | --datastore-request-hedging-initial-slow-value | initial value to use for slow datastore requests, before statistics have been collected (default 10ms) |  |
