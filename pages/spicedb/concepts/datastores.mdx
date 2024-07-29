@@ -31,17 +31,23 @@ spicedb migrate head \
 For more information, refer to the [Datastore Migration documentation](/spicedb/concepts/datastore-migrations).
 
 ## Read replicas for Postgres and MySQL
-SpiceDB can reference read-only replicas of permissions data stored in Postgres and MySQL that respect consistency requirements by detecting if a given revision has been replicated from the primary datastore before reading from the replica. If the requested revision is not found in the replica, the request will be redirected to the primary datastore.
 
-Strict read mode (available for Postgres only) does not check replicas for requested revisions before reading from them; instead, a revision check is inserted into the SQL for each read. This mode is useful for deploying replicas behind a load balancer than can transparently handle these requests.
+SpiceDB can reference read-only replicas of permissions data stored in Postgres and MySQL that respect consistency requirements by detecting if a given revision has been replicated from the
+primary datastore before reading from the replica. If the requested revision is not found in the replica, the request will be redirected to the primary datastore.
 
-To reduce overhead of using read replicas, enable caching on CheckRevision calls to avoid checking the requested revision if the last checked revision is at least as fresh as the one requested.
+Strict read mode (available for Postgres only) does not check replicas for requested revisions before reading from them; instead, a revision check is inserted into the SQL for each read. 
+This mode is useful for deploying replicas behind a load balancer than can transparently handle these requests.
+To reduce overhead of using read replicas, enable caching on CheckRevision calls to avoid checking the requested revision if the last checked revision is at least as fresh as the one
+requested.
 
 Includes a test to return whether the replicated request successfully falls back to the primary datastore.
 
 ### Usage Notes
+
 - Maximum replica count is 16.
-- Note: be very careful when using this function. It is not safe to be sued without knowledge of underlying datastore and replicas. Replicas will be checked for the requested revision before reading from them, which means that the read pool for the replicas must point to a stable instance of the datastore (not a load balancer). That means each replica node in the database must be configured as its own replica to SpiceDB, which each URI given distinctly.
+- Note: be very careful when using this function. It is not safe to be sued without knowledge of underlying datastore and replicas. Replicas will be checked for the requested revision 
+before reading from them, which means that the read pool for the replicas must point to a stable instance of the datastore (not a load balancer). That means each replica node in the
+database must be configured as its own replica to SpiceDB, which each URI given distinctly.
 - Calls using strict read mode must reference replicas with strict mode enabled to ensure the query will fail with a revision unavailable error if the specified revision is not available.
 
 ### Configuration
