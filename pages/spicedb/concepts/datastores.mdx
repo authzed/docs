@@ -30,6 +30,44 @@ spicedb migrate head \
 
 For more information, refer to the [Datastore Migration documentation](/spicedb/concepts/datastore-migrations).
 
+## Read replicas for Postgres and MySQL
+
+SpiceDB can query read-only replicas of permissions data stored in Postgres and MySQL while maintaining consistency guarantees by detecting if a given revision has been replicated from the primary datastore before reading from the replica.
+If the requested revision is not found in the replica, the request will be redirected to the primary datastore.
+
+When using multiple replicas, the queried replica will be chosen in a round-robin fashion.
+Please note that the maximum replica count is 16.
+
+Traffic using `minimize_latency` will benefit the most from using read replicas.
+
+### PostgreSQL read replicas
+
+You can use a load balancer between PostgreSQL replicas and SpiceDB.
+When using a load balancer, please ensure that `ReadStrictMode` is enabled on your datastore.
+If you are not using a load balancer, you can, alternatiely, list each hostname individually.
+
+### MySQL read replicas
+
+<Callout type="warning">
+Do not use a load balancer between SpiceDB and MySQL replicas because SpiceDB will not be able to maintain consistency guarantees.
+</Callout>
+When using MySQL replicas, each hostname must be listed individually.
+
+### Configuration
+
+#### Required Parameters
+
+| Parameter            | Description                               | Example                                                                                   |
+| -------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `datastore-engine`   | the datastore engine                      | `--datastore-engine=postgres`                                                          |
+| `datastore-read-replica-conn-uri` | Connection string used by remote datastores for read replicas; only supported for postgres and mysql | `--datastore-read-replica-conn-uri="postgres://postgres:password@localhost:5432/spicedb\"` |
+
+#### Optional Parameters
+
+| Parameter            | Description                               | Example                                                                                   |
+| -------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `—datastore-read-replica-credentials-provider-name`               | Retrieve datastore credentials dynamically using aws-iam                      |                 |
+
 ## CockroachDB
 
 ### Usage Notes
