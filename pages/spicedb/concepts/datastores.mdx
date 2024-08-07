@@ -41,7 +41,6 @@ This mode is useful for deploying replicas behind a load balancer than can trans
 To reduce overhead of using read replicas, enable caching on CheckRevision calls to avoid checking the requested revision if the last checked revision is at least as fresh as the one
 requested.
 
-Includes a test to return whether the replicated request successfully falls back to the primary datastore.
 
 ### Usage Notes
 
