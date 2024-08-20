@@ -81,7 +81,7 @@ This command serves the gRPC and HTTP APIs by default.
 | --datastore-read-replica-conn-uri | connection string used by remote datastores for read replicas; only supported for postgres and mysqls (e.g. "postgres://postgres:password@localhost:5432/spicedb\") |  |
 | --datastore-read-replica-conn-pool-read-healthcheck-interval | amount of time between connection health checks in a read-only replica datastore's connection pool | `30s` |
 | --datastore-read-replica-conn-pool-read-max-idletime | maximum amount of time a connection can idle in a read-only remote replica datastore's connection pool | `30m` |
-| --datastore-read-replica-conn-pool-read-max-lifetime | maximum amount of time a connection can live in a read-only remote replica datastore's connection pool | `30m` |
+| --datastore-read-replica-conn-pool-read-max-lifetime | maximum amount of time a connection can live in a read-only replica datastore's connection pool | `30m` |
 | --datastore-read-replica-conn-pool-read-max-lifetime-jitter | waits rand(0, jitter) after a connection is open for max lifetime to actually close the connection (default: 20% of max lifetime) |  |
 | --datastore-read-replica-conn-pool-read-max-open | number of concurrent connections open in a read-only remote replica datastore's connection pool | `20` |
 | --datastore-read-replica-conn-pool-read-min-open | number of minimum concurrent connections open in a read-only remote replica datastore's connection pool | `20` |
