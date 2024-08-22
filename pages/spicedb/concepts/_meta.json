@@ -6,5 +6,6 @@
   "dispatch": "Dispatch",
   "relationships": "Relationships",
   "caveats": "Relationship Caveats",
+  "reflection-apis": "Reflection APIs",
   "schema": "Schema Language"
 }
