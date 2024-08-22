@@ -17,14 +17,22 @@ See [CONTRIBUTING.md](/CONTRIBUTING.md) for instructions on how to contribute an
 
 ## Getting Started
 
+Install pnpm:
+
+```sh
+brew install pnpm
+```
+
 Install dependencies:
 
-```
+```sh
 pnpm install
 ```
 
 Run a development server:
 
-```
+```sh
 pnpm run dev
 ```
+
+Now you should be able to see the docs rendered at http://localhost:3000

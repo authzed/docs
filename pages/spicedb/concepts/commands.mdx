@@ -28,8 +28,11 @@ The following are configuration flags that can be provided to every SpiceDB comm
 | Flag | Description | Default |
 | --- | --- | --- |
 | --datastore-conn-uri | connection string used by remote datastores (e.g. "postgres://postgres:password@localhost:5432/spicedb") |  |
+| --datastore-credentials-provider-name | retrieve datastore credentials dynamically using one of the following options: aws-iam |  |
 | --datastore-engine | type of datastore to initialize ("cockroachdb", "mysql", "postgres", "spanner") | `memory` |
 | --datastore-mysql-table-prefix | prefix to add to the name of all SpiceDB database tables |  |
+| --datastore-read-replica-conn-uri | comma-separated string of replica host URIs used by Postgres and MySQL datastores for read replicas. Note: MySQL datastores can only point to a list of replica host URIs; never use a load balancer URI. Postgres datastores can point to either a list of replica host URIs or to a load balancer |  |
+| --datastore-read-replica-credentials-provider-name | retrieve datastore credentials dynamically using one of the following options: aws-iam |  |
 | --datastore-spanner-credentials | path to service account key credentials file with access to the cloud spanner instance (omit to use application default credentials) |  |
 | --datastore-spanner-emulator-host | URI of spanner emulator instance used for development and testing (e.g. localhost:9010) |  |
 | -h, --help | help for serve |  |
@@ -75,6 +78,13 @@ This command serves the gRPC and HTTP APIs by default.
 | --datastore-prometheus-metrics | set to false to disabled prometheus metrics from the datastore | `true` |
 | --datastore-query-userset-batch-size | number of usersets after which a relationship query will be split into multiple queries | `1024` |
 | --datastore-readonly | set the service to read-only mode |  |
+| --datastore-read-replica-conn-uri | comma-separated string of replica host URIs used by Postgres and MySQL datastores for read replicas. Note: MySQL datastores can only point to a list of replica host URIs; never use a load balancer URI. Postgres datastores can point to either a list of replica host URIs or to a load balancer |  |
+| --datastore-read-replica-conn-pool-read-healthcheck-interval | amount of time between connection health checks in a read-only replica datastore's connection pool | `30s` |
+| --datastore-read-replica-conn-pool-read-max-idletime | maximum amount of time a connection can idle in a read-only replica datastore's connection pool | `30m` |
+| --datastore-read-replica-conn-pool-read-max-lifetime | maximum amount of time a connection can live in a read-only replica datastore's connection pool | `30m` |
+| --datastore-read-replica-conn-pool-read-max-lifetime-jitter | waits rand(0, jitter) after a connection is open for max lifetime to actually close the connection to a read replica(default: 20% of max lifetime) |  |
+| --datastore-read-replica-conn-pool-read-max-open | number of concurrent connections open in a read-only replica datastore's connection pool | `20` |
+| --datastore-read-replica-conn-pool-read-min-open | number of minimum concurrent connections open in a read-only replica datastore's connection pool | `20` |
 | --datastore-request-hedging | enable request hedging | `true` |
 | --datastore-request-hedging-initial-slow-value | initial value to use for slow datastore requests, before statistics have been collected (default 10ms) |  |
 | --datastore-request-hedging-max-requests | maximum number of historical requests to consider | `1000000` |
