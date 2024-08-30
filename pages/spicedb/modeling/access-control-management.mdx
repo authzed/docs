@@ -1,0 +1,108 @@
+import { Callout } from 'nextra/components';
+
+# Access-Control Management
+
+It's common to build applications with an access control management interface that lets privileged users visualize and modify permissions assigned to other users.
+Depending on the permission model you've chosen for your application, several APIs in SpiceDB will help you to implement the feature.
+
+Let's describe some of the most common patterns.
+
+## Resource-Specific Access-Control Management
+
+When creating a UI to manage user access-control privileges over a resource, there are various potential features one may want to implement:
+
+- listing all users assigned with their role
+- listing all the fine-grained permissions a user may have assigned
+
+### Coarse-Grained Access Control
+
+Let's say we have a traditional coarse-grained access control model where you assign roles to users over a resource, like GitHub's Role-Based Access Control model, and you want to list each one of the users and teams assigned alongside the role.
+These role assignments are typically implemented as a relation between the target resource and the subject.
+
+```zed
+definition user {}
+
+definition team {
+  relation member: user
+}
+
+definition repository {
+  relation role_reader: user | team#member
+  relation role_writer: user | team#member
+  relation role_adminer: user | team#member
+
+  permission read = role_reader + write
+  permission write = role_writer + admin
+  permission admin = role_adminer
+  
+}
+```
+
+If you wanted to implement an access-control management UI for this model, you could use the [ReadRelationships] API.
+When the set of roles is limited, you can do a call per role:
+
+```shell zed
+zed relationship read repository:kubernetes role_reader
+zed relationship read repository:kubernetes role_writer
+zed relationship read repository:kubernetes role_adminer
+```
+
+If instead, you didn't want to hard-code each role in your application you could first determine the available relations, and then read the associated relationships:
+
+1. List all relations on the definition using [ExperimentalReflectSchema], which will let you query information about the schema, with the [Schema Filter] set to `optional_definition_name_filter=repository` and `optional_relation_name_filter=role_`.
+1. Issue a `ReadRelationship` request for each role returned from the API call above
+
+### Fine-Grained Access Control
+
+Now let's imagine that instead, we have a fine-grained access control model.
+Typically you see these implemented as "Custom Roles".
+It's still a Role-Based Access Control Model, but one that lets you define the individual permissions associated with each Role.
+This model is not different from the previous one in which users are still assigned roles over the resource, but these roles are fully customizable, instead of pre-canned.
+
+```zed
+
+definition user{}
+
+definition repository {
+  relation grants: role_grant
+
+  permission create_issue = grants->create_issue 
+}
+
+definition role_grant {
+  relation role: role
+  relation grantee: user | team#user
+
+  permission create_issue = role->create_issue & grantee 
+  permission delete_issue = role->delete_issue & grantee
+}
+
+definition role {
+  relation create_issue: user:*
+  relation delete_issue: user:*
+}
+```
+
+You can follow a similar strategy if you want to show the roles:
+
+```shell zed
+# returns the role grants over the kubernetes repository
+zed relationship read repository:kubernetes grants
+```
+
+This will let you list each user and team with the assigned role name.
+But what if you wanted instead to list the individual permissions, rather than the role?
+
+You could issue a `ReadRelationship` to determine the `role` of the grant, and a subsequent one with `role:my_role` as the resource and list all the relationships.
+The resource relation of each list item represents all fine-grained permissions for the role.
+
+```shell zed
+# returns the role of the grant
+zed relationship read role_grant:my_role_grant role
+# returns the fine-grained permissions of the role
+zed relationship read role:my_role
+```
+
+[ReadRelationships]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.ReadRelationships
+[ExperimentalReflectSchema]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.ExperimentalService.ExperimentalReflectSchema
+[Schema Filter]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.ExpSchemaFilter
