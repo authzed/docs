@@ -1,0 +1,603 @@
+import { Callout } from 'nextra/components'
+
+# AuthZed Materialize (Early Access)
+
+AuthZed Materialize works with AuthZed Dedicated and is inspired by the Leopard index component described in the [Zanzibar paper](https://zanzibar.tech/2IoYDUFMAE:0:T).
+Much like the concept of a materialized view in relational databases, AuthZed Materialize supports SpiceDB permissions systems by precomputing permissions defined in your schema.
+
+By creating a materialized view of your permissions in a relational database, you can efficiently sort, search, and filter massive lists of authorized objects while leveraging the authorization computation capabilities of SpiceDB.
+
+<Callout type="info">
+  AuthZed Materialize is available to users of AuthZed Dedicated as part of an early access program.
+  Don't hesitate to get in touch with your AuthZed account team if you would like to participate.
+</Callout>
+
+## What Is AuthZed Materialize?
+
+Materialize streams computed permission updates to a client.
+Updates occur after a relationship is written that affects a subject's membership in a permission set or a set’s permission on a specific resource.
+The intent is for users to process these updates and store them to form a precomputed and denormalized view of SpiceDB permissions.
+
+## When To Use AuthZed Materialize?
+
+If you need to provide a filtered and/or sorted list of more than several thousand authorized objects or if you need an authorization-aware search index, you probably need Materialize.
+
+The primary use case for Materialize is to denormalize computed permissions into systems that excel at data retrieval operations like searching, sorting, and filtering.
+
+There are some authorized object listing scenarios where [LookupResources] or [LookupSubjects], without Materialize, can return a response without a large computational cost.
+Those scenarios include:
+
+1. Paginating through a list of authorized objects without sorting or filtering ([LookupResources] supports cursor-based pagination, but the list of objects is returned in a non-deterministic order)  
+2. Listing a small set (in the realm of thousands) of ordered or filtered objects.
+
+If you do make a [LookupResources] or [LookupSubjects] request with a significant computational cost, you can expect the request to be slow and you can expect the request to use a large number of system resources, leading to slower response times for other queries.
+
+## Current Limitations
+
+- [Caveats](https://authzed.com/docs/spicedb/concepts/caveats) are not supported on the path of permissions computed by Materialize
+- [Wildcard](https://authzed.com/docs/spicedb/concepts/schema\#wildcards) subject types are not supported on the path of permissions computed by Materialize
+
+You can still use both Caveats and Wildcards so long they are not part of the path to the permissions you've asked Materialize to query
+
+## Client SDK
+
+All SpiceDB SDKs have the generated gRPC and protobuf coded
+
+- [authzed-go v0.15.0](https://github.com/authzed/authzed-go/releases/tag/v0.15.0)
+- [authzed-java 0.10.0](https://github.com/authzed/authzed-java/releases/tag/0.10.0)
+- [authzed-py v0.17.0](https://github.com/authzed/authzed-py/releases/tag/v0.17.0)
+- [authzed-rb v0.11.0](https://github.com/authzed/authzed-rb/releases/tag/v0.11.0)
+- [authzed-node v0.17.0](https://github.com/authzed/authzed-node/releases/tag/v0.17.0)
+
+AuthZed Materialize's gRPC API definition is available from [API version 1.35](https://buf.build/authzed/api/docs/v1.35.0:authzed.api.materialize.v0)
+
+## Recommended Architecture
+
+### Consuming Client
+
+![authzed-materialize](/images/authzed-materialize.png)
+
+Customers will need to build a client to act as an "event processor" that consumes permission updates and writes those updates to a datastore like Postgres.
+The consumer should be designed with resumability in mind by keeping track of the last revision consumed, just as any other stream processor.
+
+### Durability
+
+Every SpiceDB permission update will come with a `ZedToken`.
+The consumer must keep track of that revision token to be able to resume the change stream from the last event consumed when a failure happens, like stream disconnection, consumer restart, or server-side restarts.
+
+When a consumer failure happens, the process should determine the last revision `ZedToken` consumed, and send that alongside your request.
+The consumer should be coded with idempotency in mind in the event of such failures, meaning it should be prepared to process stream messages that have already been processed.
+
+Storing the revision `ZedToken` in the same database where the computed permissions are being stored is a good practice as it enables storing those transactionally, which gives you the guarantee that whatever revision the consumer restarts from, won’t cause events to be skipped, which would lead to an inconsistent state of the world.
+
+There may be scenarios where a revision has so many changes that storing transactionally can degrade the performance/availability of the target database.
+In situations like these, one may want to store the events in batches, and in such cases, the revision should only be stored when the consumer determines the last batch has been processed.
+If a failure happened in between those batches, the consumer will be able to restart processing from the start of the revision and idempotently overwrite whatever events were already in place.
+
+<Callout type="info">
+  Change events are stored up to 24h to make sure Materialize storage does not grow unbounded and affect its performance.
+</Callout>
+
+## Configuration
+
+Just as with relational database materialized views, you need to provide Materialize with the "queries" you’d like it to pre-compute.
+The configuration is described as a list of  `resource#permission@subject` tuples.
+Example:
+
+```zed
+resource#view@user
+resource#edit@user
+```
+
+<Callout type="info">
+  During early access provisioning, Materialize instances are not self-service, so you’ll need to provide the permissions to be computed by Materialize directly to your AuthZed account team.
+</Callout>
+
+### Relational Database
+
+You can find [here](https://dbfiddle.uk/OP5GwjoG) a runnable version of these examples
+
+These are tables you likely already have in your database
+
+1. something representing the user  
+2. something representing the object we want to filter
+
+```sql
+CREATE TABLE users (
+    id     varchar(100) PRIMARY KEY,
+    name   varchar(40)
+);
+CREATE TABLE documents (
+    id     varchar(100) PRIMARY KEY,
+    name   varchar(40),
+    contents_bucket varchar(100)
+);
+```
+
+The `member_to_set` and `set_to_set` tables below are just used to track data from [LookupPermissionSets] and [WatchPermissionSets], all you need to do is store the fields directly from those APIs.
+
+```sql
+CREATE TABLE member_to_set (
+  member_type varchar(100),
+  member_id varchar(100),
+  member_relation varchar(100),
+  set_type varchar(100),
+  set_id varchar(100),
+  set_relation varchar(100)
+);
+
+CREATE TABLE set_to_set (
+  child_type varchar(100),
+  child_id varchar(100),
+  child_relation varchar(100),
+  parent_type varchar(100),
+  parent_id varchar(100),
+  parent_relation varchar(100)
+);
+```
+
+Seed some base data; this would already exist in the application:
+
+```sql
+INSERT INTO users (id, name) VALUES ('123', 'evan'), ('456', 'victor');
+INSERT INTO documents (id, name) VALUES ('123', 'evan secret doc'), ('456', 'victor shared doc');
+```
+
+Sync data from [LookupPermissionSets]/[WatchPermissionSets].
+The APIs return type/id/relation name:
+
+```sql
+INSERT INTO member_to_set (member_type, member_id, member_relation, set_type, set_id, set_relation) 
+  VALUES ('user', '123', '', 'document', '123', 'view'), 
+         ('user', '123', '', 'group', 'shared', 'member'),
+         ('user', '456', '', 'group', 'shared', 'member');
+
+INSERT INTO set_to_set (child_type, child_id, child_relation, parent_type, parent_id, parent_relation) 
+  VALUES ('group', 'shared', 'member', 'document', '456', 'view');
+```
+
+To query, join the local application data with [LookupPermissionSets]/[WatchPermissionSets] data to filter by specific permissions.
+
+Find all documents `evan` can `view:`
+
+```sql
+SELECT d.id FROM documents d
+  INNER JOIN set_to_set s2s ON d.id = s2s.parent_id
+  INNER JOIN member_to_set m2s ON m2s.set_id = s2s.child_id AND m2s.set_type = s2s.child_type AND m2s.set_relation = s2s.child_relation
+  INNER JOIN users u ON u.id = m2s.member_id
+  WHERE u.name = 'evan' 
+    AND m2s.member_type = 'user' 
+    AND m2s.member_relation = '' 
+    AND s2s.parent_type = 'document' 
+    AND s2s.parent_relation='view'
+UNION
+SELECT d.id FROM documents d
+  INNER JOIN member_to_set m2s ON d.id = m2s.set_id
+  INNER JOIN users u ON u.id = m2s.member_id
+  WHERE u.name = 'evan' 
+    AND m2s.member_type = 'user' 
+    AND m2s.member_relation = '' 
+    AND m2s.set_type = 'document' AND m2s.set_relation = 'view';
+```
+
+| id |
+| :---- |
+| 123 |
+| 456 |
+
+The same query, by changing only the username, will find all documents `victor` can `view`:
+
+```sql
+SELECT d.id FROM documents d
+  INNER JOIN set_to_set s2s ON d.id = s2s.parent_id
+  INNER JOIN member_to_set m2s ON m2s.set_id = s2s.child_id AND m2s.set_type = s2s.child_type AND m2s.set_relation = s2s.child_relation
+  INNER JOIN users u ON u.id = m2s.member_id
+  WHERE u.name = 'victor' 
+    AND m2s.member_type = 'user' 
+    AND m2s.member_relation = '' 
+    AND s2s.parent_type = 'document' 
+    AND s2s.parent_relation='view'
+UNION
+SELECT d.id FROM documents d
+  INNER JOIN member_to_set m2s ON d.id = m2s.set_id
+  INNER JOIN users u ON u.id = m2s.member_id
+  WHERE u.name = 'victor' 
+    AND m2s.member_type = 'user' 
+    AND m2s.member_relation = '' 
+    AND m2s.set_type = 'document' AND m2s.set_relation = 'view';
+```
+
+| id |
+| :---- |
+| 456 |
+
+The above example shows the most flexible way to do this: you can update your SpiceDB schema and sync new permission sets data without SQL schema changes but at the cost of more verbose SQL queries.
+
+If you know that you only care about `document#view@user,` then you can store the data more concisely and query more simply.
+This strategy can also be used to shard the data coming from the Materialize APIs so that it does not all land in one table.
+
+Simplified permission sets storage (just for `document#view@user`):
+
+```sql
+CREATE TABLE user_to_set (
+  user_id varchar(100),
+  parent_set varchar(300)
+);
+
+CREATE TABLE set_to_document_view (
+  child_set varchar(300),
+  document_id varchar(100)
+);
+```
+
+Storing from [LookupPermissionSets]/[WatchPermissionSets] in this model requires some simple transformations compared to the previous example:
+
+```sql
+INSERT INTO user_to_set (user_id, parent_set) 
+  VALUES ('123', 'document:123#view'), 
+         ('123', 'group:shared#member'),
+         ('456', 'group:shared#member');
+
+INSERT INTO set_to_document_view (child_set, document_id) 
+  VALUES ('document:123#view', '123'),
+         ('group:shared#member', '456');
+```
+
+Note that an extra entry (`document:123#view`, `123`) was added to simplify the join side (avoiding the union in the previous example).
+The queries are a bit simpler, though they can't be used to answer any permission check other than `document#view@user`.
+
+Find all documents `evan` can `view`:
+
+```sql
+SELECT d.id FROM documents d
+  INNER JOIN set_to_document_view s2s ON d.id = s2s.document_id
+  INNER JOIN user_to_set m2s ON m2s.parent_set = s2s.child_set 
+  INNER JOIN users u ON u.id = m2s.user_id
+  WHERE u.name = 'evan';
+```
+
+| id |
+| :---- |
+| 123 |
+| 456 |
+
+Find all documents `victor` can `view`:
+
+```sql
+SELECT d.id FROM documents d
+  INNER JOIN set_to_document_view s2s ON d.id = s2s.document_id
+  INNER JOIN user_to_set m2s ON m2s.parent_set = s2s.child_set 
+  INNER JOIN users u ON u.id = m2s.user_id
+  WHERE u.name = 'victor';
+```
+
+| id |
+| :---- |
+| 456 |
+
+## API Specification
+
+### [WatchPermissionSets]
+
+This is an update stream of all the permissions Materialize is configured to watch.
+You can use this to store all permissions tracked in the system closer to your application database to be used in database-native ACL filtering.
+Permissions can also be stored in secondary indexes like ElasticSearch.
+
+The API consists of various event types that capture deltas that occurred since a client started listening.
+It will also notify of events like a [breaking schema change] that necessitate rebuilding of the index.
+
+#### Request
+
+```json
+{
+  "optional_starting_after": "the_zed_token"
+}
+```
+
+The `optional_starting_after` field in the request denotes the SpiceDB revision to start streaming changes.
+It will start streaming from the revision right after the indicated one.
+If no `optional_starting_after` is provided, Materialize will determine the latest revision at the moment of the request, and start streaming changes from there on.
+
+#### Response
+
+##### Revision Checkpoint Event
+
+Sent when changes happened in SpiceDB, but didn't affect Materialize.
+Customers should keep track of this revision in their internal database to know where to resume from in the event of stream disconnection or stream consumer restart/failure.
+
+```json
+{
+    "completed_revision": {
+        "token": "GiAKHjE3MTUzMzkzMTAzODQ2NDMxNzguMDAwMDAwMDAwMA=="
+    }
+}
+```
+
+##### Member Added To Set Event
+
+```json
+{
+    "change": {
+        "at_revision": {
+            "token": "GiAKHjE3MTUzMzkzMDg0MTY2NzUxNzcuMDAwMDAwMDAwMA=="
+        },
+        "operation": "SET_OPERATION_ADDED",
+        "parent_set": {
+            "object_type": "thumper/resource",
+            "object_id": "seconddoc",
+            "permission_or_relation": "reader"
+        },
+        "child_member": {
+            "object_type": "thumper/user",
+            "object_id": "fred",
+            "optional_permission_or_relation": ""
+        }
+    }
+}
+```
+
+##### Member Removed From Set Event
+
+```json
+{
+    "change": {
+        "at_revision": {
+            "token": "GiAKHjE3MTUzMzkzMTAzODQ2NDMxNzguMDAwMDAwMDAwMA=="
+        },
+        "operation": "SET_OPERATION_REMOVED",
+        "parent_set": {
+            "object_type": "thumper/resource",
+            "object_id": "seconddoc",
+            "permission_or_relation": "reader"
+        },
+        "child_member": {
+            "object_type": "thumper/user",
+            "object_id": "fred",
+            "optional_permission_or_relation": ""
+        }
+    }
+}
+```
+
+##### Set Added To Set Event
+
+```json
+{
+    "change": {
+        "at_revision": {
+            "token": "GiAKHjE3MTUzMzkzMDg0MTY2NzUxNzcuMDAwMDAwMDAwMA=="
+        },
+        "operation": "SET_OPERATION_ADDED",
+        "parent_set": {
+            "object_type": "thumper/resource",
+            "object_id": "seconddoc",
+            "permission_or_relation": "reader"
+        },
+        "child_set": {
+            "object_type": "thumper/team",
+            "object_id": "engineering",
+            "permission_or_relation": "members"
+        }
+    }
+}
+```
+
+##### Set Removed From Set Event
+
+```json
+{
+    "change": {
+        "at_revision": {
+            "token": "GiAKHjE3MTUzMzkzMTAzODQ2NDMxNzguMDAwMDAwMDAwMA=="
+        },
+        "operation": "SET_OPERATION_REMOVED",
+        "parent_set": {
+            "object_type": "thumper/resource",
+            "object_id": "seconddoc",
+            "permission_or_relation": "reader"
+        },
+        "child_set": {
+            "object_type": "thumper/team",
+            "object_id": "engineering",
+            "permission_or_relation": "members"
+        }
+    }
+}
+```
+
+##### [Breaking Schema Change] Event
+
+When the origin SpiceDB instance introduces a schema change that invalidates all currently computed permission sets, Materialize will issue a special event indicating this happened:
+
+```json
+{
+    "breaking_schema_change": {
+        "change_at": {
+            "token": "GiAKHjE3MTUzMzkzMTAzODQ2NDMxNzguMDAwMDAwMDAwMA=="
+        }
+}
+```
+
+The event indicates the revision at which the schema change happened.
+
+When the client receives this event, all previously indexed permission sets are rendered stale, and the client must rebuild the index with a call to [LookupPermissionSets] at the revision the schema change was introduced.
+
+Not every change to the origin permission system schema is considered breaking.
+
+###### Detecting Breaking Schema Changes In Development Environment
+
+The AuthZed team has optimized Materialize to reduce the number of instances where a change is considered breaking and thus renders permission set stale.
+To determine if a schema change is breaking, we provide the `materialize-cli` tool.
+
+<Callout type="info">
+  `materialize-cli` is still in early development, please reach out to us if you want to try it as part of AuthZed Materialize early access.
+</Callout>
+
+#### Errors
+
+##### FailedPrecondition: Revision Does Not Exist
+
+Whenever the client receives a `FailedPrecondition`, they should retry with a backoff.
+In this case, the client is asking for a revision that hasn’t been yet processed by Materialize.
+You may receive this error when:
+
+- the Materialize instances are restarting and catching up with all changes that have happened since it took a snapshot of your SpiceDB instance.  
+- A [BreakingSchemaChange] was emitted, and by happenstance, your client had to reconnect.
+  The Materialize server hasn’t yet rebuilt a new snapshot of your SpiceDB instance with the new schema to serve new events.
+
+### [LookupPermissionSets]
+
+This API complements [WatchPermissionSets].
+When you first bring on a system that needs permissions data, [LookupPermissionSets] lets you create an initial snapshot of the permissions data, and then you can use the [WatchPermissionSets] API to keep the snapshot updated.
+
+The API is resumable via cursors, meaning that the client is responsible for specifying the cursor that denotes the permission set to start streaming from, and the number of them to be streamed.
+If no cursor is provided, Materialize will start streaming from what it considers the first change.
+The number of events to stream is required.
+
+The API also supports specifying an optional revision via the `optional_at_revision`, which indicates Materialize should start streaming events at a revision at least as fresh as the provided one.
+The server will guarantee the revision selected is equal to or more recent than the requested revision.
+This is useful when the client has been notified a [breaking schema change] occurred and that they should rebuild their indexes.
+If both `optional_at_revision` and `optional_starting_after` are provided, the latter always takes precedence.
+
+<Callout type="warning">
+  Client **must** provide the revision token after a [breaking schema change] through `optional_starting_after`, otherwise Materialize will start streaming permission sets for whatever snapshot revision is available at the moment, and won't reflect the schema changes.
+</Callout>
+
+The current cursor is provided with each event in the stream, so if the consumer client crashes it knows where to restart from, alongside the revision at which the data is computed.
+Once an event is received, the recommended course of action is to store the following as part of the same transaction in your database:
+
+- The data to insert into the permission sets table  
+- The cursor into a table denoting the current state of the backfill  
+- The current revision token into a table denoting the snapshot revision of the stored Materialize data
+
+In the event of the customer consumer being restarted, it should:
+
+- Select the current cursor from the backfill cursor table  
+- Issue a [LookupPermissionSets] request with `optional_starting_after` set to the stored cursor  
+- Resume ingestion as usual
+
+<Callout type="info">
+  While AuthZed treats correctness very seriously, bugs may be identified that affect the correctness of the denormalized permissions computed by Materialize.
+  Those incidents should be rare, but consumers must have all the machinery in place to re-index via [LookupPermissionSets] at any given time.
+</Callout>
+
+#### Reindexing After A Breaking Schema Change
+
+Another scenario for invoking [LookupPermissionSets] is after a [breaking schema change] written to the origin SpiceDB instance.
+In this case, the index is rendered stale and a client must rebuild it by calling [LookupPermissionSets] at the revision the schema change was introduced.
+During this period, the previously ingested permission sets data will be stale.
+We are working on several options to minimize the lag caused and improve the developer experience:
+
+- On-Band: Stream breaking schema changes over [WatchPermissionSets] instead of requiring a [LookupPermissionSets] call.
+This will reduce the amount of changes to stream and reduce the time to reindex.
+- Off-Band: Support Staging Schemas in SpiceDB so that your application can call [LookupPermissionSets] over the staged schema changes
+
+These are the two recommended strategies to handle breaking schema events in your application:
+
+##### On-Band LookupPermissionSets Ingestion
+
+With on-band ingestion, your application reindexes all permission set data right after receiving a [breaking schema change].
+This will naturally lead to lag, but depending on the volume of data, your application may be able to withstand this.
+The tradeoff here is development velocity versus lag.
+If your application can't withstand lag during reindexing, please consider the off-band strategy.
+
+In this scenario, we recommend using the *versioned permission set tables strategy*: your application will keep track of various versions of the permission set.
+One will be the currently ingested and being updated with [WatchPermissionSets], and the new version is the result of a [BreakingSchemaChange] and is ingested with [LookupPermissionSets] while the previous version of the permission sets are being served.
+You should keep track of what is the current revision being served.
+
+##### Off-Band LookupPermissionSets Ingestion
+
+With an off-band ingestion strategy the client will avoid the lag by following a strategy similar to non-breaking relational database migrations: by transforming your schema following a four-phase migration.
+
+A new permission will be written to your SpiceDB schema that includes the changes, and it will be added to a new Materialize instance run in parallel to the current one, similar to a blue/green deployment.
+You will be able to run [LookupPermissionSets] against the new instance to obtain all the permission sets plus the ones corresponding to the newly added permission.
+Once your index is ingested and is updated with [WatchPermissionSets], your application should be able to switch to use the new permission and the old permission can be dropped from Materialize first, and then from your schema.
+
+This strategy requires more steps and careful planning, but in exchange completely avoids any lag.
+
+<Callout type="info">
+  For the time being, Materialize instances are not self-serve, so you'll need to work with your Account Team to execute the off-band ingestion strategy.
+</Callout>
+
+#### Request
+
+```json
+{
+  "limit": "the_number_of_events_to_stream",
+  "optional_at_revision": "minimum revision to start streaming from",
+  "optional_starting_after": "continue stream from the specified cursor"
+}
+```
+
+#### Response
+
+##### Permission Set Sent Over The Stream
+
+```json
+{
+    "change": {
+        "at_revision": {
+            "token": "GiAKHjE3MTUzMzk0Mzg2MjA4NzI1MDIuMDAwMDAwMDAwMA=="
+        },
+        "operation": "SET_OPERATION_ADDED",
+        "parent_set": {
+            "object_type": "thumper/resource",
+            "object_id": "seconddoc",
+            "permission_or_relation": "reader"
+        },
+        "child_member": {
+            "object_type": "thumper/user",
+            "object_id": "tom",
+            "optional_permission_or_relation": ""
+        }
+    },
+    "cursor": {
+        "limit": 10000,
+        "token": {
+            "token": "GiAKHjE3MTUzMzk0Mzg2MjA4NzI1MDIuMDAwMDAwMDAwMA=="
+        },
+        "starting_index": 1,
+        "completed_members": false
+    }
+}
+
+```
+
+The payload comes with the permission set data to store in your database table, and the cursor that points to that permission set in case resumption is necessary.
+The computed revision is also provided as part of the request via `at_revision` so that once the permission set is streamed, the consumer knows where to start streaming [WatchPermissionSets] from.
+
+The consumer should continue to stream permission sets indefinitely until it has not received further messages over the stream.
+Please note that the server may return `EOF` to denote the stream is closed, but that does not mean there aren't more changes to serve.
+The client **must** open a new stream with the last cursor, and continue streaming until an iteration of the stream yielded zero events.
+At this point, the backfill is completed, and the consumer can start processing change events using [WatchPermissionSets], using the stored snapshot revision.
+
+#### Errors
+
+##### InvalidArgument: Cursor Limit Does Not Match Request Limit
+
+The limit specified in the request, and the limit specified in the initiating request that led to the currently provided cursor differ.
+To solve this, make sure you use the same limit for the initiating request as for every subsequent request.
+The limit is optional once you provide a cursor since it’s stored in it.
+
+##### FailedPrecondition: Snapshot Not Found For Revision, Try Again Later
+
+Whenever the client receives a `FailedPrecondition`, they should retry with a backoff.
+In this case, the client is asking for a revision that hasn’t been yet processed by Materialize.
+You may receive this error when your client calls [LookupPermissionSets] right after receiving [BreakingSchemaChange] through the WatchPermissionsSets API.
+The client should retry with the same revision later on.
+
+##### Aborted: Requested Revision Is No Longer Available
+
+This error is returned when a new Materialize has deployed a new snapshot of the origin SpiceDB permission system.
+This happens on a regular cadence and is part of Materialize's internal maintenance operations.
+When this error is returned, it indicates the client should restart [LookupPermissionSets] afresh, dropping the cursor in `optional_starting_after`, and also dropping `optional_at_revision`.
+Every previously stored data should also be discarded.
+If the volume of data to ingest via [LookupPermissionSets] is large enough it takes many hours to consume, please get in touch with AuthZed support to tweak your instance accordingly.
+
+[WatchPermissionSets]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.materialize.v0#authzed.api.materialize.v0.WatchPermissionSetsService.WatchPermissionSets
+[LookupPermissionSets]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.materialize.v0#authzed.api.materialize.v0.WatchPermissionSetsService.LookupPermissionSets
+[LookupResources]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.v1#authzed.api.v1.PermissionsService.LookupResources
+[LookupSubjects]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.v1#authzed.api.v1.PermissionsService.LookupSubjects
+[BreakingSchemaChange]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.materialize.v0#authzed.api.materialize.v0.BreakingSchemaChange
+[Breaking Schema Change]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.materialize.v0#authzed.api.materialize.v0.BreakingSchemaChange
+[breaking schema change]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.materialize.v0#authzed.api.materialize.v0.BreakingSchemaChange
