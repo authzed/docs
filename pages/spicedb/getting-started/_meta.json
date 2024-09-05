@@ -3,6 +3,7 @@
   "install": "Installing SpiceDB",
   "installing-spicedb": { "display": "hidden" },
   "installing-zed": "Installing Zed",
+  "coming-from": "Coming From",
   "protecting-a-blog": "Protecting a Blog Application",
   "faq": "FAQ"
 }
