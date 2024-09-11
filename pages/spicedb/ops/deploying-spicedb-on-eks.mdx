@@ -154,8 +154,8 @@ If the `spicedb-le-tls` secret is not present, follow this [troubleshooting guid
 SpiceDB [dispatches] work across instances in the same deployment via [gRPC].
 We'll be securing this pod-to-pod communication with its own internal-only certificate:
 
-[gRPC]
-[dispatches]:
+[gRPC]: https://grpc.io
+[dispatches]: ../concepts/dispatch
 
 ```sh
 kubectl apply --server-side -f - <<EOF
