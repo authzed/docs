@@ -322,6 +322,72 @@ fact via a comment.
   CheckPermission requests potentially *incredibly* expensive.
 </Callout>
 
+#### .any (Arrow)
+
+`.any` is an alias for the standard arrow operation.
+Arrows allow for "walking" the hierarchy of a subject object's relations and permissions and reference a permission or relation on the resulting subject's object.
+
+`parent_folder.any(read)` is equivalent to `parent_folder->read`:
+
+```zed {13} /parent_folder.any(read)/
+definition user {}
+
+definition folder {
+    relation reader: user
+    permission read = reader
+}
+
+definition document {
+    relation parent_folder: folder
+    relation reader: user
+
+    permission read = reader + parent_folder->read
+    permission read_same = reader + parent_folder.any(read)
+}
+```
+
+#### .all (Intersection Arrow)
+
+`.all` defines an _intersection_ arrow: Similar to the standard arrow, it walks over all subjects on the referenced relation to a referenced permission/relation.
+Unlike the standard arrow, intersection arrow requires that **all** subjects found on the left side of the arrow have the requested permission/relation.
+
+For example, imagine a schema where a document is viewable by a user if they are a member of any group for the document:
+
+```zed {9}
+definition user {}
+
+definition group {
+  relation member: user
+}
+
+definition document {
+  relation group: group
+  permission view = group->member
+}
+```
+
+If the goal was to instead allow documents to be viewable only if the user is a member of _all_ the document's groups, the intersection arrow operator (`.all`) could be used:
+
+```zed {9} /group.all(member)/
+definition user {}
+
+definition group {
+  relation member: user
+}
+
+definition document {
+  relation group: group
+  permission view = group.all(member)
+}
+```
+
+In the above example, the user must be in the `member` relation for _all_ groups defined on the `group` relation of a document in order to have the `view` permission.
+
+<Callout type="warning">
+  Intersection arrows can impact performance since they require loading **all** results for the arrow. This is especially a concern for arrows that traverse relationship graphs with a high branching factor.
+  results for the arrow, it can impact performance if the arrow is very wide.
+</Callout>
+
 ### Naming Permissions
 
 Permissions define a set of objects that can perform an action or have some attribute, and thus **permissions should be named as verbs or nouns**, read as `(is/can) {permission name} (the object)`.
