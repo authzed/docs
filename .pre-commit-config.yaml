@@ -1,8 +1,8 @@
 repos:
-  - repo: "https://github.com/igorshubovych/markdownlint-cli"
-    rev: "v0.41.0"
+  - repo: "https://github.com/DavidAnson/markdownlint-cli2"
+    rev: "v0.14.0"
     hooks:
-      - id: "markdownlint-fix-docker"
+      - id: "markdownlint-cli2"
   - repo: "https://github.com/adrienverge/yamllint"
     rev: "v1.35.1"
     hooks:
