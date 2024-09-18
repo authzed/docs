@@ -142,7 +142,8 @@ Stored ZedTokens should be updated under these events:
 When these events happen, a new ZedToken is either returned or it should be requested by performing a check with full consistency.
 The result should be stored alongside the newly updated content in the application database.
 
-For a Postgres table this can be a standard `text` column.  If a fixed-width column is preferred, we recommend `varchar(1024)`.
+For a Postgres table this can be a standard `text` column.
+If a fixed-width column is preferred, we recommend `varchar(1024)`.
 
 <Callout type="info">
   For this purpose, Google's Zanzibar has a [ContentChangeCheck API][ccc-api] because it doesn't support configurable consistency like SpiceDB.
