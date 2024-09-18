@@ -1,0 +1,11 @@
+repos:
+  - repo: "https://github.com/DavidAnson/markdownlint-cli2"
+    rev: "v0.14.0"
+    hooks:
+      - id: "markdownlint-cli2"
+        types:
+          - "mdx"
+  - repo: "https://github.com/adrienverge/yamllint"
+    rev: "v1.35.1"
+    hooks:
+      - id: "yamllint"
