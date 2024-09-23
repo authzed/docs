@@ -83,6 +83,7 @@ For more information, refer to the [Datastore Migration documentation](/spicedb/
 | `datastore-gc-window`                    | Sets the window outside of which overwritten relationships are no longer accessible   | `--datastore-gc-window=1s`                      |
 | `datastore-revision-fuzzing-duration`    | Sets a fuzzing window on all zookies/zedtokens                                        | `--datastore-revision-fuzzing-duration=50ms`    |
 | `datastore-readonly`                     | Places the datastore into readonly mode                                               | `--datastore-readonly=true`                     |
+| `datastore-follower-read-delay-duration` | Amount of time to subtract from non-sync revision timestamps to ensure follower reads | `--datastore-follower-read-delay-duration=4.8s` |
 | `datastore-relationship-integrity-enabled` | Enables relationship integrity checks, only supported on CRDB | `--datastore-relationship-integrity-enabled=false` |
 | `datastore-relationship-integrity-current-key-id` | Current key id for relationship integrity checks | `--datastore-relationship-integrity-current-key-id="foo"` |
 | `datastore-relationship-integrity-current-key-filename` | Current key filename for relationship integrity checks | `--datastore-relationship-integrity-current-key-filename="foo"` |
