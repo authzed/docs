@@ -133,7 +133,7 @@ Relationship Integrity is a new experimental feature in SpiceDB that ensures tha
 Relationship integrity primarily ensures that all relationships written into the backing datastore were written via a trusted instance of SpiceDB or that the caller has access to the key(s) necessary to write those relationships.
 It ensures that if someone gains access to the underlying datastore, they cannot simply write new relationships of their own invention.
 
-- **What does relationship integrity *not* ensure?** 
+- **What does relationship integrity *not* ensure?**
 Since the relationship integrity feature signs each individual relationship, it does not ensure that removal of relationships is by a trusted party.
 Schema is also currently unverified, so an untrusted party could change it as well.
 Support for schema changes will likely come in a future version.
@@ -150,7 +150,8 @@ spicedb serve ...existing flags...
 
 Place the generated key contents (which must support an HMAC key) in `some.key`
 
-**Deployment Process**
+Deployment Process
+
 1. Start with a **clean** datastore for SpiceDB. **At this time, migrating an existing SpiceDB installation is not supported.**
 2. Run the standard `migrate` command but with relationship integrity flags included.
 3. Run SpiceDB with the relationship integrity flags included.
@@ -372,7 +373,7 @@ Read replicas are configured with the `--datastore-read-replica-*` family of fla
 
 ### Usage Notes
 
-- Fully ephemeral; _all_ data is lost when the process is terminated
+- Fully ephemeral; *all* data is lost when the process is terminated
 - Intended for usage with SpiceDB itself and testing application integrations
 - Cannot be ran highly-available as multiple instances will not share the same in-memory data
 
