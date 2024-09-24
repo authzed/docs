@@ -84,6 +84,10 @@ For more information, refer to the [Datastore Migration documentation](/spicedb/
 | `datastore-revision-fuzzing-duration`    | Sets a fuzzing window on all zookies/zedtokens                                        | `--datastore-revision-fuzzing-duration=50ms`    |
 | `datastore-readonly`                     | Places the datastore into readonly mode                                               | `--datastore-readonly=true`                     |
 | `datastore-follower-read-delay-duration` | Amount of time to subtract from non-sync revision timestamps to ensure follower reads | `--datastore-follower-read-delay-duration=4.8s` |
+| `datastore-relationship-integrity-enabled` | Enables relationship integrity checks, only supported on CRDB | `--datastore-relationship-integrity-enabled=false` |
+| `datastore-relationship-integrity-current-key-id` | Current key id for relationship integrity checks | `--datastore-relationship-integrity-current-key-id="foo"` |
+| `datastore-relationship-integrity-current-key-filename` | Current key filename for relationship integrity checks | `--datastore-relationship-integrity-current-key-filename="foo"` |
+| `datastore-relationship-integrity-expired-keys` | Config for expired keys for relationship integrity checks | `--datastore-relationship-integrity-expired-keys="foo"` |
 
 #### Overlap Strategy
 
@@ -124,6 +128,37 @@ ALTER ZONE default CONFIGURE ZONE USING gc.ttlseconds = 90000;
 ```
 
 [crdb-gc]: https://www.cockroachlabs.com/docs/stable/configure-replication-zones.html#replication-zone-variables
+
+#### Relationship Integrity
+
+Relationship Integrity is a new experimental feature in SpiceDB that ensures that data written into the supported backing datastores (currently: only CockroachDB) is validated as having been written by SpiceDB itself.
+
+- **What does relationship integrity ensure?**
+Relationship integrity primarily ensures that all relationships written into the backing datastore were written via a trusted instance of SpiceDB or that the caller has access to the key(s) necessary to write those relationships.
+It ensures that if someone gains access to the underlying datastore, they cannot simply write new relationships of their own invention.
+
+- **What does relationship integrity *not* ensure?**
+Since the relationship integrity feature signs each individual relationship, it does not ensure that removal of relationships is by a trusted party.
+Schema is also currently unverified, so an untrusted party could change it as well.
+Support for schema changes will likely come in a future version.
+
+**Setting up relationship integrity**
+To run with relationship integrity, new flags must be given to SpiceDB:
+
+```zed
+spicedb serve ...existing flags...
+--datastore-relationship-integrity-enabled
+--datastore-relationship-integrity-current-key-id="somekeyid"
+--datastore-relationship-integrity-current-key-filename="some.key"
+```
+
+Place the generated key contents (which must support an HMAC key) in `some.key`
+
+Deployment Process
+
+1. Start with a **clean** datastore for SpiceDB. **At this time, migrating an existing SpiceDB installation is not supported.**
+2. Run the standard `migrate` command but with relationship integrity flags included.
+3. Run SpiceDB with the relationship integrity flags included.
 
 ## Cloud Spanner
 
@@ -342,7 +377,7 @@ Read replicas are configured with the `--datastore-read-replica-*` family of fla
 
 ### Usage Notes
 
-- Fully ephemeral; _all_ data is lost when the process is terminated
+- Fully ephemeral; *all* data is lost when the process is terminated
 - Intended for usage with SpiceDB itself and testing application integrations
 - Cannot be ran highly-available as multiple instances will not share the same in-memory data
 
