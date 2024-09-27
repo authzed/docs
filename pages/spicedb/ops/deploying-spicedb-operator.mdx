@@ -104,7 +104,7 @@ If you don't already have zed installed, you can follow [this guide][install-zed
 For zed to connect to SpiceDB, we'll first have to create an insecure context named `local` for connecting to our locally forwarded port:
 
 ```sh
-zed context set local localhost:50051 "somerandomkeyhere" --insecure
+zed context set local localhost:50051 "averysecretpresharedkey" --insecure
 ```
 
 With our context set, we're free to make requests to our new, empty SpiceDB deployment:
