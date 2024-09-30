@@ -1,9 +1,12 @@
+import { SpeedInsights } from "@vercel/speed-insights/next"
+
 import Layout from '@/components/layout';
 import '../globals.css';
 
 export default function MyApp({ Component, pageProps }) {
   return (
     <Layout>
+      <SpeedInsights/>
       <Component {...pageProps} />
     </Layout>
   );
