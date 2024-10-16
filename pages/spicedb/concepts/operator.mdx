@@ -82,6 +82,104 @@ imageTag: v1.11.0
 
 If `disableImageValidation` is `true`, then the operator will not warn if it is running an image outside the allowed list.
 
+### Passing Additional Configuration
+
+You can use the `patches` field on the on the `SpiceDBCluster` to modify the resources the operator creates using [Strategic Merge Patch] patches or with [JSON6902] patch operations.
+
+[Strategic Merge Patch]: https://kubernetes.io/docs/tasks/manage-kubernetes-objects/update-api-object-kubectl-patch/
+[JSON6902]: https://www.rfc-editor.org/rfc/rfc6902
+
+#### Examples
+
+Strategic merge patch:
+
+```yaml
+apiVersion: authzed.com/v1alpha1
+kind: SpiceDBCluster
+metadata:
+  name: dev
+spec:
+  config:
+    datastoreEngine: memory
+  secretName: dev-spicedb-config
+  patches:
+  - kind: Deployment
+    patch:
+      metadata:
+        labels:
+          added: via-patch 
+      spec:
+         template:
+           metadata:
+             labels: 
+               added: pod-label-via-patch
+```
+
+Explicit JSON6902 Patch:
+
+```yaml
+apiVersion: authzed.com/v1alpha1
+kind: SpiceDBCluster
+metadata:
+  name: dev
+spec:
+  config:
+    datastoreEngine: memory
+  secretName: dev-spicedb-config
+  patches:
+  - kind: Deployment
+    patch:
+      op: add
+      path: /metadata/labels
+      value: 
+        added: via-patch
+```
+
+You can specify multiple patches for the same object (later in the list are applied over top of earlier in the list):
+
+```yaml
+apiVersion: authzed.com/v1alpha1
+kind: SpiceDBCluster
+metadata:
+  name: dev
+spec:
+  config:
+    datastoreEngine: memory
+  secretName: dev-spicedb-config
+  patches:
+  - kind: Deployment
+    patch:
+      op: add
+      path: /metadata/labels
+      value:
+        added: via-patch
+  - kind: Deployment
+    patch:
+      metadata:
+        labels:
+          added-2: via-patch-2
+```
+
+Wildcard * can be used to apply a patch to all resources:
+
+```yaml
+apiVersion: authzed.com/v1alpha1
+kind: SpiceDBCluster
+metadata:
+  name: dev
+spec:
+  config:
+    datastoreEngine: memory
+  secretName: dev-spicedb-config
+  patches:
+  - kind: '*'
+    patch:
+      op: add
+      path: /metadata/labels
+      value:
+        added: via-wildcard-patch
+```
+
 ### Bootstrapping CRDs
 
 The operator can optionally bootstrap CRDs on start up with `--crds=true`.
