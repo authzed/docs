@@ -210,7 +210,7 @@ Deployment Process
 - Recommended for single-region deployments
 - Postgres 15 or newer is required for optimal performance
 - Resiliency to failures only when PostgreSQL is operating with a follower and proper failover
-- Setup and operational complexity of running PostgreSQL
+- Carries setup and operational complexity of running PostgreSQL
 - Does not rely on any non-standard PostgreSQL extensions
 - Compatible with managed PostgreSQL services (e.g. AWS RDS)
 - Can be scaled out on read workloads using read replicas
@@ -257,6 +257,28 @@ Please note that the maximum number of replica URIs to list is 16.
 Read replicas are configured with the `--datastore-read-replica-*` family of flags.
 
 SpiceDB supports [PgBouncer](https://www.pgbouncer.org/) connection pooler and is part of the test suite.
+
+#### Transaction IDs and MVCC
+
+The Postgres implementation of SpiceDB's internal MVCC mechanism involves storing the internal transaction ID count associated with a given transaction
+in the rows written in that transaction.
+Because this counter is instance-specific, there are ways in which the data in the datastore can become desynced with that internal counter.
+Two concrete examples are the use of `pg_dump` and `pg_restore` to transfer data between an old instance and a new instance and setting up
+logical replication between a previously-existing instance and a newly-created instance.
+
+If you encounter this, SpiceDB can behave as though there is no schema written, because the data (including the schema) is associated with a future transaction ID and therefore
+isn't "visible" to Spicedb.
+You may see an error like this:
+
+```
+FAILED_PRECONDITION: object definition `some_definition` not found
+```
+
+If this occurs, you can use `spicedb datastore repair` (along with your usual datastore flags) to roll the transaction counter of the database forward until SpiceDB is able to resume normal operation:
+
+```
+spicedb datastore repair --datastore-engine=postgres --datastore-conn-uri=$DATASTORE_URI
+```
 
 ### Configuration
 
