@@ -290,13 +290,13 @@ EOF
 
 - Apply the above configuration with: `kubectl apply -f spicedb-lb.yaml`
 - Run the following command to get the External-IP of the load balancer: `kubectl get services spicedb-external-lb -o json | jq '.status.loadBalancer.ingress[0].hostname'`
-- Take the output of the command and add it as a C-Name record in your route 53 hosted zone
+- Take the output of the command and add it as a C-Name record in your Route 53 Hosted Zone. **Note**: When adding this ensure that it's added to the record containing the `dnsNames` that was specified while creating an Issuer & Certificate in Step 5.
 
 ### Test
 
 You can use the Zed CLI tool to make sure everything works as expected:
 
-`zed context set eks-guide demo.example.com averysecretpresharedkey`
+`zed context set eks-guide demo.example.com:50051 averysecretpresharedkey`
 
 Write a schema
 
