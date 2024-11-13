@@ -4,7 +4,7 @@
 
 When setting up a SpiceDB cluster for the first time, there's often a data ingest process required to
 set up the initial set of relations.
-This can be done with [`WriteRelationships`](https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.WriteRelationships) running in a loop, but you can only create 1,000 relationships at a time with this approach, and each transaction creates a new revision which incurs a bit of overhead.
+This can be done with [`WriteRelationships`](https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.WriteRelationships) running in a loop, but you can only create 1,000 relationships (by default) at a time with this approach, and each transaction creates a new revision which incurs a bit of overhead.
 
 For faster ingest, we provide an [`ImportBulkRelationships`](https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.ImportBulkRelationships) call, which takes advantage of client-side gRPC streaming to accelerate the process and removes the cap on the number of relations that can be written at once.
 
@@ -56,6 +56,20 @@ foreach (var relationshipsForRequest in transactionChunks) {
 
 The code for this example is [available here](https://github.com/authzed/authzed-dotnet/blob/main/examples/bulk-import/BulkImport/Program.cs).
 
+## Retrying and Resuming
+
+`ImportBulkrelationships`'s semantics only allow the creation of relationships.
+If a relationship is imported that already exists in the database, it will error.
+This can be frustrating when populating an instance if the process fails with a retryable error, such as those related to transient
+network conditions.
+The [authzed-go](https://github.com/authzed/authzed-go) client offers a [`RetryableClient`](https://github.com/authzed/authzed-go/blob/main/v1/retryable_client.go)
+with retry logic built into its `ImportBulkRelationships` logic.
+
+This is used internally by [zed](https://github.com/authzed/zed) and is exposed by the `authzed-go` library, and works by
+either skipping over the offending batch if the `Skip` strategy is used or falling back to `WriteRelationships` with a touch
+semantic if the `Touch` strategy is used.
+Similar logic can be implemented using the other client libraries.
+
 ## Why does it work this way?
 
 SpiceDB's `ImportBulkRelationships` service uses [gRPC client streaming] as a network optimization.
@@ -63,7 +77,9 @@ It **does not** commit those relationships to your datastore as it receives them
 at the start of the call and then commits that transaction when the client ends the stream.
 
 This is because there isn't a good way to handle server-side errors in a commit-as-you-go approach.
-If you use client streaming, you might receive an error that closes the stream, but that doesn't necessarily mean
+We take this approach because if we were to commit each chunk sent over the network, the semantics
+of server-side errors are ambiguous.
+For example, you might receive an error that closes the stream, but that doesn't necessarily mean
 that the last chunk you sent is where the error happened.
 The error source could be sent as error context, but error handling and resumption would be difficult and cumbersome.
 
