@@ -7,5 +7,6 @@
   "relationships": "Relationships",
   "caveats": "Relationship Caveats",
   "reflection-apis": "Reflection APIs",
-  "schema": "Schema Language"
+  "schema": "Schema Language",
+  "watch": "Watching Changes"
 }
