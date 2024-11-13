@@ -1,0 +1,96 @@
+import { Callout } from 'nextra/components';
+import { InlinePlayground } from '@/components/playground';
+
+# Watching Relationship Changes
+
+The [Watch API] in SpiceDB provides clients with the ability to watch changes made to [Relationships] within the system.
+
+A watch event will be generated for sets of relationships created, touched or deleted via the [WriteRelationships] or
+[DeleteRelationships] APIs, as well as any relationships changed via the bulk import API.
+
+[Watch API]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.WatchService
+[Relationships]: relationships
+[WriteRelationships]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.WriteRelationships
+[DeleteRelationships]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.DeleteRelationships
+
+## Subscribing to Watch
+
+To subscribe to receive watch changes, the `Watch` API call is made:
+
+```py
+watcher = client.Watch(WatchRequest{})
+for resp in watcher:
+  ... process the update ...
+```
+
+This will start returning all updates to relationships from the time at which the API call was made.
+
+### Receiving historical updates
+
+Historical updates (i.e. relationship changes in the past) can be retrieved by specifying a [ZedToken] in the `WatchRequest`:
+
+[ZedToken]: consistency#zedtokens
+
+```py
+watcher = client.Watch(WatchRequest{
+  OptionalStartCursor: myZedToken
+})
+```
+
+<Callout type="info">
+  Historical changes can only be requested until the configured garbage
+  collection window on the underlying datastore. This is typically 24 hours, but
+  may differ based on the datastore used
+</Callout>
+
+### Ensuring continuous processing
+
+To ensure continuous processing, the calling client _should_ execute the `Watch` call in a loop, sending in the last received [ZedToken] from `ChangesThrough` if the call disconnects:
+
+```py
+while not_canceled:
+  last_zed_token = None
+  try:
+    watcher = client.Watch(WatchRequest{
+      OptionalStartCursor: last_zed_token
+    })
+    for resp in watcher:
+      ... process the update ...
+      last_zed_token = resp.ChangesThrough
+  except Exception:
+    ... log exception ...
+    continue
+```
+
+## Transaction Metadata
+
+SpiceDB's [WriteRelationships] and [DeleteRelationships] APIs support an additional block of metadata called the [Transaction Metadata].
+
+When `optional_transaction_metadata` is specified on the [WriteRelationships] or [DeleteRelationships] request, it will be stored and returned alongside the relationships in the Watch API:
+
+```py
+client.WriteRelationships(WriteRelationshipsRequest{
+  Updates: [
+    { Relationship: "document:somedoc#viewer@user:tom" }
+  ],
+  OptionalTransactionMetadata: {
+    "request_id": "12345"
+  }
+})
+
+...
+
+WatchResponse{
+  Updates: [
+    { Relationship: "document:somedoc#viewer@user:tom" }
+  ],
+  OptionalTransactionMetadata: {
+    "request_id": "12345"
+  }
+}
+
+```
+
+This allows callers to correlate write operations and the updates that come from the Watch API.
+
+[Transaction Metadata]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.WriteRelationshipsRequest
