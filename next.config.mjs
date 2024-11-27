@@ -39,7 +39,7 @@ const withNextra = nextra({
 })
 
 export default withNextra({
-  basePath: process.env.BASE_DIR ?? undefined,
+  basePath: process.env.NEXT_PUBLIC_BASE_DIR ?? undefined,
   assetPrefix:
     process.env.VERCEL_ENV === 'production'
       ? 'https://docs-authzed.vercel.app/docs'
