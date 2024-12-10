@@ -1,0 +1,349 @@
+import { Callout, Steps } from 'nextra/components'
+
+# Deploy SpiceDB to Amazon ECS
+
+[Amazon Elastic Container Service (ECS)](https://aws.amazon.com/ecs/) is a fully managed container orchestration service that simplifies your deployment, management, and scaling of containerized applications.
+This guide will illustrate how you can install SpiceDB on Amazon ECS and is divided into 3 parts:
+
+- A quickstart deployment - A learning tool and **not** for deploying to production
+- A prod-friendly deployment
+- Limitations of using Amazon ECS as a deployment target for SpiceDB
+
+These are the pre-requisites to follow this guide:
+
+- An Amazon Web Services (AWS) account with relevant permissions
+- [AWS CLI](https://aws.amazon.com/cli/)
+- [The zed CLI](https://authzed.com/docs/spicedb/getting-started/installing-zed) (this is optional if you’re writing permissions via code)
+- [Docker installed](https://docs.docker.com/engine/install/) on your system
+
+## Quickstart
+
+<Steps>
+
+Let’s start by pushing the SpiceDB Docker image to Amazon Elastic Container Registry (ECR)
+
+### Push a SpiceDB Image to Amazon ECR
+
+#### Create an ECR Repository Using the AWS Console
+
+- Go to the **ECR Console** in the AWS Management Console.
+- Click on **Create repository**.
+- Enter a name for the repository, like `spicedb`, and configure any settings (like image scanning or encryption).
+- Click **Create repository** to finish.
+
+![Private-Repo](/images/private-repo.png)
+
+Alternately, you can create this using the AWS CLI with the following command:
+
+```sh
+aws ecr create-repository --repository-name spicedb --region <your-region>
+```
+
+#### Authenticate Docker to Amazon ECR
+
+Amazon ECR requires Docker to authenticate before pushing images.
+Retrieve an authentication token and authenticate your Docker client to your registry using the following command (you’ll need to replace `region` with your specific AWS region, like us-east-1)
+
+```sh
+aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <account-id>.dkr.ecr.<region>.amazonaws.com
+```
+
+#### Tag the Docker Image
+
+- Pull and build the SpiceDB image from Docker Hub using this command
+
+```sh
+docker pull authzed/spicedb:latest
+docker build -t spicedb .
+```
+
+- After the build completes, tag your image so that you can push it to the ECR repository.
+
+```sh
+docker tag spicedb:latest <account-id>.dkr.ecr.<region>.amazonaws.com/spicedb:latest
+```
+
+<Callout type="info">
+
+Note: If you are using an Apple ARM-based machine (Ex: Mac with Apple Silicon) and you eventually want to deploy it to a x86-based instance you need to build this image for multi-architecture using the `buildx` command.
+
+You cannot use `docker buildx build` with an image reference directly.
+Instead, create a lightweight `Dockerfile` to reference the existing image by adding this one line:
+
+`FROM authzed/spicedb:latest` and save it in a directory.
+
+While in that directory, build and push a Multi-Architecture Image using the `buildx` command:
+
+```sh
+docker buildx build --platform linux/amd64,linux/arm64 -t <account-id>.dkr.ecr.<region>.amazonaws.com/spicedb:latest --push .
+```
+
+</Callout>
+
+#### Push the Image to ECR
+
+- Once the image is tagged, push it to your newly-created ECR repository:
+
+```sh
+docker push <account-id>.dkr.ecr.<region>.amazonaws.com/spicedb:latest
+```
+
+Replace `account-id` and `region` with your AWS account ID and region.
+
+- Go to the Amazon ECR Console and navigate to the `spicedb` repository.
+Verify that the `spicedb:latest` image is available.
+
+Note: All the above commands are pre-filled with your account details and can be seen by opening your repository on ECR and clicking the **View push commands** button
+
+![View Commands](/images/view-cmds.png)
+
+### Run a SpiceDB task in an ECS Cluster
+
+#### Create an Amazon ECS Cluster
+
+Using **AWS Console**:
+
+- Go to the ECS console and click ‘Create cluster’
+- Give it a name and namespace (optional)
+- For this guide, we will use ‘AWS Fargate (serverless)’ as the infrastructure for our cluster
+
+Alternately, you can create this using the AWS CLI with this command:
+
+```sh
+aws ecs create-cluster --cluster-name spicedb-cluster
+```
+
+![Create Cluster](/images/create-cluster.png)
+
+#### Create IAM Roles (if they don’t exist)
+
+If you don’t see these roles, you can create them as follows:
+
+**Creating `ecsTaskExecutionRole`:**
+
+The ECS Task Execution Role is needed for ECS to pull container images from ECR, write logs to CloudWatch, and access other AWS resources.
+
+- Go to the **IAM Console**.
+- Click **Create Role**.
+- For **Trusted Entity Type**, choose **AWS Service**.
+- Select **Elastic Container Service** and then **Elastic Container Service Task**.
+- Click **Next** and attach the following policies:
+  - **AmazonECSTaskExecutionRolePolicy**
+- Give the role the name `ecsTaskExecutionRole` and create the role.
+
+Or use these commands using AWS CLI:
+
+```sh
+aws iam create-role --role-name ecsTaskExecutionRole \
+--assume-role-policy-document '{"Version": "2012-10-17", "Statement": [{"Effect": "Allow", "Principal": {"Service": "ecs-tasks.amazonaws.com"}, "Action": "sts:AssumeRole"}]}'
+```
+
+Attach the `AmazonECSTaskExecutionRolePolicy` to the role:
+
+```sh
+aws iam attach-role-policy --role-name ecsTaskExecutionRole \
+--policy-arn arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+```
+
+**Creating `ecsTaskRole` (Optional):**
+
+The ECS Task Role is optional and should be created if your containers need access to other AWS services such as Amazon RDS or Secrets Manager.
+
+- Go to **IAM Console** and click **Create Role**.
+- Choose **Elastic Container Service** and then select **Elastic Container Service Task** as the trusted entity.
+- Attach any necessary policies (such as `SecretsManagerReadWrite` or other policies based on your application’s needs).
+- Name the role `ecsTaskRole` and click **Create role**.
+
+Or use these commands using AWS CLI:
+
+- Create the role using:
+
+```sh
+aws iam create-role --role-name ecsTaskRole \
+--assume-role-policy-document '{"Version": "2012-10-17", "Statement": [{"Effect": "Allow", "Principal": {"Service": "ecs-tasks.amazonaws.com"}, "Action": "sts:AssumeRole"}]}'
+
+```
+
+- Attach any policies based on the specific AWS services your application needs access to:
+
+```sh
+aws iam attach-role-policy --role-name ecsTaskRole \
+--policy-arn arn:aws:iam::<policy-arn-for-service-access>
+```
+
+#### Define the ECS Task Definition
+
+The task definition defines how SpiceDB containers will be configured and run.
+Below is the JSON configuration for the task definition.
+To create a task definition:
+
+- AWS Console
+  - Look for Amazon ECS and then click on Task Definitions on the left
+  - Click Create new task definition -> Create new task definition with JSON
+
+Copy the JSON below:
+
+```json
+{
+  "family": "spicedb-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],  
+  "cpu": "512",  
+  "memory": "1024",  
+  "executionRoleArn": "arn:aws:iam::<account-id>:role/ecsTaskExecutionRole", //Copy the ARN from the ecsTaskExecutionRole created above
+  "taskRoleArn": "arn:aws:iam::<account-id>:role/ecsTaskRole", //Copy the ARN from the ecsTaskRole created above
+  "containerDefinitions": [
+    {
+      "name": "spicedb",
+      "image": "<account-id>.dkr.ecr.<region>.amazonaws.com/spicedb",  //ECR Repository URI
+      "essential": true,
+      "command": [
+                "serve",
+                "--grpc-preshared-key",
+                "somekey"  
+            ],
+      "portMappings": [
+        {
+          "containerPort": 50051,
+          "hostPort": 50051,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+       "options": {
+                    "awslogs-group": "/ecs/spicedb-ecs-ec2",
+                    "mode": "non-blocking",
+                    "awslogs-create-group": "true",
+                    "max-buffer-size": "25m",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "ecs"
+                }
+      }
+    }
+  ]
+}
+```
+
+The `command` section specifies `serve` which is the [primary command for running SpiceDB](https://authzed.com/docs/spicedb/concepts/commands#serve).
+This command serves the gRPC and HTTP APIs by default along with a pre-shared key for authenticated requests.
+
+**Note:** This is purely for learning purposes so any permissions and relationships written to this instance of SpiceDB will be stored in-memory and not in a persistent database.
+To write relationships to a persistent database, create a Amazon RDS instance for Postgres and note down the DB name, Master Password and Endpoint.
+You can add those into the task definition JSON in the `command` array like this:
+
+```json
+"command": [
+                "serve",
+                "--grpc-preshared-key",
+                "somekey",
+                "--datastore-engine",
+                "postgres",
+                "--datastore-conn-uri",
+                "postgres://<username>:<password>@<RDS endpoint>:5432/<dbname>?sslmode=require"
+            ],
+```
+
+The defaults for `username` and `dbname` are usually `postgres`
+
+You can also use the AWS CLI by storing the above JSON in a file an then running this command
+
+```sh
+aws ecs register-task-definition --cli-input-json file://spicedb-task-definition.json
+```
+
+#### Run the task in a ECS Cluster
+
+Now that we’ve defined a task, we can create a task that would run within your ECS cluster.
+Click on your ECS Cluster created earlier
+
+- Click on the Tasks tab, and then Run new task
+- Under Compute Configuration, click on Launch Type (since this is just a demo)
+- Choose FARGATE as Launch Type and LATEST as Platform Version
+- Under Deployment Configuration choose Task
+- Under Task Definition, select the Task Definition you created previously and choose the LATEST revision
+- You can specify 1 as the number of Desired tasks
+- Under Networking, choose the appropriate VPC, Subnets and Security Groups.
+If you haven’t created these, go ahead and do so allowing traffic on the required ports (e.g., 50051 for gRPC, and 8443 for HTTP API if needed)
+- Click ‘Create’ to create a task.
+This will show up as a Row under the Tasks tab
+
+![Create Task](/images/create-task.png)
+  
+If all goes well, you can see the status of the Task as “Running”.
+Click on the task and then the Logs tab to see if SpiceDB is running on ECS.
+This is the output you should expect:
+
+![Task Logs](/images/task-logs.png)
+
+If there’s some error, check the logs for what could have gone wrong.
+Common errors include Access Permissions via IAM roles, and also VPC and Subnet rules.
+
+### Add schema and test permissions in SpiceDB
+
+Let’s add a schema and permissions to the instance of SpiceDB running on ECS.
+The task you just successfully started has a Public IP address associated with it.
+This is what we’ll use to access SpiceDB
+
+- Open the Task and click on the Networking tab.
+- Copy the Public IP
+- In your terminal set the current context in `zed` by typing:
+
+```sh
+zed context set spicedb-ecs <Public IP>:50051 somekey --insecure
+```  
+
+where `somekey` is the key you specified in your task definition earlier.
+The `insecure` flag bypasses TLS handshake, again for our learning purposes.
+
+Any commands via the zed CLI will interact with this instance of SpiceDB.
+Write a simple schema like so:
+
+```sh
+zed schema write <(cat << EOF
+definition user {}
+definition post {
+    relation reader: user
+    relation writer: user
+    permission read = reader + writer
+    permission write = writer
+}
+EOF
+)
+```
+
+Store relationships based on this schema.
+
+```sh
+zed relationship create post:1 writer user:sid
+zed relationship create post:1 reader user:lena
+```
+
+Check for permissions or lookup subjects using zed
+
+```sh
+zed permission check post:1 read user:lena
+zed permission lookup-subjects post:1 read user
+```
+
+</Steps>
+
+---
+
+## CloudFormation Template to Deploy SpiceDB to ECS
+
+In production you probably want to rely on best-practices such as using Infrastructure as Code, Storing Secrets securely and using TLS.
+You can also use a Load Balancer in front of your ECS task.
+Here’s a CloudFormation template that does what was described in Part 1 of this guide, along with these best practices.
+
+(This part of the guide is coming soon)
+
+---
+
+## Limitations of deploying SpiceDB on Amazon ECS
+
+SpiceDB uses [horizontal dispatch](https://authzed.com/docs/spicedb/concepts/dispatch) to maintain high cache hit rates.
+The main challenge with ECS is that SpiceDB nodes cannot easily discover each other out of the box, which is essential for horizontal dispatch to work.
+You could in theory use AWS Cloud Map for service discovery, but its DNS propagation delays may make it unsuitable for a mission-critical service with low latency requirements.
+The recommended deployment target for SpiceDB is Kubernetes so for AWS you could consider [deploying to Amazon EKS](https://authzed.com/docs/spicedb/ops/deploying-spicedb-on-eks) instead.
