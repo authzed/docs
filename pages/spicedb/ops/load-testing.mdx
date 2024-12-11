@@ -238,15 +238,98 @@ The Authzed team almost always recommends against `fully_consistent`, in lieu of
 
 You can read more about consistency [here](../concepts/consistency).
 
-## SpiceDB Load Generation Tool
+## Load Generation using Thumper
 
-We have an in-house load generator called Thumper.
+### Overview
+
+We have an in-house load generator called [Thumper][thumper].
 We recommend you build your load tests with Thumper.
 Thumper allows you to distribute checks, lookups, and writes as you see fit.
 Thumper has been engineered by the Authzed team to provide a realistic and even flow of requests.
 If you use Thumper, it will be easier for the Authzed team to understand your load test and help you make adjustments.
 
-[Please contact Authzed](https://authzed.com/call) to request the Thumper binaries and docs.
+[thumper]: https://github.com/authzed/thumper
+
+### Writing Scripts
+
+The arguments to `thumper migrate` or `thumper run` are script files, which
+contain one or more scripts.
+The scripts look something like this:
+
+```yaml
+---
+# An identifier for the script
+name: "check"
+
+# The relative weights of the scripts within a run. If multiple scripts are defined
+# for the same run, each time the runner executes, it will select a random script
+# according to the relative weight. If there is only one script, set this to 1.
+weight: 40
+
+# The steps block defines a series of actions that will happen in order on each
+# execution of this script.
+steps:
+  # The ops available are a subset of the full set of available gRPC endpoints.
+  # Most of the main ones are available and there are examples in the scripts
+  # folder of the repo.
+  - op: "CheckPermission"
+    # This is Golang template syntax and various values from the runtime can be
+    # inserted. Documentation of the available values is available in the readme:
+    # https://github.com/authzed/thumper?tab=readme-ov-file#go-template-properties
+    resource: "{{ .Prefix }}resource:firstdoc"
+    subject: "{{ .Prefix }}user:tom"
+    permission: "view"
+
+# Triple-dash means this is a separate yaml document within the same file
+---
+name: "read"
+weight: 30
+steps:
+  - op: "ReadRelationships"
+    resource: "{{ .Prefix }}resource:firstdoc"
+    numExpected: 2
+```
+
+### Running the scripts
+
+You can use `thumper migrate` to run a script once for setup purposes.
+This is often used to write a schema and an initial set of relationships.
+
+```sh
+thumper migrate --endpoint spicedb:50051 --token t_some_token --insecure true ./scripts/schema.yaml
+```
+
+You can then start the runner with:
+
+```sh
+thumper run --endpoint spicedb:50051 --token t_some_token --insecure true ./scripts/example.yaml
+```
+
+Modify the options above to suit your environment.
+
+### Changing the Load
+
+By default, the runner selects one script from the set and runs it once per second.
+To increase the volume of requests by a single runner, use the `THUMPER_QPS` environment variable or the `--qps` flag:
+
+```sh
+thumper run --token presharedkeyhere --qps 5
+```
+
+The above will spawn 5 goroutines, which will each issue calls once per second.
+
+### Configuration
+
+Similar to SpiceDB, you can either use command line flags or environment variables to supply options.
+All flags are discoverable with `thumper --help`.
+Any flag can be converted to its environment variable by capitalizing and prepending with `THUMPER_`.
+For example, `--qps` can be configured via the `THUMPER_QPS` environment variable.
+
+### Monitoring the Thumper Process
+
+To help understand the throughput and behavior of your load test, Thumper exposes a metrics endpoint
+at `:9090/metrics` in Prometheus format.
+This can be scraped by your metrics framework to provide insight into your tests.
 
 ## Monitoring a SpiceDB Load Test
 
