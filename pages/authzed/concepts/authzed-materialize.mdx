@@ -237,7 +237,7 @@ INSERT INTO set_to_document_view (child_set, document_id)
          ('group:shared#member', '456');
 ```
 
-Note that an extra entry (`document:123#view`, `123`) was added to simplify the join side (avoiding the union in the previous example).
+Note that an extra entry (`document:123#view`, `123`) was added to simplify the join side (avoiding the `left join` in the previous example).
 The queries are a bit simpler, though they can't be used to answer any permission check other than `document#view@user`.
 
 Find all documents `evan` can `view`:
