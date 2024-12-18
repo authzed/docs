@@ -2,6 +2,5 @@
   "observability": "Observability Tooling",
   "deploying-spicedb-operator": "Deploying the SpiceDB Operator",
   "deploying-spicedb-on-eks": "Deploying SpiceDB on Amazon EKS",
-  "spicedb-ecs":"Deploying SpiceDB to Amazon ECS",
   "bulk-operations": "Bulk Importing Relationships"
 }
