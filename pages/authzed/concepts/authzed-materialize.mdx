@@ -95,7 +95,7 @@ resource#edit@user
 
 ### Relational Database
 
-You can find [here](https://dbfiddle.uk/OP5GwjoG) a runnable version of these examples
+You can find a runnable version of these examples [here](https://dbfiddle.uk/dX10Cu3Z).
 
 These are tables you likely already have in your database
 
@@ -162,22 +162,19 @@ Find all documents `evan` can `view:`
 
 ```sql
 SELECT d.id FROM documents d
-  INNER JOIN set_to_set s2s ON d.id = s2s.parent_id
-  INNER JOIN member_to_set m2s ON m2s.set_id = s2s.child_id AND m2s.set_type = s2s.child_type AND m2s.set_relation = s2s.child_relation
+  LEFT JOIN set_to_set s2s ON d.id = s2s.parent_id
+  INNER JOIN member_to_set m2s ON (m2s.set_id = s2s.child_id AND m2s.set_type = s2s.child_type AND m2s.set_relation = s2s.child_relation) OR (d.id = m2s.set_id )
   INNER JOIN users u ON u.id = m2s.member_id
-  WHERE u.name = 'evan' 
-    AND m2s.member_type = 'user' 
-    AND m2s.member_relation = '' 
-    AND s2s.parent_type = 'document' 
-    AND s2s.parent_relation='view'
-UNION
-SELECT d.id FROM documents d
-  INNER JOIN member_to_set m2s ON d.id = m2s.set_id
-  INNER JOIN users u ON u.id = m2s.member_id
-  WHERE u.name = 'evan' 
-    AND m2s.member_type = 'user' 
-    AND m2s.member_relation = '' 
-    AND m2s.set_type = 'document' AND m2s.set_relation = 'view';
+  WHERE 
+   u.name = 'evan' AND 
+   m2s.member_type = 'user' AND 
+   m2s.member_relation = '...' AND ((
+      s2s.parent_type = 'document' AND
+      s2s.parent_relation='view'
+    ) OR (
+      m2s.set_type = 'document' AND
+      m2s.set_relation = 'view'
+    ));
 ```
 
 | id |
@@ -189,22 +186,19 @@ The same query, by changing only the username, will find all documents `victor` 
 
 ```sql
 SELECT d.id FROM documents d
-  INNER JOIN set_to_set s2s ON d.id = s2s.parent_id
-  INNER JOIN member_to_set m2s ON m2s.set_id = s2s.child_id AND m2s.set_type = s2s.child_type AND m2s.set_relation = s2s.child_relation
+  LEFT JOIN set_to_set s2s ON d.id = s2s.parent_id
+  INNER JOIN member_to_set m2s ON (m2s.set_id = s2s.child_id AND m2s.set_type = s2s.child_type AND m2s.set_relation = s2s.child_relation) OR (d.id = m2s.set_id )
   INNER JOIN users u ON u.id = m2s.member_id
-  WHERE u.name = 'victor' 
-    AND m2s.member_type = 'user' 
-    AND m2s.member_relation = '' 
-    AND s2s.parent_type = 'document' 
-    AND s2s.parent_relation='view'
-UNION
-SELECT d.id FROM documents d
-  INNER JOIN member_to_set m2s ON d.id = m2s.set_id
-  INNER JOIN users u ON u.id = m2s.member_id
-  WHERE u.name = 'victor' 
-    AND m2s.member_type = 'user' 
-    AND m2s.member_relation = '' 
-    AND m2s.set_type = 'document' AND m2s.set_relation = 'view';
+  WHERE 
+   u.name = 'victor' AND 
+   m2s.member_type = 'user' AND 
+   m2s.member_relation = '...' AND ((
+      s2s.parent_type = 'document' AND
+      s2s.parent_relation='view'
+    ) OR (
+      m2s.set_type = 'document' AND
+      m2s.set_relation = 'view'
+    ));
 ```
 
 | id |
