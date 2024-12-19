@@ -168,7 +168,7 @@ SELECT d.id FROM documents d
   WHERE 
    u.name = 'evan' AND 
    m2s.member_type = 'user' AND 
-   m2s.member_relation = '...' AND ((
+   m2s.member_relation = '' AND ((
       s2s.parent_type = 'document' AND
       s2s.parent_relation='view'
     ) OR (
@@ -192,7 +192,7 @@ SELECT d.id FROM documents d
   WHERE 
    u.name = 'victor' AND 
    m2s.member_type = 'user' AND 
-   m2s.member_relation = '...' AND ((
+   m2s.member_relation = '' AND ((
       s2s.parent_type = 'document' AND
       s2s.parent_relation='view'
     ) OR (
