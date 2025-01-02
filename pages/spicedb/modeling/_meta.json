@@ -6,5 +6,6 @@
   "protecting-a-list-endpoint": "Protecting a List Endpoint",
   "migrating-schema": "Updating and Migrating Schema",
   "access-control-management": "Access Control Management",
-  "access-control-audit": "Access Control Audit"
+  "access-control-audit": "Access Control Audit",
+  "attributes": "Attributes"
 }
