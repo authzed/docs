@@ -41,7 +41,7 @@ Self relationships relate an object to itself.
 A self relationship is walked with an [arrow](/spicedb/concepts/schema#--arrow) back to an object's self.
 In practice, relating something to itself toggles something on.
 
-In the example below, there is a schema that enforces the following authorization logic: a user can only view a document if the user is related to the document as viewer and editing is enabled for the document. (this is the same authorization logic used in the wildcard example above)
+In the example below, there is a schema that enforces the following authorization logic: a user can only view a document if the user is related to the document as viewer and editing is enabled for the document (this is the same authorization logic used in the wildcard example above).
 
 In the example below, to enable editing for a document, a self relationship using the ```edit_enabled``` relation must be written.
 When a ```document``` is related to itself with the ```edit_enabled``` relation, that relation can be walked to itself (with the arrow) to determine who relates to the document as an ```editor```.
