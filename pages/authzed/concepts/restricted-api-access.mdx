@@ -35,31 +35,32 @@ Service Accounts can have an arbitrary number of Tokens.
 
 <Callout type="warning">The entire contents of a Token is considered secret.</Callout>
 
-Tokens come in the form of `{optional_prefix_with_many_underscores}_{key}`.
+Tokens come in the form of `{prefix}_{key}`.
 
-In open source SpiceDB, the contents of the prefix can be changed without invalidating the token.
-This is also true of AuthZed products, but we do not recommend it.
-Features in AuthZed products make assumptions about tokens (such as the how they're logged in [Audit Logs]).
-
-Here's an example Token from a SpiceDB Dedicated deployment:
+Here's what an example Restricted API Access Token looks like.
 
 ```
-sdbst_h256_049e6a4cb1d061b451304380a155a828326c7b0fd7bfecd219a078c0572aae03850be90d064e2bc61eec31187154af7acf71e96641e39a21b32aa23cd99f62d2ee319851663c3a1203d91181ef5386a33493c5cab49a0a2c0ccd127b08415b2d
+sdbst_h256_thisisnotaverysecuresecret
 ```
 
-To create a Token, you can use the following command:
+This is what you should forward in your API calls to your SpiceDB Dedicated cluster.
+
+If you are using [static configuration] in your own SpiceDB Enterprise deployment, you'd need to
+generate a token hash to be included in your configuration YAML.
+Please note you should hash the cleartext secret without the prefix.
+You can generate the hash of a secret as follows:
 
 ```command
-printf "sdbst_h256_%s\n" $(echo -n thisisnotaverysecuresecret | sha256sum | cut -d' ' -f1)
+echo -n thisisnotaverysecuresecret | sha256sum
 ```
 
-This should output:
+The command should output the hash, which can be referenced in your static configuration
 
 ```
-sdbst_h256_71c73ba92f2032416b18a4f4fffb2a825755bea6a8430f2622ab1f3fb35a10d0
+71c73ba92f2032416b18a4f4fffb2a825755bea6a8430f2622ab1f3fb35a10d0
 ```
 
-[Audit Logs]: audit-logging
+[static configuration]: #static-configuration
 
 ## Roles
 
@@ -158,10 +159,10 @@ Enterprise builds of SpiceDB can have their API access configured statically wit
   These configuration files contain hashes of Tokens and should be treated like secrets.
 </Callout>
 
-This functionality is configured with the following flags:
+This functionality is configured with the following flag:
 
-- `--extender-authzed-fgam-endpoint`
-- `--extender-authzed-fgam-preshared-key`
+- `--extender-enabled authzed-fgam`
+- `--extender-authzed-fgam-endpoint /path/to/configuration.yaml`
 
 Here's an example showcasing the structure of static configuration:
 
