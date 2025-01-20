@@ -126,3 +126,12 @@ Using the web dashboard, navigate to the Permission System's settings page to fi
 
 Audit logging is configured using command-line flags.
 See the full list of flags in the [Extenders section](extenders#flags).
+
+### Tokens in Audit Logs
+
+To trace a request back to the token used, generate a SHA-256 hash of the token. This hash can then be matched to the `token_hash` field in the metadata section of the audit log. For example:
+
+```bash
+$ python3 -c "import hashlib; print(hashlib.sha256('<authzed-token>'.encode()).hexdigest())"     
+> 2ffb5caf16962e4371bc036d8de2a99dfcea1ae70091ef2953d633a88d05321a  
+```
