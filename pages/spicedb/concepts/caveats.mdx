@@ -117,21 +117,31 @@ A few important notes:
   Otherwise, the values in the `Relationship` take precedence over those in the `CheckPermissionRequest`.
   - Context of a caveat provided in `Relationship` is stored alongside the relationship and is provided to the caveat expression at runtime.
     This allows for **partial** binding of data at write time.
-- The Context is a `structpb`, which is defined by Google and represents JSON-like data: [https://pkg.go.dev/google.golang.org/protobuf/types/known/structpb](https://pkg.go.dev/google.golang.org/protobuf/types/known/structpb)
+- The Context is a `structpb`, which is defined by Google [and represents JSON-like data](https://pkg.go.dev/google.golang.org/protobuf/types/known/structpb).
   - To send 64-bit integers, encode them as strings.
 - A relationship cannot be duplicated, with or without a caveat, e.g. two relationships that differ only on their use of a caveat cannot both exist.
 - When deleting a relationship, a caveat does not need to be specified; the matching relationship will be deleted if present.
 
-## Issuing Checks
+## Providing Caveat Context via the API
+
+### `CheckPermission`
 
 When issuing a [CheckPermission request][check-req], additional caveat context can be specified to represent the known context at the time of the check:
 
 ```textproto
 CheckPermissionRequest {
-  Resource: …,
-  Permission: …,
-  Subject: …,
-  Context: { "user_ip": "1.2.3.4" }
+  resource: {
+    object_type: "book",
+    object_id: "specificbook",
+  },
+  permission: "view",
+  subject: {
+    object: {
+        object_type: "user",
+        object_id: "specificuser",
+    },
+  },
+  context: { "user_ip": "1.2.3.4" }
 }
 ```
 
@@ -147,9 +157,55 @@ In the case of `PERMISSIONSHIP_CONDITIONAL_PERMISSION`, SpiceDB will also return
 [states]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.CheckPermissionResponse.Permissionship
 [check-resp]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.CheckPermissionResponse
 
-## LookupResources and LookupSubjects
+## `LookupResources` and `LookupSubjects`
 
 Similarly to **CheckPermission**, both **LookupResources** and **LookupSubjects** can be provided with additional context and will return one of the two permission states for each of the results found (either has permission or conditionally has permission).
+
+```textproto
+LookupResourcesRequest {
+  resource_object_type: "book",
+  permission: "view",
+  subject: {
+    object: {
+        object_type: "user",
+        object_id: "specificuser",
+    },
+  },
+  context: { "user_ip": "1.2.3.4" }
+}
+```
+
+### Providing Caveat Context with `zed CLI
+
+When using `zed` command-line tool to interact with SpiceDB, the context can be provided using the `--caveat-context` flag.
+The caveat context should be a JSON representation that matches the types defined in the schema.
+For example, with the following caveat:
+
+```zed
+caveat first_caveat(first_parameter int, second_parameter string) {
+  first_parameter == 42 && second_parameter == "hello world"
+}
+```
+
+We would need to forward a JSON object like:
+
+```json
+{
+  "first_parameter": 42,
+  "second_parameter": "hello world"
+}
+```
+
+The full command would look like:
+
+```shell
+zed check -r resource:specificresource#view -p view -s user:specificuser --caveat-context '{"first_parameter": 42, "second_parameter": "hello world"}'
+```
+
+<Callout type="info">
+    Please note the use of single quotes to escape the characters in the JSON representation of the context.
+    You don't need character escaping when providing context using zed in the Authzed Playground.
+</Callout>
 
 ## Full Example
 
