@@ -1,0 +1,143 @@
+import { Callout } from 'nextra/components';
+import YouTube from 'react-youtube';
+
+# Expiring Relationships
+
+<Callout type="info">
+    Expiring Relationships is available from SpiceDB 1.40 onwards.
+</Callout>
+
+<Callout type="info">
+    The clock used to determine if a relationship is expired is that of the underlying SpiceDB datastore.
+    This gets trickier when using distributed databases like CockroachDB or Spanner, where clocks have an uncertainty range.
+    When operating your own database, it's key to keep node clocks in sync - we recommend services like [Amazon Time Sync Service](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/set-time.html).
+    You should evaluate the impact of clock drift in your application.
+</Callout>
+
+A common use-case is to model relationships that expire after a certain amount of time.
+This is useful to grant temporary access to a resource.
+
+Until now, caveats was the recommended way to support time-bound permissions, but that has some limitations:
+
+- It requires clients to provide the `now` timestamp.
+  This is additional complexity for clients.
+- Expired caveats are not automatically garbage collected.
+  This can lead to a large number of caveats in the system and increasing cost for loading those into the runtime and evaluating them.
+
+SpiceDB supports expiring relationships, which lets users define relationships that expire at a given point in time.
+
+## Schema Use
+
+Expiring relationships follow a similar use to caveated subject types.
+The novelty here is that, in order to disambiguate between a caveat named `expiration` and the native `expiration` feature,
+users would need to add a `use` clause to the schema definition to enable the feature.
+
+```zed
+use expiration
+
+definition folder {}
+
+definition resource {
+    relation folder: folder with expiration
+}
+```
+
+## API Use
+
+Expiration of a relationship is [on a per-relationship basis](https://buf.build/authzed/api/docs/63b8911ef2871c56e5048d1f40a8473f98457ca9:authzed.api.v1#authzed.api.v1.Relationship)
+at write time, using `WriteRelationships` or `BulkImportRelationships` APIs.
+The expiration is denoted as part of the `OptionalExpiresAt` field in the relationship.
+
+```textproto
+WriteRelationshipsRequest {
+  Updates: [
+    RelationshipUpdate{
+      Operation: CREATE
+      Relationship: {
+        Resource: {
+            ObjectType: "resource",
+            ObjectId: "someresource",
+        },
+        Relation: "viewer",
+        Subject: {
+            ObjectType: "user",
+            ObjectId: "sarah",
+        },
+        OptionalExpiresAt: "2022-12-31T23:59:59Z"
+      }
+    }
+  ]
+}
+```
+
+## Garbage Collection
+
+Reclaiming expiring relationships is governed by the same mechanism (and flags) as the deletion of the history of
+relationship changes that powers SpiceDB's own MVCC (Multi-Version Concurrency Control), and heavily depends on
+the datastore chosen.
+
+- Datastores like Spanner and CockroachDB have built-in support for expiring SQL rows, so Garbage Collection is done by the database itself.
+  In both cases, expired relationships will be reclaimed after 24 hours, and that can't be changed without directly manipulating the SQL schema.
+- Datastores like Postgres and MySQL support it using the same GC job that reclaims old relationship versions, which runs every 5 minutes.
+  Unlike Spanner and CockroachDB, you can govern the GC window with the corresponding flags.
+  Relationships will be reclaimed after 24 hours by default.
+
+<Callout type="info">
+    GC Window should be adjusted based on the needs of the application. How far does you application need to go back in time?
+    If this is a common use-case, we recommend drastrically reducing the GC window (e.g. 1h, or 30 minutes).
+    This means SpiceDB will have to evaluate less data when serving authorization checks, which can improve performance
+    drastically in large-scale deployments.
+</Callout>
+
+## Migrating Off Expirationg With Caveats
+
+If you implemented expiration using caveats, this section describes the process to migrate to the new expiration feature.
+
+1. Rename your caveat if you had named it `expiration`
+2. Add the new subject type to your relation, and add also a combination where both are used:
+
+    ```zed
+    caveat ttl(timeout duration, now string, timeout_creation_timestamp string) {
+       timestamp(now) - timestamp(timeout_creation_timestamp) < timeout
+    }
+
+    definition folder {}
+
+    definition resource {
+        relation folder: folder with ttl
+    }
+    ```
+
+    Becomes:
+
+    ```zed
+    use expiration
+
+    caveat ttl(timeout duration, now string, timeout_creation_timestamp string) {
+       timestamp(now) - timestamp(timeout_creation_timestamp) < timeout
+    }
+
+    definition folder {}
+
+    definition resource {
+        relation folder: folder with ttl | folder with expiration | folder with ttl and expiration
+    }
+    ```
+
+3. Migrate all relationships to use both the caveat and the new expiration.
+   This is needed because only one relationship is allowed for a combination of resource/permission/subject.
+4. Validate that the new expiration feature works as expected by not providing the needed context for the evaluation
+   of the `ttl` caveat.
+5. Once validated, migrate completely to the new expiration feature by writting all relationships with only expiration
+  and without caveat.
+6. Drop the caveat from your schema once migration is completed
+
+    ```zed
+    use expiration
+
+    definition folder {}
+
+    definition resource {
+        relation folder: folder with expiration
+    }
+    ```
