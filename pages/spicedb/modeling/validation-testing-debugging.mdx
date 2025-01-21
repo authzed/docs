@@ -57,6 +57,29 @@ assertTrue:
 assertFalse: []
 ```
 
+#### Caveat Context In Assertions
+
+<Callout type="info">
+    In order to escape JSON representation of the caveat context in an assertion you should use single-quotes
+</Callout>
+
+You can provide caveat context as part of an assertion:
+
+```yaml
+assertTrue:
+  - 'document:validation-testing-debugging#reader@user:you with {"somecondition": 42, "anothercondition": "hello world"}'
+assertFalse: []
+```
+
+You can also assert that a caveat context is required for a particular expression using `assertCaveated`:
+
+```yaml
+assertTrue: []
+assertCaveated:
+  - "document:validation-testing-debugging#reader@user:you"
+assertFalse: []
+```
+
 ### Check Watches
 
 Check Watches are type of assertion that updates in real-time with changes in the Playground.
@@ -66,6 +89,15 @@ Below is an example of configuring a Check Watch:
 
 <br />
 <YouTube videoId="UmvGPU8iQ-0" />
+
+Watches can show any of the following states:
+
+- ✅ Permission Allowed
+- ❔ Permission Caveated
+- ❌ Permission Denied
+- ⚠️ Invalid Check
+
+![check-watches](/images/check-watches.png)
 
 ### Expected Relations
 
@@ -86,6 +118,33 @@ For example, if a schema is modeled hierarchically with a _platform_, _organizat
 project:docs#admin:
   - "[organization:authzed] is <project:docs#owner>"
   - "[user:rauchg] is <platform:vercel#admin>"
+```
+
+### Caveats in Expected Relations
+
+When caveats are involved, and due to the unbounded nature of it, the Playground will focus on enumerating
+expected relations with "maybe" semantics.
+You can't specify an expected relation with a specific caveat context, because the Playground supports inferring those for you,
+and that would lead potentially to an infinite number of possible caveat context values.
+
+What you'll see is an expected relation with the caveat context denoted as `[...]` right after the resource.
+This reads as `user:rauchg may have admin permission over platform vercel`.
+
+```yaml
+project:docs#admin:
+  - "[user:rauchg[...]] is <platform:vercel#admin>"
+```
+
+### Exceptions in Expected Relations
+
+There are also scenarios where an expected relation is described with an exception, which indicates that a permission
+holds for a specific resource and subject pair, but with a potential exception.
+
+The following example reads like: `user:rauchg has admin permission over platform vercel, unless user:rauchg is banned`.
+
+```yaml
+project:docs#admin:
+  - "[user:rauchg[...]] is <platform:vercel#admin>/<platform:vercel#banned>"
 ```
 
 ## Check Tracing
