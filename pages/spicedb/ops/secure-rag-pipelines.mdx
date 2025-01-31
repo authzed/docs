@@ -2,30 +2,31 @@ import JupyterNotebookViewer from "@/components/JupyterNotebookViewer";
 
 # Secure Your RAG Pipelines With Fine Grained Authorization
 
-Here's how you can use SpiceDB to safeguard sensitive data in RAG pipelines. 
-You will learn how to pre-filter and post-filter vector database queries with a list of authorized object IDs to improve security and efficiency. 
+Here's how you can use SpiceDB to safeguard sensitive data in RAG pipelines.
+You will learn how to pre-filter and post-filter vector database queries with a list of authorized object IDs to improve security and efficiency.
 
 This guide uses OpenAI, Pinecone, Langchain, Jupyter Notebook and SpiceDB
 
 ## Why is this important?
 
-Building enterprise-ready AI poses challenges around data security, accuracy, scalability, and integration, especially in compliance-regulated industries like healthcare and finance. 
-Firms are increasing efforts to mitigate risks associated with LLMs, particularly regarding sensitive data exfiltration of personally identifiable information and/or sensitive company data. 
+Building enterprise-ready AI poses challenges around data security, accuracy, scalability, and integration, especially in compliance-regulated industries like healthcare and finance.
+Firms are increasing efforts to mitigate risks associated with LLMs, particularly regarding sensitive data exfiltration of personally identifiable information and/or sensitive company data.
 The primary mitigation strategy is to build guardrails around Retrieval-Augmented Generation (RAG) to safeguard data while also optimizing query response quality and efficiency.
 
-To enable precise guardrails, one must implement permissions systems with advanced fine grained authorization capabilities such as returning lists of authorized subjects and accessible resources. 
+To enable precise guardrails, one must implement permissions systems with advanced fine grained authorization capabilities such as returning lists of authorized subjects and accessible resources.
 Such systems ensure timely access to authorized data while preventing exfiltration of sensitive information, making RAGs more efficient and improving performance at scale.
 
 ## Setup and Prerequisites
 
-- Access to a [SpiceDB](https://authzed.com/spicedb) instance.  You can find instructions for installing SpiceDB [here](https://authzed.com/docs/spicedb/getting-started/install/macos)
+- Access to a [SpiceDB](https://authzed.com/spicedb) instance.
+You can find instructions for installing SpiceDB [here](https://authzed.com/docs/spicedb/getting-started/install/macos)
 - A [Pinecone account](https://www.pinecone.io/) and API key
 - An [OpenAI Platform account](https://platform.openai.com/docs/overview) and API key
 - [Jupyter Notebook](https://jupyter.org/) running locally
 
-#### Running SpiceDB
+### Running SpiceDB
 
-Once you've installed SpiceDB, run a local instance with this command in your terminal: 
+Once you've installed SpiceDB, run a local instance with this command in your terminal:
 
 `spicedb serve --grpc-preshared-key rag-rebac-walkthrough`
 
@@ -59,9 +60,9 @@ ting=(empty) ClusterDispatchCacheConfig.Enabled=true ClusterDispatc
 
 Clone the `workshops` [repository](https://github.com/authzed/workshops/) to your system and type `cd secure-rag-pipelines` to enter the working directory.
 
-Start the `01-rag.ipynb` Notebook locally by typing `jupyter 01-rag.ipynb` (or `python3 -m notebook`) in your terminal. 
+Start the `01-rag.ipynb` Notebook locally by typing `jupyter 01-rag.ipynb` (or `python3 -m notebook`) in your terminal.
 
-## Add Fine Grained Authorization 
+## Add Fine Grained Authorization
 
 Here's the Jupyter Notebook with step-by-step instructions
 
@@ -69,10 +70,8 @@ Here's the Jupyter Notebook with step-by-step instructions
 
 ## Using DeepSeek or Google Colab
 
-If you want to replace the OpenAI LLM with the DeepSeek (or any other) LLM, [check out this branch](https://github.com/authzed/workshops/tree/deepseek). 
+If you want to replace the OpenAI LLM with the DeepSeek (or any other) LLM, [check out this branch](https://github.com/authzed/workshops/tree/deepseek).
 It follows similar steps as the above guide, but uses the DeepSeek LLM via [OpenRouter](https://openrouter.ai/)
 
-To run through this workshop on a cloud notebook, [here's a branch](https://github.com/authzed/workshops/tree/google-colab) that uses Google Colab. 
-Note that this guide requires an instance of SpiceDB running on [AuthZed Serverless](https://app.authzed.com/) for which you can create a free account. 
-
-
+To run through this workshop on a cloud notebook, [here's a branch](https://github.com/authzed/workshops/tree/google-colab) that uses Google Colab.
+Note that this guide requires an instance of SpiceDB running on [AuthZed Serverless](https://app.authzed.com/) for which you can create a free account.
