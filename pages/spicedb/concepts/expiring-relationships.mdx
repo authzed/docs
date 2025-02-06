@@ -1,5 +1,6 @@
 import { Callout } from 'nextra/components';
 import YouTube from 'react-youtube';
+import { InlinePlayground } from '@/components/playground';
 
 # Expiring Relationships
 
@@ -26,7 +27,7 @@ SpiceDB supports expiring relationships, which lets users define relationships t
     You should evaluate the impact of clock drift in your application.
 </Callout>
 
-## Schema Use
+## Schema
 
 Expiring relationships follow a similar use to caveated subject types.
 The novelty here is that users need to enable the feature using the `use` clause.
@@ -45,7 +46,7 @@ definition resource {
 }
 ```
 
-## API Use
+## API
 
 The expiration of a relationship is [on a per-relationship basis](https://buf.build/authzed/api/docs/63b8911ef2871c56e5048d1f40a8473f98457ca9:authzed.api.v1#authzed.api.v1.Relationship)
 at write time, using `WriteRelationships` or `BulkImportRelationships` APIs.
@@ -71,6 +72,24 @@ WriteRelationshipsRequest {
     }
   ]
 }
+```
+
+## Playground
+
+Write relationships in the Playground with the format `[expiration:2025-12-31T23:59:59Z]`: 
+
+```yaml
+resource:r1#folder@folder:folder1[expiration:2025-12-31T23:59:59Z]
+```
+
+<br/><InlinePlayground reference="naky4PZ86uTc"/>
+
+## zed
+
+Use the `--expiration-time` flag to pass the expiration time of the relationship in RFC 3339 format:
+
+```shell zed
+zed relationship create resource:r1 folder folder:folder1 --expiration-time 2025-12-31T23:59:59Z
 ```
 
 ## Garbage Collection
