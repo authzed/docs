@@ -47,6 +47,29 @@ spicedb migrate head
 
 In most cases, this command will not actually cause downtime, but one should confirm that's the case before executing on production environments with uptime requirements.
 
+## DB Migration Compatibility
+
+On startup, SpiceDB checks to see whether its desired DB migration tag matches the DB migration tag held in the database.
+If they differ, the instance will error out, which prevents an instance from coming up when it can't run against the current datastore DDL.
+
+SpiceDB only performs this check on startup, which means that a new DB migration won't cause existing SpiceDB instances to break (unless they restart for other reasons),
+provided that the DDL is compatible with the existing instance.
+
+The information in the Upgrade Notes of a given release can help determine whether the DDL will be compatible between two versions.
+Using the SpiceDB Operator is the easiest way to ensure that all DB migrations are compatible and applied correctly.
+
+### Overriding Migration Compatibility
+
+Under some circumstances, you may want to run a version of SpiceDB against a DB migration other than the one it's expecting.
+If you know that the version of SpiceDB you want to run is compatible with the DB migration, you can use the `--datastore-allowed-migrations`
+flag on `spicedb serve` to provide a list of compatible DB migrations:
+
+```
+spicedb serve <...> --datastore-allowed-migrations add-expiration-support --datastore-allowed-migrations add-transaction-metadata-table
+```
+
+More information on the use case/motivation is available in [this issue](https://github.com/authzed/spicedb/issues/2135).
+
 ## Recommendations
 
 ### Managed services
