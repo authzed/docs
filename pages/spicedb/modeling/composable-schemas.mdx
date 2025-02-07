@@ -148,12 +148,18 @@ This syntax:
 
 ```zed
 partial view_partial {
-    relation user: user
-    permission view = user
+    relation viewer: user
+    permission view = viewer
+}
+
+partial edit_partial {
+    relation editor: user
+    permission edit = editor
 }
 
 definition resource {
     ...view_partial
+    ...edit_partial
 }
 ```
 
@@ -163,6 +169,9 @@ is equivalent to this declaration:
 definition resource {
     relation user: user
     permission view = user
+
+    relation editor: user
+    permission edit = editor
 }
 ```
 
@@ -172,6 +181,7 @@ definition resource {
 * Circular references between partials are treated as errors.
 * You can only reference partial declarations.
 Attempting to reference other declaration types (e.g. a definition or a caveat) with a partial reference will result in a error.
+* A partial can be referenced any number of times, and a partial or definition can contain any number of partial references.
 
 ## An Example Workflow
 
