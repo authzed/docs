@@ -64,6 +64,19 @@ definition resource {
 
 This compilation step provides new features that help you modularize your schema, making organization and collaboration easier.
 
+## Breaking Changes
+
+The composable schema compiler has some breaking changes relative to the compiler used internally by SpiceDB on a `WriteSchema` call.
+A new version of SpiceDB should not cause your schema to break.
+However, the schema compiler introduces some new keywords (among other changes), which may result in a schema that can be
+written to SpiceDB but not compiled.
+
+The obvious breaking changes are `import` and `partial` becoming keywords, so if you have a permission or
+relation with those names, your schema can't be compiled.
+We have also reserved some keywords for future use, such as `and`, `or`, and `not`.
+If you get an unexpected `TokenTypeKeyword` error, this is probably why.
+A full list of reserved keywords can be found in [`keyword` map definition](https://github.com/authzed/spicedb/blob/main/pkg/composableschemadsl/lexer/lex_def.go#L74) in the lexer.
+
 ## Import Statements
 
 Import statements allow you to break down a schema along the lines of top-level declarations.
