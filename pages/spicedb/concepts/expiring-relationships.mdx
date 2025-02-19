@@ -56,7 +56,7 @@ The expiration is denoted with the `OptionalExpiresAt` field in the relationship
 WriteRelationshipsRequest {
   Updates: [
     RelationshipUpdate{
-      Operation: CREATE
+      Operation: TOUCH
       Relationship: {
         Resource: {
             ObjectType: "resource",
@@ -73,6 +73,10 @@ WriteRelationshipsRequest {
   ]
 }
 ```
+
+<Callout type="warning">
+    When using the WriteRelationships API, it is recommended to always use the TOUCH operation to create and update expiring relationships. If a relationship has expired but has not yet been garbage collected, using the CREATE operation will return an error for that relationship.
+</Callout>
 
 ## Playground
 
