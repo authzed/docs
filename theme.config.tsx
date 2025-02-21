@@ -62,7 +62,7 @@ const config: DocsThemeConfig = {
   },
   sidebar: {
     toggleButton: true,
-    defaultMenuCollapseLevel: 2,
+    defaultMenuCollapseLevel: 1,
   },
   feedback: {
     content: (

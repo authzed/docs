@@ -2,6 +2,7 @@
   "macos": "macOS",
   "docker": "Docker",
   "kubernetes": "Kubernetes",
+  "eks": "AWS EKS",
   "debian": "Ubuntu/Debian",
   "rhel": "RHEL/CentOS",
   "windows": "Windows"
