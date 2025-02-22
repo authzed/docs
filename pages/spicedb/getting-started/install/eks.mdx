@@ -1,4 +1,5 @@
 import { Callout, Steps } from 'nextra/components'
+import YouTube from 'react-youtube';
 
 # Installing SpiceDB on AWS EKS
 
@@ -220,16 +221,16 @@ metadata:
   name: dev                                #Change optional: you can change this name, but be mindful of your dispatch TLS certificate URL and service selector
 spec:
   config:
-    datastoreEngine: postgres                          
-    replicas:  2                           #Change optional: at least two replicas are required for HA           
+    datastoreEngine: postgres
+    replicas:  2                           #Change optional: at least two replicas are required for HA
     tlsSecretName: spicedb-le-tls
     dispatchUpstreamCASecretName: dispatch-root-secret
     dispatchClusterTLSCertPath: "/etc/dispatch/tls.crt"
     dispatchClusterTLSKeyPath: "/etc/dispatch/tls.key"
   secretName: dev-spicedb-config
-  patches:                                
+  patches:
   - kind: Deployment
-     patch:  
+     patch:
        spec:
          template:
            spec:
@@ -249,7 +250,7 @@ kind: Secret
 metadata:
   name: dev-spicedb-config
 stringData:
-  preshared_key: "averysecretpresharedkey" #Change: this is your API token definition and should be kept secure. 
+  preshared_key: "averysecretpresharedkey" #Change: this is your API token definition and should be kept secure.
   datastore_uri: "postgresql://user:password@postgres.com:5432" #Change: this is a Postgres connection string
 EOF
 ```
@@ -282,7 +283,7 @@ spec:
     protocol: TCP
     targetPort: 9090
   selector:
-    app.kubernetes.io/instance: dev-spicedb    #Change optional: in this example, "dev" is the name of the SpiceDBCluster object. If you didn't use "dev", change "dev" to what you used. 
+    app.kubernetes.io/instance: dev-spicedb    #Change optional: in this example, "dev" is the name of the SpiceDBCluster object. If you didn't use "dev", change "dev" to what you used.
   sessionAffinity: None
   type: LoadBalancer
 EOF
@@ -325,3 +326,7 @@ zed permission check doc:1 view user:emilia
 ```
 
 </Steps>
+
+Here's a YouTube video that describes the above steps:
+
+<YouTube videoId="KT1RqTBeA1c" className="youtubeContainer" opts={{playerVars:{start: 1127}}} />
