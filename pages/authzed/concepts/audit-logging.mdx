@@ -76,7 +76,7 @@ This is an example policy that grants the necessary permissions to write to a Fi
             "Resource": "EXAMPLE_FIREHOSE_ARN"
         }
     ]
-} 
+}
 ```
 
 [Kinesis]: https://aws.amazon.com/kinesis
@@ -126,3 +126,15 @@ Using the web dashboard, navigate to the Permission System's settings page to fi
 
 Audit logging is configured using command-line flags.
 See the full list of flags in the [Extenders section](extenders#flags).
+
+### Tokens in Audit Logs
+
+To identify which token was used for a request, look up its SHA-256 hash in the audit log's metadata.
+Each request's `token_hash` field contains the hashed value of the original token used.
+
+Example of generating a SHA-256 hash:
+
+```bash
+$ python3 -c "import hashlib; print(hashlib.sha256('<authzed-token>'.encode()).hexdigest())"
+> 2ffb5caf16962e4371bc036d8de2a99dfcea1ae70091ef2953d633a88d05321a
+```
