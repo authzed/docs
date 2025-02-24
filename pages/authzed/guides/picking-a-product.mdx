@@ -11,18 +11,18 @@ This document is designed to give a high-level overview so that you can effectiv
 
 The following table maps functional requirements to their respective products:
 
-| Requirements           | [Open Source] | [Serverless] | [Cloud] | [Dedicated] | [Enterprise] |
-| ---------------------- | :-----------: | :----------: | :-----: | :---------: | :----------: |
-| [Management Dashboard] |       ❌      |      ✅      |    ✅   |     ✅      |      ❌      |
-| No-commit pricing      |       ✅      |      ✅      |    ✅   |     ❌      |      ❌      |
-| [Private Networking]   |       DIY     |      ❌      |    ❌   |     ✅      |      DIY     |
-| [Workload Isolation]   |       DIY     |      ❌      |    ✅   |     ✅      |      DIY     |
-| Self-Hosted            |       ✅      |      ❌      |    ❌   |     ❌      |      ✅      |
-| [Automated Updates]    |       DIY     |      ✅      |    ✅   |     ✅      |      DIY     |
-| [SOC2 Compliance]      |       DIY     |      ❌      |    ❌   |     ✅      |      DIY     |
-| [Audit Logging]        |       ❌      |      ❌      |    ✅   |     ✅      |      ✅      |
-| [Multi-Region]         |       DIY     |      ❌      |    ❌   |     ✅      |      DIY     |
-| [Security Embargo]     |       ❌      |      ✅      |    ✅   |     ✅      |      ✅      |
+| Requirements           | [Open Source] | [Cloud] | [Dedicated] | [Enterprise] |
+| ---------------------- | :-----------: | :-----: | :---------: | :----------: |
+| [Management Dashboard] |       ❌       |    ✅   |     ✅      |      ❌      |
+| No-commit pricing      |       ✅      |    ✅   |     ❌      |      ❌      |
+| [Private Networking]   |       DIY     |    ❌   |     ✅      |      DIY     |
+| [Workload Isolation]   |       DIY     |    ✅   |     ✅      |      DIY     |
+| Self-Hosted            |       ✅      |    ❌   |     ❌      |      ✅      |
+| [Automated Updates]    |       DIY     |    ✅   |     ✅      |      DIY     |
+| [SOC2 Compliance]      |       DIY     |    ❌   |     ✅      |      DIY     |
+| [Audit Logging]        |       ❌       |    ✅   |     ✅      |      ✅      |
+| [Multi-Region]         |       DIY     |    ❌   |     ✅      |      DIY     |
+| [Security Embargo]     |       ❌       |    ✅   |     ✅      |      ✅      |
 
 [Cloud]: #cloud
 [Dedicated]: #dedicated
@@ -95,43 +95,9 @@ Upcoming functionality includes:
 - Deployments in more regions, including Europe
 - Full SpiceDB API access: Watch API, HTTP API
 - Enterprise features like Audit Logs, Restricted API Access
-- Removal of Serverless limitations: no rate-limits or prefixes required
 
 AuthZed Cloud is built on the same foundation that's serving critical production workloads in AuthZed Dedicated.
 During Early Access, the self-service control-plane functionality is considered experimental, but SpiceDB continues to operate with its existing level of reliability and performance.
-
-### Serverless
-
-[Serverless] is the Authzed product for self-service, shared-hardware SpiceDB clusters for evaluation purposes.
-
-- This is a fully managed service run by the experts at Authzed.
-- Clusters are autonomously configured and scaled without any configuration necessary.
-- Provision and manage permission systems and view real time metrics all from one place: our dashboard.
-
-<Callout type="warning">
-  **Warning:**
-  Serverless is not an accurate representation of Dedicated/Cloud performance.
-
-  Serverless lacks [Workload Isolation] and hardware configurations customized for your usage patterns.
-
-  [Workload Isolation]: ../concepts/workload-isolation
-</Callout>
-
-Serverless charges on a monthly billing period based on API usage.
-
-API usage is measured in two dimensions: operations (dispatches) and storage (relationships stored).
-
-The first 1 million of each are free.
-
-| Dimension             | Price per Million |
-|-----------------------|-------------------|
-| Dispatched Operations | $1                |
-| Relationships Stored  | $1                |
-
-To understand and calculate your workloads' dispatches, you can refer to the documentation on [debugging requests][debug].
-
-[Serverless]: https://app.authzed.com/?utm_source=docs&utm_content=spicedb+serverless
-[debug]: /spicedb/modeling/validation-testing-debugging
 
 ### Open Source
 

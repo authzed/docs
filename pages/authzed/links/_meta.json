@@ -15,7 +15,7 @@
     "newWindow": true
   },
   "status": {
-    "title": "Serverless Status Page",
+    "title": "Service Status Page",
     "href": "https://status.authzed.com?utm_source=docs",
     "newWindow": true
   }
