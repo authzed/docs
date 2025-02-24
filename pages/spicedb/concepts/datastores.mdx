@@ -41,7 +41,7 @@ For more information, refer to the [Datastore Migration documentation](/spicedb/
 </Callout>
 
 - Recommended for multi-region deployments, with configurable region awareness
-- Enables horizonally scalablity by adding more SpiceDB and CockroachDB instances
+- Enables horizontal scalablity by adding more SpiceDB and CockroachDB instances
 - Resiliency to individual CockroachDB instance failures
 - Query and data balanced across the CockroachDB
 - Setup and operational complexity of running CockroachDB
@@ -75,10 +75,17 @@ For more information, refer to the [Datastore Migration documentation](/spicedb/
 | `datastore-max-tx-retries`               | Maximum number of times to retry a query before raising an error                      | `--datastore-max-tx-retries=50`                 |
 | `datastore-tx-overlap-strategy`          | The overlap strategy to prevent New Enemy on CRDB (see below)                         | `--datastore-tx-overlap-strategy=static`        |
 | `datastore-tx-overlap-key`               | The key to use for the overlap strategy (see below)                                   | `--datastore-tx-overlap-key="foo"`              |
-| `datastore-conn-max-idletime`            | Maximum idle time for a connection before it is recycled                              | `--datastore-conn-max-idletime=60s`             |
-| `datastore-conn-max-lifetime`            | Maximum lifetime for a connection before it is recycled                               | `--datastore-conn-max-lifetime=300s`            |
-| `datastore-conn-max-open`                | Maximum number of concurrent connections to open                                      | `--datastore-conn-max-open=10`                  |
-| `datastore-conn-min-open`                | Minimum number of concurrent connections to open                                      | `--datastore-conn-min-open=1`                   |
+| `datastore-conn-pool-read-max-idletime` | Maximum amount of time a connection can idle in a remote datastore's connection pool (default 30m0s) | `--datastore-conn-pool-read-max-idletime=30m0s` |
+| `datastore-conn-pool-read-max-lifetime` | Maximum amount of time a connection can live in a remote datastore's connection pool (default 30m0s) | `--datastore-conn-pool-read-max-lifetime=30m0s` |
+| `datastore-conn-pool-read-max-lifetime-jitter` | Waits rand(0, jitter) after a connection is open for max lifetime to actually close the connection   | `--datastore-conn-pool-read-max-lifetime-jitter=6m` |
+| `datastore-conn-pool-read-max-open` | Number of concurrent connections open in a remote datastore's connection pool (default 20)          | `--datastore-conn-pool-read-max-open=20` |
+| `datastore-conn-pool-read-min-open` | Number of minimum concurrent connections open in a remote datastore's connection pool (default 20)   | `--datastore-conn-pool-read-min-open=20` |
+| `datastore-conn-pool-write-healthcheck-interval`| Amount of time between connection health checks in a remote datastore's connection pool (default 30s)| `--datastore-conn-pool-write-healthcheck-interval=30s` |
+| `datastore-conn-pool-write-max-idletime` | Maximum amount of time a connection can idle in a remote datastore's connection pool (default 30m0s) | `--datastore-conn-pool-write-max-idletime=30m0s` |
+| `datastore-conn-pool-write-max-lifetime` | Maximum amount of time a connection can live in a remote datastore's connection pool (default 30m0s) | `--datastore-conn-pool-write-max-lifetime=30m0s` |
+| `datastore-conn-pool-write-max-lifetime-jitter` | Waits rand(0, jitter) after a connection is open for max lifetime to actually close the connection   | `--datastore-conn-pool-write-max-lifetime-jitter=6m` |
+| `datastore-conn-pool-write-max-open` | Number of concurrent connections open in a remote datastore's connection pool (default 10)          | `--datastore-conn-pool-write-max-open=10` |
+| `datastore-conn-pool-write-min-open` | Number of minimum concurrent connections open in a remote datastore's connection pool (default 10)   | `--datastore-conn-pool-write-min-open=10` |
 | `datastore-query-split-size`             | The (estimated) query size at which to split a query into multiple queries            | `--datastore-query-split-size=5kb`              |
 | `datastore-gc-window`                    | Sets the window outside of which overwritten relationships are no longer accessible   | `--datastore-gc-window=1s`                      |
 | `datastore-revision-fuzzing-duration`    | Sets a fuzzing window on all zookies/zedtokens                                        | `--datastore-revision-fuzzing-duration=50ms`    |
@@ -293,22 +300,29 @@ spicedb datastore repair --datastore-engine=postgres --datastore-conn-uri=$DATAS
 
 | Parameter                             | Description                                                                         | Example                                      |
 | ------------------------------------- | ----------------------------------------------------------------------------------- | -------------------------------------------- |
-| `datastore-conn-max-idletime`         | Maximum idle time for a connection before it is recycled                            | `--datastore-conn-max-idletime=60s`          |
-| `datastore-conn-max-lifetime`         | Maximum lifetime for a connection before it is recycled                             | `--datastore-conn-max-lifetime=300s`         |
-| `datastore-conn-max-open`             | Maximum number of concurrent connections to open                                    | `--datastore-conn-max-open=10`               |
-| `datastore-conn-min-open`             | Minimum number of concurrent connections to open                                    | `--datastore-conn-min-open=1`                |
+| `datastore-conn-pool-read-max-idletime` | Maximum amount of time a connection can idle in a remote datastore's connection pool (default 30m0s) | `--datastore-conn-pool-read-max-idletime=30m0s` |
+| `datastore-conn-pool-read-max-lifetime` | Maximum amount of time a connection can live in a remote datastore's connection pool (default 30m0s) | `--datastore-conn-pool-read-max-lifetime=30m0s` |
+| `datastore-conn-pool-read-max-lifetime-jitter` | Waits rand(0, jitter) after a connection is open for max lifetime to actually close the connection   | `--datastore-conn-pool-read-max-lifetime-jitter=6m` |
+| `datastore-conn-pool-read-max-open` | Number of concurrent connections open in a remote datastore's connection pool (default 20)          | `--datastore-conn-pool-read-max-open=20` |
+| `datastore-conn-pool-read-min-open` | Number of minimum concurrent connections open in a remote datastore's connection pool (default 20)   | `--datastore-conn-pool-read-min-open=20` |
+| `datastore-conn-pool-write-healthcheck-interval`| Amount of time between connection health checks in a remote datastore's connection pool (default 30s)| `--datastore-conn-pool-write-healthcheck-interval=30s` |
+| `datastore-conn-pool-write-max-idletime` | Maximum amount of time a connection can idle in a remote datastore's connection pool (default 30m0s) | `--datastore-conn-pool-write-max-idletime=30m0s` |
+| `datastore-conn-pool-write-max-lifetime` | Maximum amount of time a connection can live in a remote datastore's connection pool (default 30m0s) | `--datastore-conn-pool-write-max-lifetime=30m0s` |
+| `datastore-conn-pool-write-max-lifetime-jitter` | Waits rand(0, jitter) after a connection is open for max lifetime to actually close the connection   | `--datastore-conn-pool-write-max-lifetime-jitter=6m` |
+| `datastore-conn-pool-write-max-open` | Number of concurrent connections open in a remote datastore's connection pool (default 10)          | `--datastore-conn-pool-write-max-open=10` |
+| `datastore-conn-pool-write-min-open` | Number of minimum concurrent connections open in a remote datastore's connection pool (default 10)   | `--datastore-conn-pool-write-min-open=10` |
 | `datastore-query-split-size`          | The (estimated) query size at which to split a query into multiple queries          | `--datastore-query-split-size=5kb`           |
 | `datastore-gc-window`                 | Sets the window outside of which overwritten relationships are no longer accessible | `--datastore-gc-window=1s`                   |
 | `datastore-revision-fuzzing-duration` | Sets a fuzzing window on all zookies/zedtokens                                      | `--datastore-revision-fuzzing-duration=50ms` |
 | `datastore-readonly`                  | Places the datastore into readonly mode                                             | `--datastore-readonly=true`                  |
 | `datastore-read-replica-conn-uri`     | Connection string used by datastores for read replicas; only supported for postgres and MySQL | `--datastore-read-replica-conn-uri="postgres://postgres:password@localhost:5432/spicedb\"` |
-| `—datastore-read-replica-credentials-provider-name`               | Retrieve datastore credentials dynamically using aws-iam                      |                 |
-| --datastore-read-replica-conn-pool-read-healthcheck-interval      | amount of time between connection health checks in a read-only replica datastore's connection pool | `--datastore-read-replica-conn-pool-read-healthcheck-interval=30s` |
-| --datastore-read-replica-conn-pool-read-max-idletime              | maximum amount of time a connection can idle in a read-only replica datastore's connection pool | `--datastore-read-replica-conn-pool-read-max-idletime=30m` |
-| --datastore-read-replica-conn-pool-read-max-lifetime              | maximum amount of time a connection can live in a read-only replica datastore's connection pool | `--datastore-read-replica-conn-pool-read-max-lifetime=30m` |
-| --datastore-read-replica-conn-pool-read-max-lifetime-jitter       | waits rand(0, jitter) after a connection is open for max lifetime to actually close the connection to a read replica(default: 20% of max lifetime) | `--datastore-read-replica-conn-pool-read-max-lifetime-jitter=6m` |
-| --datastore-read-replica-conn-pool-read-max-open                  | number of concurrent connections open in a read-only replica datastore's connection pool | `--datastore-read-replica-conn-pool-read-max-open=20` |
-| --datastore-read-replica-conn-pool-read-min-open                  | number of minimum concurrent connections open in a read-only replica datastore's connection pool | `--datastore-read-replica-conn-pool-read-min-open=20` |
+| `datastore-read-replica-credentials-provider-name`               | Retrieve datastore credentials dynamically using aws-iam                      |                 |
+| `datastore-read-replica-conn-pool-read-healthcheck-interval`      | amount of time between connection health checks in a read-only replica datastore's connection pool | `--datastore-read-replica-conn-pool-read-healthcheck-interval=30s` |
+| `datastore-read-replica-conn-pool-read-max-idletime`              | maximum amount of time a connection can idle in a read-only replica datastore's connection pool | `--datastore-read-replica-conn-pool-read-max-idletime=30m` |
+| `datastore-read-replica-conn-pool-read-max-lifetime`              | maximum amount of time a connection can live in a read-only replica datastore's connection pool | `--datastore-read-replica-conn-pool-read-max-lifetime=30m` |
+| `datastore-read-replica-conn-pool-read-max-lifetime-jitter`       | waits rand(0, jitter) after a connection is open for max lifetime to actually close the connection to a read replica(default: 20% of max lifetime) | `--datastore-read-replica-conn-pool-read-max-lifetime-jitter=6m` |
+| `datastore-read-replica-conn-pool-read-max-open`                  | number of concurrent connections open in a read-only replica datastore's connection pool | `--datastore-read-replica-conn-pool-read-max-open=20` |
+| `datastore-read-replica-conn-pool-read-min-open`                  | number of minimum concurrent connections open in a read-only replica datastore's connection pool | `--datastore-read-replica-conn-pool-read-min-open=20` |
 
 ## MySQL
 
@@ -378,9 +392,17 @@ Read replicas are configured with the `--datastore-read-replica-*` family of fla
 
 | Parameter                             | Description                                                                         | Example                                      |
 | ------------------------------------- | ----------------------------------------------------------------------------------- | -------------------------------------------- |
-| `datastore-conn-max-idletime`         | Maximum idle time for a connection before it is recycled                            | `--datastore-conn-max-idletime=60s`          |
-| `datastore-conn-max-lifetime`         | Maximum lifetime for a connection before it is recycled                             | `--datastore-conn-max-lifetime=300s`         |
-| `datastore-conn-max-open`             | Maximum number of concurrent connections to open                                    | `--datastore-conn-max-open=10`               |
+| `datastore-conn-pool-read-max-idletime` | Maximum amount of time a connection can idle in a remote datastore's connection pool (default 30m0s) | `--datastore-conn-pool-read-max-idletime=30m0s` |
+| `datastore-conn-pool-read-max-lifetime` | Maximum amount of time a connection can live in a remote datastore's connection pool (default 30m0s) | `--datastore-conn-pool-read-max-lifetime=30m0s` |
+| `datastore-conn-pool-read-max-lifetime-jitter` | Waits rand(0, jitter) after a connection is open for max lifetime to actually close the connection   | `--datastore-conn-pool-read-max-lifetime-jitter=6m` |
+| `datastore-conn-pool-read-max-open` | Number of concurrent connections open in a remote datastore's connection pool (default 20)          | `--datastore-conn-pool-read-max-open=20` |
+| `datastore-conn-pool-read-min-open` | Number of minimum concurrent connections open in a remote datastore's connection pool (default 20)   | `--datastore-conn-pool-read-min-open=20` |
+| `datastore-conn-pool-write-healthcheck-interval`| Amount of time between connection health checks in a remote datastore's connection pool (default 30s)| `--datastore-conn-pool-write-healthcheck-interval=30s` |
+| `datastore-conn-pool-write-max-idletime` | Maximum amount of time a connection can idle in a remote datastore's connection pool (default 30m0s) | `--datastore-conn-pool-write-max-idletime=30m0s` |
+| `datastore-conn-pool-write-max-lifetime` | Maximum amount of time a connection can live in a remote datastore's connection pool (default 30m0s) | `--datastore-conn-pool-write-max-lifetime=30m0s` |
+| `datastore-conn-pool-write-max-lifetime-jitter` | Waits rand(0, jitter) after a connection is open for max lifetime to actually close the connection   | `--datastore-conn-pool-write-max-lifetime-jitter=6m` |
+| `datastore-conn-pool-write-max-open` | Number of concurrent connections open in a remote datastore's connection pool (default 10)          | `--datastore-conn-pool-write-max-open=10` |
+| `datastore-conn-pool-write-min-open` | Number of minimum concurrent connections open in a remote datastore's connection pool (default 10)   | `--datastore-conn-pool-write-min-open=10` |
 | `datastore-query-split-size`          | The (estimated) query size at which to split a query into multiple queries          | `--datastore-query-split-size=5kb`           |
 | `datastore-gc-window`                 | Sets the window outside of which overwritten relationships are no longer accessible | `--datastore-gc-window=1s`                   |
 | `datastore-revision-fuzzing-duration` | Sets a fuzzing window on all zookies/zedtokens                                      | `--datastore-revision-fuzzing-duration=50ms` |
@@ -388,12 +410,12 @@ Read replicas are configured with the `--datastore-read-replica-*` family of fla
 | `datastore-readonly`                  | Places the datastore into readonly mode                                             | `--datastore-readonly=true`                  |
 | `datastore-read-replica-conn-uri`     | Connection string used by datastores for read replicas; only supported for postgres and MySQL | `--datastore-read-replica-conn-uri="postgres://postgres:password@localhost:5432/spicedb\"` |
 | `—datastore-read-replica-credentials-provider-name`               | Retrieve datastore credentials dynamically using aws-iam                      |                 |
-| --datastore-read-replica-conn-pool-read-healthcheck-interval      | amount of time between connection health checks in a read-only replica datastore's connection pool | `--datastore-read-replica-conn-pool-read-healthcheck-interval=30s` |
-| --datastore-read-replica-conn-pool-read-max-idletime              | maximum amount of time a connection can idle in a read-only replica datastore's connection pool | `--datastore-read-replica-conn-pool-read-max-idletime=30m` |
-| --datastore-read-replica-conn-pool-read-max-lifetime              | maximum amount of time a connection can live in a read-only replica datastore's connection pool | `--datastore-read-replica-conn-pool-read-max-lifetime=30m` |
-| --datastore-read-replica-conn-pool-read-max-lifetime-jitter       | waits rand(0, jitter) after a connection is open for max lifetime to actually close the connection to a read replica(default: 20% of max lifetime) | `--datastore-read-replica-conn-pool-read-max-lifetime-jitter=6m` |
-| --datastore-read-replica-conn-pool-read-max-open                  | number of concurrent connections open in a read-only replica datastore's connection pool | `--datastore-read-replica-conn-pool-read-max-open=20` |
-| --datastore-read-replica-conn-pool-read-min-open                  | number of minimum concurrent connections open in a read-only replica datastore's connection pool | `--datastore-read-replica-conn-pool-read-min-open=20` |
+| `datastore-read-replica-conn-pool-read-healthcheck-interval`      | amount of time between connection health checks in a read-only replica datastore's connection pool | `--datastore-read-replica-conn-pool-read-healthcheck-interval=30s` |
+| `datastore-read-replica-conn-pool-read-max-idletime`              | maximum amount of time a connection can idle in a read-only replica datastore's connection pool | `--datastore-read-replica-conn-pool-read-max-idletime=30m` |
+| `datastore-read-replica-conn-pool-read-max-lifetime`              | maximum amount of time a connection can live in a read-only replica datastore's connection pool | `--datastore-read-replica-conn-pool-read-max-lifetime=30m` |
+| `datastore-read-replica-conn-pool-read-max-lifetime-jitter`       | waits rand(0, jitter) after a connection is open for max lifetime to actually close the connection to a read replica(default: 20% of max lifetime) | `--datastore-read-replica-conn-pool-read-max-lifetime-jitter=6m` |
+| `datastore-read-replica-conn-pool-read-max-open`                  | number of concurrent connections open in a read-only replica datastore's connection pool | `--datastore-read-replica-conn-pool-read-max-open=20` |
+| `datastore-read-replica-conn-pool-read-min-open`                  | number of minimum concurrent connections open in a read-only replica datastore's connection pool | `--datastore-read-replica-conn-pool-read-min-open=20` |
 
 ## memdb
 
