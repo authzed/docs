@@ -17,6 +17,52 @@ Logs contain the full details related to a request including:
 
 ### Example
 
+#### CheckPermission
+
+```json
+{
+ "specversion": "1.0",
+ "id": "819b4d52db4797491e31d0228f381543",
+ "source": "/ps/dev-ps/rc/us-east-1/p/dev-ps-abcd1234",
+ "type": "/authzed.api.v1.PermissionsService/CheckPermission",
+ "datacontenttype": "application/json",
+ "time": "2023-12-18T17:33:11.783093248Z",
+ "data": {
+   "request": {
+     "@type": "type.googleapis.com/authzed.api.v1.CheckPermissionRequest",
+     "consistency": {
+       "minimizeLatency": true
+     },
+     "resource": {
+       "objectType": "resource",
+       "objectId": "firstdoc",
+       "permission": "read"
+     },
+     "subject": {
+       "object": {
+         "objectType": "user",
+         "objectId": "tom"
+       }
+     },
+     "response": {
+       "@type": "type.googleapis.com/authzed.api.v1.CheckPermissionResponse",
+       "checkedAt": {
+         "token": "GgoKCENKcmt4QTA9"
+       },
+       "permissionship": "PERMISSIONSHIP_HAS_PERMISSION"
+     },
+     "metadata": {
+       "token_hash": "c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2",
+       "user-agent": "grpc-go/1.58.3",
+       "x-request-id": "819b4d52db4797491e31d0228f381543"
+     }
+   }
+ }
+}
+```
+
+#### ReadSchema
+
 ```json
 {
   "specversion": "1.0",
