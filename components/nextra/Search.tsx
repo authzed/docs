@@ -27,6 +27,7 @@ import { useRouter } from 'next/router';
 import { Link } from 'nextra-theme-docs';
 import { useMounted } from 'nextra/hooks';
 import { InformationCircleIcon, SpinnerIcon } from 'nextra/icons';
+import { usePostHog } from 'posthog-js/react';
 import type { CompositionEvent, KeyboardEvent, ReactElement } from 'react';
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { Input } from './Input';
@@ -64,6 +65,7 @@ export function Search({
   const [focused, setFocused] = useState(false);
   //  Trigger the search after the Input is complete for languages like Chinese
   const [composition, setComposition] = useState(true);
+  const posthog = usePostHog();
 
   useEffect(() => {
     setActive(0);
@@ -101,6 +103,7 @@ export function Search({
   }, []);
 
   const finishSearch = useCallback(() => {
+    posthog?.capture('search', { query: input.current.value });
     input.current?.blur();
     onChange('');
     setShow(false);

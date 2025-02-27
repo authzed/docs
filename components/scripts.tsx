@@ -2,7 +2,9 @@
 
 import inEU from '@segment/in-eu';
 import { usePathname, useSearchParams } from 'next/navigation';
+import { Router } from 'next/router';
 import Script from 'next/script';
+import posthog from 'posthog-js';
 import { useEffect, useState } from 'react';
 
 const isProd = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production';
@@ -80,11 +82,39 @@ function HubSpot() {
   );
 }
 
+function Posthog() {
+  useEffect(() => {
+    if (inEU() || !process.env.NEXT_PUBLIC_POSTHOG_KEY) {
+      return;
+    }
+
+    posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY ?? '', {
+      api_host: isProd ? '/ingest' : process.env.NEXT_PUBLIC_POSTHOG_HOST, // See Posthog rewrites in next config
+      ui_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+      person_profiles: 'always',
+      loaded: (posthog) => {
+        if (process.env.NODE_ENV === 'development') posthog.debug();
+      },
+    });
+
+    const handleRouteChange = () => posthog?.capture('$pageview');
+
+    Router.events.on('routeChangeComplete', handleRouteChange);
+
+    return () => {
+      Router.events.off('routeChangeComplete', handleRouteChange);
+    };
+  }, []);
+
+  return <></>;
+}
+
 export default function Scripts() {
   return (
     <div>
       <Reo />
       <HubSpot />
+      <Posthog />
     </div>
   );
 }
