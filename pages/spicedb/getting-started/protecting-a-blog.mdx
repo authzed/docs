@@ -31,7 +31,7 @@ docker run --rm -p 50051:50051 authzed/spicedb serve --grpc-preshared-key "t_you
 
 The first step to integrating any software is ensuring you have an API client.
 
-Each tool is installed with its ecosystem's package management tools:
+Each client is installed with its ecosystem's package management tools:
 
 <Tabs items={['zed', 'Node', 'Go', 'Python', 'Ruby', 'Java']}>
 <Tabs.Tab>
@@ -113,11 +113,11 @@ This example defines two types of objects that will be used in the permissions s
 Each post can have two kinds of relations to users: `reader` and `writer`.
 Each post can have two permissions checked: `read` and `write`.
 The `read` permission unions together both readers and writers, so that any writer is implicitly granted read, as well.
-Feel free to start with design to modify and test your own experiments in the [playground].
+Feel free to modify and test your own experiments in the [playground].
 
 [playground]: https://play.authzed.com/s/mVBBpf5poNd8/schema
 
-With a schema designed, we can now move on using our client to apply that schema to the Permission System.
+With a schema designed, we can now move on to using our client to apply that schema to the Permission System.
 
 <Callout type="info">
 Similar to applying schema changes for relational databases, all changes to a schema must be backwards compatible.
@@ -314,7 +314,7 @@ public class App {
 
 ## Storing Relationships
 
-After a permission system has its schema applied, it is ready to have its relationships be created, touched, or deleted.
+After a permission system has its schema applied, it is ready to have its relationships created, touched, or deleted.
 Relationships are live instances of relations between objects.
 Because the relationships stored in the system can change at runtime, this is a powerful primitive for dynamically granting or revoking access to the resources you've modeled.
 When applications modify or create rows in their database, they will also typically create or update relationships.
@@ -639,17 +639,17 @@ public class App {
 ## Checking Permissions
 
 Permissions Systems that have stored relationships are capable of performing permission checks.
-Checks do not only test for the existence of direct relationships, but will also compute and traverse transitive relationships.
-For example, in our example schema, writers have both write and read, so there's no need to create a read relationship for a subject that is already a writer.
+Checks not only test for the existence of direct relationships, but also compute and traverse transitive relationships.
+For example, in our example schema, writers have both write and read permissions, so there's no need to create a read relationship for a subject that is already a writer.
 
 <Callout type="info">
 In addition to checking _permissions_, it is also possible to perform checks on _relations_ to determine membership.
 
-However, this goes against best practice: permissions can be redefined in backwards compatible ways by changing schema, so it's ideal to rely on permissions as the contract between SpiceDB and applications querying SpiceDB.
+However, this goes against best practice: permissions can be redefined in backwards compatible ways by changing the schema, so it's ideal to rely on permissions as the contract between SpiceDB and applications querying SpiceDB.
 </Callout>
 
 <Callout type="warning">
-In order to get read-after-write consistency, you must provide a [ZedToken] from the WriteRelationships response or request [full consistency].
+When doing a permission check, in order to get read-after-write consistency, you must provide a [ZedToken] from the WriteRelationships response or request [full consistency].
 
 [ZedToken]: /spicedb/concepts/consistency#zedtokens
 [full consistency]: /spicedb/concepts/consistency#fully-consistent

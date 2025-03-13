@@ -33,7 +33,7 @@ A quick recap on the components and their purpose:
 
 CanCanCan is a *library* (gem) designed to help model authorization in Ruby on Rails projects.
 The fundamental idea behind most authorization libraries is that access control can be modeled by reusing as much as possible from within your existing web framework.
-For cancancan, developers defines their models from within an `Ability` class.
+For cancancan, developers define their models from within an `Ability` class.
 Engine logic is implemented within the library such that developers can simply load the `Ability` class within their `Controller` classes to enforce their models.
 Data outside of the request context is left open ended, but most often is fetched from the primary database using ActiveRecord.
 

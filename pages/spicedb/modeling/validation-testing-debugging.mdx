@@ -60,7 +60,7 @@ assertFalse: []
 #### Caveat Context In Assertions
 
 <Callout type="info">
-    In order to escape JSON representation of the caveat context in an assertion you should use single-quotes
+    In order to escape JSON representation of the caveat context in an assertion you should use single-quotes.
 </Callout>
 
 You can provide caveat context as part of an assertion:
@@ -155,9 +155,7 @@ Request tracing information by setting `with_tracing: true` in the request messa
 
 <Callout type="warning">
   **Warning:**
-  Versions older than v1.31.0
-
-  Request tracing information via a header and the information will be found in the response footer as JSON.
+  In versions older than v1.31.0, request tracing information via a header and the information will be found in the response footer as JSON.
 </Callout>
 
 ## Zed
@@ -242,7 +240,9 @@ true
    └── [38;5;99muser:fred [0m
 ```
 
-This command will also highlight which parts of the traversal were cached and if a cycle is detected.
+This command will also highlight which parts of the traversal were cached and if a [cycle] is detected.
+
+[cycle]: ./recursion-and-max-depth#recursion-in-relationships
 
 [tracing header]: #checkpermission-tracing-header
 

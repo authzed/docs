@@ -70,7 +70,7 @@ relation reader: user | anotherobjecttype
 
 ## Validating our schema
 
-To validate that our schema is correct, both [zed] and [Playground] supports the writing of _test relationships_ as data writing tests against our schema.
+To validate that our schema is correct, both [zed] and [Playground] support the writing of _test relationships_ as data writing tests against our schema.
 Once we've [created test relationships][understanding-rels], we can define tests in three ways:
 
 - **Check Watches**: live checks performed as we edit the schema
@@ -108,7 +108,7 @@ assertFalse:
   - "document:specificdocument#reader@user:anotheruser"
 ```
 
-Validation can be run by clicking the `Validate` button in the Playground or using the `zed validate` command.
+Validations can be run by clicking the `Validate` button in the Playground or by using the `zed validate` command.
 
 ### Expected Relations
 
@@ -190,9 +190,9 @@ As a naive solution, we could create a `reader` relationship for every user when
 
 Instead, we'd ideally like a user with role `writer` to be **implicitly** allowed to a read a document, such that we only ever need to write _one_ relationship representing the user's **actual** relation/role to the document.
 
-The solution to this problem is the second concept available within the Schema Language: **permissions**
+The solution to this problem is the second concept available within the Schema Language: **permissions**.
 
-A `permission` in schema defines a permission _computed_ from one or more other relations or permissions.
+A `permission` in a schema defines a permission _computed_ from one or more other relations or permissions.
 
 Let's take our schema again from above:
 
@@ -281,9 +281,9 @@ Note that the contents of the angled brackets for `differentuser` and `specificu
 ### Preparing to inherit permissions
 
 As we've seen above, we can use `permission` to define _implicit_ permissions, such as a `view` permission consisting of users either the `reader` or `writer` role.
-Implicit permissions on a specific object type, however, are often insufficient: Sometimes permissions need to be **inherited** between object types.
+Implicit permissions on a specific object type, however, are often insufficient: sometimes permissions need to be **inherited** between object types.
 
-As an example: Imagine that we add the concept of an `organization` to our permissions system, where any user that is an administrator of an organization automatically gains the ability to `view` any `document` within that organization; how would we define such a permissions schema?
+As an example: imagine that we add the concept of an `organization` to our permissions system, where any user that is an administrator of an organization automatically gains the ability to `view` any `document` within that organization; how would we define such a permissions schema?
 
 ### Defining the organization type
 
@@ -347,7 +347,7 @@ Here we've chosen to call this relation `docorg`, but it could be called anythin
 
 ### Adding the relationship
 
-Now that we've defined the `relation` to hold our new relationship, we can add a test relationship in our test relationships:
+Now that we've defined the `relation` to hold our new relationship, we can add a test relationship:
 
 ```relationship filename="Test Relationships"
 document:specificdocument#docorg@organization:someorg
