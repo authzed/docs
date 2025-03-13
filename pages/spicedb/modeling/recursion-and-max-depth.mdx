@@ -48,7 +48,7 @@ group:secondgroup#member@group:thirdgroup#member
 group:thirdgroup#member@group:firstgroup#member
 ```
 
-Attempts by SpiceDB to compute a permission answer will walk from `resource:someresource#viewer`
+When computing a permission answer for `resource:someresource`, SpiceDB will attempt this walk: `resource:someresource#viewer`
 -> `group:firstgroup#member` -> `group:secondgroup#member` -> `group:thirdgroup#member` ->
 `group:firstgroup#member` -> ..., causing a cycle.
 
@@ -103,7 +103,7 @@ as SpiceDB assume the permissions graph is a [tree].
 
 #### Overhead
 
-From a practical perspective, tracking of visiting objects when computing `CheckPermission` and
+From a practical perspective, tracking of visited objects when computing `CheckPermission` and
 other permissions queries results in having significant amount of overhead over the wire and in
 memory to track the full set of encountered objects and check for duplicates.
 

@@ -4,8 +4,6 @@ import { Callout } from 'nextra/components'
 
 Within a Permissions System, a [CheckPermission] call is always made between an object representing the *resource* and an object representing a *subject*: The API call returns whether the *subject* has the specified permission on the *resource*.
 
-The choice of how to represent subjects can have large downstream effects on the design of a permissions system.
-
 [CheckPermission]: https://buf.build/authzed/api/docs/main:authzed.api.v1#CheckPermission
 
 ## Representing users as subjects
@@ -34,7 +32,7 @@ As the `sub` field is **guaranteed** to be stable for that particular user (if a
 
 <Callout type="info">
 
-If you have *multiple* authentication provides, then the recommendation is to define a subject type for *each* provider, to ensure a clean namespace:
+If you have *multiple* authentication providers, then the recommendation is to define a subject type for *each* provider, to ensure a clean namespace:
 
 ```zed
 /** githubuser represents a user from GitHub */
@@ -67,7 +65,7 @@ Some databases allow various sequences to reuse IDs.
 
 <Callout type="warning">
 
-It is typically **not recommended** to use an e-mail address to represent a user as as a subject in SpiceDB.
+It is typically **not recommended** to use an e-mail address to represent a user as a subject in SpiceDB.
 
 </Callout>
 

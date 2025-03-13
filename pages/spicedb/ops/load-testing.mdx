@@ -53,7 +53,7 @@ If more groups were related, to `document:somedocument`, it's likely that more s
 
 Notable exceptions to short-circuiting (thus negatively impacting overall performance) are usages of [Intersections (&)] and [Exclusions (-)].
 
-While fanout is mostly unavoidable, it can result in an exponential increase to the the number of sub-problems that must be computed.
+While fanout is mostly unavoidable, it can result in an exponential increase to the number of sub-problems that must be computed.
 Therefore, when performing a load test it's critical to have a SpiceDB instance seeded with relationship data that closely mimics real world data.
 
 [Intersections (&)]: ../concepts/schema#-intersection
@@ -197,7 +197,7 @@ We highly recommend that you [get in touch][call] for a schema review session be
 
 ### SpiceDB Caveats Performance
 
-In general, we only recommend using caveats when when you’re evaluating dynamic data (e.g. users can only access the document between 9-5 or users can only access the document when you are in the EU).
+In general, we only recommend using caveats when you’re evaluating dynamic data (e.g. users can only access the document between 9-5 or users can only access the document when you are in the EU).
 Almost all other scenarios can be represented in the graph.
 Caveats add computational cost to checks because their evaluations can't be cached.
 
