@@ -8,9 +8,11 @@ Much like the concept of a materialized view in relational databases, AuthZed Ma
 By creating a materialized view of your permissions in a relational database, you can efficiently sort, search, and filter massive lists of authorized objects while leveraging the authorization computation capabilities of SpiceDB.
 
 <Callout type="info">
-  AuthZed Materialize is available to users of AuthZed Dedicated as part of an early access program.
+  AuthZed Materialize is available to users of AuthZed [Dedicated] as part of an early access program.
   Don't hesitate to get in touch with your AuthZed account team if you would like to participate.
 </Callout>
+
+[Dedicated]: ../guides/picking-a-product#dedicated
 
 ## What Is AuthZed Materialize?
 
@@ -30,14 +32,14 @@ Those scenarios include:
 1. Paginating through a list of authorized objects without sorting or filtering ([LookupResources] supports cursor-based pagination, but the list of objects is returned in a non-deterministic order)  
 2. Listing a small set (in the realm of thousands) of ordered or filtered objects.
 
-If you do make a [LookupResources] or [LookupSubjects] request with a significant computational cost, you can expect the request to be slow and you can expect the request to use a large number of system resources, leading to slower response times for other queries.
+If you do make a [LookupResources] or [LookupSubjects] request with a significant computational cost, you can expect the request to be slow and to use a large number of system resources, leading to slower response times for other queries.
 
 ## Current Limitations
 
 - [Caveats](https://authzed.com/docs/spicedb/concepts/caveats) are not supported on the path of permissions computed by Materialize
 - [Wildcard](https://authzed.com/docs/spicedb/concepts/schema\#wildcards) subject types are not supported on the path of permissions computed by Materialize
 
-You can still use both Caveats and Wildcards so long they are not part of the path to the permissions you've asked Materialize to query
+You can still use both Caveats and Wildcards, so long they are not part of the path to the permissions you've asked Materialize to query.
 
 ## Client SDK
 
