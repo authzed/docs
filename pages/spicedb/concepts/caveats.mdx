@@ -119,7 +119,7 @@ A few important notes:
     This allows for **partial** binding of data at write time.
 - The Context is a `structpb`, which is defined by Google [and represents JSON-like data](https://pkg.go.dev/google.golang.org/protobuf/types/known/structpb).
   - To send 64-bit integers, encode them as strings.
-- A relationship cannot be duplicated, with or without a caveat, e.g. two relationships that differ only on their use of a caveat cannot both exist.
+- A relationship cannot be duplicated, with or without a caveat; i.e. two relationships that differ only on their use of a caveat cannot both exist.
 - When deleting a relationship, a caveat does not need to be specified; the matching relationship will be deleted if present.
 
 ## Providing Caveat Context via the API
@@ -157,7 +157,7 @@ In the case of `PERMISSIONSHIP_CONDITIONAL_PERMISSION`, SpiceDB will also return
 [states]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.CheckPermissionResponse.Permissionship
 [check-resp]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.CheckPermissionResponse
 
-## `LookupResources` and `LookupSubjects`
+### `LookupResources` and `LookupSubjects`
 
 Similarly to **CheckPermission**, both **LookupResources** and **LookupSubjects** can be provided with additional context and will return one of the two permission states for each of the results found (either has permission or conditionally has permission).
 
@@ -175,7 +175,7 @@ LookupResourcesRequest {
 }
 ```
 
-### Providing Caveat Context with `zed CLI
+## Providing Caveat Context with `zed CLI`
 
 When using `zed` command-line tool to interact with SpiceDB, the context can be provided using the `--caveat-context` flag.
 The caveat context should be a JSON representation that matches the types defined in the schema.
@@ -209,7 +209,7 @@ zed check -r resource:specificresource#view -p view -s user:specificuser --cavea
 
 ## Full Example
 
-A full example of a schema with caveats can be found below, which allows users to `view` a resource if they are directly a `viewer` or they are a`viewer` within the correct IP CIDR range:
+A full example of a schema with caveats can be found below, which allows users to `view` a resource if they are directly a `viewer` or if they are a `viewer` within the correct IP CIDR range:
 
 ### Schema
 

@@ -33,7 +33,7 @@ In homeage, AuthZed maintained a Dune-related naming scheme for their own projec
 ### Popularizing ReBAC
 
 **Re**lationship-**b**ased **A**ccess **C**ontrol (ReBAC) is a one of the paradigms for the design of authorization systems.
-The core idea behind ReBAC is that the existence of a chain relationships between a subject and a resource defines access.
+The core idea behind ReBAC is that the existence of a chain of relationships between a subject and a resource defines access.
 This abstraction alone is able to model all other existing authorization paradigms including the very popular RBAC and ABAC designs.
 The concept was originally described by Carrie Gates in a 2006 paper entitled [Access Control Requirements for Web 2.0 Security and Privacy][web2-paper] with Facebook cited as an early adopter of this paradigm.
 However, it wouldn't be until the publication of the Zanzibar paper in 2019 that ReBAC would achieve popularity outside of applications that weren't already leveraging graph abstractions for their data.
@@ -49,10 +49,10 @@ For more information on ReBAC, see the [documentation for Relationships][rels].
 
 ### New Enemy Problem
 
-The New Enemy Problem is scenario where unauthorized access can occur when changes to permissions and the resources they protect are not updated together [consistently].
+The New Enemy Problem is a scenario where unauthorized access can occur when changes to permissions and the resources they protect are not updated together [consistently].
 SpiceDB solves this problem with configurable consistency and ZedTokens, its version of Zookies.
 
-This term was first introduced in the Zanzibar paper where solving this problem was a fundamental design goal:
+The term "Zookies" was first introduced in the Zanzibar paper where solving this problem was a fundamental design goal:
 
 >ACL checks must respect the order in which users modify ACLs and object contents to avoid unexpected sharing behaviors.
 >Specifically, our clients care about preventing the "new enemy" problem, which can arise when we fail to respect the ordering between ACL updates or when we apply old ACLs to new content.
@@ -110,9 +110,9 @@ SpiceDB instead offers a [Schema Language][schema] that internally compiles into
 
 Zanzibar [does not disambiguate][disambiguate] between relations that define access and those that exist purely in the abstract.
 
-SpiceDB introduces new terms and syntax to differentiate relations into two concepts Relations and Permissions.
+SpiceDB introduces new terms and syntax to differentiate relations into two concepts: Relations and Permissions.
 
-Permissions are best thought of "public API" being consumed by applications to check access.
+Permissions are best thought of as the "public API" being consumed by applications to check access.
 Permissions are defined using set semantics referred to in Zanzibar parlance as
 "computed usersets".
 
@@ -141,19 +141,20 @@ Zanzibar only supports Google's internal [Spanner] service for tuple-storage.
 
 SpiceDB supports a variety of datastores; including [Cloud Spanner].
 
-You can learn more about datastores in the [Datastore documentation].
+You can learn more about datastores in the [Datastores documentation].
 
 [Spanner]: https://static.googleusercontent.com/media/research.google.com/en//archive/spanner-osdi2012.pdf
 [Cloud Spanner]: https://cloud.google.com/spanner/
-[Datastore documentation]: ./datastores
+[Datastores documentation]: ./datastores
 
 ### Consistency
 
-Zanzibar supports a [ContentChangeCheck API][ccc-api] and the ability specify "at least as fresh" as a Zookie.
+Zanzibar supports a [ContentChangeCheck API][ccc-api] and the ability to specify "at least as fresh" as a Zookie.
 
-SpiceDB simplifies this workflow by allowing API requests to specify their consistency behavior in addition to implementing ZedTokens, the analogue of Zanzibar's Zookies.
+SpiceDB simplifies this workflow by allowing API requests to specify their [consistency] behavior in addition to implementing ZedTokens, the analogue of Zanzibar's Zookies.
 
 [ccc-api]: https://zanzibar.tech/#annotations/spicedb/content-change-check
+[Consistency]: consistency
 
 ### Identifiers
 
