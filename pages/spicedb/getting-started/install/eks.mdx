@@ -290,7 +290,7 @@ EOF
 ```
 
 - Apply the above configuration with: `kubectl apply -f spicedb-lb.yaml`
-- Run the following command to get the External-IP of the load balancer: `kubectl get services spicedb-external-lb -o json | jq '.status.loadBalancer.ingress[0].hostname'`
+- Run the following command to get the External-IP of the load balancer: `kubectl get -n spicedb services spicedb-external-lb -o json | jq '.status.loadBalancer.ingress[0].hostname'`
 - Take the output of the command and add it as a C-Name record in your Route 53 Hosted Zone. **Note**: Ensure that it's added to the record containing the `dnsNames` that was specified while creating an Issuer & Certificate in Step 5.
 
 ### Test
