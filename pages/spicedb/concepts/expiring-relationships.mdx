@@ -11,7 +11,9 @@ import { InlinePlayground } from '@/components/playground';
 A common use case is to model relationships that expire after a certain time.
 This is useful for granting temporary access to a resource.
 
-Until now, caveats were the recommended way to support time-bound permissions, but that has some limitations:
+Before version 1.40, [caveats] were the recommended way to support time-bound permissions, but that has some limitations:
+
+[caveats]: caveats
 
 - It requires clients to provide the `now` timestamp.
 This is additional complexity for clients.
@@ -19,6 +21,10 @@ This is additional complexity for clients.
 This can lead to many caveated relationships in the system and increase the costs of loading and evaluating those into the runtime.
 
 SpiceDB supports expiring relationships, which lets users define relationships that expire at a given time.
+
+The time must be specified in [RFC 3339 format].
+
+[RFC 3339 format]: https://datatracker.ietf.org/doc/html/rfc3339#section-5.8
 
 <Callout type="info">
     The clock used to determine if a relationship is expired is that of the underlying SpiceDB datastore.
@@ -86,12 +92,12 @@ Set expirations on relationships in the Playground with the format `[expiration:
 resource:r1#folder@folder:folder1[expiration:2025-12-31T23:59:59Z]
 ```
 
-or specify expirations in RFC 3339 format in the `Expiration` column in the Relationship grid editor.
+or specify expirations in the `Expiration` column in the Relationship grid editor.
 <br/><InlinePlayground reference="naky4PZ86uTc"/>
 
 ## zed
 
-Use the `--expiration-time` flag to pass the expiration time of the relationship in RFC 3339 format:
+Use the `--expiration-time` flag to pass the expiration time of the relationship:
 
 ```shell zed
 zed relationship create resource:r1 folder folder:folder1 --expiration-time "2025-12-31T23:59:59Z"

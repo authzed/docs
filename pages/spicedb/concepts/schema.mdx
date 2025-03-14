@@ -77,7 +77,7 @@ definition document {
 ```
 
 <Callout type="info">
-  In the above example, the `user` on `reader` does not contain a sub-relation
+  In the above example, the `user` on `reader` does not contain a sub-relation.
 
 Occasionally you will see a subject which has a sub-relation such as `usergroup:admins#members` which refers not just to the `usergroup` as a whole, but the set of members which have that relation to the `usergroup`.
 
@@ -181,7 +181,7 @@ Permissions support four kinds of operations: **union**, **intersection**, **exc
 
 #### `+` (Union)
 
-Unions together the relations/permissions referenced
+Unions together the relations/permissions referenced.
 
 Union is the most common operation and is used to join different relations or permissions together to form a set of allowed subjects.
 
@@ -193,7 +193,7 @@ permission combined = reader + writer
 
 #### `&` (Intersection)
 
-Intersects the set of subjects found for the relations/permissions referenced
+Intersects the set of subjects found for the relations/permissions referenced.
 
 Intersection allows for a permission to only include those subjects that were found in **both** relations/permissions.
 
@@ -205,9 +205,9 @@ permission read_and_write = reader & writer
 
 #### `-` (Exclusion)
 
-Excludes the set of subjects found for the right side relation/permission from those found in the left side relation/permission
+Excludes the set of subjects found for the right side relation/permission from those found in the left side relation/permission.
 
-Exclusion allows for computing the difference between two sets of relations/permissions
+Exclusion allows for computing the difference between two sets of relations/permissions.
 
 For example, to grant a permission to a user that is `reader` but not the `writer` of a document:
 
@@ -217,7 +217,7 @@ permission can_only_read = reader - writer
 
 #### `->` (Arrow)
 
-Arrows allow for "walking" the heirarchy of relations (and permissions) defined for an **object** of a subject, referencing a permission or relation on the _resulting_ subject's object.
+Arrows allow for "walking" the hierarchy of relations (and permissions) defined for an **object** of a subject, referencing a permission or relation on the _resulting_ subject's object.
 
 For example, imagine a schema where a document is found under a folder:
 
@@ -260,7 +260,7 @@ definition document {
 
 The expression `parent_folder->read` indicates to "walk" from the `parent_folder` of the `document`, and then to include the subjects found for the `read` permission of that folder.
 
-Making use of a `union`, we can also include the local `reader` relation, allowing the `read` permission on a document can check whether a user is a `reader` of a document or a `reader` of its parent folder.
+Making use of a `union`, we can also include the local `reader` relation, allowing the `read` permission on a document to check whether a user is a `reader` of a document or a `reader` of its parent folder.
 
 ```zed
 definition user {}
@@ -298,7 +298,7 @@ definition document {
 For example, in:
 
 ```
-defintion resource {
+definition resource {
   relation parent: group#member
   permission someperm = parent->something
 }
@@ -379,7 +379,6 @@ In the above example, the user must be in the `member` relation for _all_ groups
 
 <Callout type="warning">
   Intersection arrows can impact performance since they require loading **all** results for the arrow. This is especially a concern for arrows that traverse relationship graphs with a high branching factor.
-  results for the arrow, it can impact performance if the arrow is very wide.
 </Callout>
 
 ### Naming Permissions
@@ -455,7 +454,7 @@ Admin permission on resources is then defined as the direct owner of the resourc
 
 Relation traversals can be modeled using intermediate, synthetic relations.
 
-Given the example hierarchy, portfolio can have folders, folders can have documents, we’d like a viewer of a portfolio to also be able to read documents contained in its folders.
+Given the example hierarchy below, where a portfolio can have folders and folders can have documents, we’d like a viewer of a portfolio to also be able to read documents contained in its folders.
 The read on documents could be thought of as:
 
 ```
