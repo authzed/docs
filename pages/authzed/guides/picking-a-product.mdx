@@ -11,24 +11,26 @@ This document is designed to give a high-level overview so that you can effectiv
 
 The following table maps functional requirements to their respective products:
 
-| Requirements           | [Open Source] | [Cloud] | [Dedicated] | [Enterprise] |
-| ---------------------- | :-----------: | :-----: | :---------: | :----------: |
-| [Management Dashboard] |       ❌       |    ✅   |     ✅      |      ❌      |
-| No-commit pricing      |       ✅      |    ✅   |     ❌      |      ❌      |
-| [Private Networking]   |       DIY     |    ❌   |     ✅      |      DIY     |
-| [Workload Isolation]   |       DIY     |    ✅   |     ✅      |      DIY     |
-| Self-Hosted            |       ✅      |    ❌   |     ❌      |      ✅      |
-| [Automated Updates]    |       DIY     |    ✅   |     ✅      |      DIY     |
-| [SOC2 Compliance]      |       DIY     |    ❌   |     ✅      |      DIY     |
-| [Audit Logging]        |       ❌       |    ✅   |     ✅      |      ✅      |
-| [Multi-Region]         |       DIY     |    ❌   |     ✅      |      DIY     |
-| [Security Embargo]     |       ❌       |    ✅   |     ✅      |      ✅      |
+| Requirements                 | [Open Source] | [Cloud] | [Dedicated] | [Enterprise] |
+|------------------------------|:-------------:|:-------:|:-----------:|:------------:|
+| [Materialize (Early Access)] |       ❌       |    ❌    |      ✅      |      ❌       |
+| [Management Dashboard]       |       ❌       |    ✅    |      ✅      |      ❌       |
+| No-commit pricing            |       ✅       |    ✅    |      ❌      |      ❌       |
+| [Private Networking]         |      DIY      |    ❌    |      ✅      |     DIY      |
+| [Workload Isolation]         |      DIY      |    ✅    |      ✅      |     DIY      |
+| Self-Hosted                  |       ✅       |    ❌    |      ❌      |      ✅       |
+| [Automated Updates]          |      DIY      |    ✅    |      ✅      |     DIY      |
+| [SOC2 Compliance]            |      DIY      |    ❌    |      ✅      |     DIY      |
+| [Audit Logging]              |       ❌       |    ✅    |      ✅      |      ✅       |
+| [Multi-Region]               |      DIY      |    ❌    |      ✅      |     DIY      |
+| [Security Embargo]           |       ❌       |    ✅    |      ✅      |      ✅       |
 
 [Cloud]: #cloud
 [Dedicated]: #dedicated
 [Enterprise]: #enterprise
 [Open Source]: #open-source
 
+[Materialize (Early Access)]: ../concepts/authzed-materialize
 [Audit Logging]: ../concepts/audit-logging
 [Automated Updates]: ../concepts/update-channels
 [Management Dashboard]: ../concepts/management-dashboard
@@ -45,6 +47,7 @@ Dedicated is a managed service that offers fully private deployments of our clou
 Dedicated features highlights include:
 
 - Our most popular product
+- [Materialize (Early Access)]
 - [Workload Isolation]
 - [Private Networking]
 - [Multi-Region Deployments]
@@ -59,6 +62,7 @@ Dedicated is sold and renewed on an annual basis.
 
 You can [schedule a call] to learn more.
 
+[Materialize (Early Access)]: ../concepts/authzed-materialize
 [Multi-Region Deployments]: ../concepts/multi-region
 [Private Networking]: ../concepts/private-networking
 [Workload Isolation]: ../concepts/workload-isolation
