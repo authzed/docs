@@ -1,45 +1,41 @@
 import { Callout } from 'nextra/components'
 
-# AuthZed Materialize (Early Access)
-
-AuthZed Materialize works with AuthZed Dedicated and is inspired by the Leopard index component described in the [Zanzibar paper](https://zanzibar.tech/2IoYDUFMAE:0:T).
-Much like the concept of a materialized view in relational databases, AuthZed Materialize supports SpiceDB permissions systems by precomputing permissions defined in your schema.
-
-By creating a materialized view of your permissions in a relational database, you can efficiently sort, search, and filter massive lists of authorized objects while leveraging the authorization computation capabilities of SpiceDB.
+# AuthZed Materialize
 
 <Callout type="info">
   AuthZed Materialize is available to users of AuthZed [Dedicated] as part of an early access program.
   Don't hesitate to get in touch with your AuthZed account team if you would like to participate.
 </Callout>
 
+AuthZed Materialize takes inspiration from the Leopard index component described in the [Zanzibar paper](https://zanzibar.tech/2IoYDUFMAE:0:T).
+Much like the concept of a materialized view in relational databases, AuthZed Materialize is a service that you configure with a list of permissions that you want it to precompute, and it will calculate how those permissions change after relationships
+are written (specifically, when those relationships affect a subject's membership in a permission set or a set’s permission on a specific resource), or when a new schema is written.
+These precomputed permissions can then be used either to provide faster checks and lookups through Accelerated Queries, or streamed to your own application database to do operations like searching, sorting, and filtering much more efficiently.
+
+In summary, AuthZed Materialize allows you to:
+
+- Speed up `CheckPermission` and `CheckBulkPermissions`.
+- Speed up `LookupResources` and `LookupSubjects`, especially when there is a large number of resources.
+- Build authorization-aware UIs, e.g. by providing a filtered and/or sorted list of more than several thousand authorized objects.
+- Perform ACL filtering in other secondary indexes, like a search index (e.g. ElasticSearch).
+
 [Dedicated]: ../guides/picking-a-product#dedicated
 
-## What Is AuthZed Materialize?
+## Limitations
 
-Materialize streams computed permission updates to a client.
-Updates occur after a relationship is written that affects a subject's membership in a permission set or a set’s permission on a specific resource.
-The intent is for users to process these updates and store them to form a precomputed and denormalized view of SpiceDB permissions.
+- Your schema can contain any of the following, but they cannot be on the path of your configured Materialize permissions or it will throw an error:
+  - [Caveats]
+  - [Wildcard] subject types
+  - [.all intersections]
 
-## When To Use AuthZed Materialize?
+- [Expiring relationships] aren't supported.
+- Materialize takes time to compute the denormalized relationship updates, so if you are streaming the changes to your database, your application must be able to tolerate some lag.
 
-If you need to provide a filtered and/or sorted list of more than several thousand authorized objects or if you need an authorization-aware search index, you probably need Materialize.
-
-The primary use case for Materialize is to denormalize computed permissions into systems that excel at data retrieval operations like searching, sorting, and filtering.
-
-There are some authorized object listing scenarios where [LookupResources] or [LookupSubjects], without Materialize, can return a response without a large computational cost.
-Those scenarios include:
-
-1. Paginating through a list of authorized objects without sorting or filtering ([LookupResources] supports cursor-based pagination, but the list of objects is returned in a non-deterministic order)  
-2. Listing a small set (in the realm of thousands) of ordered or filtered objects.
-
-If you do make a [LookupResources] or [LookupSubjects] request with a significant computational cost, you can expect the request to be slow and to use a large number of system resources, leading to slower response times for other queries.
-
-## Current Limitations
-
-- [Caveats](https://authzed.com/docs/spicedb/concepts/caveats) are not supported on the path of permissions computed by Materialize
-- [Wildcard](https://authzed.com/docs/spicedb/concepts/schema\#wildcards) subject types are not supported on the path of permissions computed by Materialize
-
-You can still use both Caveats and Wildcards, so long they are not part of the path to the permissions you've asked Materialize to query.
+[Caveats]: https://authzed.com/docs/spicedb/concepts/caveats
+[Wildcard]: https://authzed.com/docs/spicedb/concepts/schema\#wildcards
+[.all intersections]: https://authzed.com/docs/spicedb/concepts/schema\#all-intersection-arrow
+[expiring relationships]: https://authzed.com/docs/spicedb/concepts/expiring-relationships
+[Dedicated]: ../guides/picking-a-product#dedicated
 
 ## Client SDK
 
@@ -411,6 +407,7 @@ When the origin SpiceDB instance introduces a schema change that invalidates all
         "change_at": {
             "token": "GiAKHjE3MTUzMzkzMTAzODQ2NDMxNzguMDAwMDAwMDAwMA=="
         }
+   }
 }
 ```
 
