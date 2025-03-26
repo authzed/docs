@@ -12,6 +12,14 @@ Each datastore implementation comes with various trade-offs.
 - [MySQL](#mysql) - Not recommended; only use if you cannot use PostgreSQL
 - [memdb](#memdb) - Recommended for local development and integration testing against applications
 
+| Feature                       | CockroachDB | Spanner | PostgreSQL | MySQL |
+|-------------------------------|-------------|---------|------------|-------|
+| Watch API                     | ✅          | ✅      | ✅(*)     | ✅    |
+| Can prevent New Enemy Problem | ✅(*)       | ✅      | ✅        | ✅    |
+| Relationship Integrity        | ✅          | ❌      | ❌        | ❌    |
+
+(*) = if passing the right CLI parameters
+
 ## Migrations
 
 Before a datastore can be used by SpiceDB or before running a new version of SpiceDB, you must execute all available migrations.
