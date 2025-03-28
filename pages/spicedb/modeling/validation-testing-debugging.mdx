@@ -186,13 +186,13 @@ zed validate schema-and-validations.yaml
 Validation files take this form:
 
 ```yaml
-schema: >-
+schema: |-
   // schema goes here
 # -- OR --
 schemaFile: "./path/to/schema.zed"
 
 # Note that relations are a single heredoc string rather than a yaml list
-relationships: >-
+relationships: |-
   object:foo#relation@subject:bar
   object:baz#relation@subject:qux
 
