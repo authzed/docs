@@ -8,5 +8,10 @@
     "title": "HTTP API Reference",
     "href": "https://www.postman.com/authzed/workspace/spicedb/overview",
     "newWindow": true
+  },
+  "http-api": {
+    "title": "Cloud API Reference",
+    "href": "https://www.postman.com/authzed/spicedb/collection/5fm402n/authzed-cloud-api",
+    "newWindow": true
   }
 }
