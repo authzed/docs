@@ -17,7 +17,7 @@ See [CONTRIBUTING.md](/CONTRIBUTING.md) for instructions on how to contribute an
 
 ## Getting Started
 
-Install pnpm:
+Install pnpm :
 
 ```sh
 brew install pnpm
