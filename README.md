@@ -15,7 +15,7 @@ This project houses the [Authzed] & [SpiceDB] documentation [website].
 
 See [CONTRIBUTING.md](/CONTRIBUTING.md) for instructions on how to contribute and perform common tasks like building the project and running tests.
 
-## Getting Started
+## Getting Star ted
 
 Install pnpm:
 
