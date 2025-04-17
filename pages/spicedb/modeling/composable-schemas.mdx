@@ -6,15 +6,13 @@ import { Callout, Tabs } from 'nextra/components'
 This preview feature's functionality may change before general release.
 </Callout>
 
-In zed version v0.27.0, we introduced a schema compilation command:
+To make it easier to organize your schema and collaborate across teams, `zed` version v0.27.0 introduced a new schema compilation command that allows you to modularize your schema.
 
 ```
-zed preview schema compile some-schema.zed
+zed preview schema compile root.zed
 ```
 
-There are three new pieces of syntax: [import statements](#import-statements), [partial declarations](#partial-declarations), and [partial references](#partial-references).
-
-This is a simple schema that demonstrates all three features:
+The command allows you to combine a schema that is spread across many files, for example:
 
 <Tabs items={["root.zed", "subjects.zed"]}>
 <Tabs.Tab>
@@ -46,7 +44,7 @@ definition organization {}
 </Tabs.Tab>
 </Tabs>
 
-Compiling the above with `zed preview schema compile root.zed` will produce an output schema that looks like:
+And it produces an output schema that can be understood by SpiceDB's `WriteSchema` API:
 
 ```zed
 definition user {}
@@ -62,7 +60,7 @@ definition resource {
 }
 ```
 
-This compilation step provides new features that help you modularize your schema, making organization and collaboration easier.
+There are three new pieces of syntax: [import statements](#import-statements), [partial declarations](#partial-declarations), and [partial references](#partial-references).
 
 ## Breaking Changes
 
@@ -129,7 +127,6 @@ Any duplicate definitions will cause an error.
 ## Partials
 
 Partial declarations and references provide a means of decomposing a schema along lines that cross definition boundaries.
-This can be useful for separating out a schema by team or domain concern, for example.
 
 ### Partial Declarations
 
@@ -206,10 +203,4 @@ Attempting to reference other declaration types (e.g. a definition or a caveat) 
 Then on merge:
 
 1. CI runs `zed preview schema compile`
-1. CI calls SpiceDB with the compiled schema
-
-## Notes
-
-SpiceDB `WriteSchema` calls cannot interpret `import` or `partial` syntax.
-If using the new syntax, you must build the schema using `compile` before it can be submitted.
-This is because a schema write must happen in a single call to SpiceDB.
+1. CI calls SpiceDB's WriteSchema API with the compiled schema
