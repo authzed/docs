@@ -23,7 +23,7 @@
 
 import cn from 'clsx';
 // flexsearch types are incorrect, they were overwritten in tsconfig.json
-import FlexSearch from 'flexsearch';
+import { Document } from 'flexsearch';
 import { useRouter } from 'next/router';
 import type { SearchData } from 'nextra';
 import type { ReactElement, ReactNode } from 'react';
@@ -36,38 +36,30 @@ import { SearchResult } from './types';
 // Diff: Inlined definitions
 export const DEFAULT_LOCALE = 'en-US';
 
-type SectionIndex = FlexSearch.Document<
-  {
+type SectionIndex = {
     id: string;
     url: string;
     title: string;
     pageId: string;
     content: string;
     display?: string;
-  },
-  ['title', 'content', 'url', 'display']
->;
+  }
 
-type PageIndex = FlexSearch.Document<
-  {
+type PageIndex = {
     id: number;
     title: string;
     content: string;
-  },
-  ['title']
->;
+  }
 
 // Diff: Additional index for blog posts
-type BlogIndex = FlexSearch.Document<
+type BlogIndex =
   {
     id: number;
     title: string;
     content: string;
     url: string;
     summary: string;
-  },
-  ['title', 'url', 'summary']
->;
+  }
 
 type Result = {
   _page_rk: number;
@@ -79,11 +71,13 @@ type Result = {
 
 // This can be global for better caching.
 const indexes: {
-  [locale: string]: [PageIndex, SectionIndex];
+    // tuple is PageIndex, SectionIndex
+  [locale: string]: [Document, Document];
 } = {};
 
 // Diff: Index for blog posts
-const blogIndex: BlogIndex = new FlexSearch.Document({
+// Associated type is BlogIndex
+const blogIndex = new Document({
   cache: 100,
   tokenize: 'forward',
   document: {
@@ -134,7 +128,8 @@ const loadIndexesImpl = async (
   // Diff: Load blog data
   const blogData = await loadBlogData(basePath);
 
-  const pageIndex: PageIndex = new FlexSearch.Document({
+  // Associated type is PageIndex
+  const pageIndex = new Document({
     cache: 100,
     tokenize: 'full',
     document: {
@@ -149,7 +144,8 @@ const loadIndexesImpl = async (
     },
   });
 
-  const sectionIndex: SectionIndex = new FlexSearch.Document({
+  // Associated type is SectionIndex
+  const sectionIndex = new Document({
     cache: 100,
     tokenize: 'full',
     document: {
@@ -232,7 +228,7 @@ export function Flexsearch({
 
     // Show the results for the top 5 pages
     const pageResults =
-      pageIndex.search<true>(search, 5, {
+      pageIndex.search(search, 5, {
         enrich: true,
         suggest: true,
       })[0]?.result || [];
@@ -247,7 +243,7 @@ export function Flexsearch({
 
       // Show the top 5 results for each page
       const sectionResults =
-        sectionIndex.search<true>(search, 5, {
+        sectionIndex.search(search, 5, {
           enrich: true,
           suggest: true,
           tag: `page_${result.id}`,
@@ -324,7 +320,7 @@ export function Flexsearch({
       }));
 
     const blogResults =
-      blogIndex.search<true>(search, 5, {
+      blogIndex.search(search, 5, {
         enrich: true,
         suggest: true,
       })[0]?.result || [];

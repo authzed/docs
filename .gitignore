@@ -3,6 +3,7 @@ node_modules/*
 .vercel
 .next
 .env*
+tsconfig.tsbuildinfo
 
 # Generated
 public/robots.txt

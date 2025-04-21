@@ -45,8 +45,8 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0
       flexsearch:
-        specifier: ^0.7.43
-        version: 0.7.43
+        specifier: ^0.8.143
+        version: 0.8.158
       js-yaml:
         specifier: ^4.1.0
         version: 4.1.0
@@ -1918,6 +1918,9 @@ packages:
 
   flexsearch@0.7.43:
     resolution: {integrity: sha512-c5o/+Um8aqCSOXGcZoqZOm+NqtVwNsvVpWv6lfmSclU954O3wvQKxxK8zj74fPaSJbXpSLTs4PRhh+wnoCXnKg==}
+
+  flexsearch@0.8.158:
+    resolution: {integrity: sha512-UBOzX2rxIrhAeSSCesTI0qB2Q+75n66rofJx5ppZm5tjXV2P6BxOS3VHKsoSdJhIPg9IMzQl3qkVeSFyq3BUdw==}
 
   focus-visible@5.2.0:
     resolution: {integrity: sha512-Rwix9pBtC1Nuy5wysTmKy+UjbDJpIfg8eHjw0rjZ1mX4GNLz1Bmd16uDpI3Gk1i70Fgcs8Csg2lPm8HULFg9DQ==}
@@ -5219,6 +5222,8 @@ snapshots:
       to-regex-range: 5.0.1
 
   flexsearch@0.7.43: {}
+
+  flexsearch@0.8.158: {}
 
   focus-visible@5.2.0: {}
 
