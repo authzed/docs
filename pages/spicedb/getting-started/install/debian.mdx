@@ -21,13 +21,13 @@ First, download the public signing key for the repository:
 # In releases older than Debian 12 and Ubuntu 22.04, the folder `/etc/apt/keyrings` does not exist by default, and it should be created before the curl command.
 # sudo mkdir -p -m 755 /etc/apt/keyrings
 
-curl -sS https://pkg.authzed.com/apt/gpg.key | sudo gpg --dearmor --yes -o /etc/apt/keyrings/spicedb.gpg
+curl -sS https://pkg.authzed.com/apt/gpg.key | sudo gpg --dearmor --yes -o /etc/apt/keyrings/authzed.gpg
 ```
 
 Then add the list file for the repository:
 
 ```sh
-echo "deb [signed-by=/etc/apt/keyrings/spicedb.gpg] https://pkg.authzed.com/apt/ * *"  | sudo tee /etc/apt/sources.list.d/authzed.list
+echo "deb [signed-by=/etc/apt/keyrings/authzed.gpg] https://pkg.authzed.com/apt/ * *"  | sudo tee /etc/apt/sources.list.d/authzed.list
 sudo chmod 644 /etc/apt/sources.list.d/authzed.list  # helps tools such as command-not-found to work correctly
 ```
 
@@ -38,7 +38,7 @@ Types: deb
 URIs: https://pkg.authzed.com/apt/
 Suites: *
 Components: *
-Signed-By: /etc/apt/keyrings/spicedb.gpg
+Signed-By: /etc/apt/keyrings/authzed.gpg
 ```
 
 Once the you've defined the sources and updated your apt cache, it can be installed just like any other package:

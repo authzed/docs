@@ -12,23 +12,36 @@ However, one should prefer one of the recommended installation methods detailed 
 
 [Debian-based Linux] users can install SpiceDB packages by adding an additional apt source.
 
-First ensure the following dependencies are installed:
+First, download the public signing key for the repository:
 
 ```sh
-sudo apt update && sudo apt install -y curl ca-certificates gpg
+# In releases older than Debian 12 and Ubuntu 22.04, the folder `/etc/apt/keyrings` does not exist by default, and it should be created before the curl command.
+# sudo mkdir -p -m 755 /etc/apt/keyrings
+
+curl -sS https://pkg.authzed.com/apt/gpg.key | sudo gpg --dearmor --yes -o /etc/apt/keyrings/authzed.gpg
 ```
 
-Next, we can add, trust, and update the official SpiceDB apt source:
+Then add the list file for the repository:
 
 ```sh
-curl https://pkg.authzed.com/apt/gpg.key | sudo apt-key add -
-sudo sh -c 'echo "deb https://pkg.authzed.com/apt/ * *" > /etc/apt/sources.list.d/authzed.list'
+echo "deb [signed-by=/etc/apt/keyrings/authzed.gpg] https://pkg.authzed.com/apt/ * *"  | sudo tee /etc/apt/sources.list.d/authzed.list
+sudo chmod 644 /etc/apt/sources.list.d/authzed.list  # helps tools such as command-not-found to work correctly
+```
+
+Alternatively, if you want to use the new `deb822`-style `authzed.sources` format, put the following in `/etc/apt/sources.list.d/authzed.sources`:
+
+```
+Types: deb
+URIs: https://pkg.authzed.com/apt/
+Suites: *
+Components: *
+Signed-By: /etc/apt/keyrings/authzed.gpg
+```
+
+Once the you've defined the sources and updated your apt cache, it can be installed just like any other package:
+
+```sh
 sudo apt update
-```
-
-Install as usual:
-
-```sh
 sudo apt install -y zed
 ```
 
