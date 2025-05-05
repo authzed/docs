@@ -10,5 +10,9 @@
   "authzed": {
     "title": "AuthZed Product Documentation",
     "type": "page"
+  },
+  "zed": {
+    "title": "Zed Documentation",
+    "type":  "page"
   }
 }
