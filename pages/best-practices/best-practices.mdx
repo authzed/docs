@@ -18,15 +18,52 @@ In most cases, these rules should be followed.
 The recommended rules reflect how we would run our own systems, but may not apply to every use case and may not make sense in every situation.
 Follow them if you can and ignore them if you can’t.
 
+<BestPracticesSelector />
+
 ## Priority A Rules: Essential
 
-### Make sure your schema fails closed
+### Make Sure your Schema Fails Closed
 
 Tags: **schema**
 
 This is related to the idea of using negation sparingly, and of phrasing your schema additively.
 Give thought to what happens if your application fails to write a relation: should the user have access in that case?
 The answer is almost always `no`.
+
+This example is very simple, but illustrates the basic point:
+
+#### Avoid
+
+This schema starts with everyone having access and reduces it as you add users to the deny list.
+If you fail to write a user to the deny list, they'll have access when they shouldn't:
+
+```zed
+definition user {}
+
+definition resource {
+  relation public: user:*
+  relation deny: user
+
+  permission view = public - deny
+}
+```
+
+#### Prefer
+
+By contrast, this schema defaults to nobody having access, and therefore fails closed:
+
+```zed
+definition user {}
+
+definition resource {
+  relation user: user
+
+  permission view = user
+}
+```
+
+This is an admittedly simple example, but the concept holds in more complex schemas.
+This will also sometimes require a conversation about the business logic of your application.
 
 ### Tune Connections to Datastores
 
@@ -36,6 +73,25 @@ To size your SpiceDB connection pools, start by determining the maximum number o
 
 Use these values to set the `--datastore-conn-pool-read-max-open` and `--datastore-conn-pool-write-max-open` flags, and set the corresponding min values to half of each, adjusting as needed based on whether your workload leans more heavily on reads or writes.
 
+#### Example
+
+Let's say you have a database instance that supports 200 connections, and you know that you read more than you write.
+You have 4 SpiceDB instances in your cluster.
+A starting point for tuning this might be:
+
+```sh
+spicedb serve
+# other flags here
+--datastore-conn-pool-read-max-open 30
+--datastore-conn-pool-read-min-open 15
+--datastore-conn-pool-write-max-open 20
+--datastore-conn-pool-write-min-open 10
+```
+
+This reserves 50 connections per SpiceDB instance and distributes them accordingly.
+
+The `pgxpool_empty_acquire` metric can help you understand if your SpiceDB pods are starved for connections if you're using Postgres or Cockroach.
+
 ### Test Your Schema
 
 Tags: **schema**
@@ -44,7 +100,7 @@ You should be testing the logic of your schema to ensure that it behaves the way
 
 - For unit testing and TDD, use test relations + assertions and [zed validate](https://authzed.com/docs/spicedb/modeling/validation-testing-debugging#zed-validate).
 - For snapshot testing, use test relations + expected relations and [zed validate](https://authzed.com/docs/spicedb/modeling/validation-testing-debugging#zed-validate).
-- For integration testing, use the SpiceDB test server with spicedb [serve-testing](https://authzed.com/docs/spicedb/modeling/validation-testing-debugging#integration-test-server).
+- For integration testing, use the SpiceDB test server with SpiceDB [serve-testing](https://authzed.com/docs/spicedb/modeling/validation-testing-debugging#integration-test-server).
 
 ### Prefer Relations to Caveats
 
@@ -53,14 +109,14 @@ Tags: **schema**
 If an authorization concept can be expressed using relations, it should be.
 We provide caveats as an escape hatch; they should only be used for context that’s only available at request time, or else ABAC logic that cannot be expressed in terms of relationships.
 
+This is because caveats come with a performance penalty.
+A caveated relationship is both harder to cache and also slows down computation of the graph walk required to compute a permission.
+
 Some examples:
 
 - A banlist - this could be expressed as a list in caveat context, but it can also be expressed as a relation with negation.
 - A notion of public vs internal - boolean flags seem like an obvious caveat use case, but they can also be expressed using self relations.
 - Dynamic roles - these could be expressed as a list in caveats, and it’s not immediately obvious how to build them into a spicedb schema, but our [Google Cloud IAM example](https://authzed.com/blog/google-cloud-iam-modeling) shows how it’s possible.
-
-This is because caveats come with a performance penalty.
-A caveated relationship is both harder to cache and also slows down computation of the graph walk required to compute a permission.
 
 ### Make Your Writes Idempotent
 
@@ -88,12 +144,18 @@ In Postgres, the implementation of MVCC depends on the internals of the transact
 
 Tags: **operations**
 
-While designing your authorization, it’s important to plan ahead for how quickly an update is guaranteed, while trading off performance via cache effectiveness.
-By default, SpiceDB sets the Quanitzation Interval to 5s; check operations are cached within this window.
-To change this value, set `--datastore-revision-quantization-interval` longer or shorter.
+SpiceDB gives the user the ability to make tradeoffs between cache performance and up-to-date visibility using [its consistency options](https://authzed.com/docs/spicedb/concepts/consistency).
+In addition to these call-time options, there are also some flags that can provide better cache performance if additional staleness is acceptable.
+For example, by default, SpiceDB sets the Quantization Interval to 5s; check operations are cached within this window when using `minimize_latency` or `at_least_as_fresh` calls.
+Setting this window to be larger increases the ability of SpiceDB to use cached results with a tradeoff of results staying in the cache longer.
+More details about how these flags work together can be found in our [Hotspot Caching blog post](https://authzed.com/blog/hotspot-caching-in-google-zanzibar-and-spicedb).
+To change this value, set the `--datastore-revision-quantization-interval` flag.
 
-When it comes to write consistency, SpiceDB defaults to high safety, especially in distributed database writing scenarios, guaranteeing a visibility order.
-Individual datastores may also allow a relaxation of this guarantee, based on your scenario; for example, [setting CockroachDB’s overlap strategy](https://authzed.com/docs/spicedb/concepts/datastores#overlap-strategy), trading some authorization visibility safety across domains for greatly increased write throughput.
+When it comes to write consistency, SpiceDB defaults to high safety,
+especially in distributed database writing scenarios, guaranteeing a visibility order.
+Individual datastores may also allow a relaxation of this guarantee, based on your scenario;
+for example, [setting CockroachDB’s overlap strategy](https://authzed.com/docs/spicedb/concepts/datastores#overlap-strategy),
+can let you trade some ordering and consistency guarantees across domains for greatly increased write throughput.
 
 ### Use GRPC When Possible
 
@@ -278,7 +340,7 @@ Tags: **schema**
 As a schema grows in size and complexity, it can become difficult to navigate and grok.
 We implemented [Composable Schemas](https://authzed.com/docs/spicedb/modeling/composable-schemas) to solve this problem, allowing you to break down a schema into multiple files and definitions into multiple problems.
 
-### When In Doubt, Add Another Permission
+### Don't Re-Use Permissions Across Use Cases
 
 Tags: **schema**
 
