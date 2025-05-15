@@ -67,9 +67,9 @@ A caveated relationship is both harder to cache and also slows down computation 
 Tags: **application**
 
 Relations in SpiceDB are binary (a relation is present or it's not), and `WriteRelationships` calls are atomic.
-As much as possible, we recommend that you use the `TOUCH` semantic for your write calls, because it means that you can easily retry writes and recover from failures.
+As much as possible, we recommend that you use the [`TOUCH`](https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.RelationshipUpdate) semantic for your write calls, because it means that you can easily retry writes and recover from failures.
 
-If you’re concerned about sequencing your writes, or your writes have dependencies, we recommend using preconditions.
+If you’re concerned about sequencing your writes, or your writes have dependencies, we recommend using [preconditions](https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.Precondition).
 
 ### Don’t truncate your tables when running Postgres
 
