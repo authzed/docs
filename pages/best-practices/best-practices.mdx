@@ -1,4 +1,4 @@
-# Best Practises
+# Best Practices
 
 ### Rule Categories
 
@@ -33,7 +33,7 @@ Tags: **operations**
 
 To size your SpiceDB connection pools, start by determining the maximum number of allowed connections based on the documentation for your selected datastore, divide that number by the number of SpiceDB pods you’ve deployed, then split it between read and write pools.
 
-Use these values to set the --datastore-conn-pool-read-max-open and --datastore-conn-pool-write-max-open flags, and set the corresponding min values to half of each, adjusting as needed based on whether your workload leans more heavily on reads or writes.
+Use these values to set the `--datastore-conn-pool-read-max-open` and `--datastore-conn-pool-write-max-open` flags, and set the corresponding min values to half of each, adjusting as needed based on whether your workload leans more heavily on reads or writes.
 
 #### Test Your Schema
 
@@ -63,8 +63,8 @@ A caveated relationship is both harder to cache and also slows down computation 
 
 Tags: **application**
 
-Relations in SpiceDB are binary (a relation is present or it’s not), and WriteRelationships calls are atomic.
-As much as possible, we recommend that you use the TOUCH semantic for your write calls, because it means that you can easily retry writes and recover from failures.
+Relations in SpiceDB are binary (a relation is present or it's not), and `WriteRelationships` calls are atomic.
+As much as possible, we recommend that you use the `TOUCH` semantic for your write calls, because it means that you can easily retry writes and recover from failures.
 
 If you’re concerned about sequencing your writes, or your writes have dependencies, we recommend using preconditions.
 
@@ -72,8 +72,8 @@ If you’re concerned about sequencing your writes, or your writes have dependen
 
 Tags: **operations**
 
-If you truncate your Postgres table, your SpiceDB instances will become unresponsive until you run spicedb datastore repair.
-We recommend either dropping the tables entirely and recreating them with spicedb datastore migrate head or deleting the data using a DeleteRelationships call instead.
+If you truncate your Postgres table, your SpiceDB pods will become unresponsive until you run SpiceDB datastore repair.
+We recommend either dropping the tables entirely and recreating them with spicedb datastore migrate head or deleting the data using a `DeleteRelationships` call instead.
 
 To ensure that every request, whether cached or not, gets a consistent point-in-time view of the underlying data, SpiceDB uses Multi-Version Concurrency Control.
 Some datastores provide this natively; in others we’ve implemented it on top of the datastore.
@@ -104,16 +104,16 @@ gRPC is significantly more performant and lower-latency than HTTP, and client-st
 
 Tags: **schema**
 
-One of the big benefits to using a centralized authorization system like SpiceDB is that there’s one place to look for your authorization logic, and authorization logic isn’t duplicated across services.
-It can be tempting to define the authorization logic for an endpoint as being the AND or OR of the checks of other permissions, especially when the alternative is writing a new schema.
-However, this increases the likelihood of drift across your system, hides the authorization logic for a system in that system’s codebase, and increases the load on SpiceDB.
+One of the big benefits to using a centralized authorization system like SpiceDB is that there's one place to look for your authorization logic, and authorization logic isn't duplicated across services.
+It can be tempting to define the authorization logic for an endpoint as being the `AND` or `OR` of the checks of other permissions, especially when the alternative is writing a new schema.
+However, this increases the likelihood of drift across your system, hides the authorization logic for a system in that system's codebase, and increases the load on SpiceDB.
 
 #### Avoid Cycles in your Schema
 
 Tags: **schema**
 
 Recursive schemas can be very powerful, but can also lead to large performance issues when used incorrectly.
-A good rule of thumb is, if you need a schema definition to recur, have it refer to itself (eg, groups can have subgroups).
+A good rule of thumb is, if you need a schema definition to recur, have it refer to itself (e.g., groups can have subgroups).
 Avoid situations where a definition points to a separate definition that, further down the permission chain, points to the original definition by accident.
 
 Avoid:
@@ -157,25 +157,25 @@ Start with no access and build up; don’t start with full access and pare down.
 
 Tags: **application**
 
-Because you typically want to centralize your permissions in SpiceDB, that also means that most of the IDs of objects in SpiceDB are references to external entities.
-These external entities shouldn’t overlap.
-To that end, we recommend either using UUIDs or using another identifier from the upstream that you can be sure will be unique, such as the unique sub field assigned to a user token by your IDP.
+Because you typically want to centralize your permissions in SpiceDB, that also means that most of the `IDs` of objects in SpiceDB are references to external entities.
+These external entities shouldn't overlap. 
+To that end, we recommend either using `UUIDs` or using another identifier from the upstream that you can be sure will be unique, such as the unique sub field assigned to a user token by your IDP.
 
 #### Avoid ReadRelationships API
 
 Tags: **application**
 
-The ReadRelationships API should be treated as an escape hatch, used mostly for data introspection.
+The `ReadRelationships` API should be treated as an escape hatch, used mostly for data introspection.
 Using it for permission logic is a code smell.
-All checks and listing of IDs should use Check, CheckBulk, LookupResources, and LookupSubjects.
-If you find yourself reaching for the ReadRelationships API for permission logic, there’s probably a way to modify your schema to use one of the check APIs instead.
+All checks and listing of IDs should use `Check`, `CheckBulk`, `LookupResources`, and `LookupSubjects`.
+If you find yourself reaching for the `ReadRelationships` API for permission logic, there's probably a way to modify your schema to use one of the check APIs instead.
 
 #### Prefer CheckBulk To LookupResources
 
 Tags: **application**
 
-Both CheckBulk and LookupResources can be used to determine whether a subject has access to a list of objects.
-Where possible, we recommend CheckBulk, because its work is bounded to the list of requested checks, whereas the wrong LookupResources call can return the entire world and choke both your datastore and your client.
+Both `CheckBulk` and `LookupResources` can be used to determine whether a subject has access to a list of objects.
+Where possible, we recommend `CheckBulk`, because its work is bounded to the list of requested checks, whereas the wrong `LookupResources` call can return the entire world and choke both your datastore and your client.
 
 LookupResources generally requires a lot of work, causes a higher load, and subsequently has some of the highest latencies.
 If you need its semantics but its performance is insufficient, we recommend checking out our [Materialize](https://authzed.com/products/authzed-materialize) offering.
@@ -211,8 +211,9 @@ SpiceDB will guarantee you see a state at least as fresh as that token while sti
 
 Tags: **application**
 
-t’s possible to make a Check call with a relation as the “permission.” Even in a simple schema, we recommend instead that you have a permission that points at the relation and to check the relation.
-This is because if the logic of the check needs to change, it’s easy to change the definition of a permission and difficult to change the definition of a relation (it often requires a data migration).
+It's possible to make a `Check` call with a relation as the permission.
+Even in a simple schema, we recommend instead that you have a permission that points at the relation and to check the relation.
+This is because if the logic of the check needs to change, it's easy to change the definition of a permission and difficult to change the definition of a relation (it often requires a data migration).
 
 #### Enable schema watch cache
 
@@ -256,7 +257,7 @@ For example, we’ve found that even though AWS Application Load Balancers purpo
 
 Tags: **operations**
 
-To gain deeper insights into the performance of your SpiceDB cluster, the pods expose both metrics and pprof profiling endpoints.
+To gain deeper insights into the performance of your SpiceDB cluster, the pods expose both Prometheus metrics and `pprof` profiling endpoints.
 You can also configure tracing to export data to compatible OpenTelemetry backends.
 
 - Refer to the [SpiceDB Prometheus documentation](https://authzed.com/docs/spicedb/ops/observability#prometheus) for details on collecting metrics.
