@@ -10,5 +10,9 @@
   "authzed": {
     "title": "AuthZed Product Documentation",
     "type": "page"
+  },
+  "best-practices": {
+    "title": "Best Practices",
+    "type": "page"
   }
 }
