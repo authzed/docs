@@ -178,7 +178,7 @@ If you find yourself reaching for the `ReadRelationships` API for permission log
 Tags: **application**
 
 Both `CheckBulk` and `LookupResources` can be used to determine whether a subject has access to a list of objects.
-Where possible, we recommend `CheckBulk`, because its work is bounded to the list of requested checks, whereas the wrong `LookupResources` call can return the entire world and choke both your datastore and your client.
+Where possible, we recommend `CheckBulk`, because its work is bounded to the list of requested checks, whereas the wrong `LookupResources` call can return the entire world and therefore be slow.
 
 LookupResources generally requires a lot of work, causes a higher load, and subsequently has some of the highest latencies.
 If you need its semantics but its performance is insufficient, we recommend checking out our [Materialize](https://authzed.com/products/authzed-materialize) offering.
