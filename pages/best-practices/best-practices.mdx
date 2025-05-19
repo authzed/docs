@@ -76,7 +76,7 @@ If you’re concerned about sequencing your writes, or your writes have dependen
 Tags: **operations**
 
 If you truncate your Postgres table, your SpiceDB pods will become unresponsive until you run SpiceDB datastore repair.
-We recommend either dropping the tables entirely and recreating them with spicedb datastore migrate head or deleting the data using a `DeleteRelationships` call instead.
+We recommend either dropping the tables entirely and recreating them with `spicedb datastore migrate head` or deleting the data using a `DeleteRelationships` call instead.
 
 To ensure that every request, whether cached or not, gets a consistent point-in-time view of the underlying data, SpiceDB uses Multi-Version Concurrency Control.
 Some datastores provide this natively; in others we’ve implemented it on top of the datastore.
