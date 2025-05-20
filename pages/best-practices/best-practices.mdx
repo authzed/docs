@@ -1,0 +1,353 @@
+# Best Practices
+
+## Rule Categories
+
+### Priority A: Essential
+
+The essential rules are the most important ones.
+Use them to ensure that your SpiceDB cluster is performant, your schema is sane, and your authorization logic is sound.
+Exceptions to these rules should be rare and well justified.
+
+### Priority B: Strongly Recommended
+
+The strong recommendation rules will improve the schema design, developer experience, and performance of your SpiceDB cluster.
+In most cases, these rules should be followed.
+
+### Priority C: Recommended
+
+The recommended rules reflect how we would run our own systems, but may not apply to every use case and may not make sense in every situation.
+Follow them if you can and ignore them if you can’t.
+
+## Priority A Rules: Essential
+
+### Make Sure your Schema Fails Closed
+
+Tags: **schema**
+
+This is related to the idea of using negation sparingly, and of phrasing your schema additively.
+Give thought to what happens if your application fails to write a relation: should the user have access in that case?
+The answer is almost always `no`.
+
+This example is very simple, but illustrates the basic point:
+
+#### Avoid
+
+This schema starts with everyone having access and reduces it as you add users to the deny list.
+If you fail to write a user to the deny list, they'll have access when they shouldn't:
+
+```zed
+definition user {}
+
+definition resource {
+  relation public: user:*
+  relation deny: user
+
+  permission view = public - deny
+}
+```
+
+#### Prefer
+
+By contrast, this schema defaults to nobody having access, and therefore fails closed:
+
+```zed
+definition user {}
+
+definition resource {
+  relation user: user
+
+  permission view = user
+}
+```
+
+This is an admittedly simple example, but the concept holds in more complex schemas.
+This will also sometimes require a conversation about the business logic of your application.
+
+### Tune Connections to Datastores
+
+Tags: **operations**
+
+To size your SpiceDB connection pools, start by determining the maximum number of allowed connections based on the documentation for your selected datastore, divide that number by the number of SpiceDB pods you’ve deployed, then split it between read and write pools.
+
+Use these values to set the `--datastore-conn-pool-read-max-open` and `--datastore-conn-pool-write-max-open` flags, and set the corresponding min values to half of each, adjusting as needed based on whether your workload leans more heavily on reads or writes.
+
+#### Example
+
+Let's say you have a database instance that supports 200 connections, and you know that you read more than you write.
+You have 4 SpiceDB instances in your cluster.
+A starting point for tuning this might be:
+
+```sh
+spicedb serve
+# other flags here
+--datastore-conn-pool-read-max-open 30
+--datastore-conn-pool-read-min-open 15
+--datastore-conn-pool-write-max-open 20
+--datastore-conn-pool-write-min-open 10
+```
+
+This reserves 50 connections per SpiceDB instance and distributes them accordingly.
+
+The `pgxpool_empty_acquire` metric can help you understand if your SpiceDB pods are starved for connections if you're using Postgres or Cockroach.
+
+### Test Your Schema
+
+Tags: **schema**
+
+You should be testing the logic of your schema to ensure that it behaves the way you expect.
+
+- For unit testing and TDD, use test relations + assertions and [zed validate](https://authzed.com/docs/spicedb/modeling/validation-testing-debugging#zed-validate).
+- For snapshot testing, use test relations + expected relations and [zed validate](https://authzed.com/docs/spicedb/modeling/validation-testing-debugging#zed-validate).
+- For integration testing, use the SpiceDB test server with SpiceDB [serve-testing](https://authzed.com/docs/spicedb/modeling/validation-testing-debugging#integration-test-server).
+
+### Prefer Relations to Caveats
+
+Tags: **schema**
+
+If an authorization concept can be expressed using relations, it should be.
+We provide caveats as an escape hatch; they should only be used for context that’s only available at request time, or else ABAC logic that cannot be expressed in terms of relationships.
+
+This is because caveats come with a performance penalty.
+A caveated relationship is both harder to cache and also slows down computation of the graph walk required to compute a permission.
+
+Some examples:
+
+- A banlist - this could be expressed as a list in caveat context, but it can also be expressed as a relation with negation.
+- A notion of public vs internal - boolean flags seem like an obvious caveat use case, but they can also be expressed using self relations.
+- Dynamic roles - these could be expressed as a list in caveats, and it’s not immediately obvious how to build them into a SpiceDB schema, but our [Google Cloud IAM example](https://authzed.com/blog/google-cloud-iam-modeling) shows how it’s possible.
+
+### Make Your Writes Idempotent
+
+Tags: **application**
+
+Relations in SpiceDB are binary (a relation is present or it's not), and `WriteRelationships` calls are atomic.
+As much as possible, we recommend that you use the [`TOUCH`](https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.RelationshipUpdate) semantic for your write calls, because it means that you can easily retry writes and recover from failures.
+
+If you’re concerned about sequencing your writes, or your writes have dependencies, we recommend using [preconditions](https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.Precondition).
+
+### Don’t truncate your tables when running Postgres
+
+Tags: **operations**
+
+If you truncate your Postgres table, your SpiceDB pods will become unresponsive until you run SpiceDB datastore repair.
+We recommend either dropping the tables entirely and recreating them with `spicedb datastore migrate head` or deleting the data using a `DeleteRelationships` call instead.
+
+To ensure that every request, whether cached or not, gets a consistent point-in-time view of the underlying data, SpiceDB uses Multi-Version Concurrency Control.
+Some datastores provide this natively; in others we’ve implemented it on top of the datastore.
+In Postgres, the implementation of MVCC depends on the internals of the transaction counter being stored as data in the tables, so if you truncate the relationships table you desync the transaction counter with the stored relationships.
+
+## Priority B Rules: Strongly Recommended
+
+### Understand your consistency needs
+
+Tags: **operations**
+
+SpiceDB gives the user the ability to make tradeoffs between cache performance and up-to-date visibility using [its consistency options](https://authzed.com/docs/spicedb/concepts/consistency).
+In addition to these call-time options, there are also some flags that can provide better cache performance if additional staleness is acceptable.
+For example, by default, SpiceDB sets the Quantization Interval to 5s; check operations are cached within this window when using `minimize_latency` or `at_least_as_fresh` calls.
+Setting this window to be larger increases the ability of SpiceDB to use cached results with a tradeoff of results staying in the cache longer.
+More details about how these flags work together can be found in our [Hotspot Caching blog post](https://authzed.com/blog/hotspot-caching-in-google-zanzibar-and-spicedb).
+To change this value, set the `--datastore-revision-quantization-interval` flag.
+
+When it comes to write consistency, SpiceDB defaults to high safety,
+especially in distributed database writing scenarios, guaranteeing a visibility order.
+Individual datastores may also allow a relaxation of this guarantee, based on your scenario;
+for example, [setting CockroachDB’s overlap strategy](https://authzed.com/docs/spicedb/concepts/datastores#overlap-strategy),
+can let you trade some ordering and consistency guarantees across domains for greatly increased write throughput.
+
+### Use GRPC When Possible
+
+Tags: **application**
+
+SpiceDB can be configured to expose both an [HTTP API](https://authzed.com/docs/spicedb/getting-started/client-libraries#http-clients) and associated Swagger documentation.
+While this can be helpful for initial exploration, we strongly recommend using one of our gRPC-based official client libraries if your networking and calling language support it.
+gRPC is significantly more performant and lower-latency than HTTP, and client-streaming services like ImportBulk can’t be used with the HTTP API.
+
+### Keep Permission Logic in SpiceDB
+
+Tags: **schema**
+
+One of the big benefits to using a centralized authorization system like SpiceDB is that there's one place to look for your authorization logic, and authorization logic isn't duplicated across services.
+It can be tempting to define the authorization logic for an endpoint as being the `AND` or `OR` of the checks of other permissions, especially when the alternative is writing a new schema.
+However, this increases the likelihood of drift across your system, hides the authorization logic for a system in that system's codebase, and increases the load on SpiceDB.
+
+### Avoid Cycles in your Schema
+
+Tags: **schema**
+
+Recursive schemas can be very powerful, but can also lead to large performance issues when used incorrectly.
+A good rule of thumb is, if you need a schema definition to recur, have it refer to itself (e.g., groups can have subgroups).
+Avoid situations where a definition points to a separate definition that, further down the permission chain, points to the original definition by accident.
+
+Avoid:
+
+```zed
+definition user {
+	relation org: organization
+}
+
+definition group {
+	relation member: user
+}
+
+definition organization {
+	relation subgroup: group
+}
+```
+
+Preferred:
+
+```zed
+definition user {}
+
+definition group {
+	relation member: user | group
+}
+```
+
+### Phrase Permissions Additively/Positively
+
+Tags: **schema**
+
+A more comprehensible permission system is a more secure permission system.
+One of the easiest ways to maintain your authorization logic is to treat permissions as `positive` or `additive`: a user gains permissions when relations are written.
+This reduces the number of ways that permission logic can interact, and prevents the granting of permission accidentally.
+
+In concrete terms, that means use wildcards and negations sparingly.
+Start with no access and build up; don’t start with full access and pare down.
+
+### Use Unique Identifiers for Object Identifiers
+
+Tags: **application**
+
+Because you typically want to centralize your permissions in SpiceDB, that also means that most of the `IDs` of objects in SpiceDB are references to external entities.
+These external entities shouldn't overlap.
+To that end, we recommend either using `UUIDs` or using another identifier from the upstream that you can be sure will be unique, such as the unique sub field assigned to a user token by your IDP.
+
+### Avoid ReadRelationships API
+
+Tags: **application**
+
+The `ReadRelationships` API should be treated as an escape hatch, used mostly for data introspection.
+Using it for permission logic is a code smell.
+All checks and listing of IDs should use `Check`, `CheckBulk`, `LookupResources`, and `LookupSubjects`.
+If you find yourself reaching for the `ReadRelationships` API for permission logic, there's probably a way to modify your schema to use one of the check APIs instead.
+
+### Prefer CheckBulk To LookupResources
+
+Tags: **application**
+
+Both `CheckBulk` and `LookupResources` can be used to determine whether a subject has access to a list of objects.
+Where possible, we recommend `CheckBulk`, because its work is bounded to the list of requested checks, whereas the wrong `LookupResources` call can return the entire world and therefore be slow.
+
+LookupResources generally requires a lot of work, causes a higher load, and subsequently has some of the highest latencies.
+If you need its semantics but its performance is insufficient, we recommend checking out our [Materialize](https://authzed.com/products/authzed-materialize) offering.
+
+## Priority C Rules: Recommended
+
+### Treat Writing Schema like Writing DB Migrations
+
+Tags: **operations**
+
+We recommend treating an update to your SpiceDB schema as though it were a database migration.
+Keep it in your codebase, test it before deployment, and write it to your SpiceDB cluster as a part of your continuous integration process.
+This ensures that updates to your schema are properly controlled.
+
+### Load Test
+
+Tags: **operations**
+
+To evaluate the performance and capabilities of your SpiceDB cluster and its underlying datastore, AuthZed provides [Thumper](https://github.com/authzed/thumper) — a load testing tool.
+You can use Thumper to simulate workloads and validate schema updates before deploying them to a production environment.
+
+### Use ZedTokens and “At Least As Fresh” for Best Caching
+
+Tags: **application**
+
+SpiceDB’s fully consistent mode (`fully_consistent`) forces the use of the most recent datastore revision, which might not be the most optimal, and reduces cache hit rate, increasing latency and load on the datastore.
+
+If possible, we recommend using `at_least_as_fresh` with `ZedTokens` instead.
+Capture the `ZedToken` returned by your initial request, then include it in all subsequent calls.
+SpiceDB will guarantee you see a state at least as fresh as that token while still leveraging in-memory and datastore caches to deliver low-latency responses
+
+### Prefer Checking Permissions Instead of Relationships
+
+Tags: **application**
+
+It's possible to make a `Check` call with a relation as the permission.
+Even in a simple schema, we recommend instead that you have a permission that points at the relation and to check the relation.
+This is because if the logic of the check needs to change, it's easy to change the definition of a permission and difficult to change the definition of a relation (it often requires a data migration).
+
+### Enable schema watch cache
+
+Tags: **operations**
+
+In order to minimize load on the database, you can enable schema watch cache using the flag `--enable-experimental-watchable-schema-cache`.
+The schema watch cache is a mechanism that improves performance and responsiveness by caching the currently loaded schema and watching for changes in real time.
+
+While we recommend enabling this, it isn't enabled by default because it requires additional configuration and knowledge of your datastore.
+For Postgres, [`track_commit_timestamp`](https://www.postgresql.org/docs/current/runtime-config-replication.html#GUC-TRACK-COMMIT-TIMESTAMP) must be set to `on` for the Watch API to be enabled.
+For Spanner, there are a maximum of 5 changefeeds available globally for a table, and this consumes one of them.
+
+### Use the Operator
+
+Tags: **operations**
+
+To ensure seamless rollouts, upgrades, and schema migrations, it is recommended to use the SpiceDB Kubernetes Operator if you’re using Kubernetes.
+The Operator automates many operational tasks and helps maintain consistency across environments.
+You can find the official documentation for the SpiceDB operator [here](https://authzed.com/docs/spicedb/concepts/operator).
+
+### Ensure that SpiceDB Can Talk To Itself
+
+Tags: **operations**
+
+In SpiceDB, dispatching subproblems refers to the internal process of breaking down a permission check or relationship evaluation into smaller logical components.
+These subproblems are dispatched horizontally between SpiceDB nodes, which shares the workload and increases cache hit rate - this is [SpiceDB’s horizontal scalability](https://authzed.com/blog/consistent-hash-load-balancing-grpc).
+For this to work, the SpiceDB nodes must be configured to be aware of each other.
+
+In our experience, running SpiceDB on Kubernetes with our [Operator](https://authzed.com/docs/spicedb/concepts/operator) is the easiest and best way to achieve this.
+It’s possible to configure dispatch using DNS as well, but non-Kubernetes based dispatching relies upon DNS updates, which means it can become stale if DNS is changing.
+This is not recommended unless DNS updates are rare.
+
+### Choose the Right Load Balancer
+
+Tags: **operations**
+
+In our experience, TCP-level L4 load balancers play more nicely with gRPC clients than HTTP-level L7 load balancers.
+For example, we’ve found that even though AWS Application Load Balancers purport to support gRPC, they have a tendency to drop connections and otherwise misbehave; AWS Network Load Balancers seem to work better.
+
+### Use the Provided Metrics, Traces, and Profiles
+
+Tags: **operations**
+
+To gain deeper insights into the performance of your SpiceDB cluster, the pods expose both Prometheus metrics and `pprof` profiling endpoints.
+You can also configure tracing to export data to compatible OpenTelemetry backends.
+
+- Refer to the [SpiceDB Prometheus documentation](https://authzed.com/docs/spicedb/ops/observability#prometheus) for details on collecting metrics.
+  - AuthZed Cloud supports exporting metrics to Datadog via the official [AuthZed cloud datadog integration](https://docs.datadoghq.com/integrations/authzed_cloud/).
+  - To gain a complete picture of your SpiceDB cluster’s performance, it’s important to export metrics from the underlying datastore.
+    These metrics help identify potential bottlenecks and performance issues.
+    AuthZed Cloud provides access to both CockroachDB and PostgreSQL metrics via its cloud telemetry endpoints, enabling deeper visibility into database behavior.
+- The [profiling documentation](https://authzed.com/docs/spicedb/ops/observability#profiling) explains how to use the pprof endpoints.
+- The [tracing documentation](https://authzed.com/docs/spicedb/ops/observability#opentelemetry-tracing) walks you through sending trace data to a Jaeger endpoint.
+
+### Use Partials + Composable Schema to Organize your Schema
+
+Tags: **schema**
+
+As a schema grows in size and complexity, it can become difficult to navigate and grok.
+We implemented [Composable Schemas](https://authzed.com/docs/spicedb/modeling/composable-schemas) to solve this problem, allowing you to break down a schema into multiple files and definitions into multiple problems.
+
+### Don't Re-Use Permissions Across Use Cases
+
+Tags: **schema**
+
+When adding a new feature or service, it can be tempting to re-use existing permissions that currently match the semantics you’re looking for, rather than doing the work of modifying the schema to introduce a new permission.
+However, if the authorization business logic changes between use cases, you’ll not only have to do the work of modifying the permission, but also modifying the call site, so we recommend frontloading that work.
+
+### Use Expiration Feature for Expiration Logic
+
+Tags: **schema**
+
+Expiration is a common use case – at some future time, a permission is revoked.
+It’s so common, it’s now [a built-in feature](https://authzed.com/docs/spicedb/concepts/expiring-relationships), and is far more efficient for SpiceDB to handle than doing the same with caveats!

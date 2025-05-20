@@ -274,19 +274,8 @@ Because this counter is instance-specific, there are ways in which the data in t
 Two concrete examples are the use of `pg_dump` and `pg_restore` to transfer data between an old instance and a new instance and setting up
 logical replication between a previously-existing instance and a newly-created instance.
 
-If you encounter this, SpiceDB can behave as though there is no schema written, because the data (including the schema) is associated with a future transaction ID and therefore
-isn't "visible" to Spicedb.
-You may see an error like this:
-
-```
-FAILED_PRECONDITION: object definition `some_definition` not found
-```
-
-If this occurs, you can use `spicedb datastore repair` (along with your usual datastore flags) to roll the transaction counter of the database forward until SpiceDB is able to resume normal operation:
-
-```
-spicedb datastore repair --datastore-engine=postgres --datastore-conn-uri=$DATASTORE_URI
-```
+If you encounter this, SpiceDB can behave as though there is no schema written, because the data (including the schema) is associated with a future transaction ID and therefore isn't "visible" to Spicedb.
+If you run into this issue, the fix is [documented here](https://authzed.com/docs/spicedb/concepts/datastores#transaction-ids-and-mvcc)
 
 ### Configuration
 
