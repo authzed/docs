@@ -4,11 +4,11 @@ import { Callout } from 'nextra/components'
 
 In order to reduce operational complexity, SpiceDB leverages existing, popular systems for persisting data.
 
-Each datastore implementation comes with various trade-offs.
+AuthzZed has standardized our managed services on CockroachDB, but we give self-hosted customers the option to pick the datastore that best suits their operational requirements.
 
-- [CockroachDB](#cockroachdb) - Recommended for planet-scale, multi-region deployments
-- [Cloud Spanner](#cloud-spanner) - Recommended for Google Cloud deployments
-- [PostgreSQL](#postgresql) - Recommended for single-region deployments
+- [CockroachDB](#cockroachdb) - Recomended for self hosted deployments with high throughput and/or multi-region requirements
+- [Cloud Spanner](#cloud-spanner) - Recommended for self-hosted Google Cloud deployments
+- [PostgreSQL](#postgresql) - Recommended for self-hosted single-region deployments
 - [MySQL](#mysql) - Not recommended; only use if you cannot use PostgreSQL
 - [memdb](#memdb) - Recommended for local development and integration testing against applications
 
