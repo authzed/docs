@@ -5,9 +5,7 @@
     "newWindow": true
   },
   "http-api": {
-    "title": "HTTP API Reference",
-    "href": "https://www.postman.com/authzed/workspace/spicedb/overview",
-    "newWindow": true
+    "title": "HTTP API Reference"
   },
   "cloud-api": {
     "title": "Cloud API Reference",

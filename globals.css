@@ -23,3 +23,11 @@ body {
   top: 0;
   left: 0;
 }
+
+.swagger-ui .information-container {
+  display: none;
+}
+
+.swagger-ui .scheme-container {
+  display: none;
+}
