@@ -15,14 +15,16 @@ Those familiar with configuring IAM on the major cloud providers should feel com
 - Roles
 - Policies
 
-## Service Accounts
+## Components
+
+### Service Accounts
 
 Service Accounts represent your unique workloads.
 We recommend creating a Service Account for each application that will access the SpiceDB API.
 
 By default Service Accounts have no access to the SpiceDB API; you must apply a Role to gain access.
 
-## Tokens
+### Tokens
 
 Tokens are long-lived credentials for Service Accounts.
 SpiceDB clients must provide a Token in the Authorization header of an API request to perform actions granted to the Service Account.
@@ -31,7 +33,7 @@ Service Accounts can have an arbitrary number of Tokens.
 
 <Callout type="info">We recommend deploying new Tokens before deprovisioning any old Tokens to avoid downtime.</Callout>
 
-### Token Format
+#### Token Format
 
 <Callout type="warning">The entire contents of a Token is considered secret.</Callout>
 
@@ -62,7 +64,7 @@ The command should output the hash, which can be referenced in your static confi
 
 [static configuration]: #static-configuration
 
-## Roles
+### Roles
 
 Roles define rules for accessing the SpiceDB API.
 Roles are bound to Service Accounts to apply those rules to all API Tokens representing the Service Account.
@@ -89,9 +91,51 @@ The following variables are provided the CEL expression varying based on the req
 [cel]: https://github.com/google/cel-spec
 [cel-lang-spec]: https://github.com/google/cel-spec/blob/81e07d7cf76e7fc89b177bd0fdee8ba6d6604bf5/doc/langdef.md
 
-### Example Rule Expressions
+### Policies
 
-#### Resource-type Write Limit
+Policies are what bind Roles to a Service Account.
+
+Each policy is composed of a unique identifer for the policy itself, the principal (the target of the role assignment), and any roles being assigned.
+
+## Task-Specific Configuration
+
+### `zed backup`/`zed restore`
+
+To configure a service account for use with `zed backup` and `zed restore`, you'll need the following APIs:
+
+On a Service Account on the **source** PS:
+
+```yaml
+## For backup
+# Exporting relationships
+authzed.api/ExportBulkRelationships
+authzed.api/BulkExportRelationships
+
+# Dumping existing schema
+authzed.api/ReadSchema
+```
+
+On a Service Account on the **destination** PS:
+
+```yaml
+## For restore
+## Put these on the DESTINATION PS
+# Importing relationships
+authzed.api/ImportBulkRelationships
+authzed.api/BulkImportRelationships
+
+# Retrying failed relationships
+authzed.api/WriteRelationships
+
+# Writing new schema
+authzed.api/WriteSchema
+```
+
+## Example Rule CEL Expressions
+
+These are some examples of CEL expressions that you might attach to Permissions on a Role.
+
+### Resource-type Write Limit
 
 This CEL expression disables the ability for writes to occur on anything but the provided resource type.
 
@@ -101,7 +145,7 @@ This is useful for limiting an application to only be able to perform writes to 
 WriteRelationshipsRequest.updates.all(x, x.relationship.resource.object_type == "resource")
 ```
 
-#### Subject-type Write Limit
+### Subject-type Write Limit
 
 This CEL expression disables the ability for writes to occur on anything but the provided subject type.
 
@@ -109,7 +153,7 @@ This CEL expression disables the ability for writes to occur on anything but the
 WriteRelationshipsRequest.updates.all(x, x.relationship.subject.object.object_type == "user")
 ```
 
-#### Create-only Write Limit
+### Create-only Write Limit
 
 This CEL expression disables the ability for writes to perform updates; they can only create new relationships.
 
@@ -120,7 +164,7 @@ WriteRelationshipsRequest.updates.all(
 )
 ```
 
-#### Resource-type Read Limit
+### Resource-type Read Limit
 
 This CEL expression limits the ReadRelationships API from being able to list anything but the a specific resource type.
 
@@ -128,7 +172,7 @@ This CEL expression limits the ReadRelationships API from being able to list any
 ReadRelationshipsRequest.relationship_filter.resource_type == "resource"
 ```
 
-#### Blocking Schema Writes
+### Blocking Schema Writes
 
 This CEL expression prevents any schema writes that contain the substring "blockchain".
 This example could be extended to prevent PII or undesirable patterns from reaching a production schema.
@@ -137,19 +181,13 @@ This example could be extended to prevent PII or undesirable patterns from reach
 !WriteSchemaRequest.schema.contains("blockchain")
 ```
 
-#### Limit Checks to one Permission
+### Limit Checks to one Permission
 
 This CEL expression limits CheckPermissions requests to only be able to check a particular permission.
 
 ```cel
 CheckPermissionRequest.permission == "admin"
 ```
-
-## Policies
-
-Policies are what bind Roles to a Service Account.
-
-Each policy is composed of a unique identifer for the policy itself, the principal (the target of the role assignment), and any roles being assigned.
 
 ## Static Configuration
 
