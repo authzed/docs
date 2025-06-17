@@ -1,0 +1,116 @@
+import { Tabs } from 'nextra/components'
+import { Callout } from 'nextra/components'
+
+# Writing relationships
+
+This page will provide some practical recommendations for writing relationships to SpiceDB.
+If you are interested in relationships as a concept, check out this [page](/spicedb/concepts/relationships).
+
+## Retries
+
+When making requests to SpiceDB, it's important to implement proper retry logic to handle transient failures. [SpiceDB APIs use gRPC*](/spicedb/getting-started/client-libraries), which can experience various types of temporary failures that can be resolved through retries.
+
+Retries are recommended for all gRPC methods, not just WriteRelationships.
+
+*SpiceDB can also expose an [HTTP API](/spicedb/getting-started/client-libraries#http-clients); however, gRPC is recommended.
+
+### Implementing Retry Policies
+
+You can implement your own retry policies using the gRPC Service Config.
+Below, you will find a recommended Retry Policy.
+
+```
+"retryPolicy": {
+  "maxAttempts": 3,
+  "initialBackoff": "1s",
+  "maxBackoff": "4s",
+  "backoffMultiplier": 2,
+  "retryableStatusCodes": [
+    'UNAVAILABLE', 'RESOURCE_EXHAUSTED', 'DEADLINE_EXCEEDED', 'ABORTED',
+  ]
+}
+```
+
+This retry policy configuration provides exponential backoff with the following behavior:
+
+**`maxAttempts: 3`** - Allows for a maximum of 3 total attempts (1 initial request + 2 retries).
+This prevents infinite retry loops while giving sufficient opportunity for transient issues to resolve.
+
+**`initialBackoff: "1s"`** - Sets the initial delay to 1 second before the first retry attempt.
+This gives the system time to recover from temporary issues.
+
+**`maxBackoff: "4s"`** - Caps the maximum delay between retries at 4 seconds to prevent excessively long waits that could impact user experience.
+
+**`backoffMultiplier: 2`** - Doubles the backoff time with each retry attempt.
+Combined with the other settings, this creates a retry pattern of: 1s → 2s → 4s.
+
+**`retryableStatusCodes`** - Only retries on specific gRPC status codes that indicate transient failures:
+-`UNAVAILABLE`: SpiceDB is temporarily unavailable
+-`RESOURCE_EXHAUSTED`: SpiceDB is overloaded
+-`DEADLINE_EXCEEDED`: Request timed out
+-`ABORTED`: Operation was aborted, often due to conflicts that may resolve on retry
+
+You can find a python retry example [here](https://github.com/authzed/examples/blob/main/data/retry/main.py).
+
+## Writes: Touch vs Create
+
+A SpiceDB [relationship update](https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.RelationshipUpdate) can use one of three operation types `CREATE`, `TOUCH`, OR `DELETE`.
+This section will cover `CREATE` and `TOUCH`.
+You can read more about `DELETE` in [the section below](#deleting-relationships).
+
+### Understanding the Operations
+
+**`CREATE`** - Inserts a new relationship.
+If the relationship already exists, the operation will fail with an error.
+
+**`TOUCH`** - Upserts a relationship.
+If the relationship already exists, it will do nothing.
+If it doesn't exist, it will create it.
+
+### Key Differences
+
+| Operation | Behavior on Existing Relationship | Performance | Use Case |
+|-----------|-----------------------------------|-------------|----------|
+| `CREATE` | Fails with error | Faster (single insert) | Initial relationship creation |
+| `TOUCH` | Updates/overwrites | Slower (delete + insert) | Idempotent operations |
+
+### Special Considerations
+
+**Expiring Relationships:** When working with [expiring relationships](/spicedb/concepts/expiring-relationships), always use `TOUCH`.
+If a relationship has expired but hasn't been garbage collected yet, using `CREATE` will return an error.
+
+**Error Handling:** When using `CREATE`, be prepared to handle duplicate relationship errors appropriately in your application logic.
+
+## Deleting Relationships
+
+SpiceDB provides two methods for deleting relationships: using the `WriteRelationships` API with the `DELETE` operation or using the `DeleteRelationships` API.
+Each approach has different behaviors and use cases.
+
+### WriteRelationships with the `DELETE` Operation
+
+The [`WriteRelationships`](https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.WriteRelationshipsRequest) API supports a `DELETE` operation type that allows you to remove specific relationships as part of a batch of relationship updates.
+
+**`DELETE`** - Removes a relationship.
+If the relationship does not exist, the operation will silently succeed (no-op).
+
+#### Characteristics
+
+- **Atomic Operations**: Can be combined with other relationship operations (`CREATE`, `TOUCH`) in a single atomic transaction
+- **Granular Control**: Delete specific relationships alongside creating or updating others
+- **Silent Failure**: Does not fail if the relationship doesn't exist
+- **Batch Limit**: Subject to the same batch size limits as other `WriteRelationships` operations (1,000 updates by default)
+
+### DeleteRelationships API
+
+The [`DeleteRelationships`](https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.DeleteRelationshipsRequest) API is a dedicated method for bulk deletion of relationships based on filters rather than specifying individual relationships.
+
+#### Characteristics
+
+- **Filter-Based**: Delete relationships based on resource type, relation, subject type, or combinations thereof
+- **Bulk Operations**: Can delete many relationships matching the filter criteria in a single call
+- **Separate Transaction**: Operates independently from `WriteRelationships`
+- **Efficient for Mass Deletion**: Optimized for removing large numbers of relationships
+
+## Bulk Import
+
+Check out [Bulk Importing Relationships](/spicedb/modeling/Data/writing-relationships)
