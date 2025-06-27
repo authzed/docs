@@ -15,7 +15,7 @@ For example, releases that include changes to datastore can require that users u
 
   To automate upgrades without downtime, consider deploying the [SpiceDB Operator].
 
-  [SpiceDB Operator]: /spicedb/concepts/operator
+  [SpiceDB Operator]: /spicedb/ops/operator
 </Callout>
 
 [SpiceDB GitHub releases page]: https://github.com/authzed/spicedb/releases
@@ -26,6 +26,20 @@ For example, releases that include changes to datastore can require that users u
 ## Migrations
 
 ### What are migrations?
+
+Before a datastore can be used by SpiceDB or before running a new version of SpiceDB, you must execute all available migrations.
+
+<Callout type="info">
+    The only exception is the [memdb datastore](datastores#memdb) because it does not persist any data.
+</Callout>
+
+In order to migrate a datastore, run the following command with your desired values:
+
+```
+spicedb migrate head \
+    --datastore-engine $DESIRED_ENGINE \
+    --datastore-conn-uri $CONNECTION_STRING
+```
 
 For all software that maintains data, there can be updates to code that rely on also updating the data, too.
 The process of updating data to use new versions of software is called _migrating_.
@@ -89,7 +103,7 @@ No matter which service you select, zero-downtime migrations are always performe
 If you are operating SpiceDB yourself, the recommended update workflow is to use the [SpiceDB Operator].
 Please see the [operator-specific update docs] for various update options.
 
-[operator-specific update docs]: /spicedb/concepts/operator#updating-managed-spicedbclusters
+[operator-specific update docs]: /spicedb/ops/operator#updating-managed-spicedbclusters
 
 ### Sequential Updates
 

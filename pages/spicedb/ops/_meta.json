@@ -1,6 +1,9 @@
 {
+  "operator": "SpiceDB Kubernetes Operator",
+  "deploying-spicedb-operator": "Deploying the SpiceDB Kubernetes Operator",
+  "eks": "Deploying to AWS EKS",
+  "data": "Writing data to SpiceDB",
   "observability": "Observability Tooling",
-  "deploying-spicedb-operator": "Deploying the SpiceDB Operator",
   "ai-agent-authorization": "Authorization for AI Agents",
   "secure-rag-pipelines": "Secure Your RAG Pipelines with Fine Grained Authorization"
 }
