@@ -103,3 +103,49 @@ desc = No schema has been defined; please call WriteSchema to start
 ## GCP Steps
 
 Coming Soon
+
+## Azure Steps
+
+<Steps>
+
+### Onboarding
+
+The customer success team at AuthZed should reach out about Private Networking during onboarding.
+
+In the case where there's any miscommunication, please reach out via Slack or [schedule a call](https://authzed.com/call).
+
+### Create an Azure Private Endpoint
+
+[Azure PrivateLink](https://azure.microsoft.com/en-us/products/private-link) is the core technology involved in this process.
+
+Login to the [Azure Portal](https://portal.azure.com/) and go to the private endpoint page.
+Create a new private endpoint and select the following options:
+
+| Option                 | Selection            |
+| :-------------------:  | :-------------------:|
+| Name                   | Choose a descriptive name for your private endpoint. |
+| Connection method      | Connect to an Azure resource by resource ID or alias. |
+| Alias                  | Enter the alias provided to you by the AuthZed team. |
+| Subnet                 | Choose the subnet where your SpiceDB clients will be deployed. |
+| Network Security Group | If you use a NSG, configure it to allow inbound traffic on port 443 from your clients. |
+
+### Configure DNS
+
+To access the private endpoint, you need to configure DNS resolution.
+This can be done by creating a private DNS zone in Azure.
+
+Go to the private DNS zones page in the [Azure Portal](https://portal.azure.com/) and create a new private DNS zone.
+Use the following settings:
+
+- Set the name of the private DNS zone using the DNS name of your SpiceDB cluster which is available in the AuthZed Dedicated management dashboard.
+- Create an A record for the root (@) in the private DNS zone that points to the private IP address of your private endpoint which was created earlier.
+
+Now we need to link the private DNS zone to the virtual network where the private endpoint is located:
+
+- Click on Virtual Network Links and then click **Add**.
+- Name the link and select the virtual network where your private endpoint is located.
+- Enable the option **auto registration** to automatically register DNS records for resources in the virtual network.
+
+For more details on configuring Private Endpoints and DNS in Azure, refer to the [Azure documentation](https://learn.microsoft.com/en-us/azure/dns/private-dns-getstarted-portal).
+
+</Steps>
