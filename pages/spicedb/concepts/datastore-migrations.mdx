@@ -27,6 +27,20 @@ For example, releases that include changes to datastore can require that users u
 
 ### What are migrations?
 
+Before a datastore can be used by SpiceDB or before running a new version of SpiceDB, you must execute all available migrations.
+
+<Callout type="info">
+    The only exception is the [memdb datastore](#memdb) because it does not persist any data.
+</Callout>
+
+In order to migrate a datastore, run the following command with your desired values:
+
+```
+spicedb migrate head \
+    --datastore-engine $DESIRED_ENGINE \
+    --datastore-conn-uri $CONNECTION_STRING
+```
+
 For all software that maintains data, there can be updates to code that rely on also updating the data, too.
 The process of updating data to use new versions of software is called _migrating_.
 
