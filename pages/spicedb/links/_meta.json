@@ -13,5 +13,15 @@
     "title": "Annotated Zanzibar Paper",
     "href": "https://authzed.com/zanzibar",
     "newWindow": true
+  },
+  "awesome-list": {
+    "title": "SpiceDB Awesome List",
+    "href": "https://github.com/authzed/awesome-spicedb#user-content-awesome-spicedb",
+    "newWindow": true
+  },
+  "examples": {
+    "title": "Community Examples",
+    "href": "https://github.com/authzed/examples",
+    "newWindow": true
   }
 }

@@ -1,20 +1,11 @@
 {
-  "discovering-spicedb": "Discovering SpiceDB",
+  "discovering-spicedb": "What is SpiceDB?",
+  "first-steps": "First Steps",
   "install": "Installing SpiceDB",
   "installing-spicedb": { "display": "hidden" },
   "client-libraries": "Client Libraries",
-  "installing-zed": "Installing Zed",
+  "installing-zed": "Installing the CLI",
   "coming-from": "Coming From",
-  "protecting-a-blog": "Protecting a Blog Application",
-  "awesome-list": {
-    "title": "SpiceDB Awesome List",
-    "href": "https://github.com/authzed/awesome-spicedb#user-content-awesome-spicedb",
-    "newWindow": true
-  },
-  "examples": {
-    "title": "Community Examples",
-    "href": "https://github.com/authzed/examples",
-    "newWindow": true
-  },
+  "protecting-a-blog": "Example: Protecting a Blog Application",
   "faq": "FAQ"
 }

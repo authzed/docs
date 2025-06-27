@@ -2,13 +2,9 @@ import { Callout } from 'nextra/components'
 
 # Installing Zed
 
-Zed is built as a standalone executable file which simplifies installation.
+[Zed](https://github.com/authzed/zed) is the CLI used to interact with SpiceDB. It is built as a standalone executable file which simplifies installation, but one should prefer one of the recommended installation methods detailed below.
 
-However, one should prefer one of the recommended installation methods detailed below.
-
-## Recommended methods
-
-### Debian packages
+## Debian packages
 
 [Debian-based Linux] users can install SpiceDB packages by adding an additional apt source.
 
@@ -47,7 +43,7 @@ sudo apt install -y zed
 
 [Debian-based Linux]: https://en.wikipedia.org/wiki/List_of_Linux_distributions#Debian-based
 
-### RPM packages
+## RPM packages
 
 [RPM-based Linux] users can install packages by adding a new yum repository:
 
@@ -69,7 +65,7 @@ sudo dnf install -y zed
 
 [RPM-based Linux]: https://en.wikipedia.org/wiki/List_of_Linux_distributions#RPM-based
 
-### Homebrew (macOS)
+## Homebrew (macOS)
 
 macOS users can install packages by adding a [Homebrew tap]:
 
@@ -79,9 +75,9 @@ brew install authzed/tap/zed
 
 [Homebrew tap]: https://docs.brew.sh/Taps
 
-## Other methods
+### Other methods
 
-### Docker
+#### Docker
 
 Container images are available for AMD64 and ARM64 architectures on the following registries:
 
@@ -101,12 +97,12 @@ Afterwards, you can run it with `docker run`:
 docker run --rm authzed/zed version
 ```
 
-### Downloading the binary
+#### Downloading the binary
 
 Visit the GitHub release page for the [latest release](https://github.com/authzed/zed/releases/latest).
 Scroll down to the `Assets` section and download the appropriate artifact.
 
-### Source
+#### Source
 
 Clone the GitHub repository:
 

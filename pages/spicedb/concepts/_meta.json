@@ -1,12 +1,14 @@
 {
+  "zanzibar": "Google Zanzibar",
+  "schema": "Schema Language",
+  "relationships": "Writing Relationships",
+  "caveats": "Writing Relationship with Caveats",
+  "expiring-relationships": "Expiring Relationships",
+  "commands": "SpiceDB Commands & Parameters",
   "consistency": "Consistency",
-  "commands": "Commands",
   "datastores": "Datastores",
   "datastore-migrations": "Datastore Migrations",
   "dispatch": "Dispatch",
-  "relationships": "Relationships",
-  "caveats": "Relationship Caveats",
   "reflection-apis": "Reflection APIs",
-  "schema": "Schema Language",
   "watch": "Watching Changes"
 }
