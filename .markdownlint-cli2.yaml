@@ -7,6 +7,7 @@ config:
   no-duplicate-heading: false
   no-hard-tabs: false
   no-inline-html: false
+  no-multiple-blanks: false
 customRules:
   - "markdownlint-rule-max-one-sentence-per-line"
 fix: false
