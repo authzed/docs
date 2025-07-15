@@ -1,0 +1,60 @@
+import JupyterNotebookViewer from "@/components/JupyterNotebookViewer";
+
+# Secure AI Agents with Fine Grained Authorization
+
+This guide shows how to build a secure Retrieval-Augmented Generation (RAG) pipeline where AI Agents can only access documents they are authorized for.
+Authorization decisions are enforced by SpiceDB.
+You can also get summary of only the documents the AI Agent is authorized to view.
+
+This guide uses OpenAI, Pinecone, Langchain, Jupyter Notebook and SpiceDB
+
+## Setup and Prerequisites
+
+- Access to a [SpiceDB](https://authzed.com/spicedb) instance.
+You can find instructions for installing SpiceDB [here](https://authzed.com/docs/spicedb/getting-started/install/macos)
+- A [Pinecone account](https://www.pinecone.io/) and API key
+- An [OpenAI Platform account](https://platform.openai.com/docs/overview) and API key
+- [Jupyter Notebook](https://jupyter.org/) running locally
+
+### Running SpiceDB
+
+Once you've installed SpiceDB, run a local instance with this command in your terminal:
+
+`spicedb serve --grpc-preshared-key "agents"`
+
+and you should see something like this that indicates an instance of SpiceDB is running locally:
+
+```
+user @ mac % spicedb serve --grpc-preshared-key "agents"
+1:33PM INF configured logging async=false format=auto log_level=info provider=zerolog
+1:33PM INF GOMEMLIMIT is updated GOMEMLIMIT=25769803776 package=github.com/KimMachineGun/automemlimit/memlimit previous=922
+3372036854775807
+1:33PM INF configured opentelemetry tracing endpoint= insecure=false provider=none sampleRatio=0.01 service=spicedb v=0
+1:33PM WRN this version of SpiceDB is out of date. See: https://github.com/authzed/spicedb/releases/tag/v1.44.4 latest-rele
+ased-version=v1.44.4 this-version=v1.42.1
+1:33PM INF using memory datastore engine
+1:33PM WRN in-memory datastore is not persistent and not feasible to run in a high availability fashion
+1:33PM INF configured namespace cache defaultTTL=0 maxCost="32 MiB" numCounters=1000
+1:33PM INF schema watch explicitly disabled
+1:33PM INF configured dispatch cache defaultTTL=20600 maxCost="13 MiB" numCounters=10000
+1:33PM INF configured dispatcher balancerconfig={"loadBalancingConfig":[{"consistent-hashring":{"replicationFactor":100,"sp
+read":1}}]} concurrency-limit-check-permission=50 concurrency-limit-lookup-resources=50 concurrency-limit-lookup-subjects=5
+0 concurrency-limit-reachable-resources=50
+1:33PM INF grpc server started serving addr=:50051 insecure=true network=tcp service=grpc workers=0
+1:33PM INF configuration ClusterDispatchCacheConfig.CacheKindForTesting=(empty) ClusterDispatchCacheConfig.Enabled=true ClusterDispatchCacheConfig.MaxCost=70% ClusterDispatchCacheConfig.Metrics=true ClusterDispatchCacheConfig.Name=cluster_dispatch ClusterDispatchCacheConfig.NumCounters=100000 Datastore=nil DatastoreConfig.AllowedMigrations="(slice of size 0)" DatastoreConfig.BootstrapFileContents="(map of size 0)" DatastoreConfig.BootstrapFiles=[] DatastoreConfig.BootstrapOverwrite=false DatastoreConfig.BootstrapTimeout=10000 DatastoreConfig.ConnectRate=100 DatastoreConfig.CredentialsProviderName=(empty) DatastoreConfig.DisableStats=false DatastoreConfig.EnableConnectionBalancing=true DatastoreConfig.EnableDatastoreMetrics=true
+1:33PM INF running server datastore=*schemacaching.definitionCachingProxy
+1:33PM INF http server started serving addr=:9090 insecure=true service=metrics
+1:33PM INF telemetry reporter scheduled endpoint=https://telemetry.authzed.com interval=1h0m0s next=38s
+```
+
+#### Download the Jupyter Notebook
+
+Clone the `workshops` [repository](https://github.com/authzed/workshops/) to your system and type `cd ai-agent-authorization` to enter the working directory.
+
+Start the `ai-agent-authz-v2.ipynb` Notebook locally by typing `jupyter ai-agent-authz-v2.ipynb` (or `python3 -m notebook`) in your terminal.
+
+## Add Fine Grained Authorization to AI Agents
+
+Here's the Jupyter Notebook with step-by-step instructions
+
+<JupyterNotebookViewer fileUrl="authzed/workshops/blob/main/ai-agent-authorization/ai-agent-authz-v2.ipynb" />
