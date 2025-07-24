@@ -1,0 +1,41 @@
+import { Callout } from 'nextra/components'
+
+# memdb
+
+## Usage Notes
+
+- Fully ephemeral; *all* data is lost when the process is terminated
+- Intended for usage with SpiceDB itself and testing application integrations
+- Cannot be ran highly-available as multiple instances will not share the same in-memory data
+
+<Callout type="info">
+  If you need an ephemeral datastore designed for validation or testing, see the test server system in [Validating and Testing]
+</Callout>
+
+[validating and testing]: /spicedb/modeling/validation-testing-debugging
+
+## Developer Notes
+
+- Code can be found [here][memdb-code]
+- Documentation can be found [here][memdb-godoc]
+- Implements its own [MVCC][mvcc] model by storing its data with transaction IDs
+
+[memdb-code]: https://github.com/authzed/spicedb/tree/main/internal/datastore/memdb
+[memdb-godoc]: https://pkg.go.dev/github.com/authzed/spicedb/internal/datastore/memdb
+[mvcc]: https://en.wikipedia.org/wiki/Multiversion_concurrency_control
+
+## Configuration
+
+### Required Parameters
+
+| Parameter          | Description          | Example                     |
+| ------------------ | -------------------- | --------------------------- |
+| `datastore-engine` | the datastore engine | `--datastore-engine memory` |
+
+### Optional Parameters
+
+| Parameter                             | Description                                                                         | Example                                      |
+| ------------------------------------- | ----------------------------------------------------------------------------------- | -------------------------------------------- |
+| `datastore-revision-fuzzing-duration` | Sets a fuzzing window on all zookies/zedtokens                                      | `--datastore-revision-fuzzing-duration=50ms` |
+| `datastore-gc-window`                 | Sets the window outside of which overwritten relationships are no longer accessible | `--datastore-gc-window=1s`                   |
+| `datastore-readonly`                  | Places the datastore into readonly mode                                             | `--datastore-readonly=true`                  |

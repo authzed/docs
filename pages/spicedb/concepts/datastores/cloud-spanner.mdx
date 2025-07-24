@@ -1,0 +1,44 @@
+import { Callout } from 'nextra/components'
+
+# Cloud Spanner
+
+## Usage Notes
+
+- Requires a Google Cloud Account with an active Cloud Spanner instance
+- Take advantage of Google's TrueTime.
+  The Spanner driver assumes the database is linearizable and skips the transaction overlap strategy required by CockroachDB.
+
+## Developer Notes
+
+- Code can be found [here][spanner-code]
+- Documentation can be found [here][spanner-godoc]
+- Starts a background [GC worker][gc-process] to clean up old entries from the manually-generated changelog table
+
+[spanner-code]: https://github.com/authzed/spicedb/tree/main/internal/datastore/spanner
+[spanner-godoc]: https://pkg.go.dev/github.com/authzed/spicedb/internal/datastore/spanner
+[gc-process]: https://github.com/authzed/spicedb/blob/main/internal/datastore/common/gc.go
+
+## Configuration
+
+- The [Cloud Spanner docs][spanner-docs] outline how to set up an instance
+- Authentication via service accounts: The service account that runs migrations must have `Cloud Spanner Database Admin`; SpiceDB (non-migrations) must have `Cloud Spanner Database User`.
+
+[spanner-docs]: https://cloud.google.com/spanner
+
+### Required Parameters
+
+| Parameter            | Description                           | Example                                                                                  |
+| -------------------- | ------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `datastore-engine`   | the datastore engine                  | `--datastore-engine=spanner`                                                             |
+| `datastore-conn-uri` | the cloud spanner database identifier | `--datastore-conn-uri="projects/project-id/instances/instance-id/databases/database-id"` |
+
+### Optional Parameters
+
+| Parameter                                | Description                                                                                                                         | Example                                          |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `datastore-spanner-credentials`          | JSON service account token (omit to use [application default credentials](https://cloud.google.com/docs/authentication/production)) | `--datastore-spanner-credentials=./spanner.json` |
+| `datastore-gc-interval`                  | Amount of time to wait between garbage collection passes                                                                            | `--datastore-gc-interval=3m`                     |
+| `datastore-gc-window`                    | Sets the window outside of which overwritten relationships are no longer accessible                                                 | `--datastore-gc-window=1s`                       |
+| `datastore-revision-fuzzing-duration`    | Sets a fuzzing window on all zookies/zedtokens                                                                                      | `--datastore-revision-fuzzing-duration=50ms`     |
+| `datastore-readonly`                     | Places the datastore into readonly mode                                                                                             | `--datastore-readonly=true`                      |
+| `datastore-follower-read-delay-duration` | Amount of time to subtract from non-sync revision timestamps to ensure stale reads                                                  | `--datastore-follower-read-delay-duration=4.8s`  |
