@@ -51,7 +51,7 @@ Alternatively, you can upload profiles to [pprof.me][pprofme] to share with othe
 
 SpiceDB uses [OpenTelemetry][otel] for [tracing] the lifetime of requests.
 
-You can configure the tracing in SpiceDB via [global flags], prefixed with `otel`.
+You can configure the tracing in SpiceDB via [CLI flags], prefixed with `otel`.
 
 Here's a video walking through SpiceDB traces using [Jaeger]:
 
@@ -59,14 +59,14 @@ Here's a video walking through SpiceDB traces using [Jaeger]:
 
 [otel]: https://opentelemetry.io
 [tracing]: https://opentelemetry.io/docs/concepts/signals/traces/
-[global flags]: /spicedb/concepts/commands#global-flags
+[CLI flags]: /spicedb/concepts/commands
 [Jaeger]: https://www.jaegertracing.io
 
 ## Structured Logging
 
 SpiceDB emits logs to [standard streams][stdinouterr] using [zerolog].
 
-Logs come in two formats (`console`, `JSON`) and can be configured with the `--log-format` [global flag].
+Logs come in two formats (`console`, `JSON`) and can be configured with the `--log-format` [CLI flag].
 
 If a output device is non-interactive (i.e. not a terminal) these logs are emitted in [NDJSON] by default.
 
@@ -123,7 +123,7 @@ Here's a comparison of the logs starting up a single SpiceDB v1.25 instance:
 </Tabs>
 
 [zerolog]: https://github.com/rs/zerolog
-[global flag]: /spicedb/concepts/commands#global-flags
+[CLI flags]: /spicedb/concepts/commands
 [stdinouterr]: https://en.wikipedia.org/wiki/Standard_streams
 [NDJSON]: https://github.com/ndjson/ndjson-spec
 
