@@ -1,0 +1,94 @@
+import { Callout } from 'nextra/components'
+
+# MySQL
+
+## Usage Notes
+
+- Recommended for single-region deployments
+- Setup and operational complexity of running MySQL
+- Does not rely on any non-standard MySQL extensions
+- Compatible with managed MySQL services
+- Can be scaled out on read workloads using read replicas
+
+## Developer Notes
+
+- Code can be found [here][mysql-code]
+- Documentation can be found [here][mysql-godoc]
+- Implemented using [Go-MySQL-Driver][go-mysql-driver] for a SQL driver
+- Query optimizations are documented [here][mysql-executor]
+- Implements its own [MVCC][mysql-mvcc] model by storing its data with transaction IDs
+
+[mysql-code]: https://github.com/authzed/spicedb/tree/main/internal/datastore/mysql
+[mysql-godoc]: https://pkg.go.dev/github.com/authzed/spicedb/internal/datastore/mysql
+[go-mysql-driver]: https://github.com/go-sql-driver/mysql
+[mysql-executor]: https://github.com/authzed/spicedb/blob/main/internal/datastore/mysql/datastore.go#L317
+[mysql-mvcc]: https://en.wikipedia.org/wiki/Multiversion_concurrency_control
+
+## Read Replicas
+
+<Callout type="warning">
+Do not use a load balancer between SpiceDB and MySQL replicas because SpiceDB will not be able to maintain consistency guarantees.
+</Callout>
+
+SpiceDB supports MySQL read replicas and does it while retaining consistency guarantees.
+Typical use cases are:
+
+- scale read workloads/offload reads from the primary
+- deploy SpiceDB in other regions with primarily read workloads
+
+Read replicas are typically configured with asynchronous replication, which involves replication lag.
+That would be problematic to SpiceDB's ability to solve the new enemy problem but it addresses the challenge by checking if the revision has been replicated into the target replica.
+If missing, it will fall back to the primary.
+Compared to the Postgres implementation, MySQL support requires two roundtrips instead of one, which means it adds some extra latency overhead.
+
+All API consistency options will leverage replicas, but the ones that benefit the most are those that involve some level of staleness as it increases the odds a revision has replicated.
+`minimize_latency`, `at_least_as_fresh`, and `at_exact_snapshot` consistency modes have the highest chance of being redirected to a replica.
+
+SpiceDB does not support MySQL replicas behind a load-balancer: you may only list replica hosts individually.
+Failing to adhere to this would compromise consistency guarantees.
+When multiple host URIs are provided, they will be queried using round-robin.
+Please note that the maximum number of MySQL replica host URIs to list is 16.
+
+Read replicas are configured with the `--datastore-read-replica-*` family of flags.
+
+## Configuration
+
+### Required Parameters
+
+| Parameter            | Description                                | Example                                                                                       |
+| -------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| `datastore-engine`   | the datastore engine                       | `--datastore-engine=mysql`                                                                    |
+| `datastore-conn-uri` | connection string used to connect to MySQL | `--datastore-conn-uri="user:password@(localhost:3306)/spicedb?parseTime=True"`                |
+
+<Callout type="warning">
+  SpiceDB requires `--datastore-conn-uri` to contain the query parameter `parseTime=True`.
+</Callout>
+
+### Optional Parameters
+
+| Parameter                             | Description                                                                         | Example                                      |
+| ------------------------------------- | ----------------------------------------------------------------------------------- | -------------------------------------------- |
+| `datastore-conn-pool-read-max-idletime` | Maximum amount of time a connection can idle in a remote datastore's connection pool (default 30m0s) | `--datastore-conn-pool-read-max-idletime=30m0s` |
+| `datastore-conn-pool-read-max-lifetime` | Maximum amount of time a connection can live in a remote datastore's connection pool (default 30m0s) | `--datastore-conn-pool-read-max-lifetime=30m0s` |
+| `datastore-conn-pool-read-max-lifetime-jitter` | Waits rand(0, jitter) after a connection is open for max lifetime to actually close the connection   | `--datastore-conn-pool-read-max-lifetime-jitter=6m` |
+| `datastore-conn-pool-read-max-open` | Number of concurrent connections open in a remote datastore's connection pool (default 20)          | `--datastore-conn-pool-read-max-open=20` |
+| `datastore-conn-pool-read-min-open` | Number of minimum concurrent connections open in a remote datastore's connection pool (default 20)   | `--datastore-conn-pool-read-min-open=20` |
+| `datastore-conn-pool-write-healthcheck-interval`| Amount of time between connection health checks in a remote datastore's connection pool (default 30s)| `--datastore-conn-pool-write-healthcheck-interval=30s` |
+| `datastore-conn-pool-write-max-idletime` | Maximum amount of time a connection can idle in a remote datastore's connection pool (default 30m0s) | `--datastore-conn-pool-write-max-idletime=30m0s` |
+| `datastore-conn-pool-write-max-lifetime` | Maximum amount of time a connection can live in a remote datastore's connection pool (default 30m0s) | `--datastore-conn-pool-write-max-lifetime=30m0s` |
+| `datastore-conn-pool-write-max-lifetime-jitter` | Waits rand(0, jitter) after a connection is open for max lifetime to actually close the connection   | `--datastore-conn-pool-write-max-lifetime-jitter=6m` |
+| `datastore-conn-pool-write-max-open` | Number of concurrent connections open in a remote datastore's connection pool (default 10)          | `--datastore-conn-pool-write-max-open=10` |
+| `datastore-conn-pool-write-min-open` | Number of minimum concurrent connections open in a remote datastore's connection pool (default 10)   | `--datastore-conn-pool-write-min-open=10` |
+| `datastore-query-split-size`          | The (estimated) query size at which to split a query into multiple queries          | `--datastore-query-split-size=5kb`           |
+| `datastore-gc-window`                 | Sets the window outside of which overwritten relationships are no longer accessible | `--datastore-gc-window=1s`                   |
+| `datastore-revision-fuzzing-duration` | Sets a fuzzing window on all zookies/zedtokens                                      | `--datastore-revision-fuzzing-duration=50ms` |
+| `datastore-mysql-table-prefix string` | Prefix to add to the name of all SpiceDB database tables                            | `--datastore-mysql-table-prefix=spicedb`     |
+| `datastore-readonly`                  | Places the datastore into readonly mode                                             | `--datastore-readonly=true`                  |
+| `datastore-read-replica-conn-uri`     | Connection string used by datastores for read replicas; only supported for postgres and MySQL | `--datastore-read-replica-conn-uri="postgres://postgres:password@localhost:5432/spicedb\"` |
+| `—datastore-read-replica-credentials-provider-name`               | Retrieve datastore credentials dynamically using aws-iam                      |                 |
+| `datastore-read-replica-conn-pool-read-healthcheck-interval`      | amount of time between connection health checks in a read-only replica datastore's connection pool | `--datastore-read-replica-conn-pool-read-healthcheck-interval=30s` |
+| `datastore-read-replica-conn-pool-read-max-idletime`              | maximum amount of time a connection can idle in a read-only replica datastore's connection pool | `--datastore-read-replica-conn-pool-read-max-idletime=30m` |
+| `datastore-read-replica-conn-pool-read-max-lifetime`              | maximum amount of time a connection can live in a read-only replica datastore's connection pool | `--datastore-read-replica-conn-pool-read-max-lifetime=30m` |
+| `datastore-read-replica-conn-pool-read-max-lifetime-jitter`       | waits rand(0, jitter) after a connection is open for max lifetime to actually close the connection to a read replica(default: 20% of max lifetime) | `--datastore-read-replica-conn-pool-read-max-lifetime-jitter=6m` |
+| `datastore-read-replica-conn-pool-read-max-open`                  | number of concurrent connections open in a read-only replica datastore's connection pool | `--datastore-read-replica-conn-pool-read-max-open=20` |
+| `datastore-read-replica-conn-pool-read-min-open`                  | number of minimum concurrent connections open in a read-only replica datastore's connection pool | `--datastore-read-replica-conn-pool-read-min-open=20` |

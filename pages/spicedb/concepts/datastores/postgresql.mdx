@@ -1,0 +1,106 @@
+import { Callout } from 'nextra/components'
+
+# PostgreSQL
+
+## Usage Notes
+
+- Recommended for single-region deployments
+- Postgres 15 or newer is required for optimal performance
+- Resiliency to failures only when PostgreSQL is operating with a follower and proper failover
+- Carries setup and operational complexity of running PostgreSQL
+- Does not rely on any non-standard PostgreSQL extensions
+- Compatible with managed PostgreSQL services (e.g. AWS RDS)
+- Can be scaled out on read workloads using read replicas
+
+<Callout type="warning">
+  SpiceDB's Watch API requires PostgreSQL's [Commit Timestamp tracking][commit-ts] to be enabled.
+
+  This can be done by providing the `--track_commit_timestamp=on` flag, configuring `postgresql.conf`, or executing `ALTER SYSTEM SET track_commit_timestamp = on;` and restarting the instance.
+
+  [commit-ts]: https://www.postgresql.org/docs/current/runtime-config-replication.html#GUC-TRACK-COMMIT-TIMESTAMP
+</Callout>
+
+## Developer Notes
+
+- Code can be found [here][pg-code]
+- Documentation can be found [here][pg-godoc]
+- Implemented using [pgx][pgx] for a SQL driver and connection pooling
+- Stores migration revisions using the same strategy as [Alembic][alembic]
+- Implements its own [MVCC][mvcc] model by storing its data with transaction IDs
+
+[pg-code]: https://github.com/authzed/spicedb/tree/main/internal/datastore/postgres
+[pg-godoc]: https://pkg.go.dev/github.com/authzed/spicedb/internal/datastore/postgres
+[pgx]: https://pkg.go.dev/gopkg.in/jackc/pgx.v3
+[alembic]: https://alembic.sqlalchemy.org/en/latest/
+[mvcc]: https://en.wikipedia.org/wiki/Multiversion_concurrency_control
+
+## Read Replicas
+
+SpiceDB supports Postgres read replicas and does it while retaining consistency guarantees.
+Typical use cases are:
+
+- scale read workloads/offload reads from the primary
+- deploy SpiceDB in other regions with primarily read workloads
+
+Read replicas are typically configured with asynchronous replication, which involves replication lag.
+That would be problematic to SpiceDB's ability to solve the new enemy problem but it addresses the challenge by checking if a revision has been replicated into the target replica.
+If missing, it will fall back to the primary.
+
+All API consistency options will leverage replicas, but the ones that benefit the most are those that involve some level of staleness as it increases the odds a revision has replicated.
+`minimize_latency`, `at_least_as_fresh`, and `at_exact_snapshot` consistency modes have the highest chance of being redirected to a replica.
+
+SpiceDB supports Postgres replicas behind a load-balancer, and/or individually listing replica hosts.
+When multiple URIs are provided, they will be queried using a round-robin strategy.  
+Please note that the maximum number of replica URIs to list is 16.
+
+Read replicas are configured with the `--datastore-read-replica-*` family of flags.
+
+SpiceDB supports [PgBouncer](https://www.pgbouncer.org/) connection pooler and is part of the test suite.
+
+### Transaction IDs and MVCC
+
+The Postgres implementation of SpiceDB's internal MVCC mechanism involves storing the internal transaction ID count associated with a given transaction
+in the rows written in that transaction.
+Because this counter is instance-specific, there are ways in which the data in the datastore can become desynced with that internal counter.
+Two concrete examples are the use of `pg_dump` and `pg_restore` to transfer data between an old instance and a new instance and setting up
+logical replication between a previously-existing instance and a newly-created instance.
+
+If you encounter this, SpiceDB can behave as though there is no schema written, because the data (including the schema) is associated with a future transaction ID and therefore isn't "visible" to Spicedb.
+If you run into this issue, the fix is [documented here](https://authzed.com/docs/spicedb/concepts/datastores#transaction-ids-and-mvcc)
+
+## Configuration
+
+### Required Parameters
+
+| Parameter            | Description                                     | Example                                                                                      |
+| -------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `datastore-engine`   | the datastore engine                            | `--datastore-engine=postgres`                                                                |
+| `datastore-conn-uri` | connection string used to connect to PostgreSQL | `--datastore-conn-uri="postgres://postgres:password@localhost:5432/spicedb?sslmode=disable"` |
+
+### Optional Parameters
+
+| Parameter                             | Description                                                                         | Example                                      |
+| ------------------------------------- | ----------------------------------------------------------------------------------- | -------------------------------------------- |
+| `datastore-conn-pool-read-max-idletime` | Maximum amount of time a connection can idle in a remote datastore's connection pool (default 30m0s) | `--datastore-conn-pool-read-max-idletime=30m0s` |
+| `datastore-conn-pool-read-max-lifetime` | Maximum amount of time a connection can live in a remote datastore's connection pool (default 30m0s) | `--datastore-conn-pool-read-max-lifetime=30m0s` |
+| `datastore-conn-pool-read-max-lifetime-jitter` | Waits rand(0, jitter) after a connection is open for max lifetime to actually close the connection   | `--datastore-conn-pool-read-max-lifetime-jitter=6m` |
+| `datastore-conn-pool-read-max-open` | Number of concurrent connections open in a remote datastore's connection pool (default 20)          | `--datastore-conn-pool-read-max-open=20` |
+| `datastore-conn-pool-read-min-open` | Number of minimum concurrent connections open in a remote datastore's connection pool (default 20)   | `--datastore-conn-pool-read-min-open=20` |
+| `datastore-conn-pool-write-healthcheck-interval`| Amount of time between connection health checks in a remote datastore's connection pool (default 30s)| `--datastore-conn-pool-write-healthcheck-interval=30s` |
+| `datastore-conn-pool-write-max-idletime` | Maximum amount of time a connection can idle in a remote datastore's connection pool (default 30m0s) | `--datastore-conn-pool-write-max-idletime=30m0s` |
+| `datastore-conn-pool-write-max-lifetime` | Maximum amount of time a connection can live in a remote datastore's connection pool (default 30m0s) | `--datastore-conn-pool-write-max-lifetime=30m0s` |
+| `datastore-conn-pool-write-max-lifetime-jitter` | Waits rand(0, jitter) after a connection is open for max lifetime to actually close the connection   | `--datastore-conn-pool-write-max-lifetime-jitter=6m` |
+| `datastore-conn-pool-write-max-open` | Number of concurrent connections open in a remote datastore's connection pool (default 10)          | `--datastore-conn-pool-write-max-open=10` |
+| `datastore-conn-pool-write-min-open` | Number of minimum concurrent connections open in a remote datastore's connection pool (default 10)   | `--datastore-conn-pool-write-min-open=10` |
+| `datastore-query-split-size`          | The (estimated) query size at which to split a query into multiple queries          | `--datastore-query-split-size=5kb`           |
+| `datastore-gc-window`                 | Sets the window outside of which overwritten relationships are no longer accessible | `--datastore-gc-window=1s`                   |
+| `datastore-revision-fuzzing-duration` | Sets a fuzzing window on all zookies/zedtokens                                      | `--datastore-revision-fuzzing-duration=50ms` |
+| `datastore-readonly`                  | Places the datastore into readonly mode                                             | `--datastore-readonly=true`                  |
+| `datastore-read-replica-conn-uri`     | Connection string used by datastores for read replicas; only supported for postgres and MySQL | `--datastore-read-replica-conn-uri="postgres://postgres:password@localhost:5432/spicedb\"` |
+| `datastore-read-replica-credentials-provider-name`               | Retrieve datastore credentials dynamically using aws-iam                      |                 |
+| `datastore-read-replica-conn-pool-read-healthcheck-interval`      | amount of time between connection health checks in a read-only replica datastore's connection pool | `--datastore-read-replica-conn-pool-read-healthcheck-interval=30s` |
+| `datastore-read-replica-conn-pool-read-max-idletime`              | maximum amount of time a connection can idle in a read-only replica datastore's connection pool | `--datastore-read-replica-conn-pool-read-max-idletime=30m` |
+| `datastore-read-replica-conn-pool-read-max-lifetime`              | maximum amount of time a connection can live in a read-only replica datastore's connection pool | `--datastore-read-replica-conn-pool-read-max-lifetime=30m` |
+| `datastore-read-replica-conn-pool-read-max-lifetime-jitter`       | waits rand(0, jitter) after a connection is open for max lifetime to actually close the connection to a read replica(default: 20% of max lifetime) | `--datastore-read-replica-conn-pool-read-max-lifetime-jitter=6m` |
+| `datastore-read-replica-conn-pool-read-max-open`                  | number of concurrent connections open in a read-only replica datastore's connection pool | `--datastore-read-replica-conn-pool-read-max-open=20` |
+| `datastore-read-replica-conn-pool-read-min-open`                  | number of minimum concurrent connections open in a read-only replica datastore's connection pool | `--datastore-read-replica-conn-pool-read-min-open=20` |
