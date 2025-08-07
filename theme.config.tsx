@@ -51,7 +51,7 @@ const config: DocsThemeConfig = {
   darkMode: true,
   primaryHue: { dark: 45, light: 290 },
   primarySaturation: { dark: 100, light: 100 },
-  chat: { link: 'https://discord.gg/spicedb' },
+  chat: { link: 'https://authzed.com/discord' },
   docsRepositoryBase: 'https://github.com/authzed/docs/blob/main',
   banner: {
     dismissible: false,
