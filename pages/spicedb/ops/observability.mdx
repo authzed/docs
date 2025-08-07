@@ -66,7 +66,7 @@ Here's a video walking through SpiceDB traces using [Jaeger]:
 
 SpiceDB emits logs to [standard streams][stdinouterr] using [zerolog].
 
-Logs come in two formats (`console`, `JSON`) and can be configured with the `--log-format` [global flag].
+Logs come in two formats (`console`, `JSON`) and can be configured with the `--log-format` [command flag].
 
 If a output device is non-interactive (i.e. not a terminal) these logs are emitted in [NDJSON] by default.
 
@@ -123,7 +123,7 @@ Here's a comparison of the logs starting up a single SpiceDB v1.25 instance:
 </Tabs>
 
 [zerolog]: https://github.com/rs/zerolog
-[global flag]: /spicedb/concepts/commands#global-flags
+[command flag]: /spicedb/concepts/commands
 [stdinouterr]: https://en.wikipedia.org/wiki/Standard_streams
 [NDJSON]: https://github.com/ndjson/ndjson-spec
 
