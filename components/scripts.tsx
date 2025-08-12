@@ -8,6 +8,7 @@ import posthog from 'posthog-js';
 import { useEffect, useState } from 'react';
 
 const isProd = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production';
+const baseDir = process.env.NEXT_PUBLIC_BASE_DIR || '';
 
 function Reo() {
   const reoClientId = process.env.NEXT_PUBLIC_REO_CLIENT_ID;
@@ -58,7 +59,7 @@ function HubSpot() {
     // @ts-ignore
     const hs = window?._hsq;
     if (afterLoad && pathname && hs) {
-      let path = pathname;
+      let path = `${baseDir}${pathname}`;
       if (searchParams && searchParams.toString()) {
         path = path + `?${searchParams.toString()}`;
       }
