@@ -33,18 +33,8 @@ const config: DocsThemeConfig = {
     return defaultConfig;
   },
   head: () => {
-    const isProd = process.env.VERCEL_ENV === 'production';
-
     return (
       <>
-        {isProd && (
-          <script
-            defer
-            data-domain="authzed.com"
-            data-api="/api/event"
-            src="/js/script.js"
-          ></script>
-        )}
       </>
     );
   },
