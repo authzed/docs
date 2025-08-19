@@ -7,11 +7,13 @@ Not all software requires this level of integration, but it is preferable for gr
 
 Instead of introducing an unfamiliar example app and altering various locations in its code, this guide is written such that each step is a standalone snippet of code that demonstrates an integration point and finding where those points exist in your codebase is an exercise left to the reader.
 
+Scroll all the way to the bottom of this page for a video walkthrough of creating a Permissions System using AuthZed Cloud.
+
 ## Prerequisites
 
 One of:
 
-- An [Authzed] Permission System and associated [API Token] with `admin` access
+- An [Authzed Cloud] Permission System
 - A [running instance] of [SpiceDB][SpiceDB] with the configured preshared key for SpiceDB:
 
 ```bash
@@ -22,23 +24,81 @@ spicedb serve --grpc-preshared-key "t_your_token_here_1234567deadbeef"
 docker run --rm -p 50051:50051 authzed/spicedb serve --grpc-preshared-key "t_your_token_here_1234567deadbeef"
 ```
 
-[Authzed]: https://app.authzed.com
-[API Token]: /authzed/concepts/restricted-api-access#tokens
+[Authzed Cloud]: https://app.authzed.cloud/
 [SpiceDB]: https://github.com/authzed/spicedb
 [running instance]: /spicedb/getting-started/installing-spicedb
 
-## Installation
+## Create a Permissions System on AuthZed Cloud
+
+Sign in to [AuthZed Cloud](https://app.authzed.cloud) and click on the **+Create** button to create a Permissions System (PS) and fill in the necessary details:
+
+- The type of the PS can be either Production or Development
+- Give it a name
+- Choose a datastore.
+Currently only CockroachDB is supported as a datastore for a PS on AuthZed Cloud
+- The update channel can be either be `rapid` or `regular` which determines the behavior of automatic updates when new SpiceDB releases are made available
+- The Deployments tab has the following options:
+  - The name of the deployment
+  - A dropdown for the region in which the deployment is made.
+  Currently `us-east-1` and `eu-central-1` are available
+  - The number of vCPUs for your deployment.
+  The recommendation is to start with 2 vCPUs and then monitor the Metrics and change it based on your workload
+  - The number of replicas to deploy SpiceDB with primarily read workloads.
+  The recommendation is 3 but will depend on your latency requirements.
+
+Click the Save button to create a Permissions System
+
+## Configuring Access
+
+Before using the Permissions System, let's configure access to it.
+This functionality enables organizations to apply the principle of least-privilege to services accessing SpiceDB.
+For example, read-only tokens can be created for services that should never need to write to SpiceDB.
+Read more about it [here](https://authzed.com/docs/authzed/concepts/restricted-api-access)
+
+Let’s start by creating a **Service Account** which is something that represents your unique workload.
+We recommend creating a Service Account for each application that will access the SpiceDB API.
+Add a name such as `blog-app` and a description before hitting Save.
+
+Now let’s create a **token**.
+Tokens are long-lived credentials for Service Accounts.
+SpiceDB clients must provide a Token in the Authorization header of an API request to perform actions granted to the Service Account.
+Click on the Tokens item in the menu and Create token by providing a name and description.
+
+Let’s now provide a **Role** and attach a **Policy** to that Role.
+A Role defines rules for accessing the SpiceDB API.
+Roles are bound to Service Accounts.
+Click the Roles -> Create Role and provide a name and a description.
+Add the following permissions for this demo:
+
+```
+ReadSchema
+WriteSchema
+DeleteRelationships
+ReadRelationships
+WriteRelationships
+CheckPermission
+```
+
+Finally, let’s create a Policy.
+Policies are what bind Roles to a Service Account.
+Click on Policies -> Create policy.
+Provide a name and a description and pick the Service Account and Role created in the steps above to bind the two.
+
+You’re now ready to use AuthZed Cloud Permissions System!  
+
+## Client Installation
 
 The first step to integrating any software is ensuring you have an API client.
-
 Each client is installed with its ecosystem's package management tools:
+
+You can also interact with with the Permissions System using [zed](https://github.com/authzed/zed) - the command-line client for managing SpiceDB clusters.
 
 <Tabs items={['zed', 'Node', 'Go', 'Python', 'Ruby', 'Java']}>
 <Tabs.Tab>
 
 ```sh
 brew install authzed/tap/zed
-zed context set blog grpc.authzed.com:443 t_your_token_here_1234567deadbeef
+zed context set <name> <ps-endpoint> <token>
 ```
 
 </Tabs.Tab>
@@ -88,6 +148,18 @@ dependencies {
 
 </Tabs.Tab>
 </Tabs>
+
+You can find the endpoint on the AuthZed Cloud dashboard.
+Click on the Permissions System that's just been created and locate the **Connect** button.
+Copy the zed command and paste it in your terminal.
+It should look like this:
+
+```
+zed context set us-east-1 acme-permission-system-xyz.aws.authzed.cloud:443 <token-here>
+```
+
+where `us-east-1` is the name of the PS followed by the endpoint.
+Replace the `token-here` with the token that was generated in the earlier step.
 
 ## Defining and Applying a Schema
 
@@ -1014,3 +1086,7 @@ public class App {
 
 </Tabs.Tab>
 </Tabs>
+
+Here's a video walkthrough of creating a Permissions System on AuthZed Cloud:
+
+<YouTube videoId="O325tG4s66g" className="youtubeContainer" />
