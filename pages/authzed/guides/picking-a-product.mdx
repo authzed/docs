@@ -13,14 +13,14 @@ The following table maps functional requirements to their respective products:
 
 | Requirements                 | [Open Source] | [Cloud] | [Dedicated] | [Enterprise] |
 |------------------------------|:-------------:|:-------:|:-----------:|:------------:|
-| [Materialize (Early Access)] |       ❌       |    ❌    |      ✅      |      ❌       |
+| [Materialize (Early Access)] |       ❌       |    ✅    |      ✅      |      ❌       |
 | [Management Dashboard]       |       ❌       |    ✅    |      ✅      |      ❌       |
 | No-commit pricing            |       ✅       |    ✅    |      ❌      |      ❌       |
 | [Private Networking]         |      DIY      |    ❌    |      ✅      |     DIY      |
 | [Workload Isolation]         |      DIY      |    ✅    |      ✅      |     DIY      |
 | Self-Hosted                  |       ✅       |    ❌    |      ❌      |      ✅       |
 | [Automated Updates]          |      DIY      |    ✅    |      ✅      |     DIY      |
-| [SOC2 Compliance]            |      DIY      |    ❌    |      ✅      |     DIY      |
+| [SOC2 Compliance]            |      DIY      |    ✅    |      ✅      |     DIY      |
 | [Audit Logging]              |       ❌       |    ✅    |      ✅      |      ✅       |
 | [Multi-Region]               |      DIY      |    ❌    |      ✅      |     DIY      |
 | [Security Embargo]           |       ❌       |    ✅    |      ✅      |      ✅       |
@@ -39,6 +39,28 @@ The following table maps functional requirements to their respective products:
 [Security Embargo]: ../concepts/security-embargo
 
 ## Product Overviews
+
+### Cloud
+
+<Callout type="info">
+  **Info:**
+  AuthZed Cloud is now available to everyone!
+
+  [Sign up](https://authzed.com/cloud/signup)
+</Callout>
+
+AuthZed Cloud is our self-service platform that allows you to provision, manage, and scale your authorization infrastructure on demand.
+
+Functionality includes:
+
+- Creating organizations, teams, and delegating access with your SSO provider
+- Commitment-free, usage-based monthly pricing
+- Workload Isolation vastly improving performance & latency
+- Deployments in more regions, including Europe
+- Full SpiceDB API access: Watch API, HTTP API
+- Enterprise features like Audit Logs, Restricted API Access
+
+AuthZed Cloud is built on the same foundation that's serving critical production workloads in AuthZed Dedicated.
 
 ### Dedicated
 
@@ -80,29 +102,6 @@ AuthZed Enterprise provides access to a licensed version of enterprise releases 
 You can [schedule a call] to learn more.
 
 [schedule a call]: https://authzed.com/call?utm_source=docs
-
-### Cloud
-
-<Callout type="info">
-  **Info:**
-  We're currently admitting folks into the wait-list for AuthZed Cloud Early Access.
-
-  To apply, [schedule a call](https://authzed.com/call).
-</Callout>
-
-AuthZed Cloud is our upcoming, self-service authorization platform.
-
-Upcoming functionality includes:
-
-- Creating organizations, teams, and delegating access with your SSO provider
-- Commitment-free, monthly pricing
-- Workload Isolation vastly improving performance & latency
-- Deployments in more regions, including Europe
-- Full SpiceDB API access: Watch API, HTTP API
-- Enterprise features like Audit Logs, Restricted API Access
-
-AuthZed Cloud is built on the same foundation that's serving critical production workloads in AuthZed Dedicated.
-During Early Access, the self-service control-plane functionality is considered experimental, but SpiceDB continues to operate with its existing level of reliability and performance.
 
 ### Open Source
 
