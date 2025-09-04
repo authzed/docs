@@ -177,6 +177,31 @@ definition document {
 
 ### Operations
 
+<Callout type="warning">
+**Important: Union Precedence**
+
+For historical reasons, union (`+`) takes precedence over intersection (`&`) and exclusion (`-`), which can lead to unexpected results.
+For example, `a + b & c` is evaluated as `(a + b) & c`, not `a + (b & c)`.
+
+We intend to add a flag to fix this precedence issue in the future.
+
+It is highly recommended to either:
+
+- Break complex expressions into intermediate permissions:
+
+  ```zed
+  permission writers_and_admins = writer & admin
+  permission view = reader + writers_and_admins
+  ```
+
+- Use explicit parentheses to clarify precedence:
+
+  ```zed
+  permission view = reader + (writer & admin)
+  ```
+
+</Callout>
+
 Permissions support four kinds of operations: **union**, **intersection**, **exclusion** and **arrow**.
 
 #### `+` (Union)
