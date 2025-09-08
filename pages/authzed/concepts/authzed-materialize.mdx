@@ -587,6 +587,12 @@ When this error is returned, it indicates the client should restart [LookupPermi
 Every previously stored data should also be discarded.
 If the volume of data to ingest via [LookupPermissionSets] is large enough it takes many hours to consume, please get in touch with AuthZed support to tweak your instance accordingly.
 
+### Managing Client State
+
+This diagram shows the various states your client application will need to transition through when calling the [LookupPermissionSets] and the [WatchPermissionSets] APIs.
+
+![authzed-materialize](/images/materialize-client-state-diagram.png)
+
 [WatchPermissionSets]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.materialize.v0#authzed.api.materialize.v0.WatchPermissionSetsService.WatchPermissionSets
 [LookupPermissionSets]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.materialize.v0#authzed.api.materialize.v0.WatchPermissionSetsService.LookupPermissionSets
 [LookupResources]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.v1#authzed.api.v1.PermissionsService.LookupResources
