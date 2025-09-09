@@ -13,17 +13,27 @@ Watch events are generated when relationships are created, touched, or deleted t
 [DeleteRelationships]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.DeleteRelationships
 [ImportBulkRelationships]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.ImportBulkRelationships
 
-## Subscribing to Watch
+## Calling Watch
 
-To subscribe to receive watch changes, the `Watch` API call is made:
+To receive watch changes, call the `Watch` API.
+
+This is a streaming API that will continually return all updates to relationships from the time at which the API call was made.
 
 ```py
+from authzed.api.v1 import (
+    Client, WatchRequest
+)
+from grpcutil import bearer_token_credentials
+
+client = Client(
+    "localhost:50051",
+    bearer_token_credentials("your-token-here"),
+)
+
 watcher = client.Watch(WatchRequest{})
 for resp in watcher:
-  ... process the update ...
+  # process the update
 ```
-
-This will start returning all updates to relationships from the time at which the API call was made.
 
 ### Receiving historical updates
 
@@ -32,9 +42,21 @@ Historical updates (i.e. relationship changes in the past) can be retrieved by s
 [ZedToken]: consistency#zedtokens
 
 ```py
-watcher = client.Watch(WatchRequest{
-  OptionalStartCursor: myZedToken
-})
+from authzed.api.v1 import (
+    Client, WatchRequest
+)
+from grpcutil import bearer_token_credentials
+
+client = Client(
+    "localhost:50051",
+    bearer_token_credentials("your-token-here"),
+)
+
+watcher = client.Watch(WatchRequest(
+  optional_start_cursor=last_zed_token
+))
+for resp in watcher:
+  # process the update
 ```
 
 <Callout type="info">
@@ -45,20 +67,64 @@ watcher = client.Watch(WatchRequest{
 
 ### Ensuring continuous processing
 
+Because Watch is a streaming API, your code should handle disconnections gracefully.
+
 To ensure continuous processing, the calling client _should_ execute the `Watch` call in a loop, sending in the last received [ZedToken] from `ChangesThrough` if the call disconnects:
 
 ```py
+from authzed.api.v1 import (
+    Client, WatchRequest
+)
+from grpcutil import bearer_token_credentials
+
+client = Client(
+    "localhost:50051",
+    bearer_token_credentials("your-token-here"),
+)
+
+last_zed_token = None
 while not_canceled:
-  last_zed_token = None
   try:
-    watcher = client.Watch(WatchRequest{
-      OptionalStartCursor: last_zed_token
-    })
+    watcher = client.Watch(WatchRequest(
+      optional_start_cursor=last_zed_token
+    ))
     for resp in watcher:
-      ... process the update ...
-      last_zed_token = resp.ChangesThrough
+      # process the update
+      last_zed_token = resp.changes_through
   except Exception:
-    ... log exception ...
+    # log exception
+    continue
+```
+
+If your datastore supports checkpoints, you can also request them.
+
+This will help keep the stream alive during periods of inactivity, which is helpful if your SpiceDB instance sits behind a proxy that terminates idle connections.
+
+```py
+from authzed.api.v1 import (
+    Client,
+    WatchRequest,
+)
+from authzed.api.v1.watch_service_pb2 import WATCH_KIND_INCLUDE_CHECKPOINTS
+from grpcutil import bearer_token_credentials
+
+client = Client(
+    "localhost:50051",
+    bearer_token_credentials("your-token-here"),
+)
+
+last_zed_token = None
+while not_canceled:
+  try:
+    watcher = client.Watch(WatchRequest(
+      optional_start_cursor=last_zed_token,
+      optional_update_kinds=[WATCH_KIND_INCLUDE_CHECKPOINTS]
+    ))
+    for resp in watcher:
+      # process the update
+      last_zed_token = resp.changes_through
+  except Exception:
+    # log exception
     continue
 ```
 
@@ -69,13 +135,32 @@ SpiceDB's [WriteRelationships] and [DeleteRelationships] APIs support an optiona
 When `optional_transaction_metadata` is specified on the [WriteRelationships] or [DeleteRelationships] request, it will be stored and returned alongside the relationships in the Watch API:
 
 ```py
-client.WriteRelationships(WriteRelationshipsRequest{
-  Updates: [
-    { Relationship: "document:somedoc#viewer@user:tom" }
+from authzed.api.v1 import (
+    Client, WatchRequest
+)
+from grpcutil import bearer_token_credentials
+
+client = Client(
+    "localhost:50051",
+    bearer_token_credentials("your-token-here"),
+)
+client.WriteRelationships(WriteRelationshipsRequest(
+  updates=[
+      RelationshipUpdate(
+                operation=RelationshipUpdate.Operation.OPERATION_CREATE,
+                relationship=Relationship(
+                    resource=ObjectReference(object_type="document", object_id="somedoc"),
+                    relation="viewer",
+                    subject=SubjectReference(
+                        object=ObjectReference(
+                            object_type="user",
+                            object_id="tom",
+                        )
+                    ),
+                ),
+      ),
   ],
-  OptionalTransactionMetadata: {
-    "request_id": "12345"
-  }
+  optional_transaction_metadata=Struct({"request_id": "12345"}),
 })
 
 ...
