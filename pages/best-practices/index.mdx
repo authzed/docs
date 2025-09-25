@@ -295,7 +295,7 @@ Tags: **operations**
 
 To ensure seamless rollouts, upgrades, and schema migrations, it is recommended to use the SpiceDB Kubernetes Operator if you’re using Kubernetes.
 The Operator automates many operational tasks and helps maintain consistency across environments.
-You can find the official documentation for the SpiceDB operator [here](https://authzed.com/docs/spicedb/concepts/operator).
+You can find the official documentation for the SpiceDB operator [here](https://authzed.com/docs/spicedb/ops/operator).
 
 ### Ensure that SpiceDB Can Talk To Itself
 
@@ -305,7 +305,7 @@ In SpiceDB, dispatching subproblems refers to the internal process of breaking d
 These subproblems are dispatched horizontally between SpiceDB nodes, which shares the workload and increases cache hit rate - this is [SpiceDB’s horizontal scalability](https://authzed.com/blog/consistent-hash-load-balancing-grpc).
 For this to work, the SpiceDB nodes must be configured to be aware of each other.
 
-In our experience, running SpiceDB on Kubernetes with our [Operator](https://authzed.com/docs/spicedb/concepts/operator) is the easiest and best way to achieve this.
+In our experience, running SpiceDB on Kubernetes with our [Operator](https://authzed.com/docs/spicedb/ops/operator) is the easiest and best way to achieve this.
 It’s possible to configure dispatch using DNS as well, but non-Kubernetes based dispatching relies upon DNS updates, which means it can become stale if DNS is changing.
 This is not recommended unless DNS updates are rare.
 

@@ -12,23 +12,6 @@ AuthZed has standardized our managed services on CockroachDB, but we give self-h
 - [MySQL](#mysql) - Not recommended; only use if you cannot use PostgreSQL
 - [memdb](#memdb) - Recommended for local development and integration testing against applications
 
-## Migrations
-
-Before a datastore can be used by SpiceDB or before running a new version of SpiceDB, you must execute all available migrations.
-
-<Callout type="info">
-  The only exception is the [memdb datastore](#memdb) because it does not persist any data.
-</Callout>
-
-In order to migrate a datastore, run the following command with your desired values:
-
-```
-spicedb migrate head \
-    --datastore-engine $DESIRED_ENGINE \
-    --datastore-conn-uri $CONNECTION_STRING
-```
-
-For more information, refer to the [Datastore Migration documentation](/spicedb/concepts/datastore-migrations).
 
 ## CockroachDB
 
