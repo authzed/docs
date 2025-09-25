@@ -894,7 +894,7 @@ Query and mutate the relationships in a permissions system
 - [zed relationship delete](#reference-zed-relationship-delete)	 - Deletes a relationship
 - [zed relationship read](#reference-zed-relationship-read)	 - Enumerates relationships matching the provided pattern
 - [zed relationship touch](#reference-zed-relationship-touch)	 - Idempotently updates a relationship for a subject
-- [zed relationship watch](#reference-zed-relationship-watch)	 - Watches the stream of relationship updates from the server
+- [zed relationship watch](#reference-zed-relationship-watch)	 - Watches the stream of relationship updates and schema updates from the server
 
 
 ## Reference: `zed relationship bulk-delete`
@@ -1094,7 +1094,7 @@ zed relationship touch <resource:id> <relation> <subject:id#optional_subject_rel
 
 ## Reference: `zed relationship watch`
 
-Watches the stream of relationship updates from the server
+Watches the stream of relationship updates and schema updates from the server
 
 ```
 zed relationship watch [object_types, ...] [start_cursor] [flags]
