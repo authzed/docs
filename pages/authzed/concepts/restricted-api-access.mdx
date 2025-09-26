@@ -264,6 +264,26 @@ If you want to apply a static configuration to an existing SpiceDB cluster witho
         This is probably lower risk, and then from there you can move to start trimming down permissions.
      2. Or you may want to move directly to downscoped tokens for your individual services, creating the tokens you need.
         This may be simple if you have few clients, but more complex as the number of clients grow, and with a bigger blast radious of impact on rollout.
+   A minimal configuration would look something like:
+
+   ```yaml
+   role:
+     - id: "admin"
+       permission:
+         authzed.v1/CheckPermission: ""
+   service_account:
+     - id: "my_microservice"
+       token:
+         - id: "token_01"
+           hash: "1d619ac2f5013845c5f2df93add92fc87e88ca6c57d19a77d1b189663f1ff5b0"
+   policy:
+     - id: "microservice_with_admin"
+       principal_id: "my_microservice"
+       principal_type: "service_account"
+       roles:
+         - "admin"
+   ```
+
 3. Set the created tokens as valid preshared keys in your SpiceDB instance.
    You can do this by defining multiple PSKs via the ENV or flags as comma separated values:
 
@@ -276,4 +296,4 @@ If you want to apply a static configuration to an existing SpiceDB cluster witho
 5. Deploy SpiceDB with the new Restricted Access configuration.
 
 Prior to the migration, the keys that your client sends will be treated as preshared keys.
-After the migration, the keys that your client sends will be treated as Restricted Access keys and flow through the extender.
+After the migration, the keys that your client sends will be treated as Restricted Access keys.
