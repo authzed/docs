@@ -1,5 +1,4 @@
 import { Callout, Tabs } from 'nextra/components'
-import { Bleed } from 'nextra-theme-docs'
 
 # Restricted API Access
 
@@ -61,8 +60,6 @@ The command should output the hash, which can be referenced in your static confi
 ```
 71c73ba92f2032416b18a4f4fffb2a825755bea6a8430f2622ab1f3fb35a10d0
 ```
-
-[static configuration]: #static-configuration
 
 ### Roles
 
@@ -189,18 +186,29 @@ This CEL expression limits CheckPermissions requests to only be able to check a 
 CheckPermissionRequest.permission == "admin"
 ```
 
-## Static Configuration
+## Configuration
 
-Enterprise builds of SpiceDB can have their API access configured statically with a YAML configuration file.
+The process for setting up this feature varies depending on the AuthZed product you're using.
+
+### Dedicated & Cloud
+
+Using the web dashboard, navigate to the Permission System's "Access" tab.
+
+### Self-Hosted
+
+Use the following command-line flags:
+
+| Flag                                  | Description                                                                                                                                                                           | Default |
+|---------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| --extender-authzed-fgam-endpoint      | defines the external SpiceDB endpoint used to authorize operations for the authzed-fgam extender. If a file:// endpoint is provided, server is run embedded with static configuration |         |
+| --extender-authzed-fgam-preshared-key | defines the external SpiceDB preshared key used to authorize operations for the authzed-fgam extender. Ignored if endpoint is local (file://)                                         |         |
+| --extender-enabled                    | must be set to `authzed-fgam`                                                                                                                                                         |         |
+
+If you set `--extender-authzed-fgam-endpoint` to a file, it must be a YAML configuration file.
 
 <Callout type="warning">
-  These configuration files contain hashes of Tokens and should be treated like secrets.
+  This configuration file should be treated like a secret because it contains token hashes.
 </Callout>
-
-This functionality is configured with the following flag:
-
-- `--extender-enabled authzed-fgam`
-- `--extender-authzed-fgam-endpoint /path/to/configuration.yaml`
 
 Here's an example showcasing the structure of static configuration:
 
@@ -235,7 +243,7 @@ policy:
 
 ## Enabling without downtime
 
-If you want to apply a static configuration to an existing SpiceDB cluster without downtime, you must conduct an upgrade process with the following steps:
+If you want to apply a configuration to an existing SpiceDB cluster without downtime, you must conduct an upgrade process with the following steps:
 
 1. Create pre-shared keys that follow the token format for each client of your SpiceDB instance.
    You should add those to your SpiceDB instance configuration.
