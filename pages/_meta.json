@@ -14,5 +14,9 @@
   "best-practices": {
     "title": "Best Practices",
     "type": "page"
+  },
+  "mcp": {
+    "title": "MCP",
+    "type": "page"
   }
 }
