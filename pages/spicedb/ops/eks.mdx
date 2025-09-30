@@ -151,13 +151,13 @@ If the `spicedb-le-tls` secret is not present, follow this [troubleshooting guid
 [Secret]: https://kubernetes.io/docs/concepts/configuration/secret
 [troubleshooting guide]: https://cert-manager.io/docs/troubleshooting/acme/
 
-### Configuring Dispatch TLS
+### Configuring Cross-Pod TLS
 
-SpiceDB [dispatches] work across instances in the same deployment via [gRPC].
+SpiceDB will be more performant when cross-pod communication is enabled (see [performance]).
 We'll be securing this pod-to-pod communication with its own internal-only certificate:
 
 [gRPC]: https://grpc.io
-[dispatches]: ../concepts/dispatch
+[performance]: performance#by-enabling-cross-node-communication
 
 ```sh
 kubectl apply --server-side -f - <<EOF
