@@ -38,7 +38,7 @@ Install the latest version of the zed CLI:
 Start the development server:
 
 ```bash
-zed mcp run
+zed mcp experimental-run
 ```
 
 The server starts on `http://localhost:9999/mcp` with an empty in-memory SpiceDB instance.
@@ -50,7 +50,7 @@ All schemas and relationships are lost when you stop the server.
 
 ### Claude Code
 
-To use with Claude Code, run `zed mcp run` to start the SpiceDB Dev MCP server and then run the following to add the server to your Claude Code integrations:
+To use with Claude Code, run `zed mcp experimental-run` to start the SpiceDB Dev MCP server and then run the following to add the server to your Claude Code integrations:
 
 ```bash
 claude mcp add --transport http spicedb http://localhost:9999/mcp
@@ -265,7 +265,7 @@ netstat -an | findstr 9999
 
 ### Client Connection Fails
 
-- Verify server is running: `zed mcp run` should be active
+- Verify server is running: `zed mcp experimental-run` should be active
 - Confirm URL is `http://localhost:9999/mcp`
 - Check client supports HTTP transport
 - Ensure localhost is not blocked by firewall
