@@ -165,6 +165,40 @@ Use validation files to:
 
 Access with `validation://current` resource.
 
+### Saving Your Work
+
+The MCP server works with your AI assistant to help you save schemas and validation files to disk.
+
+**Exporting Schemas**
+
+Ask your assistant to save the current schema to a file:
+
+> You: "Save my schema to schema.zed"
+
+> You: "Write the current schema to permissions/document-sharing.zed"
+
+The assistant reads from `schema://current` and writes the schema to your specified file path.
+
+**Exporting Validation Files**
+
+Save validation test cases to preserve your permission tests:
+
+> You: "Save the validation file to tests/permissions.yaml"
+
+> You: "Export validation to document-tests.yaml"
+
+The assistant reads from `validation://current` and writes the validation YAML to your specified file.
+
+**Loading Existing Files**
+
+You can also load schemas from existing files:
+
+> You: "Load the schema from schema.zed and apply it to the dev server"
+
+> You: "Read permissions/document-sharing.zed and write it to the MCP server"
+
+The assistant reads your file and uses `write_schema` to apply it to the development instance.
+
 ## Security Considerations
 
 ### Local Development Only
@@ -253,7 +287,9 @@ netstat -an | findstr 9999
 When ready to move beyond development:
 
 1. **Export your schema**: Save the final schema from `schema://current`
+   - Ask your assistant: "Save my schema to schema.zed"
 2. **Document permissions**: Create comprehensive validation files
+   - Ask your assistant: "Save validation to tests/permissions.yaml"
 3. **Deploy SpiceDB**: See [SpiceDB deployment guide](#)
 4. **Connect your application**: Use [SpiceDB client libraries](#)
 5. **Import relationships**: Migrate test relationships if appropriate
