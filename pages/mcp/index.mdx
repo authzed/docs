@@ -2,7 +2,8 @@
 
 ## Overview
 
-Model Context Protocol (MCP) is an open standard that enables large language models (LLMs) to communicate with external tools and data sources. Often referred to as "USB-C for AI", MCP provides a universal interface that allows AI applications to integrate once and interoperate with any MCP-compatible system.
+Model Context Protocol (MCP) is an open standard that enables large language models (LLMs) to communicate with external tools and data sources.
+Often referred to as "USB-C for AI", MCP provides a universal interface that allows AI applications to integrate once and interoperate with any MCP-compatible system.
 
 By standardizing how AI tools access external data and functionality, MCP eliminates the need for custom integrations between every AI application and every external service.
 
@@ -22,7 +23,8 @@ LLMs face fundamental limitations when providing contextually relevant responses
 
 ### How MCP Works
 
-The MCP specification standardizes how AI tools interact with data sources and functionality. Instead of building separate integrations for each AI application and external service, developers implement MCP once and gain compatibility across the entire ecosystem.
+The MCP specification standardizes how AI tools interact with data sources and functionality.
+Instead of building separate integrations for each AI application and external service, developers implement MCP once and gain compatibility across the entire ecosystem.
 
 MCP uses a client-server architecture:
 
@@ -30,7 +32,8 @@ MCP uses a client-server architecture:
 - **MCP Client**: The connection component within the host that communicates with external services
 - **MCP Server**: The external service being accessed (databases, APIs, cloud services)
 
-Each MCP host must create and manage separate MCP client connections for each MCP server it communicates with. This architecture enables AI applications to access multiple data sources and tools simultaneously while maintaining clear separation between services.
+Each MCP host must create and manage separate MCP client connections for each MCP server it communicates with.
+This architecture enables AI applications to access multiple data sources and tools simultaneously while maintaining clear separation between services.
 
 ## Core Capabilities
 
@@ -38,19 +41,23 @@ MCP provides three primitives for extending LLM functionality:
 
 ### Resources
 
-Resources inject information into the AI's context. This includes configuration data, documentation, company policies, product catalogs, or customer information. Resources enable AI models to work with accurate, current data without manual intervention.
+Resources inject information into the AI's context.
+This includes configuration data, documentation, company policies, product catalogs, or customer information.
+Resources enable AI models to work with accurate, current data without manual intervention.
 
 **Example use case**: When drafting a customer email, automatically provide the customer's order history, support ticket details, and account preferences so the AI can write personalized, contextually accurate responses.
 
 ### Tools
 
-Tools enable AI models to trigger actions on behalf of users based on goals and information in the context. They allow AI to interact with external systems, automating tasks that would otherwise require manual execution across multiple applications.
+Tools enable AI models to trigger actions on behalf of users based on goals and information in the context.
+They allow AI to interact with external systems, automating tasks that would otherwise require manual execution across multiple applications.
 
 **Example use case**: Create a new project in your task management system, assign team members, set deadlines, and generate initial task lists—all from a single conversation with the AI, without switching between applications.
 
 ### Prompts
 
-Prompts provide tested, reusable instructions that guide AI behavior consistently. Instead of users needing to craft precise instructions each time, MCP servers can supply pre-configured prompts that have been refined for specific tasks or contexts.
+Prompts provide tested, reusable instructions that guide AI behavior consistently.
+Instead of users needing to craft precise instructions each time, MCP servers can supply pre-configured prompts that have been refined for specific tasks or contexts.
 
 **Example use case**: When analyzing customer feedback, use a standardized prompt that ensures the AI always considers sentiment, key themes, and actionable insights in a consistent format across your team.
 
@@ -64,7 +71,8 @@ The MCP specification has evolved rapidly since its introduction, with three maj
 - **2025-03-26**: Enhanced security features
 - **2025-06-18**: Enterprise readiness improvements
 
-The most recent versions have focused heavily on security and enterprise readiness, introducing mechanisms to authenticate users and clients while providing recommendations for authorizing resource access. The ability to implement granular access controls for resources is especially critical for enterprises integrating sensitive company and user data with MCP servers.
+The most recent versions have focused heavily on security and enterprise readiness, introducing mechanisms to authenticate users and clients while providing recommendations for authorizing resource access.
+The ability to implement granular access controls for resources is especially critical for enterprises integrating sensitive company and user data with MCP servers.
 
 ### Deployment Considerations
 
@@ -72,11 +80,16 @@ MCP servers can be deployed in two primary configurations, each with distinct au
 
 #### Local MCP Servers
 
-Local servers run as single instances on individual machines. These servers are assumed to be under the custodian of the user running them. Most MCP clients provide functionality that prompts users to approve tool invocations and resource access before execution. While this provides a basic security layer, it relies on user vigilance and awareness.
+Local servers run as single instances on individual machines.
+These servers are assumed to be under the custodian of the user running them.
+Most MCP clients provide functionality that prompts users to approve tool invocations and resource access before execution.
+While this provides a basic security layer, it relies on user vigilance and awareness.
 
 #### Remote MCP Servers
 
-Remote servers are hosted and accessed in multi-tenant environments, serving multiple users and organizations. These deployments require robust authentication and access control mechanisms for MCP resources. The MCP specification provides high-level guidance for authorization, but implementation details—including specific permission models and accurate enforcement—are the responsibility of MCP server developers.
+Remote servers are hosted and accessed in multi-tenant environments, serving multiple users and organizations.
+These deployments require robust authentication and access control mechanisms for MCP resources.
+The MCP specification provides high-level guidance for authorization, but implementation details—including specific permission models and accurate enforcement—are the responsibility of MCP server developers.
 
 ### Security Risks: The Lethal Trifecta
 
@@ -86,7 +99,9 @@ Security researcher Simon Willison identified a [dangerous combination of capabi
 2. **Exposure to untrusted content**: Any mechanism by which text or images controlled by a malicious attacker could become available to your LLM
 3. **The ability to externally communicate**: Methods that could be used to exfiltrate your data
 
-Implementing robust authorization in your MCP server can mitigate these risks within your service. However, once data from your MCP server is sent to the MCP host application and becomes part of the context, you lose control over access to that data. AI applications often have multiple MCP servers enabled simultaneously, and you cannot enforce permissions for actions taken on your data within other servers or the host application itself.
+Implementing robust authorization in your MCP server can mitigate these risks within your service.
+However, once data from your MCP server is sent to the MCP host application and becomes part of the context, you lose control over access to that data.
+AI applications often have multiple MCP servers enabled simultaneously, and you cannot enforce permissions for actions taken on your data within other servers or the host application itself.
 
 ### Best Practices
 

@@ -1,10 +1,12 @@
 # AuthZed MCP Server
 
-Connect your AI tools to AuthZed and SpiceDB documentation using the Model Context Protocol (MCP). Access comprehensive documentation, API references, and authorization pattern examples directly from your AI assistant.
+Connect your AI tools to AuthZed and SpiceDB documentation using the Model Context Protocol (MCP).
+Access comprehensive documentation, API references, and authorization pattern examples directly from your AI assistant.
 
 ## Overview
 
-AuthZed MCP Server is a remote MCP server available at `https://mcp.authzed.com`. It provides tools with searchable access to SpiceDB and AuthZed resources, enabling you to learn about authorization systems, explore APIs, and find implementation examples without leaving your LLM chat or development environment.
+AuthZed MCP Server is a remote MCP server available at `https://mcp.authzed.com`.
+It provides tools with searchable access to SpiceDB and AuthZed resources, enabling you to learn about authorization systems, explore APIs, and find implementation examples without leaving your LLM chat or development environment.
 
 ### What You Can Do
 
@@ -33,6 +35,7 @@ Available on Pro and Plus accounts.
 
 1. Enable **Developer mode** in Settings
 2. Create connector:
+
 - **Name**: AuthZed
 - **MCP server URL**: `https://mcp.authzed.com`
 - **Authentication**: None
@@ -53,6 +56,7 @@ Available on Pro, Max, Team, and Enterprise plans.
 1. Open **Settings** → **Connectors**
 2. Select **Add custom connector**
 3. Configure:
+
 - **Name**: AuthZed
 - **URL**: `https://mcp.authzed.com`
 
@@ -75,6 +79,7 @@ Add to `.cursor/mcp.json`:
 1. Command Palette → **MCP: Add Server**
 2. Select **HTTP**
 3. Configure:
+
 - **URL**: `https://mcp.authzed.com`
 - **Name**: AuthZed
 
@@ -164,9 +169,11 @@ The assistant uses `send_feedback` to guide you through submitting structured fe
 
 **`system_instructions`** - View the system instructions for the AuthZed MCP server, including how it works and how to use it effectively.
 
-**`explain_concept`** - Ask questions about SpiceDB concepts, AuthZed features, schema design, API usage, best practices, or troubleshooting. Returns authoritative answers with documentation references and examples.
+**`explain_concept`** - Ask questions about SpiceDB concepts, AuthZed features, schema design, API usage, best practices, or troubleshooting.
+Returns authoritative answers with documentation references and examples.
 
-**`send_feedback`** - Provide feedback about the AuthZed MCP server, documentation, tools, or your general experience. The prompt guides you through submitting structured feedback.
+**`send_feedback`** - Provide feedback about the AuthZed MCP server, documentation, tools, or your general experience.
+The prompt guides you through submitting structured feedback.
 
 ## Available Resources
 
@@ -180,11 +187,13 @@ The assistant uses `send_feedback` to guide you through submitting structured fe
 ### Public Information Only
 
 The server provides access to:
+
 - Public SpiceDB and AuthZed documentation
 - Publicly available API specifications
 - Open source schema examples
 
 The server does **not** access:
+
 - Your AuthZed or SpiceDB instances
 - Your authorization data
 - Your application schemas
@@ -193,6 +202,7 @@ The server does **not** access:
 ### Verify the Endpoint
 
 Always confirm you're connecting to:
+
 ```
 https://mcp.authzed.com
 ```
