@@ -35,41 +35,32 @@ Start the development server:
 zed mcp run
 ```
 
-The server starts on `http://localhost:9999/sse` with an empty in-memory SpiceDB instance.
+The server starts on `http://localhost:9999/mcp` with an empty in-memory SpiceDB instance.
 
 **Important**: The server runs in-memory only. All schemas and relationships are lost when you stop the server.
 
 ## Connecting Clients
 
-The SpiceDB Dev MCP Server uses SSE (Server-Sent Events) transport.
-
 ### Claude Code
 
-Recommended for active development:
+To use with Claude Code, run `zed mcp run` to start the SpiceDB Dev MCP server and then run the following to add the server to your Claude Code integrations:
 
 ```bash
-# Add the server
-claude mcp add --transport sse spicedb http://localhost:9999/sse
+claude mcp add --transport http spicedb http://localhost:9999/mcp
+```
 
-# Start developing
+Then start developing:
+
+```bash
 claude
 ```
 
-### Codex from OpenAI
-
-Configure Codex to connect to the SSE endpoint:
-```
-http://localhost:9999/sse
-```
-
-See [Codex documentation](#) for SSE transport configuration.
-
 ### Other Clients
 
-For MCP clients supporting SSE transport, configure:
+For MCP clients supporting HTTP transport, configure:
 ```
-Transport: SSE
-URL: http://localhost:9999/sse
+Transport: HTTP
+URL: http://localhost:9999/mcp
 ```
 
 ## Development Workflow
@@ -226,8 +217,8 @@ netstat -an | findstr 9999
 ### Client Connection Fails
 
 - Verify server is running: `zed mcp run` should be active
-- Confirm URL is `http://localhost:9999/sse`
-- Check client supports SSE transport
+- Confirm URL is `http://localhost:9999/mcp`
+- Check client supports HTTP transport
 - Ensure localhost is not blocked by firewall
 
 ### Schema Errors
