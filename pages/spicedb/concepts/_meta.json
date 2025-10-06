@@ -8,7 +8,6 @@
   "consistency": "Consistency",
   "datastores": "Datastores",
   "datastore-migrations": "Datastore Migrations",
-  "dispatch": "Dispatch",
   "reflection-apis": "Reflection APIs",
   "watch": "Watching Changes"
 }
