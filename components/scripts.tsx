@@ -90,7 +90,7 @@ function Posthog() {
     }
 
     posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY ?? '', {
-      api_host: isProd ? '/ingest' : process.env.NEXT_PUBLIC_POSTHOG_HOST, // See Posthog rewrites in next config
+      api_host: isProd ? '/i' : process.env.NEXT_PUBLIC_POSTHOG_HOST, // See Posthog rewrites in next config
       ui_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
       person_profiles: 'always',
       loaded: (posthog) => {
