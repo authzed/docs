@@ -18,7 +18,7 @@ All bugs and mistakes are considered very seriously, regardless of complexity.
 Before creating an issue, please check that an issue reporting the same problem does not already exist.
 To make the issue accurate and easy to understand, please try to create issues that are:
 
-- Unique -- do not duplicate existing bug report.
+- Unique -- do not duplicate an existing bug report.
   Duplicate bug reports will be closed.
 - Specific -- include as much details as possible: which version, what environment, what configuration, etc.
 - Reproducible -- include the steps to reproduce the problem.
@@ -63,6 +63,6 @@ Signed-off-by: Random J Developer <random@developer.example.org>
 ```
 
 This can be done by using the `--signoff` (or `-s` for short) git flag to append this automatically to your commit message.
-If you have already authored a commit that is missing the signed-off, you can amend or rebase your commits and force push them to GitHub.
+If you have already authored a commit that is missing the signed-off-by, you can amend or rebase your commits and force push them to GitHub.
 
 [DCO]: /DCO

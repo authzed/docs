@@ -42,4 +42,4 @@ Run linters:
 
 ```sh
 pnpm run lint
-````
+```
