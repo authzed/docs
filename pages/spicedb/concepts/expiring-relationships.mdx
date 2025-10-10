@@ -1,17 +1,11 @@
 import { Callout } from 'nextra/components';
-import YouTube from 'react-youtube';
 import { InlinePlayground } from '@/components/playground';
 
-# Expiring Relationships
+# Writing Relationships that Expire
 
-<Callout type="info">
-    Expiring Relationships is available from SpiceDB 1.40 onwards.  Use the `--enable-experimental-relationship-expiration` flag when calling `spicedb serve` to enable it.
-</Callout>
+A common use case is granting a user access to a resource for a limited time.
 
-A common use case is to model relationships that expire after a certain time.
-This is useful for granting temporary access to a resource.
-
-Before version 1.40, [caveats] were the recommended way to support time-bound permissions, but that has some limitations:
+Before SpiceDB v1.40, [caveats] were the recommended way to support time-bound permissions, but that has some limitations:
 
 [caveats]: caveats
 
@@ -20,7 +14,7 @@ This is additional complexity for clients.
 - Expired caveats are not automatically garbage collected.
 This can lead to many caveated relationships in the system and increase the costs of loading and evaluating those into the runtime.
 
-SpiceDB supports expiring relationships, which lets users define relationships that expire at a given time.
+After SpiceDB v1.4.0, and if you need to grant temporary access to a resource, you can do so by writing relationships that expire after a certain time.
 
 The time must be specified in [RFC 3339 format].
 
@@ -35,28 +29,22 @@ The time must be specified in [RFC 3339 format].
 
 ## Schema
 
-Expiring relationships follow a similar use to caveated subject types.
-The novelty here is that users need to enable the feature using the `use` clause.
-This is to disambiguate a caveat named `expiration` from the new expiration feature.
-
 To enable expiration in your schema, add a `use expiration` clause to the top of the file.
 Then the relations subject to expiration are marked using `<type> with expiration`:
 
 ```zed
 use expiration
 
-definition folder {}
+definition user {}
 
 definition resource {
-    relation folder: folder with expiration
+    relation viewer: user with expiration
 }
 ```
 
 ## API
 
-The expiration of a relationship is [on a per-relationship basis](https://buf.build/authzed/api/docs/63b8911ef2871c56e5048d1f40a8473f98457ca9:authzed.api.v1#authzed.api.v1.Relationship)
-at write time, using `WriteRelationships` or `BulkImportRelationships` APIs.
-The expiration is denoted with the `OptionalExpiresAt` field in the relationship.
+To write a relationship that expires, use the `WriteRelationships` or `BulkImportRelationships` APIs, and set the `OptionalExpiresAt` field in the relationship:
 
 ```textproto
 WriteRelationshipsRequest {
@@ -86,10 +74,10 @@ WriteRelationshipsRequest {
 
 ## Playground
 
-Set expirations on relationships in the Playground with the format `[expiration:2025-12-31T23:59:59Z]`:
+To write a relationship that expires, use the following format:
 
 ```yaml
-resource:r1#folder@folder:folder1[expiration:2025-12-31T23:59:59Z]
+resource:someresource#viewer@user:anne[expiration:2025-12-31T23:59:59Z]
 ```
 
 or specify expirations in the `Expiration` column in the Relationship grid editor.
@@ -97,16 +85,16 @@ or specify expirations in the `Expiration` column in the Relationship grid edito
 
 ## zed
 
-Use the `--expiration-time` flag to pass the expiration time of the relationship:
+To write a relationship that expires, use the `--expiration-time` flag:
 
 ```shell zed
-zed relationship create resource:r1 folder folder:folder1 --expiration-time "2025-12-31T23:59:59Z"
+zed relationship create resource:someresource viewer user:anne --expiration-time "2025-12-31T23:59:59Z"
 ```
 
 ## Garbage Collection
 
 As soon as a relationship expires, it will no longer be used in permission checks.
-However, the row is not deleted right then, but rather is subject to garbage collection.
+However, the relationship in the datastore is not deleted right then, but rather is subject to garbage collection.
 
 Reclaiming expiring relationships is governed by the same mechanism (and flags) as the deletion of the history of
 relationship changes that powers SpiceDB's own MVCC (Multi-Version Concurrency Control) and heavily depends on
@@ -130,17 +118,17 @@ Relationships will be reclaimed after 24 hours by default.
 If you implemented expiration using caveats, this section describes migrating to the new expiration feature.
 
 1. Rename your caveat if you had named it `expiration`
-2. Add the new subject type to your relation, and also add a combination where both are used:
+2. Add the new subject type to your relation, and also add a combination where both are used. For example:
 
     ```zed
     caveat ttl(timeout duration, now string, timeout_creation_timestamp string) {
        timestamp(now) - timestamp(timeout_creation_timestamp) < timeout
     }
 
-    definition folder {}
+    definition user {}
 
     definition resource {
-        relation folder: folder with ttl
+        relation viewer: user with ttl
     }
     ```
 
@@ -153,10 +141,10 @@ If you implemented expiration using caveats, this section describes migrating to
        timestamp(now) - timestamp(timeout_creation_timestamp) < timeout
     }
 
-    definition folder {}
+    definition user {}
 
     definition resource {
-        relation folder: folder with ttl | folder with expiration | folder with ttl and expiration
+        relation viewer: user with ttl | user with expiration | user with ttl and expiration
     }
     ```
 
@@ -165,14 +153,14 @@ This is needed because only one relationship is allowed for a resource/permissio
 4. Validate that the new expiration feature works as expected by not providing the context for evaluating the `ttl` caveat.
 5. Once validated, migrate completely to the new expiration feature by writing all relationships with only expiration
 and without caveat.
-6. Drop the caveat from your schema once the migration is completed
+6. Drop the caveat from your schema once the migration is completed:
 
     ```zed
     use expiration
 
-    definition folder {}
+    definition user {}
 
     definition resource {
-        relation folder: folder with expiration
+        relation viewer: user with expiration
     }
     ```
