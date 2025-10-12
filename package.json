@@ -38,7 +38,7 @@
     "react-youtube": "^10.1.0",
     "sharp": "^0.34.0",
     "swagger-ui-react": "^5.22.0",
-    "tailwind-merge": "^2.4.0"
+    "tailwind-merge": "^2.6.0"
   },
   "devDependencies": {
     "@tailwindcss/line-clamp": "^0.4.4",
