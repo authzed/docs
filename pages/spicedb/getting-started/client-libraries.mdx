@@ -16,17 +16,18 @@ the primary documentation for the gRPC API is in the [buf documentation] for Spi
 The gRPC client documentation associated with each host language will also be helpful for putting together invocations.
 Additionally, there are `example` directories in the client libraries that provide example usages.
 
-## Local Development Tips
+## Local Development
 
-When developing locally with SpiceDB running without TLS (localhost, Docker, Orbstack, etc.), you'll need to use insecure credentials in your client configuration:
+When developing locally with SpiceDB running without TLS, you'll need to configure insecure credentials:
 
-- **Node.js**: Use `v1.ClientSecurity.INSECURE_PLAINTEXT_CREDENTIALS` as the third parameter to `v1.NewClient()`
-- **Python**: Use `insecure_bearer_token_credentials()` instead of `bearer_token_credentials()`
-- **Go**: Use `grpcutil.WithInsecureBearerToken()` and `grpc.WithTransportCredentials(insecure.NewCredentials())`
-- **Ruby**: Use `credentials: :this_channel_is_insecure` when creating the client
-- **Java**: Use `.usePlaintext()` on your `ManagedChannelBuilder`
+- **Node.js**: `v1.ClientSecurity.INSECURE_PLAINTEXT_CREDENTIALS`
+- **Python**: `insecure_bearer_token_credentials()`
+- **Go**: `grpcutil.WithInsecureBearerToken()` and `grpc.WithTransportCredentials(insecure.NewCredentials())`
+- **Ruby**: `credentials: :this_channel_is_insecure`
+- **Java**: `.usePlaintext()`
+- **Dotnet**: `ChannelCredentials.Insecure` with `UnsafeUseInsecureChannelCallCredentials = true`
 
-See the [Protecting a Blog Application](./protecting-a-blog#checking-permissions) guide for detailed examples and important security notes about switching to TLS-secured credentials before deploying to production.
+See the [Protecting a Blog Application](./protecting-a-blog#checking-permissions) guide for examples.
 
 ## HTTP Clients
 

@@ -731,18 +731,15 @@ When doing a permission check, in order to get read-after-write consistency, you
 The following examples demonstrate the transitive property of checks:
 
 <Callout type="info">
-**Local Development Security Settings:**
+When developing locally with SpiceDB without TLS, use insecure credentials in your client library:
+- **Node.js**: `INSECURE_PLAINTEXT_CREDENTIALS`
+- **Python**: `insecure_bearer_token_credentials()`
+- **Go**: `grpcutil.WithInsecureBearerToken()` and `grpc.WithTransportCredentials(insecure.NewCredentials())`
+- **Ruby**: `credentials: :this_channel_is_insecure`
+- **Java**: `.usePlaintext()`
+- **Dotnet**: `ChannelCredentials.Insecure` with `UnsafeUseInsecureChannelCallCredentials = true`
 
-When connecting to SpiceDB running locally without TLS, use `INSECURE_PLAINTEXT_CREDENTIALS` (Node.js), `insecure_bearer_token_credentials` (Python), or the equivalent insecure option for your client library. This is the recommended setting for **any** local development scenario, including:
-- Localhost connections
-- Docker containers (including Docker Desktop)
-- Orbstack with `*.orb.local` hostnames
-- Remote Kubernetes port-forwards
-- Any other non-TLS local setup
-
-Note: `INSECURE_LOCALHOST_ALLOWED` (if available in your client) works for true localhost connections and port-forwards, but will fail when connecting to Docker containers or Orbstack with non-localhost hostnames like `*.orb.local`. For broader compatibility across all local development scenarios, use `INSECURE_PLAINTEXT_CREDENTIALS` instead.
-
-**Important:** Always switch back to TLS-secured credentials (e.g., `bearer_token_credentials`) before deploying to production.
+This applies to localhost, Docker, Orbstack, and other local environments. Always switch to secure credentials before production deployment.
 </Callout>
 
 <Tabs items={['zed', 'Node', 'Go', 'Python', 'Ruby', 'Java']}>
@@ -764,7 +761,7 @@ import { v1 } from '@authzed/authzed-node';
 const { promises: client } = v1.NewClient(
   't_your_token_here_1234567deadbeef',
   'grpc.authzed.com:50051',
-  // For local development without TLS (localhost, Docker, Orbstack, etc.)
+  // For local development without TLS
   v1.ClientSecurity.INSECURE_PLAINTEXT_CREDENTIALS
 );
 
