@@ -426,6 +426,17 @@ To determine if a schema change is breaking, we provide the `materialize-cli` to
   `materialize-cli` is still in early development, please reach out to us if you want to try it as part of AuthZed Materialize early access.
 </Callout>
 
+### Event Ordering and Delivery Guarantees
+
+- **Ordered by revision (and usually timestamp)**  
+  Events emitted by Materialize follow the same revision order as the SpiceDB Watch API. This order reflects the sequence of committed transactions. In most cases, events also follow timestamp order, although this is datastore-dependent. For example, Postgres may not preserve strict timestamp ordering due to concurrency behavior.
+
+- **Revisions are delivered in order**  
+  Materialize guarantees at-least-once delivery and preserves the order of revisions exactly as emitted by SpiceDB. Revisions will not arrive out of order. However, events within a single revision may appear in any order, since their intra-revision ordering is not semantically significant.
+
+- **"Revision completed" indicates prior events have been received**  
+  All events for a given revision will be emitted before the corresponding `"revision completed"` event is sent. If strict ordering of events within a revision is required, client-side ordering logic must be implemented.
+
 #### Errors
 
 ##### FailedPrecondition: Revision Does Not Exist
