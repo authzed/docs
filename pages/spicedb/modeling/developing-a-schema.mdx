@@ -6,31 +6,26 @@ import { InlinePlayground } from '@/components/playground'
 
 This document walks through the overarching process of developing a new schema from scratch.
 
-A useful companion to this document is the [schema language documentation][schema-docs] which acts as a reference.
+A useful companion to this document is the [schema language reference][schema-docs].
+
+The following video provides an overview of schema development using the Playground:
+
+<br />
+<YouTube videoId="AoK0LrkGFDY" />
 
 [schema-docs]: ../concepts/schema
-
-<Callout type="info">
-  This guide does not specify prefixes on its definitions.
-
-  If you intend to deploy these examples to an environment that uses prefixes, you'll need to place `yourprefix/` in front of all definitions and references like so:
-
-  `definition document { ... }{:zed}` -> `definition yourprefix/document { ... }{:zed}`
-</Callout>
 
 ## Defining Object Types
 
 The first step in developing a new schema is to write one or more [Object Type definitions].
 
-For this example, let's imagine a basic system consisting of a resource to be protected, such as a document, and users that can potentially access that resource.
+For this example, let's imagine a basic system consisting of a resource to be protected, such as a `document`, and `users` that can potentially access them.
 
 We begin by defining each of the object types via the `definition{:zed}` keyword:
 
 ```zed
-/** user represents a registered user's account in our application */
 definition user {}
 
-/** document represents a document with access control */
 definition document {}
 ```
 
@@ -42,31 +37,35 @@ So far, our schema and object definitions don't do much; they define the two typ
 
 ## Defining Relations
 
-Our next step is to decide how our objects can relate to one another, thus defining the kind of relationships we can store in SpiceDB.
+Our next step is to decide how our objects can relate to one another, thus defining the kind of [relationships] we can store in SpiceDB.
 
-For this example, we've chosen a simple RBAC-style permissions model, where users can be granted a _role_, such as _reader_, on our resource, _document_.
+For this example, we've chosen a simple RBAC-style permissions model, where `users` can be granted a _role_, such as `reader`, on our resource, `document`.
 
-This choice of model means that the relations between our resource, _document_, and our _users_ will be defined by the roles we want.
-We can therefore start by defining a relation on our _document_ type to represent one of these roles: _reader_ in the following example.
+This choice of model means that the relations between our resource, `document`, and our `users` will be defined by the roles we want.
+We can therefore start by defining a relation on our `document` type to represent one of these roles: `reader` in the following example.
 
 ```zed
-/** user represents a registered user's account in our application */
 definition user {}
 
-/** document represents a document with access control */
 definition document {
-  /** reader indicates that the user is a reader on the document */
   relation reader: user
 }
 ```
 
-Note the inclusion of _user_ on the right hand side of the relation: this indicates that only objects of type _user_ can relate via a _reader_ relationship to a _document_.
+Note the inclusion of `user` on the right hand side of the `reader` relation: this indicates that only objects of type `user` can relate via a `reader` relationship to a `document`.
 
 If we wanted more than a single allowed object type, the `|{:zed}` character can be used:
 
-```zed
-relation reader: user | anotherobjecttype
+```zed {5}
+definition user {}
+definition bot {}
+
+definition document {
+  relation reader: user | bot
+}
 ```
+
+[relationships]: ../concepts/relationships
 
 ## Validating our schema
 
@@ -131,26 +130,21 @@ document:specificdocument#reader:
 
 While this example fails to demonstrate much more power than basic assertions, Expected Relations are far more powerful once we add additional relations and permissions to our schema.
 
-## Expanding our configuration
+## Expanding our schema
 
 While being able to ask whether a user is a reader of a document is super useful, it is expected that the majority of permissions systems will consist of more than a single role.
 
-As discussed at the beginning of the guide, in this example we'd like to have a second role, that of `writer`, which will allow us to check if a user is a writer on the document.
+In this example we'd like to have a second role, that of `writer`, which will allow us to check if a user is a writer on the document.
 
 ### Adding the writer relation
 
 To begin, we once again start by adding another relation, in this case `writer`:
 
 ```zed
-/** user represents a registered user's account in our application */
 definition user {}
 
-/** document represents a document with access control */
 definition document {
-  /** reader indicates that the user is a reader on the document */
   relation reader: user
-
-  /** writer indicates that the user is a writer on the document */
   relation writer: user
 }
 ```
@@ -190,22 +184,15 @@ As a naive solution, we could create a `reader` relationship for every user when
 
 Instead, we'd ideally like a user with role `writer` to be **implicitly** allowed to a read a document, such that we only ever need to write _one_ relationship representing the user's **actual** relation/role to the document.
 
-The solution to this problem is the second concept available within the Schema Language: **permissions**.
-
-A `permission` in a schema defines a permission _computed_ from one or more other relations or permissions.
+The solution to this problem is the second concept available within the Schema Language: [permissions]. A permission in a schema defines a permission _computed_ from one or more other relations or permissions.
 
 Let's take our schema again from above:
 
 ```zed
-/** user represents a registered user's account in our application */
 definition user {}
 
-/** document represents a document with access control */
 definition document {
-  /** reader indicates that the user is a reader on the document */
   relation reader: user
-
-  /** writer indicates that the user is a writer on the document */
   relation writer: user
 }
 ```
@@ -215,26 +202,20 @@ Now, however, we want to check if a specific user has a specific **permission** 
 
 To support this use case, we can define a `permission`:
 
-```zed
-/** user represents a registered user's account in our application */
+```zed {6}
 definition user {}
 
-/** document represents a document with access control */
 definition document {
-  /** reader indicates that the user is a reader on the document */
   relation reader: user
-
-  /** writer indicates that the user is a writer on the document */
   relation writer: user
-
-  /** view indicates whether the user can view the document */
   permission view = reader + writer
 }
 ```
 
-A `permission`, unlike a `relation`, does not represent a concrete relationship between a resource and a subject.
-Rather, the permission is _computed_ based on the expression found after the `=`.
-Here, we compute the `view` permission to include any users found to have either the `reader` OR `writer` role, thus allowing users with either (or both) roles to view the document, as we intended.
+A `permission`, unlike a `relation`, cannot be explicitly written in the database: it is _computed_ at query time based on the expression found after the `=`.
+Here, we compute the `view` permission to include any users found to have either the `reader` OR `writer` role, thus allowing users with either (or both) roles to view the document.
+
+[permissions]: ../concepts/schema#permissions
 
 ### Updating our expected relations
 
@@ -289,56 +270,40 @@ As an example: imagine that we add the concept of an `organization` to our permi
 
 To begin, we must first define the object type that represents our organization, including the `administrator` relation, to represent the administrator role for users:
 
-```zed filename="Schema"
-/** user represents a registered user's account in our application */
+```zed {9,10,11,12} filename="Schema"
 definition user {}
+
+definition document {
+  relation reader: user
+  relation writer: user
+  permission view = reader + writer
+}
 
 /** organization represents an organization that contains documents */
 definition organization {
-  /** administrator indicates that the user is an admin of the org */
   relation administrator: user
-}
-
-/** document represents a document with access control */
-definition document {
-  /** reader indicates that the user is a reader on the document */
-  relation reader: user
-
-  /** writer indicates that the user is a writer on the document */
-  relation writer: user
-
-  /** view indicates whether the user can view the document */
-  permission view = reader + writer
 }
 ```
 
 ### Connecting organizations and documents
 
 In order for our inheritance to function, we must define a way to indicate that a document "lives" under an organization.
-Fortunately, this is just another relationship (between a `document` and its parent `organization`), so we can use another relation within the `document` type:
+Fortunately, this is just another relation (between a `document` and its parent `organization`), so we can use another relation within the `document` type:
 
-```zed filename="Schema"
-/** user represents a registered user's account in our application */
+```zed {9,10} filename="Schema"
 definition user {}
 
 /** organization represents an organization that contains documents */
 definition organization {
-  /** administrator indicates that the user is an admin of the org */
   relation administrator: user
 }
 
-/** document represents a document with access control */
 definition document {
   /** docorg indicates that the organization owns this document */
   relation docorg: organization
 
-  /** reader indicates that the user is a reader on the document */
   relation reader: user
-
-  /** writer indicates that the user is a writer on the document */
   relation writer: user
-
-  /** view indicates whether the user can view the document */
   permission view = reader + writer
 }
 ```
@@ -362,7 +327,7 @@ document:specificdocument#docorg@organization:someorg
 
 Now that we have a means of stating that a document is owned by an organization, and a relation to define administrators role on the organization itself, our final steps are to add an `view_all_documents` permission to the organization and to edit the `view` permission to take this permission into account.
 
-To do so, we make use of the arrow operator (`->`), which allows for referencing permissions _across_ another relation or permission:
+To do so, we make use of the [arrow](../concepts/schema#--arrow) operator (`->`), which allows for referencing permissions _across_ another relation or permission:
 
 ```zed filename="Schema"
 /** user represents a registered user's account in our application */

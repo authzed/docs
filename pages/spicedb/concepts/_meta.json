@@ -1,6 +1,6 @@
 {
   "zanzibar": "Google Zanzibar",
-  "schema": "Schema Language",
+  "schema": "Schema Language Reference",
   "relationships": "Writing Relationships",
   "caveats": "Writing Relationships with Caveats",
   "expiring-relationships": "Writing Relationships that Expire",
