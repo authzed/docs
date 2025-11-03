@@ -71,7 +71,7 @@ written to SpiceDB but not compiled.
 
 The obvious breaking changes are `import` and `partial` becoming keywords, so if you have a permission or
 relation with those names, your schema can't be compiled.
-We have also reserved some keywords for future use, such as `and`, `or`, and `not`.
+We have also reserved some keywords for future use, such as `use`, `and`, `or`, and `not`.
 If you get an unexpected `TokenTypeKeyword` error, this is probably why.
 A full list of reserved keywords can be found in [`keyword` map definition](https://github.com/authzed/spicedb/blob/main/pkg/composableschemadsl/lexer/lex_def.go#L74) in the lexer.
 
