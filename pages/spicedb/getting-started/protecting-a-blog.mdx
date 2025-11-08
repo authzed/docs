@@ -730,6 +730,18 @@ When doing a permission check, in order to get read-after-write consistency, you
 
 The following examples demonstrate the transitive property of checks:
 
+<Callout type="info">
+When developing locally with SpiceDB without TLS, use insecure credentials in your client library:
+- **Node.js**: `INSECURE_PLAINTEXT_CREDENTIALS`
+- **Python**: `insecure_bearer_token_credentials()`
+- **Go**: `grpcutil.WithInsecureBearerToken()` and `grpc.WithTransportCredentials(insecure.NewCredentials())`
+- **Ruby**: `credentials: :this_channel_is_insecure`
+- **Java**: `.usePlaintext()`
+- **Dotnet**: `ChannelCredentials.Insecure` with `UnsafeUseInsecureChannelCallCredentials = true`
+
+This applies to localhost, Docker, Orbstack, and other local environments. Always switch to secure credentials before production deployment.
+</Callout>
+
 <Tabs items={['zed', 'Node', 'Go', 'Python', 'Ruby', 'Java']}>
 <Tabs.Tab>
 
@@ -749,7 +761,7 @@ import { v1 } from '@authzed/authzed-node';
 const { promises: client } = v1.NewClient(
   't_your_token_here_1234567deadbeef',
   'grpc.authzed.com:50051',
-  // NOTE: Remove if SpiceDB is behind TLS
+  // For local development without TLS
   v1.ClientSecurity.INSECURE_PLAINTEXT_CREDENTIALS
 );
 
