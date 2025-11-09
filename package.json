@@ -19,7 +19,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.5.2",
     "@fortawesome/react-fontawesome": "^0.2.2",
     "@headlessui/react": "^1.7.19",
-    "@radix-ui/react-slot": "^1.1.0",
+    "@radix-ui/react-slot": "^1.2.3",
     "@segment/in-eu": "^0.4.0",
     "@svgr/webpack": "^8.1.0",
     "@vercel/speed-insights": "^1.0.12",
