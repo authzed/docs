@@ -43,7 +43,7 @@ Notably, policy engines cannot implement [Reverse Indices].
 However, there are some scenarios where ReBAC systems can benefit from dynamic enforcement.
 For these scenarios, SpiceDB supports [Caveats] as a light-weight form of policy that avoids pitfalls present in many other systems.
 
-[Reverse Indices]: #what-is-a-reverse-index
+[Reverse Indices]: ../faq/reverse-indices
 [caveats]: ../concepts/caveats
 
 ## How can I get involved with SpiceDB?
@@ -56,36 +56,3 @@ If you're looking to contribute code, you can read [CONTRIBUTING.md] in our open
 
 [Discord]: https://authzed.com/discord
 [CONTRIBUTING.md]: https://github.com/authzed/spicedb/blob/main/CONTRIBUTING.md
-
-## Zanzibar Questions
-
-### What is a Reverse Index?
-
->Reverse-index expand answers the question "what does this employee have access to?", which most organizations validate as part of meeting those compliance obligations.
->But, even more critically, organizations use this information to debug access issues and as baseline data to ensure careful data handling.
->
-> — Lea Kissner, Zanzibar Coauthor
-
-In SpiceDB, reverse indices often refer to the [LookupResources] and [LookupSubjects] APIs which are designed to answer the following questions, respectively:
-
-- "What are all of the resources this subject can access?"
-- "What are all of the subjects with access to this resource?"
-
-[LookupResources]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.LookupResources
-[LookupSubjects]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.LookupSubjects
-
-### How does SpiceDB improve on Google's Zanzibar?
-
-At a high-level, SpiceDB attempts to remain true to Zanzibar's design principles, but without any assumptions around Google's internal infrastructure and use cases.
-As a result, many things in SpiceDB are more flexible to accomodate different kinds of users with different software stacks.
-For example, [modeling complex user systems][model-users] is possible in SpiceDB, but in Zanzibar all users must be a uint64 identifier.
-
-Because SpiceDB is not forced on developers as company-wide requirement, the project also values developer experience and making the tooling pleasant to work with.
-You can see this in our [Schema Language] and [Playground] which vastly improves the user experience of directly manipulating Protocol Buffers at Google.
-
-For more specific details, see the documentation on the [Zanzibar][z-diff].
-
-[model-users]: ../modeling/representing-users
-[Schema Language]: ../concepts/schema
-[Playground]: https://play.authzed.com
-[z-diff]: ../concepts/zanzibar#differences-with-spicedb
