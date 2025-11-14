@@ -46,6 +46,20 @@ For these scenarios, SpiceDB supports [Caveats] as a light-weight form of policy
 [Reverse Indices]: ../concepts/zanzibar/#reverse-indices
 [caveats]: ../concepts/caveats
 
+## How do I filter resources based on access decisions in SpiceDB?
+
+There are three approaches for filtering resources based on whether users have access to them:
+
+1. **LookupResources** - Use when the number of accessible resources is relatively small. Call `LookupResources` to get all resource IDs the user can access, then use those IDs as a filter in your database query (e.g., `WHERE id = ANY(ARRAY[...])`). This is the simplest approach and a good starting point.
+
+2. **CheckBulkPermissions** - Use when accessible resources are too large for LookupResources. Fetch a page of candidate results from your database, then call `CheckBulkPermissions` to determine which ones the user can access. Keep iterating until you have a full page of permitted results. This works well with cursor-based pagination and search interfaces.
+
+3. **Materialize** (Early Access) - For maximum scalability with large datasets or high traffic. Materialize watches permission changes in SpiceDB and maintains a local denormalized view of user permissions, allowing you to use simple database JOINs for filtering.
+
+Choose based on your scale: start with LookupResources, move to CheckBulkPermissions when needed, and consider Materialize for the highest performance requirements. [Learn more]
+
+[Learn more]: ../modeling/protecting-a-list-endpoint
+
 ## How can I get involved with SpiceDB?
 
 The best first step is to join [Discord].
