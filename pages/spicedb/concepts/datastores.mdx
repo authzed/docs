@@ -6,7 +6,7 @@ In order to reduce operational complexity, SpiceDB leverages existing, popular s
 
 AuthZed has standardized our managed services on CockroachDB, but we give self-hosted customers the option to pick the datastore that best suits their operational requirements.
 
-- [CockroachDB](#cockroachdb) - Recomended for self hosted deployments with high throughput and/or multi-region requirements
+- [CockroachDB](#cockroachdb) - Recommended for self hosted deployments with high throughput and/or multi-region requirements
 - [Cloud Spanner](#cloud-spanner) - Recommended for self-hosted Google Cloud deployments
 - [PostgreSQL](#postgresql) - Recommended for self-hosted single-region deployments
 - [MySQL](#mysql) - Not recommended; only use if you cannot use PostgreSQL
@@ -93,7 +93,7 @@ The available strategies are:
 | --- | --- |
 | `static` (default) | All writes overlap to guarantee safety at the cost of write throughput |
 | `prefix` | Only writes that contain objects with same prefix overlap (e.g. `tenant1/user` and `tenant2/user` can be written in concurrently) |
-| `request` | Only writes with the same `io.spicedb.requestoverlapkey` header overlap enabling applications to decide on-the-fly which writes have causual dependencies. Writes without any header act the same as `insecure`. |
+| `request` | Only writes with the same `io.spicedb.requestoverlapkey` header overlap enabling applications to decide on-the-fly which writes have causal dependencies. Writes without any header act the same as `insecure`. |
 | `insecure` | No writes overlap, providing the best write throughput, but possibly leaving you vulnerable to the [New Enemy Problem] |
 
 For more information, refer to the [CockroachDB datastore README][crdb-readme] or our blog post "[The One Crucial Difference Between Spanner and CockroachDB][crdb-blog]".
@@ -257,7 +257,7 @@ Because this counter is instance-specific, there are ways in which the data in t
 Two concrete examples are the use of `pg_dump` and `pg_restore` to transfer data between an old instance and a new instance and setting up
 logical replication between a previously-existing instance and a newly-created instance.
 
-If you encounter this, SpiceDB can behave as though there is no schema written, because the data (including the schema) is associated with a future transaction ID and therefore isn't "visible" to Spicedb.
+If you encounter this, SpiceDB can behave as though there is no schema written, because the data (including the schema) is associated with a future transaction ID and therefore isn't "visible" to SpiceDB.
 If you run into this issue, the fix is [documented here](https://authzed.com/docs/spicedb/concepts/commands#reference-spicedb-datastore-repair)
 
 ### Configuration

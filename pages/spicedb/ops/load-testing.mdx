@@ -275,7 +275,7 @@ steps:
   - op: "CheckPermission"
     # This is Golang template syntax and various values from the runtime can be
     # inserted. Documentation of the available values is available in the readme:
-    # https://github.com/authzed/thumper?tab=readme-ov-file#go-template-properties
+    # https://github.com/authzed/thumper#go-template-properties
     resource: "{{ .Prefix }}resource:firstdoc"
     subject: "{{ .Prefix }}user:tom"
     permission: "view"
