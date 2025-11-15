@@ -92,7 +92,7 @@ The following variables are provided the CEL expression varying based on the req
 
 Policies are what bind Roles to a Service Account.
 
-Each policy is composed of a unique identifer for the policy itself, the principal (the target of the role assignment), and any roles being assigned.
+Each policy is composed of a unique identifier for the policy itself, the principal (the target of the role assignment), and any roles being assigned.
 
 ## Task-Specific Configuration
 
@@ -272,7 +272,7 @@ If you want to apply a configuration to an existing SpiceDB cluster without down
      1. You may want to start with FGAM tokens bound to a admin-like Role, since that's what the original PSKs effectively were.
         This is probably lower risk, and then from there you can move to start trimming down permissions.
      2. Or you may want to move directly to downscoped tokens for your individual services, creating the tokens you need.
-        This may be simple if you have few clients, but more complex as the number of clients grow, and with a bigger blast radious of impact on rollout.
+        This may be simple if you have few clients, but more complex as the number of clients grow, and with a bigger blast radius of impact on rollout.
    A minimal configuration would look something like:
 
    ```yaml
