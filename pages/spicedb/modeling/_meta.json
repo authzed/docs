@@ -11,6 +11,6 @@
   "attributes": "Incorporating Attributes",
   "dev-mcp-server": {
     "title": "SpiceDB Dev MCP Server",
-    "href": "../../mcp/authzed/spicedb-dev-mcp-server"
+    "href": "/mcp/authzed/spicedb-dev-mcp-server"
   }
 }
