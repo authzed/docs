@@ -17,7 +17,7 @@ In summary, AuthZed Materialize allows you to:
 - Speed up `CheckPermission` and `CheckBulkPermissions`.
 - Speed up `LookupResources` and `LookupSubjects`, especially when there is a large number of resources.
 - Build authorization-aware UIs, e.g. by providing a filtered and/or sorted list of more than several thousand authorized objects.
-- Perform ACL filtering in other secondary indexes, like a search index (e.g. ElasticSearch).
+- Perform ACL filtering in other secondary indexes, like a search index (e.g. Elasticsearch).
 
 [Dedicated]: ../guides/picking-a-product#dedicated
 
@@ -273,7 +273,7 @@ SELECT d.id FROM documents d
 
 This is an update stream of all the permissions Materialize is configured to watch.
 You can use this to store all permissions tracked in the system closer to your application database to be used in database-native ACL filtering.
-Permissions can also be stored in secondary indexes like ElasticSearch.
+Permissions can also be stored in secondary indexes like Elasticsearch.
 
 The API consists of various event types that capture deltas that occurred since a client started listening.
 It will also notify of events like a [breaking schema change] that necessitate rebuilding of the index.
