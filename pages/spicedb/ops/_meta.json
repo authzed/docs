@@ -4,6 +4,7 @@
   "eks": "Deploying to AWS EKS",
   "data": "Writing data to SpiceDB",
   "performance": "Improving Performance",
+  "resilience": "Improving Resilience",
   "observability": "Observability Tooling",
   "ai-agent-authorization": "Authorization for AI Agents",
   "secure-rag-pipelines": "Secure Your RAG Pipelines with Fine Grained Authorization"
