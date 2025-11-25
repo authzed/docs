@@ -2,7 +2,12 @@ import { Callout } from 'nextra/components'
 
 # Migrations
 
+
 ## Migrating from SpiceDB to SpiceDB
+
+<Callout type="info">
+    This section covers migrating data from one SpiceDB instance to another. If you need information about migrating the schema of a datastore underlying SpiceDB, like Postgres or CockroachDB, go [here](/spicedb/concepts/datastore-migrations#migrations). If you need information about making changes to a SpiceDB schema that result in a migration, go [here](/spicedb/modeling/migrating-schema).
+</Callout>
 
 <Callout type="warning">
     Migrating data at the underlying database level is not recommended and impossible in some cases. Using tools like `pg_dump`/`pg_restore` will break SpiceDB MVCC. Additionally, if you are migrating to a SpiceDB with a different datastore type (e.g. Postgres -> CockroachDB), you ***must*** use the SpiceDB APIs (`exportBulk`/`importBulk` or `zed backup`) to backup and restore.
