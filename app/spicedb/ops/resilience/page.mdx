@@ -1,0 +1,151 @@
+import { Steps } from "nextra/components";
+
+# Improving Resilience
+
+The first step we recommend is making sure that you have [observability](/spicedb/ops/observability) in place.
+Once you've done that, this page will help you improve the resilience of your SpiceDB deployment.
+
+## Retries
+
+When making requests to SpiceDB, it's important to implement proper retry logic to handle transient failures.
+The [SpiceDB Client Libraries](/spicedb/getting-started/client-libraries) use gRPC[^1],
+which can experience various types of temporary failures that can be resolved through retries.
+
+Retries are recommended for all gRPC methods.
+
+[^1]: SpiceDB can also expose an [HTTP API](/spicedb/getting-started/client-libraries#http-clients); however, gRPC is recommended.
+
+### Implementing Retry Policies
+
+You can implement your own retry policies using the gRPC Service Config.
+Below, you will find a recommended Retry Policy.
+
+```
+"retryPolicy": {
+  "maxAttempts": 3,
+  "initialBackoff": "1s",
+  "maxBackoff": "4s",
+  "backoffMultiplier": 2,
+  "retryableStatusCodes": [
+    'UNAVAILABLE', 'RESOURCE_EXHAUSTED', 'DEADLINE_EXCEEDED', 'ABORTED',
+  ]
+}
+```
+
+This retry policy configuration provides exponential backoff with the following behavior:
+
+- **`maxAttempts: 3`** - Allows for a maximum of 3 total attempts (1 initial request + 2 retries).
+  This prevents infinite retry loops while giving sufficient opportunity for transient issues to resolve.
+- **`initialBackoff: "1s"`** - Sets the initial delay to 1 second before the first retry attempt.
+  This gives the system time to recover from temporary issues.
+- **`maxBackoff: "4s"`** - Caps the maximum delay between retries at 4 seconds to prevent excessively long waits that could impact user experience.
+- **`backoffMultiplier: 2`** - Doubles the backoff time with each retry attempt.
+  Combined with the other settings, this creates a retry pattern of: 1s → 2s → 4s.
+- **`retryableStatusCodes`** - Only retries on specific gRPC status codes that indicate transient failures:
+  - `UNAVAILABLE`: SpiceDB is temporarily unavailable
+  - `RESOURCE_EXHAUSTED`: SpiceDB is overloaded
+  - `DEADLINE_EXCEEDED`: Request timed out
+  - `ABORTED`: Operation was aborted, often due to conflicts that may resolve on retry
+
+You can find a python retry example [here](https://github.com/authzed/examples/blob/main/data/retry/main.py).
+
+## `ResourceExhausted` and its Causes
+
+SpiceDB will return a [`ResourceExhausted`](https://grpc.io/docs/guides/status-codes/#the-full-list-of-status-codes) error
+when it needs to protect its own resources.
+These should be treated as transient conditions that can be safely retried, and should be retried with a backoff
+in order to allow SpiceDB to recover whichever resource is unavailable.
+
+### Memory Pressure
+
+SpiceDB implements a memory protection middleware that rejects requests if the middleware determines that a request would cause an Out Of Memory
+condition. Some potential causes:
+
+- SpiceDB instances provisioned with too little memory
+  - Fix: provision more memory to the instances
+- Large `CheckBulk` or `LookupResources` requests collecting results in memory
+  - Fix: identify the offending client/caller and add pagination or break up the request
+
+### Connection Pool Contention
+
+The [CockroachDB](/spicedb/concepts/datastores#cockroachdb) and [Postgres](/spicedb/concepts/datastores#postgresql) datastore
+implementations use a [pgx connection pool](https://github.com/jackc/pgx/wiki/Getting-started-with-pgx#using-a-connection-pool),
+since creating a new Postgres client connection is relatively expensive.
+This creates a pool of available connections that can be acquired in order to open transactions and do work.
+If this pool is exhausted, SpiceDB may return a `ResourceExhausted` rather than making the calling client wait for connection acquisition.
+
+This can be diagnosed by checking the `pgxpool_empty_acquire` [Prometheus metric](/spicedb/ops/observability#prometheus) or
+the `authzed_cloud.spicedb.datastore.pgx.waited_connections` Datadog metric.
+If the metric is positive, that indicates that SpiceDB is waiting on database connections.
+
+SpiceDB uses these four flags to configure how many connections it will attempt to create:
+
+- `--datastore-conn-pool-read-max-open`
+- `--datastore-conn-pool-read-min-open`
+- `--datastore-conn-pool-write-max-open`
+- `--datastore-conn-pool-write-min-open`
+
+SpiceDB uses separate read and write pools and the flags describe the minimum and maximum number of connections that it will open.
+
+To address database connection pool contention, take the following steps.
+
+#### How To Fix Postgres Connection Pool Contention
+
+<Steps>
+
+##### Ensure that Postgres has enough available connections
+
+Postgres connections are relatively expensive because each connection is a [separate process](https://www.postgresql.org/docs/current/connect-estab.html).
+There's typically a maximum number of supported connections for a given size of Postgres instance.
+If you see an error like:
+
+```json
+{
+  "level": "error",
+  "error": "failed to create datastore: failed to create primary datastore: failed to connect to `user=spicedbchULNkGtmeQPUFV database=thumper-pg-db`: 10.96.125.205:5432 (spicedb-dedicated.postgres.svc.cluster.local): server error: FATAL: remaining connection slots are reserved for non-replication superuser connections (SQLSTATE 53300)",
+  "time": "2025-11-24T20:32:43Z",
+  "message": "terminated with errors"
+}
+```
+
+This indicates that there are no more connections to be had and you'll need to scale up your Postgres instance.
+
+##### Use a Connection Pooler
+
+If your database load is relatively low compared to the number of connections being used, you might benefit from
+a connection pooler like [pgbouncer](https://www.pgbouncer.org/).
+This sits between a client like SpiceDB and your Postgres instance and multiplexes connections, helping to mitigate
+the cost of Postgres connections.
+
+##### Configure Connection Flags
+
+Configure the SpiceDB connection flags so that the maximum number of connections requested fits within the number of connections available:
+
+```
+(read_max_open + write_max_open) * num_spicedb_instances < total_available_postgres_connections
+```
+
+You may want to leave additional headroom to allow a new instance to come into service without exhausting connections, depending on your deployment model
+and how instances roll.
+
+</Steps>
+
+#### How To Fix CockroachDB Connection Pool Contention
+
+<Steps>
+
+##### Ensure that CockroachDB has enough available CPU
+
+CockroachDB has [connection pool sizing recommendations](https://www.cockroachlabs.com/docs/stable/connection-pooling?#size-connection-pools).
+Note that the recommendations differ for Basic/Standard and Advanced deployments.
+These heuristics are somewhat fuzzy, and it will require some trial-and-error to find the right connection pool size for your workload.
+
+##### Configure Connection Flags
+
+Configure the SpiceDB connection flags so that the number of connections requested matches the desired number of connections:
+
+```
+(read_max_open + write_max_open) * num_spicedb_instances < total_available_cockroach_connections
+```
+
+</Steps>

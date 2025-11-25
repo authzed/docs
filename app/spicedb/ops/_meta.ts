@@ -4,6 +4,7 @@ export default {
   eks: "Deploying to AWS EKS",
   data: "Writing data to SpiceDB",
   performance: "Improving Performance",
+  resilience: "Improving Resilience",
   observability: "Observability Tooling",
   "load-testing": "Load Testing",
   "spicedb-langchain-langgraph-rag":

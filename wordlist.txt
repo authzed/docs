@@ -526,6 +526,7 @@ pb
 performant
 performantly
 permissionship
+pgbouncer
 pgx
 pluggable
 pnpm
