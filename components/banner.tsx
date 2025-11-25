@@ -1,8 +1,8 @@
-import { usePathname } from 'next/navigation';
+import { usePathname } from "next/navigation";
 
 export default function Banner() {
   const pathname = usePathname();
-  const isCommercial = pathname.startsWith('/authzed/');
+  const isCommercial = pathname.startsWith("/authzed/");
 
   return isCommercial ? (
     <a href="https://authzed.com/zanzibar?utm_source=docs">
@@ -11,7 +11,8 @@ export default function Banner() {
     </a>
   ) : (
     <a href="https://github.com/authzed/spicedb">
-      SpiceDB is 100% open source. Please help us by starring our GitHub repo. ↗
+      SpiceDB is 100% open source. Please help us by starring our GitHub repo.
+      ↗
     </a>
   );
 }

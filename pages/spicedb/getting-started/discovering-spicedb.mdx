@@ -1,15 +1,34 @@
-import { Cards, Card } from 'nextra/components'
-import { faQuestion, faHand, faDollarSign } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { Cards } from "nextra/components";
+import {
+  faQuestion,
+  faHand,
+  faDollarSign,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 # SpiceDB Documentation
 
 Welcome to the official documentation for the SpiceDB ecosystem.
 
-<Cards>
-<Card arrow={true} icon={<FontAwesomeIcon icon={faHand} />} title="New? Follow our first steps guide" href="first-steps" />
-<Card arrow={true} icon={<FontAwesomeIcon icon={faQuestion} />} title="Got questions? Our FAQ has answers" href="faq" />
-<Card arrow={true} icon={<FontAwesomeIcon icon={faDollarSign} />} title="Paid products? That's the AuthZed docs" href="../../authzed/guides/picking-a-product" />
+<Cards num={2}>
+  <Cards.Card
+    arrow
+    icon={<FontAwesomeIcon icon={faHand} />}
+    title="New? Follow our first steps guide"
+    href="first-steps"
+  />
+  <Cards.Card
+    arrow
+    icon={<FontAwesomeIcon icon={faQuestion} />}
+    title="Got questions? Our FAQ has answers"
+    href="faq"
+  />
+  <Cards.Card
+    arrow
+    icon={<FontAwesomeIcon icon={faDollarSign} />}
+    title="Paid products? That's the AuthZed docs"
+    href="../../authzed/guides/picking-a-product"
+  />
 </Cards>
 
 ## What is SpiceDB?
@@ -61,24 +80,19 @@ Features that distinguish SpiceDB from other systems include:
 
 [gRPC]: https://buf.build/authzed/api/docs/main:authzed.api.v1
 [HTTP/JSON]: https://app.swaggerhub.com/apis-docs/authzed/authzed/1.0
-
 [per request]: https://docs.authzed.com/reference/api-consistency
 [New Enemy Problem]: https://authzed.com/blog/new-enemies/
-
 [schema language]: https://docs.authzed.com/guides/schema
 [playground]: https://play.authzed.com
 [validation]: https://github.com/authzed/action-spicedb-validate
 [integration testing]: https://github.com/authzed/action-spicedb
-
 [storage system]: https://authzed.com/docs/spicedb/selecting-a-datastore
 [in-memory]: https://github.com/hashicorp/go-memdb
 [PostgreSQL]: https://www.postgresql.org
 [Spanner]: https://cloud.google.com/spanner
 [CockroachDB]: https://github.com/cockroachdb/cockroach
 [MySQL]: https://www.mysql.com
-
 [Prometheus]: https://prometheus.io
 [pprof]: https://jvns.ca/blog/2017/09/24/profiling-go-with-pprof/
 [OpenTelemetry]: https://opentelemetry.io
-
 [Google's Zanzibar paper]: https://authzed.com/zanzibar

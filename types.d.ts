@@ -1,5 +1,5 @@
-declare module '*.svg' {
-  import * as React from 'react';
+declare module "*.svg" {
+  import * as React from "react";
 
   export const ReactComponent: React.FunctionComponent<
     React.SVGProps<SVGSVGElement>
@@ -8,12 +8,12 @@ declare module '*.svg' {
   export default ReactComponent;
 }
 
-declare module '*.json' {
+declare module "*.json" {
   const value: any;
   export default value;
 }
 
-declare module '*.yaml' {
+declare module "*.yaml" {
   const value: any;
   export default value;
 }

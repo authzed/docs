@@ -25,12 +25,11 @@ A database that stores, computes, and validates application permissions
 
 ### Children commands
 
-- [spicedb datastore](#reference-spicedb-datastore)	 - datastore operations
-- [spicedb lsp](#reference-spicedb-lsp)	 - serve language server protocol
-- [spicedb serve](#reference-spicedb-serve)	 - serve the permissions database
-- [spicedb serve-testing](#reference-spicedb-serve-testing)	 - test server with an in-memory datastore
-- [spicedb version](#reference-spicedb-version)	 - displays the version of SpiceDB
-
+- [spicedb datastore](#reference-spicedb-datastore) - datastore operations
+- [spicedb lsp](#reference-spicedb-lsp) - serve language server protocol
+- [spicedb serve](#reference-spicedb-serve) - serve the permissions database
+- [spicedb serve-testing](#reference-spicedb-serve-testing) - test server with an in-memory datastore
+- [spicedb version](#reference-spicedb-version) - displays the version of SpiceDB
 
 ## Reference: `spicedb datastore`
 
@@ -46,11 +45,10 @@ Operations against the configured datastore
 
 ### Children commands
 
-- [spicedb datastore gc](#reference-spicedb-datastore-gc)	 - executes garbage collection
-- [spicedb datastore head](#reference-spicedb-datastore-head)	 - compute the head database migration revision
-- [spicedb datastore migrate](#reference-spicedb-datastore-migrate)	 - execute datastore schema migrations
-- [spicedb datastore repair](#reference-spicedb-datastore-repair)	 - executes datastore repair
-
+- [spicedb datastore gc](#reference-spicedb-datastore-gc) - executes garbage collection
+- [spicedb datastore head](#reference-spicedb-datastore-head) - compute the head database migration revision
+- [spicedb datastore migrate](#reference-spicedb-datastore-migrate) - execute datastore schema migrations
+- [spicedb datastore repair](#reference-spicedb-datastore-repair) - executes datastore repair
 
 ## Reference: `spicedb datastore gc`
 
@@ -144,8 +142,6 @@ spicedb datastore gc [flags]
       --skip-release-check   if true, skips checking for new SpiceDB releases
 ```
 
-
-
 ## Reference: `spicedb datastore head`
 
 compute the head database migration revision
@@ -176,8 +172,6 @@ spicedb datastore head [flags]
       --log-level string     verbosity of logging ("trace", "debug", "info", "warn", "error") (default "info")
       --skip-release-check   if true, skips checking for new SpiceDB releases
 ```
-
-
 
 ## Reference: `spicedb datastore migrate`
 
@@ -217,8 +211,6 @@ spicedb datastore migrate [revision] [flags]
       --log-level string     verbosity of logging ("trace", "debug", "info", "warn", "error") (default "info")
       --skip-release-check   if true, skips checking for new SpiceDB releases
 ```
-
-
 
 ## Reference: `spicedb datastore repair`
 
@@ -312,8 +304,6 @@ spicedb datastore repair [flags]
       --skip-release-check   if true, skips checking for new SpiceDB releases
 ```
 
-
-
 ## Reference: `spicedb lsp`
 
 serve language server protocol
@@ -336,8 +326,6 @@ spicedb lsp [flags]
       --log-level string     verbosity of logging ("trace", "debug", "info", "warn", "error") (default "info")
       --skip-release-check   if true, skips checking for new SpiceDB releases
 ```
-
-
 
 ## Reference: `spicedb serve`
 
@@ -517,8 +505,6 @@ spicedb serve [flags]
       --skip-release-check   if true, skips checking for new SpiceDB releases
 ```
 
-
-
 ## Reference: `spicedb serve-testing`
 
 An in-memory spicedb server which serves completely isolated datastores per client-supplied auth token used.
@@ -580,8 +566,6 @@ spicedb serve-testing [flags]
       --skip-release-check   if true, skips checking for new SpiceDB releases
 ```
 
-
-
 ## Reference: `spicedb version`
 
 displays the version of SpiceDB
@@ -603,6 +587,3 @@ spicedb version [flags]
       --log-level string     verbosity of logging ("trace", "debug", "info", "warn", "error") (default "info")
       --skip-release-check   if true, skips checking for new SpiceDB releases
 ```
-
-
-

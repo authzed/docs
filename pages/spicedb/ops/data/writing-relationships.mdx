@@ -1,5 +1,5 @@
-import { Tabs } from 'nextra/components'
-import { Callout } from 'nextra/components'
+import { Tabs } from "nextra/components";
+import { Callout } from "nextra/components";
 
 # Writing relationships
 
@@ -8,11 +8,11 @@ If you are interested in relationships as a concept, check out this [page](/spic
 
 ## Retries
 
-When making requests to SpiceDB, it's important to implement proper retry logic to handle transient failures. [SpiceDB APIs use gRPC*](/spicedb/getting-started/client-libraries), which can experience various types of temporary failures that can be resolved through retries.
+When making requests to SpiceDB, it's important to implement proper retry logic to handle transient failures. [SpiceDB APIs use gRPC\*](/spicedb/getting-started/client-libraries), which can experience various types of temporary failures that can be resolved through retries.
 
 Retries are recommended for all gRPC methods, not just WriteRelationships.
 
-*SpiceDB can also expose an [HTTP API](/spicedb/getting-started/client-libraries#http-clients); however, gRPC is recommended.
+\*SpiceDB can also expose an [HTTP API](/spicedb/getting-started/client-libraries#http-clients); however, gRPC is recommended.
 
 ### Implementing Retry Policies
 
@@ -44,11 +44,7 @@ This gives the system time to recover from temporary issues.
 **`backoffMultiplier: 2`** - Doubles the backoff time with each retry attempt.
 Combined with the other settings, this creates a retry pattern of: 1s → 2s → 4s.
 
-**`retryableStatusCodes`** - Only retries on specific gRPC status codes that indicate transient failures:
--`UNAVAILABLE`: SpiceDB is temporarily unavailable
--`RESOURCE_EXHAUSTED`: SpiceDB is overloaded
--`DEADLINE_EXCEEDED`: Request timed out
--`ABORTED`: Operation was aborted, often due to conflicts that may resolve on retry
+**`retryableStatusCodes`** - Only retries on specific gRPC status codes that indicate transient failures: -`UNAVAILABLE`: SpiceDB is temporarily unavailable -`RESOURCE_EXHAUSTED`: SpiceDB is overloaded -`DEADLINE_EXCEEDED`: Request timed out -`ABORTED`: Operation was aborted, often due to conflicts that may resolve on retry
 
 You can find a python retry example [here](https://github.com/authzed/examples/blob/main/data/retry/main.py).
 
@@ -69,10 +65,10 @@ If it doesn't exist, it will create it.
 
 ### Key Differences
 
-| Operation | Behavior on Existing Relationship | Performance | Use Case |
-|-----------|-----------------------------------|-------------|----------|
-| `CREATE` | Fails with error | Faster (single insert) | Initial relationship creation |
-| `TOUCH` | Updates/overwrites | Slower (delete + insert) | Idempotent operations |
+| Operation | Behavior on Existing Relationship | Performance              | Use Case                      |
+| --------- | --------------------------------- | ------------------------ | ----------------------------- |
+| `CREATE`  | Fails with error                  | Faster (single insert)   | Initial relationship creation |
+| `TOUCH`   | Updates/overwrites                | Slower (delete + insert) | Idempotent operations         |
 
 ### Special Considerations
 

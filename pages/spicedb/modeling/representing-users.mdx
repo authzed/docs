@@ -1,8 +1,8 @@
-import { Callout } from 'nextra/components'
+import { Callout } from "nextra/components";
 
 # Representing Users
 
-Within a Permissions System, a [CheckPermission] call is always made between an object representing the *resource* and an object representing a *subject*: The API call returns whether the *subject* has the specified permission on the *resource*.
+Within a Permissions System, a [CheckPermission] call is always made between an object representing the _resource_ and an object representing a _subject_: The API call returns whether the _subject_ has the specified permission on the _resource_.
 
 [CheckPermission]: https://buf.build/authzed/api/docs/main:authzed.api.v1#CheckPermission
 
@@ -18,7 +18,7 @@ Typically, it is users that are accessing your application or service and, there
 
 Choosing how to represent a user as a subject in Authzed/SpiceDB is very important, as the wrong choice can cause permissions checks to be incomplete or, in some cases, wrong.
 
-### Using a *stable* external identifier
+### Using a _stable_ external identifier
 
 The most common and recommended approach for representing a user as a subject is to use a **stable** identifier for the user as the subject's object ID.
 
@@ -32,7 +32,7 @@ As the `sub` field is **guaranteed** to be stable for that particular user (if a
 
 <Callout type="info">
 
-If you have *multiple* authentication providers, then the recommendation is to define a subject type for *each* provider, to ensure a clean namespace:
+If you have _multiple_ authentication providers, then the recommendation is to define a subject type for _each_ provider, to ensure a clean namespace:
 
 ```zed
 /** githubuser represents a user from GitHub */
@@ -72,14 +72,14 @@ It is typically **not recommended** to use an e-mail address to represent a user
 This is for a number of reasons:
 
 - E-mail addresses are not universally stable and, often times, services allow them to be reused
-- E-mail addresses are not universally verified and, often times, a caller of the [CheckPermission] may not be *certain* that the user has that e-mail address
+- E-mail addresses are not universally verified and, often times, a caller of the [CheckPermission] may not be _certain_ that the user has that e-mail address
 - Authzed/SpiceDB does not allow for `@` characters within object IDs
 
 If you know for **certain** that the e-mail address for a user is both stable and verified, and still wish to use it as the subject ID, then we recommend base64 encoding (with padding removed) the e-mail address to use it within Authzed/SpiceDB.
 
 ## Representing anonymous visitors as subjects
 
-Some applications allow for *anonymous* access to view (and occasionally, edit) various resources.
+Some applications allow for _anonymous_ access to view (and occasionally, edit) various resources.
 
 Representing an anonymous visitor in Authzed/SpiceDB can be done via simply defining another subject type to represent the unauthenticated users:
 
@@ -91,7 +91,7 @@ definition user {}
 definition anonymoususer {}
 ```
 
-To grant access to anonymous users to a resource, either a single **static** object ID can be used to represent *all* anonymous users (such as `all`) or [wildcards] can be used:
+To grant access to anonymous users to a resource, either a single **static** object ID can be used to represent _all_ anonymous users (such as `all`) or [wildcards] can be used:
 
 ```zed document with anonymous user wildcard allowed
 definition document {
@@ -103,7 +103,7 @@ definition document {
 
 <Callout type="info">
 
-It is recommended to use *wildcard* with an anonymous user definition if there is ever a need to differentiate between anonymous users based on their object IDs.
+It is recommended to use _wildcard_ with an anonymous user definition if there is ever a need to differentiate between anonymous users based on their object IDs.
 
 As an example, an anonymous user of a commenting system might be assigned a unique ID that is stored in their browser's cookies, enabling permission for editing a previously posted comment.
 
@@ -123,7 +123,7 @@ definition resource {
 }
 ```
 
-Or via a token it was granted, by use of a reference to a *subject relation*:
+Or via a token it was granted, by use of a reference to a _subject relation_:
 
 ```zed
 definition token {}

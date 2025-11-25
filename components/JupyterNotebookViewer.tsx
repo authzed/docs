@@ -4,7 +4,9 @@ interface JupyterNotebookViewerProps {
   fileUrl: string;
 }
 
-const JupyterNotebookViewer: React.FC<JupyterNotebookViewerProps> = ({ fileUrl }) => {
+const JupyterNotebookViewer: React.FC<JupyterNotebookViewerProps> = ({
+  fileUrl,
+}) => {
   const nbviewerUrl = `https://nbviewer.org/github/${encodeURIComponent(fileUrl)}`;
 
   return (

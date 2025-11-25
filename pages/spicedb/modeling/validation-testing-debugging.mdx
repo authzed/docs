@@ -1,5 +1,5 @@
-import { Callout } from 'nextra/components';
-import YouTube from 'react-youtube';
+import { Callout } from "nextra/components";
+import YouTube from "react-youtube";
 
 # Validation, Testing, Debugging SpiceDB Schemas
 
@@ -31,10 +31,10 @@ To support this, SpiceDB's v1 CheckPermission API supports a debug header that w
   **Warning:**
   Collecting these traces has a notable performance overhead.
 
-  We do not recommend configuring your applications to enable this when debugging.
-  Instead, we recommend using [zed's explain flag] for this purpose.
+We do not recommend configuring your applications to enable this when debugging.
+Instead, we recommend using [zed's explain flag] for this purpose.
 
-  [zed's explain flag]: #explain-flag
+[zed's explain flag]: #explain-flag
 
 </Callout>
 
@@ -60,7 +60,8 @@ assertFalse: []
 #### Caveat Context In Assertions
 
 <Callout type="info">
-    In order to escape JSON representation of the caveat context in an assertion you should use single-quotes.
+  In order to escape JSON representation of the caveat context in an assertion
+  you should use single-quotes.
 </Callout>
 
 You can provide caveat context as part of an assertion:
@@ -154,8 +155,8 @@ SpiceDB supports tracing of check requests to view the path(s) taken to compute 
 Request tracing information by setting `with_tracing: true` in the request message and the information will be found in the response message.
 
 <Callout type="warning">
-  **Warning:**
-  In versions older than v1.31.0, request tracing information via a header and the information will be found in the response footer as JSON.
+  **Warning:** In versions older than v1.31.0, request tracing information via a
+  header and the information will be found in the response footer as JSON.
 </Callout>
 
 ## Zed
@@ -172,8 +173,9 @@ It will load and validate the schema using the same parsing logic that the Spice
 ensuring that a schema that passes validation will be considered a valid schema by your SpiceDB instance.
 
 <Callout type="warning">
-Note that a schema write can still fail if a relation is removed and there are still instances of that
-relation in your database. `zed` doesn't know about your data.
+  Note that a schema write can still fail if a relation is removed and there are
+  still instances of that relation in your database. `zed` doesn't know about
+  your data.
 </Callout>
 
 You can validate the functionality of your schema using validation yaml files, such as those exported
@@ -243,7 +245,6 @@ true
 This command will also highlight which parts of the traversal were cached and if a [cycle] is detected.
 
 [cycle]: ./recursion-and-max-depth#recursion-in-relationships
-
 [tracing header]: #checkpermission-tracing-header
 
 ## SpiceDB GitHub Actions

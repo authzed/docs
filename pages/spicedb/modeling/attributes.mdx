@@ -1,5 +1,5 @@
-import { InlinePlayground } from '@/components/playground';
-import { Callout } from 'nextra/components'
+import { InlinePlayground } from "@/components/playground";
+import { Callout } from "nextra/components";
 
 # Attributes
 
@@ -22,15 +22,17 @@ Feature flag authorization can be enabled with boolean attributes.
 [Wildcards](/spicedb/concepts/schema#wildcards) are a way to implement boolean attributes.
 Wildcards modify a type so that a relationship can be written to all objects of a resource type but not individual objects.
 
-In the example below, the schema enforces the following authorization logic: a user will have ```edit``` permission on the document if they are related to the document as an ```editor``` and they relate to the document through ```edit_enabled```.
-Both are required because ```editor``` and ```edit_enabled``` are [intersected](/spicedb/concepts/schema#-intersection) at the ```edit``` permission definition.
-To enable document editing, you need to establish a relationship that connects all users to the document using the ```edit_enabled``` relation: `document:somedocument#edit_enabled@user:*`.
+In the example below, the schema enforces the following authorization logic: a user will have `edit` permission on the document if they are related to the document as an `editor` and they relate to the document through `edit_enabled`.
+Both are required because `editor` and `edit_enabled` are [intersected](/spicedb/concepts/schema#-intersection) at the `edit` permission definition.
+To enable document editing, you need to establish a relationship that connects all users to the document using the `edit_enabled` relation: `document:somedocument#edit_enabled@user:*`.
 
 <InlinePlayground reference="p6ltnJZ2Zso7" />
 
 <Callout type="info">
-    Wildcards are adequate for most binary attribute scenarios; however, wildcards are not currently supported by [Authzed Materialize](/authzed/concepts/authzed-materialize).
-    Those who plan to use Materialize should use self relationships for binary attributes.
+  Wildcards are adequate for most binary attribute scenarios; however, wildcards
+  are not currently supported by [Authzed
+  Materialize](/authzed/concepts/authzed-materialize). Those who plan to use
+  Materialize should use self relationships for binary attributes.
 </Callout>
 
 ### Self Relationships
@@ -42,16 +44,19 @@ In practice, relating something to itself toggles something on.
 
 In the example below, there is a schema that enforces the following authorization logic: a user can only view a document if the user is related to the document as viewer and editing is enabled for the document (this is the same authorization logic used in the wildcard example above).
 
-In the example below, to enable editing for a document, a self relationship using the ```edit_enabled``` relation must be written.
-When a ```document``` is related to itself with the ```edit_enabled``` relation, that relation can be walked to itself (with the arrow) to determine who relates to the document as an ```editor```.
+In the example below, to enable editing for a document, a self relationship using the `edit_enabled` relation must be written.
+When a `document` is related to itself with the `edit_enabled` relation, that relation can be walked to itself (with the arrow) to determine who relates to the document as an `editor`.
 
-In summary, a ```user``` has permission to edit a ```document``` if they are related to that document as an ```editor``` and that document is related to itself with ```edit_enabled```.
+In summary, a `user` has permission to edit a `document` if they are related to that document as an `editor` and that document is related to itself with `edit_enabled`.
 
 <InlinePlayground reference="ifgMyLGN-Hjw" />
 
 <Callout type="warning">
-  There is no mechanism in the SpiceDB schema language that enforces that a relation be used as a self relation.
-  In order to avoid accidentally misusing a self relation (e.g. relating an object to a different instance of the same type) it is recommended to implement client side logic that enforces only using the self relation for it's intended purpose.
+  There is no mechanism in the SpiceDB schema language that enforces that a
+  relation be used as a self relation. In order to avoid accidentally misusing a
+  self relation (e.g. relating an object to a different instance of the same
+  type) it is recommended to implement client side logic that enforces only
+  using the self relation for it's intended purpose.
 </Callout>
 
 ## Attribute Matching
@@ -64,16 +69,16 @@ Attribute matching can be achieved by relating a user to an attribute as a "memb
 
 In the example below, users must match **at least one** of the document's country attributes in order to view the document.
 
-Country attributes are represented by the ```country``` object definition and every user that has a specific country attribute is related to the specific country.
-When a ```document``` has a country attribute that can grant ```edit``` permission for a user, it is related to that country.
+Country attributes are represented by the `country` object definition and every user that has a specific country attribute is related to the specific country.
+When a `document` has a country attribute that can grant `edit` permission for a user, it is related to that country.
 
 <InlinePlayground reference="RAl67nbN8HXr" />
 
 ### Match all Attributes of a Single Type
 
-It's possible to specify that ***all*** attributes must be satisfied by using an [intersection arrow](/spicedb/concepts/schema#all-intersection-arrow).
+It's possible to specify that **_all_** attributes must be satisfied by using an [intersection arrow](/spicedb/concepts/schema#all-intersection-arrow).
 
-In the example below, users must match **all** of the document's ```country``` attributes in order to view the document.
+In the example below, users must match **all** of the document's `country` attributes in order to view the document.
 
 This example is similar to the one above, except it requires that all attributes are satisfied instead of at least one attribute.
 
@@ -87,11 +92,11 @@ When you have several types of attributes, it's recommended that you have an obj
 
 ### Match All Attributes from Each Type of Attribute
 
-It's possible to specify that ***all*** attributes must be satisfied by using an [intersection arrow](/spicedb/concepts/schema#all-intersection-arrow).
+It's possible to specify that **_all_** attributes must be satisfied by using an [intersection arrow](/spicedb/concepts/schema#all-intersection-arrow).
 
-In the example below, users must match **all** of the document's ```country``` and ```status``` attributes in order to view the document.
+In the example below, users must match **all** of the document's `country` and `status` attributes in order to view the document.
 
-This example is similar to the one above, except it requires that all ```country``` and ```status``` attributes are satisfied instead of at least one attribute of each type.
+This example is similar to the one above, except it requires that all `country` and `status` attributes are satisfied instead of at least one attribute of each type.
 
 <InlinePlayground reference="I1-zYgAIAq5E" />
 

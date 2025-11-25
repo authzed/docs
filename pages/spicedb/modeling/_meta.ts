@@ -1,4 +1,4 @@
-{
+export default {
   "developing-a-schema": "Developing a Schema",
   "composable-schemas": "Composable Schemas (Preview)",
   "representing-users": "Representing Users",
@@ -8,9 +8,9 @@
   "migrating-schema": "Updating and Migrating Schema",
   "access-control-management": "Access Control Management",
   "access-control-audit": "Access Control Audit",
-  "attributes": "Incorporating Attributes",
+  attributes: "Incorporating Attributes",
   "dev-mcp-server": {
-    "title": "SpiceDB Dev MCP Server",
-    "href": "/mcp/authzed/spicedb-dev-mcp-server"
-  }
-}
+    title: "SpiceDB Dev MCP Server",
+    href: "/mcp/authzed/spicedb-dev-mcp-server",
+  },
+};

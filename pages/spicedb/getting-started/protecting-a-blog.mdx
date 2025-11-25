@@ -1,5 +1,5 @@
-import { Callout, Tabs } from 'nextra/components'
-import YouTube from 'react-youtube'
+import { Callout, Tabs } from "nextra/components";
+import YouTube from "react-youtube";
 
 # Protecting a Blog Application
 
@@ -40,11 +40,11 @@ Sign in to [AuthZed Cloud](https://app.authzed.cloud) and click on the **+Create
 - The Deployments tab has the following options:
   - The name of the deployment
   - A dropdown for the region in which the deployment is made.
-  Currently `us-east-1` and `eu-central-1` are available
+    Currently `us-east-1` and `eu-central-1` are available
   - The number of vCPUs for your deployment.
-  The recommendation is to start with 2 vCPUs and then monitor the Metrics and change it based on your workload
+    The recommendation is to start with 2 vCPUs and then monitor the Metrics and change it based on your workload
   - The number of replicas to deploy SpiceDB with primarily read workloads.
-  The recommendation is 3 but will depend on your latency requirements.
+    The recommendation is 3 but will depend on your latency requirements.
 
 Click the Save button to create a Permissions System
 
@@ -85,7 +85,7 @@ Policies are what bind Roles to a Service Account.
 Click on Policies -> Create policy.
 Provide a name and a description and pick the Service Account and Role created in the steps above to bind the two.
 
-You’re now ready to use AuthZed Cloud Permissions System!  
+You’re now ready to use AuthZed Cloud Permissions System!
 
 ## Client Installation
 
@@ -196,6 +196,7 @@ With a schema designed, we can now move on to using our client to apply that sch
 Similar to applying schema changes for relational databases, all changes to a schema must be backwards compatible.
 
 In production environments where relations change, you will likely want to write data migrations and apply those changes using a schema migration toolchain.
+
 </Callout>
 
 <Tabs items={['zed', 'Node', 'Go', 'Python', 'Ruby', 'Java']}>
@@ -218,11 +219,9 @@ EOF
 <Tabs.Tab>
 
 ```js
-import { v1 } from '@authzed/authzed-node';
+import { v1 } from "@authzed/authzed-node";
 
-const { promises: client } = v1.NewClient(
-  't_your_token_here_1234567deadbeef',
-);
+const { promises: client } = v1.NewClient("t_your_token_here_1234567deadbeef");
 
 const schema = `
 definition user {}
@@ -237,8 +236,8 @@ const schemaRequest = v1.WriteSchemaRequest.create({
   schema: schema,
 });
 
-const schemaResponse = await client.writeSchema(schemaRequest)
-console.log(schemaResponse)
+const schemaResponse = await client.writeSchema(schemaRequest);
+console.log(schemaResponse);
 ```
 
 </Tabs.Tab>
@@ -393,7 +392,8 @@ Because the relationships stored in the system can change at runtime, this is a 
 When applications modify or create rows in their database, they will also typically create or update relationships.
 
 <Callout type="info">
-Writing relationships returns a [ZedToken] which is critical to ensuring performance and [consistency].
+  Writing relationships returns a [ZedToken] which is critical to ensuring
+  performance and [consistency].
 </Callout>
 
 [ZedToken]: /spicedb/concepts/consistency#zedtokens
@@ -416,26 +416,26 @@ zed relationship create post:1 reader user:beatrice
 <Tabs.Tab>
 
 ```js
-import { v1 } from '@authzed/authzed-node';
+import { v1 } from "@authzed/authzed-node";
 
 const { promises: client } = v1.NewClient(
-  't_your_token_here_1234567deadbeef',
-  'grpc.authzed.com:50051',
+  "t_your_token_here_1234567deadbeef",
+  "grpc.authzed.com:50051",
 );
 
 const resource = v1.ObjectReference.create({
-  objectType: 'post',
-  objectId: '1',
+  objectType: "post",
+  objectId: "1",
 });
 
 const emilia = v1.ObjectReference.create({
-  objectType: 'user',
-  objectId: 'emilia',
+  objectType: "user",
+  objectId: "emilia",
 });
 
 const beatrice = v1.ObjectReference.create({
-  objectType: 'user',
-  objectId: 'beatrice',
+  objectType: "user",
+  objectId: "beatrice",
 });
 
 const writeRequest = v1.WriteRelationshipsRequest.create({
@@ -444,7 +444,7 @@ const writeRequest = v1.WriteRelationshipsRequest.create({
     v1.RelationshipUpdate.create({
       relationship: v1.Relationship.create({
         resource: resource,
-        relation: 'writer',
+        relation: "writer",
         subject: v1.SubjectReference.create({ object: emilia }),
       }),
       operation: v1.RelationshipUpdate_Operation.CREATE,
@@ -453,7 +453,7 @@ const writeRequest = v1.WriteRelationshipsRequest.create({
     v1.RelationshipUpdate.create({
       relationship: v1.Relationship.create({
         resource: resource,
-        relation: 'reader',
+        relation: "reader",
         subject: v1.SubjectReference.create({ object: beatrice }),
       }),
       operation: v1.RelationshipUpdate_Operation.CREATE,
@@ -461,9 +461,9 @@ const writeRequest = v1.WriteRelationshipsRequest.create({
   ],
 });
 
-const response = await client.writeRelationships(writeRequest)
+const response = await client.writeRelationships(writeRequest);
 
-console.log(response)
+console.log(response);
 ```
 
 </Tabs.Tab>
@@ -719,6 +719,7 @@ For example, in our example schema, writers have both write and read permissions
 In addition to checking _permissions_, it is also possible to perform checks on _relations_ to determine membership.
 
 However, this goes against best practice: permissions can be redefined in backwards compatible ways by changing the schema, so it's ideal to rely on permissions as the contract between SpiceDB and applications querying SpiceDB.
+
 </Callout>
 
 <Callout type="warning">
@@ -726,6 +727,7 @@ When doing a permission check, in order to get read-after-write consistency, you
 
 [ZedToken]: /spicedb/concepts/consistency#zedtokens
 [full consistency]: /spicedb/concepts/consistency#fully-consistent
+
 </Callout>
 
 The following examples demonstrate the transitive property of checks:
@@ -744,65 +746,85 @@ zed permission check post:1 write user:beatrice --revision "zedtokenfromwriterel
 <Tabs.Tab>
 
 ```js
-import { v1 } from '@authzed/authzed-node';
+import { v1 } from "@authzed/authzed-node";
 
 const { promises: client } = v1.NewClient(
-  't_your_token_here_1234567deadbeef',
-  'grpc.authzed.com:50051',
+  "t_your_token_here_1234567deadbeef",
+  "grpc.authzed.com:50051",
   // NOTE: Remove if SpiceDB is behind TLS
-  v1.ClientSecurity.INSECURE_PLAINTEXT_CREDENTIALS
+  v1.ClientSecurity.INSECURE_PLAINTEXT_CREDENTIALS,
 );
 
 const resource = v1.ObjectReference.create({
-  objectType: 'post',
-  objectId: '1',
+  objectType: "post",
+  objectId: "1",
 });
 
 const emilia = v1.ObjectReference.create({
-  objectType: 'user',
-  objectId: 'emilia',
+  objectType: "user",
+  objectId: "emilia",
 });
 
 const beatrice = v1.ObjectReference.create({
-  objectType: 'user',
-  objectId: 'beatrice',
+  objectType: "user",
+  objectId: "beatrice",
 });
 
-const emiliaCanRead = await client.checkPermission(v1.CheckPermissionRequest.create({
-  resource,
-  permission: 'read',
-  subject: v1.SubjectReference.create({
-    object: emilia,
+const emiliaCanRead = await client.checkPermission(
+  v1.CheckPermissionRequest.create({
+    resource,
+    permission: "read",
+    subject: v1.SubjectReference.create({
+      object: emilia,
+    }),
   }),
-}));
-console.log(emiliaCanRead.permissionship === v1.CheckPermissionResponse_Permissionship.HAS_PERMISSION);
+);
+console.log(
+  emiliaCanRead.permissionship ===
+    v1.CheckPermissionResponse_Permissionship.HAS_PERMISSION,
+);
 
-const emiliaCanWrite = await client.checkPermission(v1.CheckPermissionRequest.create({
-  resource,
-  permission: 'write',
-  subject: v1.SubjectReference.create({
-    object: emilia,
+const emiliaCanWrite = await client.checkPermission(
+  v1.CheckPermissionRequest.create({
+    resource,
+    permission: "write",
+    subject: v1.SubjectReference.create({
+      object: emilia,
+    }),
   }),
-}));
-console.log(emiliaCanWrite.permissionship === v1.CheckPermissionResponse_Permissionship.HAS_PERMISSION);
+);
+console.log(
+  emiliaCanWrite.permissionship ===
+    v1.CheckPermissionResponse_Permissionship.HAS_PERMISSION,
+);
 
-const beatriceCanRead = await client.checkPermission(v1.CheckPermissionRequest.create({
-  resource,
-  permission: 'read',
-  subject: v1.SubjectReference.create({
-    object: beatrice,
+const beatriceCanRead = await client.checkPermission(
+  v1.CheckPermissionRequest.create({
+    resource,
+    permission: "read",
+    subject: v1.SubjectReference.create({
+      object: beatrice,
+    }),
   }),
-}));
-console.log(beatriceCanRead.permissionship === v1.CheckPermissionResponse_Permissionship.HAS_PERMISSION);
+);
+console.log(
+  beatriceCanRead.permissionship ===
+    v1.CheckPermissionResponse_Permissionship.HAS_PERMISSION,
+);
 
-const beatriceCanWrite = await client.checkPermission(v1.CheckPermissionRequest.create({
-  resource,
-  permission: 'write',
-  subject: v1.SubjectReference.create({
-    object: beatrice,
+const beatriceCanWrite = await client.checkPermission(
+  v1.CheckPermissionRequest.create({
+    resource,
+    permission: "write",
+    subject: v1.SubjectReference.create({
+      object: beatrice,
+    }),
   }),
-}));
-console.log(beatriceCanWrite.permissionship === v1.CheckPermissionResponse_Permissionship.HAS_PERMISSION);
+);
+console.log(
+  beatriceCanWrite.permissionship ===
+    v1.CheckPermissionResponse_Permissionship.HAS_PERMISSION,
+);
 ```
 
 </Tabs.Tab>

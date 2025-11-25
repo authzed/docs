@@ -1,4 +1,4 @@
-import { Callout } from 'nextra/components';
+import { Callout } from "nextra/components";
 
 # Access Control Audit
 
@@ -26,7 +26,7 @@ As we described in [access-control management], we distinguish **access grants**
 - user `joe` being assigned as `reader` on repository `kubernetes` is an access grant
 - user `joe` having `read` permission over repository `kubernetes` is a permission
 
-Access grants describe how a subject can be granted permission to perform an operation over a resource, like for example *"a user views repository"*.
+Access grants describe how a subject can be granted permission to perform an operation over a resource, like for example _"a user views repository"_.
 A permission is a computation of all the different ways in which a user can be granted (or denied) access, like a direct role grant, indirectly via a team, indirectly as the owner of a top-level organization, temporarily as an auditor...
 
 To understand how access grants in the system have changed over time, you can use SpiceDB [Watch] API, which lets you stream all relationship changes.
@@ -50,7 +50,7 @@ definition repository {
   permission read = role_reader + write
   permission write = role_writer + admin
   permission admin = role_adminer
-  
+
 }
 ```
 
@@ -59,15 +59,18 @@ If you wanted to understand how the access grants to the `kubernetes` repository
 ## Auditing Permissions: How Have Permissions Changed?
 
 <Callout type="info">
-  Auditing permission changes is a very complex problem to solve at scale: that's why we built [Authzed Materialize].
+  Auditing permission changes is a very complex problem to solve at scale:
+  that's why we built [Authzed Materialize].
 </Callout>
 
 SpiceDB does not offer an API to stream permission changes, but you could use a combination of APIs to compute a limited audit trail of permission changes.
 This strategy could also be used to build a materialized index of permissions to [Protect a List Endpoint] in your application's database.
 
 <Callout type="warning">
-  Please note this strategy is **very computationally intensive**, and it would very likely require scaling out a SpiceDB cluster.
-  It's only likely to work under very narrow use cases that can exploit domain awareness to reduce how many computations need to be run.
+  Please note this strategy is **very computationally intensive**, and it would
+  very likely require scaling out a SpiceDB cluster. It's only likely to work
+  under very narrow use cases that can exploit domain awareness to reduce how
+  many computations need to be run.
 </Callout>
 
 1. Use the [Watch] API to stream all relationship changes in the system
@@ -77,7 +80,7 @@ These two APIs will be used as the foundation to start recomputing permissions, 
 
 - If you can silo the relationship changes to a specific resource, you could recompute all users that have permission over that resource by running [LookupSubjects] for each one of the affected permissions determined by [ExperimentalComputablePermissions].
   Please note this does not give you the delta of permission changes, that will be the responsibility of the application developer.
-- However, if you can't exploit the application domain to silo how a permission changes, you'd be forced to recompute *all subjects over all available resources*, which is a **very** expensive operation to run to yield a potentially small delta of permission changes.
+- However, if you can't exploit the application domain to silo how a permission changes, you'd be forced to recompute _all subjects over all available resources_, which is a **very** expensive operation to run to yield a potentially small delta of permission changes.
 
 ## Auditing SpiceDB API Request and Responses
 

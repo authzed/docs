@@ -21,7 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import { ReactNode } from 'react';
+import { ReactNode } from "react";
 
 export type SearchResult = {
   children: ReactNode;

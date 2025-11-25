@@ -1,10 +1,17 @@
-import { Cards, Card, Steps } from 'nextra/components'
-import YouTube from 'react-youtube'
-import { faTerminal, faServer, faQuestion, faHand, faDollarSign, faPhone } from '@fortawesome/free-solid-svg-icons'
-import { faDocker, faAws } from '@fortawesome/free-brands-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { Cards, Steps } from "nextra/components";
+import YouTube from "react-youtube";
+import {
+  faTerminal,
+  faServer,
+  faQuestion,
+  faHand,
+  faDollarSign,
+  faPhone,
+} from "@fortawesome/free-solid-svg-icons";
+import { faDocker, faAws } from "@fortawesome/free-brands-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { InlinePlayground } from '@/components/playground'
+import { InlinePlayground } from "@/components/playground";
 
 # First steps
 
@@ -15,26 +22,26 @@ import { InlinePlayground } from '@/components/playground'
     We've documented the concepts SpiceDB users should understand:
 
     <Cards>
-        <Card arrow={true} title="Zanzibar" href="../concepts/zanzibar" />
-        <Card arrow={true} title="Writing a Schema" href="../concepts/schema" />
-        <Card arrow={true} title="Writing Relationships" href="../concepts/relationships" />
+        <Cards.Card arrow={true} title="Zanzibar" href="../concepts/zanzibar" />
+        <Cards.Card arrow={true} title="Writing a Schema" href="../concepts/schema" />
+        <Cards.Card arrow={true} title="Writing Relationships" href="../concepts/relationships" />
     </Cards>
 
     After these, we recommend these concepts for running SpiceDB:
 
     <Cards>
-        <Card arrow={true} title="Commands" href="../concepts/commands" />
-        <Card arrow={true} title="Datastores" href="../concepts/datastores" />
-        <Card arrow={true} title="Datastore Migrations" href="../concepts/datastore-migrations" />
-        <Card arrow={true} title="Observability" href="../ops/observability" />
-        <Card arrow={true} title="Operator" href="../ops/operator" />
+        <Cards.Card arrow={true} title="Commands" href="../concepts/commands" />
+        <Cards.Card arrow={true} title="Datastores" href="../concepts/datastores" />
+        <Cards.Card arrow={true} title="Datastore Migrations" href="../concepts/datastore-migrations" />
+        <Cards.Card arrow={true} title="Observability" href="../ops/observability" />
+        <Cards.Card arrow={true} title="Operator" href="../ops/operator" />
     </Cards>
 
     Finally, some more advanced concepts are still fundamental:
 
     <Cards>
-        <Card arrow={true} title="Consistency" href="../concepts/consistency" />
-        <Card arrow={true} title="Caveats" href="../concepts/caveats" />
+        <Cards.Card arrow={true} title="Consistency" href="../concepts/consistency" />
+        <Cards.Card arrow={true} title="Caveats" href="../concepts/caveats" />
     </Cards>
 
     ### Dive into some videos
@@ -64,19 +71,19 @@ import { InlinePlayground } from '@/components/playground'
 
     Follow the instructions below to install to your development machine:
 
-    <Cards>
-        <Card arrow={true} icon={<FontAwesomeIcon icon={faServer} />} title="Install the SpiceDB server binary" href="/spicedb/getting-started/installing-spicedb" />
-        <Card arrow={true} icon={<FontAwesomeIcon icon={faTerminal} />} title="Install the SpiceDB CLI tool: Zed" href="/spicedb/getting-started/installing-zed" />
+    <Cards num={2}>
+        <Cards.Card arrow={true} icon={<FontAwesomeIcon icon={faServer} />} title="Install the SpiceDB server binary" href="/spicedb/getting-started/installing-spicedb" />
+        <Cards.Card arrow={true} icon={<FontAwesomeIcon icon={faTerminal} />} title="Install the SpiceDB CLI tool: Zed" href="/spicedb/getting-started/installing-zed" />
     </Cards>
 
     ### Take SpiceDB to Production
 
     Once you're ready to take things into production, you can reference our guides or explore a managed solution with AuthZed.
 
-    <Cards>
-        <Card arrow={true} icon={<FontAwesomeIcon icon={faDocker} />} title="Deploy the Operator on Kubernetes" href="/spicedb/ops/deploying-spicedb-operator" />
-        <Card arrow={true} icon={<FontAwesomeIcon icon={faAws} />} title="Install a SpiceDB cluster on Amazon EKS" href="/spicedb/ops/eks" />
-        <Card arrow={true} icon={<FontAwesomeIcon icon={faPhone} />} title="Schedule a call with AuthZed" href="https://authzed.com/call?utm_source=docs_discovering_spicedb" />
+    <Cards num={1}>
+        <Cards.Card arrow={true} icon={<FontAwesomeIcon icon={faDocker} />} title="Deploy the Operator on Kubernetes" href="/spicedb/ops/deploying-spicedb-operator" />
+        <Cards.Card arrow={true} icon={<FontAwesomeIcon icon={faAws} />} title="Install a SpiceDB cluster on Amazon EKS" href="/spicedb/ops/eks" />
+        <Cards.Card arrow={true} icon={<FontAwesomeIcon icon={faPhone} />} title="Schedule a call with AuthZed" href="https://authzed.com/call?utm_source=docs_discovering_spicedb" />
     </Cards>
 
     ### Join the SpiceDB Discord

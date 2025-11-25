@@ -1,7 +1,7 @@
-import YouTube from 'react-youtube'
-import ObjectTypeDiagram from '@/public/images/object-type-regex.svg'
-import ObjectIDDiagram from '@/public/images/object-id-regex.svg'
-import { Callout } from 'nextra/components'
+import YouTube from "react-youtube";
+import ObjectTypeDiagram from "@/public/images/object-type-regex.svg";
+import ObjectIDDiagram from "@/public/images/object-id-regex.svg";
+import { Callout } from "nextra/components";
 
 # Google Zanzibar
 
@@ -59,21 +59,21 @@ SpiceDB solves this problem with configurable consistency and ZedTokens, its ver
 
 The term "Zookies" was first introduced in the Zanzibar paper where solving this problem was a fundamental design goal:
 
->ACL checks must respect the order in which users modify ACLs and object contents to avoid unexpected sharing behaviors.
->Specifically, our clients care about preventing the "new enemy" problem, which can arise when we fail to respect the ordering between ACL updates or when we apply old ACLs to new content.
->Consider these two examples:
+> ACL checks must respect the order in which users modify ACLs and object contents to avoid unexpected sharing behaviors.
+> Specifically, our clients care about preventing the "new enemy" problem, which can arise when we fail to respect the ordering between ACL updates or when we apply old ACLs to new content.
+> Consider these two examples:
 >
->**Example A: Neglecting ACL update order**
+> **Example A: Neglecting ACL update order**
 >
->1. Alice removes Bob from the ACL of a folder;
->2. Alice then asks Charlie to move new documents to the folder, where document ACLs inherit from folder ACLs;
->3. Bob should not be able to see the new documents, but may do so if the ACL check neglects the ordering between the two ACL changes.
+> 1.  Alice removes Bob from the ACL of a folder;
+> 2.  Alice then asks Charlie to move new documents to the folder, where document ACLs inherit from folder ACLs;
+> 3.  Bob should not be able to see the new documents, but may do so if the ACL check neglects the ordering between the two ACL changes.
 >
->**Example B: Misapplying old ACL to new content**
+> **Example B: Misapplying old ACL to new content**
 >
->1. Alice removes Bob from the ACL of a document;
->2. Alice then asks Charlie to add new contents to the document;
->3. Bob should not be able to see the new contents, but may do so if the ACL check is evaluated with a stale ACL from before Bob's removal.
+> 1.  Alice removes Bob from the ACL of a document;
+> 2.  Alice then asks Charlie to add new contents to the document;
+> 3.  Bob should not be able to see the new contents, but may do so if the ACL check is evaluated with a stale ACL from before Bob's removal.
 >
 > — [Zanzibar, 2.2 Consistency Model](https://authzed.com/zanzibar#2.2-consistency-model)
 
@@ -88,7 +88,8 @@ To dig deeper on the New Enemy Problem and the greater topic of consistency, you
 
 On June 28th 2021, Zanzibar was presented to the [Papers We Love] New York City chapter:
 
-<br /><YouTube videoId="WTfZsRPDv9Q" />
+<br />
+<YouTube videoId="WTfZsRPDv9Q" />
 
 [Papers We Love]: https://paperswelove.org
 
@@ -110,6 +111,7 @@ You can see this in our [Schema Language] and [Playground] which vastly improves
     The [Annotated Zanzibar paper] highlights the differences between SpiceDB and Zanzibar!
 
     [Annotated Zanzibar paper]: https://authzed.com/zanzibar/#annotations/spicedb
+
 </Callout>
 
 ### Schema Language

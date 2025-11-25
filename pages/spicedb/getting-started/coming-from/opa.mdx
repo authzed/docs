@@ -1,22 +1,23 @@
-import { Callout } from 'nextra/components';
-import PSDLight from '@/public/images/ps-light.svg'
-import PSDDark from '@/public/images/ps-dark.svg'
-import OPALight from '@/public/images/ps-opa-light.svg'
-import OPADark from '@/public/images/ps-opa-dark.svg'
-import SpiceDBLight from '@/public/images/ps-spicedb-light.svg'
-import SpiceDBDark from '@/public/images/ps-spicedb-dark.svg'
+import { Callout } from "nextra/components";
+import PSDLight from "@/public/images/ps-light.svg";
+import PSDDark from "@/public/images/ps-dark.svg";
+import OPALight from "@/public/images/ps-opa-light.svg";
+import OPADark from "@/public/images/ps-opa-dark.svg";
+import SpiceDBLight from "@/public/images/ps-spicedb-light.svg";
+import SpiceDBDark from "@/public/images/ps-spicedb-dark.svg";
 
 # SpiceDB for Open Policy Agent (OPA) users
 
 This document is designed to cover the conceptual differences between SpiceDB and Open Policy Agent (OPA).
 
 <Callout type="info" emoji="ℹ️">
-  The focus of the content below is not intended to be a competitive analysis, but rather a bridge to understand SpiceDB for existing OPA users.
+  The focus of the content below is not intended to be a competitive analysis,
+  but rather a bridge to understand SpiceDB for existing OPA users.
 </Callout>
 
 ## SpiceDB vs OPA
 
-Every complete permissions system is made up of three major components: *models*, *data*, and an *engine*.
+Every complete permissions system is made up of three major components: _models_, _data_, and an _engine_.
 
 While comparing SpiceDB and OPA is akin to comparing apples and oranges because they are fundamentally two different approaches, both can be analyzed through the lens of these three components to understand the design of each.
 
@@ -27,11 +28,11 @@ A quick recap on the components and their purpose:
 - An **engine** interprets models and data in order to make an access control decision
 
 <center>
-  <PSDLight className="p-5 h-96 w-96 dark:hidden"/>
-  <PSDDark className="p-5 h-96 w-96 hidden dark:block"/>
+  <PSDLight className="p-5 h-96 w-96 dark:hidden" />
+  <PSDDark className="p-5 h-96 w-96 hidden dark:block" />
 </center>
 
-Open Policy Agent is a class of technology called a *policy engine*.
+Open Policy Agent is a class of technology called a _policy engine_.
 The fundamental idea behind policy engines is that access control decisions are the result of executing a computer program.
 
 Referring back to the three components of a complete permissions system, policy engines typically implement only two of the three components: models and an engine.
@@ -41,18 +42,18 @@ An engine, OPA itself, then executes these policies using any data usually provi
 For data that is not provided with a request, there exist various configurations, strategies, and software projects for providing data into OPA-based systems; this aspect of OPA is open-ended.
 
 <center>
-  <OPALight className="p-5 h-96 w-96 dark:hidden"/>
-  <OPADark className="p-5 h-96 w-96 hidden dark:block"/>
+  <OPALight className="p-5 h-96 w-96 dark:hidden" />
+  <OPADark className="p-5 h-96 w-96 hidden dark:block" />
 </center>
 
-SpiceDB is a class of technology called a *database*.
+SpiceDB is a class of technology called a _database_.
 The fundamental idea behind databases is that they store and index data efficiently so that it can be effectively queried.
 While many databases are general-purpose, SpiceDB is optimized specifically for storing and querying authorization data.
 SpiceDB provides all three components of a permissions systems: schema provides the models, the data is stored within the database itself, and the query engine interprets the two in order to make access control decisions.
 
 <center>
-  <SpiceDBLight className="p-5 h-96 w-96 dark:hidden"/>
-  <SpiceDBDark className="p-5 h-96 w-96 hidden dark:block"/>
+  <SpiceDBLight className="p-5 h-96 w-96 dark:hidden" />
+  <SpiceDBDark className="p-5 h-96 w-96 hidden dark:block" />
 </center>
 
 ## When to use SpiceDB instead of OPA

@@ -21,17 +21,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import { Transition } from '@headlessui/react';
-import cn from 'clsx';
-import { useRouter } from 'next/router';
-import { Link } from 'nextra-theme-docs';
-import { useMounted } from 'nextra/hooks';
-import { InformationCircleIcon, SpinnerIcon } from 'nextra/icons';
-import { usePostHog } from 'posthog-js/react';
-import type { CompositionEvent, KeyboardEvent, ReactElement } from 'react';
-import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
-import { Input } from './Input';
-import { SearchResult } from './types';
+import { Transition } from "@headlessui/react";
+import cn from "clsx";
+import { useRouter } from "next/router";
+import { Link } from "nextra-theme-docs";
+import { useMounted } from "nextra/hooks";
+import { InformationCircleIcon, SpinnerIcon } from "nextra/icons";
+import { usePostHog } from "posthog-js/react";
+import type { CompositionEvent, KeyboardEvent, ReactElement } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { Input } from "./Input";
+import { SearchResult } from "./types";
 
 type SearchProps = {
   className?: string;
@@ -44,7 +44,7 @@ type SearchProps = {
   results: SearchResult[];
 };
 
-const INPUTS = ['input', 'select', 'button', 'textarea'];
+const INPUTS = ["input", "select", "button", "textarea"];
 
 export function Search({
   className,
@@ -83,29 +83,29 @@ export function Search({
       )
         return;
       if (
-        e.key === '/' ||
-        (e.key === 'k' &&
+        e.key === "/" ||
+        (e.key === "k" &&
           (e.metaKey /* for Mac */ || /* for non-Mac */ e.ctrlKey))
       ) {
         e.preventDefault();
         // prevent to scroll to top
         input.current.focus({ preventScroll: true });
-      } else if (e.key === 'Escape') {
+      } else if (e.key === "Escape") {
         setShow(false);
         input.current.blur();
       }
     };
 
-    window.addEventListener('keydown', down);
+    window.addEventListener("keydown", down);
     return () => {
-      window.removeEventListener('keydown', down);
+      window.removeEventListener("keydown", down);
     };
   }, []);
 
   const finishSearch = useCallback(() => {
-    posthog?.capture('search', { query: input.current.value });
+    posthog?.capture("search", { query: input.current.value });
     input.current?.blur();
-    onChange('');
+    onChange("");
     setShow(false);
     // setMenu(false);
     // }, [onChange, setMenu]);
@@ -116,16 +116,16 @@ export function Search({
       const { index } = e.currentTarget.dataset;
       setActive(Number(index));
     },
-    []
+    [],
   );
 
   const handleKeyDown = useCallback(
     function <T>(e: KeyboardEvent<T>) {
       switch (e.key) {
-        case 'ArrowDown': {
+        case "ArrowDown": {
           if (active + 1 < results.length) {
             const el = ulRef.current?.querySelector<HTMLAnchorElement>(
-              `li:nth-of-type(${active + 2}) > a`
+              `li:nth-of-type(${active + 2}) > a`,
             );
             if (el) {
               e.preventDefault();
@@ -135,10 +135,10 @@ export function Search({
           }
           break;
         }
-        case 'ArrowUp': {
+        case "ArrowUp": {
           if (active - 1 >= 0) {
             const el = ulRef.current?.querySelector<HTMLAnchorElement>(
-              `li:nth-of-type(${active}) > a`
+              `li:nth-of-type(${active}) > a`,
             );
             if (el) {
               e.preventDefault();
@@ -148,7 +148,7 @@ export function Search({
           }
           break;
         }
-        case 'Enter': {
+        case "Enter": {
           const result = results[active];
           if (result && composition) {
             void router.push(result.route);
@@ -156,14 +156,14 @@ export function Search({
           }
           break;
         }
-        case 'Escape': {
+        case "Escape": {
           setShow(false);
           input.current?.blur();
           break;
         }
       }
     },
-    [active, results, router, finishSearch, handleActive, composition]
+    [active, results, router, finishSearch, handleActive, composition],
   );
 
   const mounted = useMounted();
@@ -182,42 +182,42 @@ export function Search({
     >
       <kbd
         className={cn(
-          'nx-absolute nx-my-1.5 nx-select-none ltr:nx-right-1.5 rtl:nx-left-1.5',
-          'nx-h-5 nx-rounded nx-bg-white nx-px-1.5 nx-font-mono nx-text-[10px] nx-font-medium nx-text-gray-500',
-          'nx-border dark:nx-border-gray-100/20 dark:nx-bg-dark/50',
-          'contrast-more:nx-border-current contrast-more:nx-text-current contrast-more:dark:nx-border-current',
-          'nx-items-center nx-gap-1 nx-transition-opacity',
+          "nx-absolute nx-my-1.5 nx-select-none ltr:nx-right-1.5 rtl:nx-left-1.5",
+          "nx-h-5 nx-rounded nx-bg-white nx-px-1.5 nx-font-mono nx-text-[10px] nx-font-medium nx-text-gray-500",
+          "nx-border dark:nx-border-gray-100/20 dark:nx-bg-dark/50",
+          "contrast-more:nx-border-current contrast-more:nx-text-current contrast-more:dark:nx-border-current",
+          "nx-items-center nx-gap-1 nx-transition-opacity",
           value
-            ? 'nx-z-20 nx-flex nx-cursor-pointer hover:nx-opacity-70'
-            : 'nx-pointer-events-none nx-hidden sm:nx-flex'
+            ? "nx-z-20 nx-flex nx-cursor-pointer hover:nx-opacity-70"
+            : "nx-pointer-events-none nx-hidden sm:nx-flex",
         )}
-        title={value ? 'Clear' : undefined}
+        title={value ? "Clear" : undefined}
         onClick={() => {
-          onChange('');
+          onChange("");
         }}
       >
         {value && focused
-          ? 'ESC'
+          ? "ESC"
           : mounted &&
-            (navigator.userAgent.includes('Macintosh') ? (
+            (navigator.userAgent.includes("Macintosh") ? (
               <>
                 <span className="nx-text-xs">⌘</span>K
               </>
             ) : (
-              'CTRL K'
+              "CTRL K"
             ))}
       </kbd>
     </Transition>
   );
   const handleComposition = useCallback(
     (e: CompositionEvent<HTMLInputElement>) => {
-      setComposition(e.type === 'compositionend');
+      setComposition(e.type === "compositionend");
     },
-    []
+    [],
   );
 
   return (
-    <div className={cn('nextra-search nx-relative md:nx-w-64', className)}>
+    <div className={cn("nextra-search nx-relative md:nx-w-64", className)}>
       {renderList && (
         <div
           className="nx-fixed nx-inset-0 nx-z-10"
@@ -258,19 +258,19 @@ export function Search({
       >
         <ul
           className={cn(
-            'nextra-scrollbar',
+            "nextra-scrollbar",
             // Using bg-white as background-color when the browser didn't support backdrop-filter
-            'nx-border nx-border-gray-200 nx-bg-white nx-text-gray-100 dark:nx-border-neutral-800 dark:nx-bg-neutral-900',
-            'nx-absolute nx-top-full nx-z-20 nx-mt-2 nx-overflow-auto nx-overscroll-contain nx-rounded-xl nx-py-2.5 nx-shadow-xl',
-            'nx-max-h-[min(calc(50vh-11rem-env(safe-area-inset-bottom)),400px)]',
-            'md:nx-max-h-[min(calc(100vh-5rem-env(safe-area-inset-bottom)),600px)]',
-            'nx-inset-x-0 ltr:md:nx-left-auto rtl:md:nx-right-auto',
-            'contrast-more:nx-border contrast-more:nx-border-gray-900 contrast-more:dark:nx-border-gray-50',
-            overlayClassName
+            "nx-border nx-border-gray-200 nx-bg-white nx-text-gray-100 dark:nx-border-neutral-800 dark:nx-bg-neutral-900",
+            "nx-absolute nx-top-full nx-z-20 nx-mt-2 nx-overflow-auto nx-overscroll-contain nx-rounded-xl nx-py-2.5 nx-shadow-xl",
+            "nx-max-h-[min(calc(50vh-11rem-env(safe-area-inset-bottom)),400px)]",
+            "md:nx-max-h-[min(calc(100vh-5rem-env(safe-area-inset-bottom)),600px)]",
+            "nx-inset-x-0 ltr:md:nx-left-auto rtl:md:nx-right-auto",
+            "contrast-more:nx-border contrast-more:nx-border-gray-900 contrast-more:dark:nx-border-gray-50",
+            overlayClassName,
           )}
           ref={ulRef}
           style={{
-            transition: 'max-height .2s ease', // don't work with tailwindcss
+            transition: "max-height .2s ease", // don't work with tailwindcss
           }}
         >
           {error ? (
@@ -293,11 +293,11 @@ export function Search({
                 {prefix}
                 <li
                   className={cn(
-                    'nx-mx-2.5 nx-break-words nx-rounded-md',
-                    'contrast-more:nx-border',
+                    "nx-mx-2.5 nx-break-words nx-rounded-md",
+                    "contrast-more:nx-border",
                     i === active
-                      ? 'nx-bg-primary-500/10 nx-text-primary-600 contrast-more:nx-border-primary-500'
-                      : 'nx-text-gray-800 contrast-more:nx-border-transparent dark:nx-text-gray-300'
+                      ? "nx-bg-primary-500/10 nx-text-primary-600 contrast-more:nx-border-primary-500"
+                      : "nx-text-gray-800 contrast-more:nx-border-transparent dark:nx-text-gray-300",
                   )}
                 >
                   <Link
