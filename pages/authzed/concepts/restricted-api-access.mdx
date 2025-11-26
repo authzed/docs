@@ -1,4 +1,4 @@
-import { Callout, Tabs } from 'nextra/components'
+import { Callout, Tabs } from "nextra/components";
 
 # Restricted API Access
 
@@ -30,11 +30,16 @@ SpiceDB clients must provide a Token in the Authorization header of an API reque
 
 Service Accounts can have an arbitrary number of Tokens.
 
-<Callout type="info">We recommend deploying new Tokens before deprovisioning any old Tokens to avoid downtime.</Callout>
+<Callout type="info">
+  We recommend deploying new Tokens before deprovisioning any old Tokens to
+  avoid downtime.
+</Callout>
 
 #### Token Format
 
-<Callout type="warning">The entire contents of a Token is considered secret.</Callout>
+<Callout type="warning">
+  The entire contents of a Token is considered secret.
+</Callout>
 
 Tokens come in the form of `{prefix}_{key}`.
 
@@ -199,7 +204,7 @@ Using the web dashboard, navigate to the Permission System's "Access" tab.
 Use the following command-line flags:
 
 | Flag                                  | Description                                                                                                                                                                           | Default |
-|---------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
 | --extender-authzed-fgam-endpoint      | defines the external SpiceDB endpoint used to authorize operations for the authzed-fgam extender. If a file:// endpoint is provided, server is run embedded with static configuration |         |
 | --extender-authzed-fgam-preshared-key | defines the external SpiceDB preshared key used to authorize operations for the authzed-fgam extender. Ignored if endpoint is local (file://)                                         |         |
 | --extender-enabled                    | must be set to `authzed-fgam`                                                                                                                                                         |         |
@@ -207,7 +212,8 @@ Use the following command-line flags:
 If you set `--extender-authzed-fgam-endpoint` to a file, it must be a YAML configuration file.
 
 <Callout type="warning">
-  This configuration file should be treated like a secret because it contains token hashes.
+  This configuration file should be treated like a secret because it contains
+  token hashes.
 </Callout>
 
 Here's an example showcasing the structure of static configuration:
@@ -216,16 +222,16 @@ Here's an example showcasing the structure of static configuration:
 role:
   - id: "admin"
     permission:
-      authzed.v1/ReadSchema:           ""
-      authzed.v1/WriteSchema:          ""
-      authzed.v1/ReadRelationships:    ""
-      authzed.v1/WriteRelationships:   ""
-      authzed.v1/DeleteRelationships:  ""
-      authzed.v1/CheckPermission:      ""
-      authzed.v1/LookupResources:      ""
-      authzed.v1/LookupSubjects:       ""
+      authzed.v1/ReadSchema: ""
+      authzed.v1/WriteSchema: ""
+      authzed.v1/ReadRelationships: ""
+      authzed.v1/WriteRelationships: ""
+      authzed.v1/DeleteRelationships: ""
+      authzed.v1/CheckPermission: ""
+      authzed.v1/LookupResources: ""
+      authzed.v1/LookupSubjects: ""
       authzed.v1/ExpandPermissionTree: ""
-      authzed.v1/Watch:                ""
+      authzed.v1/Watch: ""
 service_account:
   - id: "my_microservice"
     token:
@@ -259,7 +265,7 @@ If you want to apply a configuration to an existing SpiceDB cluster without down
    # NOTE: truncate the trailing spaces and "-". You just want the alphanum characters.
    HASH="$(echo -n "$SECRET" | sha256sum | cut -d" " -f1)"; echo "$HASH"
    # 1d619ac2f5013845c5f2df93add92fc87e88ca6c57d19a77d1b189663f1ff5b0
-   
+
    # Add the prefix "sdbst_h256_" to create the token that you'll supply to your client
    printf "token: sdbst_h256_%s\nhash: %s\n" "$SECRET" "$HASH"
    # token: sdbst_h256_g2l2/YjC3jFg6FdV080qiqBPvCrlLuc9GcHutgHF4WhVjsg7+AvlqLmoCrJEC68t
@@ -269,11 +275,11 @@ If you want to apply a configuration to an existing SpiceDB cluster without down
 2. Prepare the FGAM configuration YAML.
    You'll add the hashes that you generated in the previous step to the `hash` key in the `token` list for each respective token.
    This process heavily depends on what each client needs:
-     1. You may want to start with FGAM tokens bound to a admin-like Role, since that's what the original PSKs effectively were.
-        This is probably lower risk, and then from there you can move to start trimming down permissions.
-     2. Or you may want to move directly to downscoped tokens for your individual services, creating the tokens you need.
-        This may be simple if you have few clients, but more complex as the number of clients grow, and with a bigger blast radius of impact on rollout.
-   A minimal configuration would look something like:
+   1. You may want to start with FGAM tokens bound to a admin-like Role, since that's what the original PSKs effectively were.
+      This is probably lower risk, and then from there you can move to start trimming down permissions.
+   2. Or you may want to move directly to downscoped tokens for your individual services, creating the tokens you need.
+      This may be simple if you have few clients, but more complex as the number of clients grow, and with a bigger blast radius of impact on rollout.
+      A minimal configuration would look something like:
 
    ```yaml
    role:
@@ -301,6 +307,7 @@ If you want to apply a configuration to an existing SpiceDB cluster without down
    ```
 
    Deploy SpiceDB with this new configuration.
+
 4. Update all your clients to use the new tokens that you've created, according to which token should have which permissions.
 5. Deploy SpiceDB with the new Restricted Access configuration.
 

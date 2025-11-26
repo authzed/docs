@@ -1,10 +1,11 @@
-import { Callout } from 'nextra/components'
+import { Callout } from "nextra/components";
 
 # AuthZed Materialize
 
 <Callout type="info">
-  AuthZed Materialize is available to users of AuthZed [Dedicated] as part of an early access program.
-  Don't hesitate to get in touch with your AuthZed account team if you would like to participate.
+  AuthZed Materialize is available to users of AuthZed [Dedicated] as part of an
+  early access program. Don't hesitate to get in touch with your AuthZed account
+  team if you would like to participate.
 </Callout>
 
 AuthZed Materialize takes inspiration from the Leopard index component described in the [Zanzibar paper](https://zanzibar.tech/2IoYDUFMAE:0:T).
@@ -32,8 +33,8 @@ In summary, AuthZed Materialize allows you to:
 - Materialize takes time to compute the denormalized relationship updates, so if you are streaming the changes to your database, your application must be able to tolerate some lag.
 
 [Caveats]: https://authzed.com/docs/spicedb/concepts/caveats
-[Wildcard]: https://authzed.com/docs/spicedb/concepts/schema\#wildcards
-[.all intersections]: https://authzed.com/docs/spicedb/concepts/schema\#all-intersection-arrow
+[Wildcard]: https://authzed.com/docs/spicedb/concepts/schema#wildcards
+[.all intersections]: https://authzed.com/docs/spicedb/concepts/schema#all-intersection-arrow
 [expiring relationships]: https://authzed.com/docs/spicedb/concepts/expiring-relationships
 [Dedicated]: ../guides/picking-a-product#dedicated
 
@@ -73,13 +74,14 @@ In situations like these, one may want to store the events in batches, and in su
 If a failure happened in between those batches, the consumer will be able to restart processing from the start of the revision and idempotently overwrite whatever events were already in place.
 
 <Callout type="info">
-  Change events are stored up to 24h to make sure Materialize storage does not grow unbounded and affect its performance.
+  Change events are stored up to 24h to make sure Materialize storage does not
+  grow unbounded and affect its performance.
 </Callout>
 
 ## Configuration
 
 Just as with relational database materialized views, you need to provide Materialize with the "queries" you’d like it to pre-compute.
-The configuration is described as a list of  `resource#permission@subject` tuples.
+The configuration is described as a list of `resource#permission@subject` tuples.
 Example:
 
 ```zed
@@ -88,7 +90,9 @@ resource#edit@user
 ```
 
 <Callout type="info">
-  During early access provisioning, Materialize instances are not self-service, so you’ll need to provide the permissions to be computed by Materialize directly to your AuthZed account team.
+  During early access provisioning, Materialize instances are not self-service,
+  so you’ll need to provide the permissions to be computed by Materialize
+  directly to your AuthZed account team.
 </Callout>
 
 ### Relational Database
@@ -97,7 +101,7 @@ You can find a runnable version of these examples [here](https://dbfiddle.uk/dX1
 
 These are tables you likely already have in your database
 
-1. something representing the user  
+1. something representing the user
 2. something representing the object we want to filter
 
 ```sql
@@ -145,12 +149,12 @@ Sync data from [LookupPermissionSets]/[WatchPermissionSets].
 The APIs return type/id/relation name:
 
 ```sql
-INSERT INTO member_to_set (member_type, member_id, member_relation, set_type, set_id, set_relation) 
-  VALUES ('user', '123', '', 'document', '123', 'view'), 
+INSERT INTO member_to_set (member_type, member_id, member_relation, set_type, set_id, set_relation)
+  VALUES ('user', '123', '', 'document', '123', 'view'),
          ('user', '123', '', 'group', 'shared', 'member'),
          ('user', '456', '', 'group', 'shared', 'member');
 
-INSERT INTO set_to_set (child_type, child_id, child_relation, parent_type, parent_id, parent_relation) 
+INSERT INTO set_to_set (child_type, child_id, child_relation, parent_type, parent_id, parent_relation)
   VALUES ('group', 'shared', 'member', 'document', '456', 'view');
 ```
 
@@ -163,9 +167,9 @@ SELECT d.id FROM documents d
   LEFT JOIN set_to_set s2s ON d.id = s2s.parent_id
   INNER JOIN member_to_set m2s ON (m2s.set_id = s2s.child_id AND m2s.set_type = s2s.child_type AND m2s.set_relation = s2s.child_relation) OR (d.id = m2s.set_id )
   INNER JOIN users u ON u.id = m2s.member_id
-  WHERE 
-   u.name = 'evan' AND 
-   m2s.member_type = 'user' AND 
+  WHERE
+   u.name = 'evan' AND
+   m2s.member_type = 'user' AND
    m2s.member_relation = '' AND ((
       s2s.parent_type = 'document' AND
       s2s.parent_relation='view'
@@ -175,8 +179,8 @@ SELECT d.id FROM documents d
     ));
 ```
 
-| id |
-| :---- |
+| id  |
+| :-- |
 | 123 |
 | 456 |
 
@@ -187,9 +191,9 @@ SELECT d.id FROM documents d
   LEFT JOIN set_to_set s2s ON d.id = s2s.parent_id
   INNER JOIN member_to_set m2s ON (m2s.set_id = s2s.child_id AND m2s.set_type = s2s.child_type AND m2s.set_relation = s2s.child_relation) OR (d.id = m2s.set_id )
   INNER JOIN users u ON u.id = m2s.member_id
-  WHERE 
-   u.name = 'victor' AND 
-   m2s.member_type = 'user' AND 
+  WHERE
+   u.name = 'victor' AND
+   m2s.member_type = 'user' AND
    m2s.member_relation = '' AND ((
       s2s.parent_type = 'document' AND
       s2s.parent_relation='view'
@@ -199,8 +203,8 @@ SELECT d.id FROM documents d
     ));
 ```
 
-| id |
-| :---- |
+| id  |
+| :-- |
 | 456 |
 
 The above example shows the most flexible way to do this: you can update your SpiceDB schema and sync new permission sets data without SQL schema changes but at the cost of more verbose SQL queries.
@@ -225,12 +229,12 @@ CREATE TABLE set_to_document_view (
 Storing from [LookupPermissionSets]/[WatchPermissionSets] in this model requires some simple transformations compared to the previous example:
 
 ```sql
-INSERT INTO user_to_set (user_id, parent_set) 
-  VALUES ('123', 'document:123#view'), 
+INSERT INTO user_to_set (user_id, parent_set)
+  VALUES ('123', 'document:123#view'),
          ('123', 'group:shared#member'),
          ('456', 'group:shared#member');
 
-INSERT INTO set_to_document_view (child_set, document_id) 
+INSERT INTO set_to_document_view (child_set, document_id)
   VALUES ('document:123#view', '123'),
          ('group:shared#member', '456');
 ```
@@ -243,13 +247,13 @@ Find all documents `evan` can `view`:
 ```sql
 SELECT d.id FROM documents d
   INNER JOIN set_to_document_view s2s ON d.id = s2s.document_id
-  INNER JOIN user_to_set m2s ON m2s.parent_set = s2s.child_set 
+  INNER JOIN user_to_set m2s ON m2s.parent_set = s2s.child_set
   INNER JOIN users u ON u.id = m2s.user_id
   WHERE u.name = 'evan';
 ```
 
-| id |
-| :---- |
+| id  |
+| :-- |
 | 123 |
 | 456 |
 
@@ -258,13 +262,13 @@ Find all documents `victor` can `view`:
 ```sql
 SELECT d.id FROM documents d
   INNER JOIN set_to_document_view s2s ON d.id = s2s.document_id
-  INNER JOIN user_to_set m2s ON m2s.parent_set = s2s.child_set 
+  INNER JOIN user_to_set m2s ON m2s.parent_set = s2s.child_set
   INNER JOIN users u ON u.id = m2s.user_id
   WHERE u.name = 'victor';
 ```
 
-| id |
-| :---- |
+| id  |
+| :-- |
 | 456 |
 
 ## API Specification
@@ -299,9 +303,9 @@ Customers should keep track of this revision in their internal database to know 
 
 ```json
 {
-    "completed_revision": {
-        "token": "GiAKHjE3MTUzMzkzMTAzODQ2NDMxNzguMDAwMDAwMDAwMA=="
-    }
+  "completed_revision": {
+    "token": "GiAKHjE3MTUzMzkzMTAzODQ2NDMxNzguMDAwMDAwMDAwMA=="
+  }
 }
 ```
 
@@ -309,22 +313,22 @@ Customers should keep track of this revision in their internal database to know 
 
 ```json
 {
-    "change": {
-        "at_revision": {
-            "token": "GiAKHjE3MTUzMzkzMDg0MTY2NzUxNzcuMDAwMDAwMDAwMA=="
-        },
-        "operation": "SET_OPERATION_ADDED",
-        "parent_set": {
-            "object_type": "thumper/resource",
-            "object_id": "seconddoc",
-            "permission_or_relation": "reader"
-        },
-        "child_member": {
-            "object_type": "thumper/user",
-            "object_id": "fred",
-            "optional_permission_or_relation": ""
-        }
+  "change": {
+    "at_revision": {
+      "token": "GiAKHjE3MTUzMzkzMDg0MTY2NzUxNzcuMDAwMDAwMDAwMA=="
+    },
+    "operation": "SET_OPERATION_ADDED",
+    "parent_set": {
+      "object_type": "thumper/resource",
+      "object_id": "seconddoc",
+      "permission_or_relation": "reader"
+    },
+    "child_member": {
+      "object_type": "thumper/user",
+      "object_id": "fred",
+      "optional_permission_or_relation": ""
     }
+  }
 }
 ```
 
@@ -332,22 +336,22 @@ Customers should keep track of this revision in their internal database to know 
 
 ```json
 {
-    "change": {
-        "at_revision": {
-            "token": "GiAKHjE3MTUzMzkzMTAzODQ2NDMxNzguMDAwMDAwMDAwMA=="
-        },
-        "operation": "SET_OPERATION_REMOVED",
-        "parent_set": {
-            "object_type": "thumper/resource",
-            "object_id": "seconddoc",
-            "permission_or_relation": "reader"
-        },
-        "child_member": {
-            "object_type": "thumper/user",
-            "object_id": "fred",
-            "optional_permission_or_relation": ""
-        }
+  "change": {
+    "at_revision": {
+      "token": "GiAKHjE3MTUzMzkzMTAzODQ2NDMxNzguMDAwMDAwMDAwMA=="
+    },
+    "operation": "SET_OPERATION_REMOVED",
+    "parent_set": {
+      "object_type": "thumper/resource",
+      "object_id": "seconddoc",
+      "permission_or_relation": "reader"
+    },
+    "child_member": {
+      "object_type": "thumper/user",
+      "object_id": "fred",
+      "optional_permission_or_relation": ""
     }
+  }
 }
 ```
 
@@ -355,22 +359,22 @@ Customers should keep track of this revision in their internal database to know 
 
 ```json
 {
-    "change": {
-        "at_revision": {
-            "token": "GiAKHjE3MTUzMzkzMDg0MTY2NzUxNzcuMDAwMDAwMDAwMA=="
-        },
-        "operation": "SET_OPERATION_ADDED",
-        "parent_set": {
-            "object_type": "thumper/resource",
-            "object_id": "seconddoc",
-            "permission_or_relation": "reader"
-        },
-        "child_set": {
-            "object_type": "thumper/team",
-            "object_id": "engineering",
-            "permission_or_relation": "members"
-        }
+  "change": {
+    "at_revision": {
+      "token": "GiAKHjE3MTUzMzkzMDg0MTY2NzUxNzcuMDAwMDAwMDAwMA=="
+    },
+    "operation": "SET_OPERATION_ADDED",
+    "parent_set": {
+      "object_type": "thumper/resource",
+      "object_id": "seconddoc",
+      "permission_or_relation": "reader"
+    },
+    "child_set": {
+      "object_type": "thumper/team",
+      "object_id": "engineering",
+      "permission_or_relation": "members"
     }
+  }
 }
 ```
 
@@ -378,22 +382,22 @@ Customers should keep track of this revision in their internal database to know 
 
 ```json
 {
-    "change": {
-        "at_revision": {
-            "token": "GiAKHjE3MTUzMzkzMTAzODQ2NDMxNzguMDAwMDAwMDAwMA=="
-        },
-        "operation": "SET_OPERATION_REMOVED",
-        "parent_set": {
-            "object_type": "thumper/resource",
-            "object_id": "seconddoc",
-            "permission_or_relation": "reader"
-        },
-        "child_set": {
-            "object_type": "thumper/team",
-            "object_id": "engineering",
-            "permission_or_relation": "members"
-        }
+  "change": {
+    "at_revision": {
+      "token": "GiAKHjE3MTUzMzkzMTAzODQ2NDMxNzguMDAwMDAwMDAwMA=="
+    },
+    "operation": "SET_OPERATION_REMOVED",
+    "parent_set": {
+      "object_type": "thumper/resource",
+      "object_id": "seconddoc",
+      "permission_or_relation": "reader"
+    },
+    "child_set": {
+      "object_type": "thumper/team",
+      "object_id": "engineering",
+      "permission_or_relation": "members"
     }
+  }
 }
 ```
 
@@ -403,11 +407,11 @@ When the origin SpiceDB instance introduces a schema change that invalidates all
 
 ```json
 {
-    "breaking_schema_change": {
-        "change_at": {
-            "token": "GiAKHjE3MTUzMzkzMTAzODQ2NDMxNzguMDAwMDAwMDAwMA=="
-        }
-   }
+  "breaking_schema_change": {
+    "change_at": {
+      "token": "GiAKHjE3MTUzMzkzMTAzODQ2NDMxNzguMDAwMDAwMDAwMA=="
+    }
+  }
 }
 ```
 
@@ -423,7 +427,8 @@ The AuthZed team has optimized Materialize to reduce the number of instances whe
 To determine if a schema change is breaking, we provide the `materialize-cli` tool.
 
 <Callout type="info">
-  `materialize-cli` is still in early development, please reach out to us if you want to try it as part of AuthZed Materialize early access.
+  `materialize-cli` is still in early development, please reach out to us if you
+  want to try it as part of AuthZed Materialize early access.
 </Callout>
 
 #### Errors
@@ -434,7 +439,7 @@ Whenever the client receives a `FailedPrecondition`, they should retry with a ba
 In this case, the client is asking for a revision that hasn’t been yet processed by Materialize.
 You may receive this error when:
 
-- the Materialize instances are restarting and catching up with all changes that have happened since it took a snapshot of your SpiceDB instance.  
+- the Materialize instances are restarting and catching up with all changes that have happened since it took a snapshot of your SpiceDB instance.
 - A [BreakingSchemaChange] was emitted, and by happenstance, your client had to reconnect.
   The Materialize server hasn’t yet rebuilt a new snapshot of your SpiceDB instance with the new schema to serve new events.
 
@@ -453,25 +458,30 @@ This is useful when the client has been notified a [breaking schema change] occu
 If both `optional_at_revision` and `optional_starting_after` are provided, the latter always takes precedence.
 
 <Callout type="warning">
-  Client **must** provide the revision token after a [breaking schema change] through `optional_starting_after`, otherwise Materialize will start streaming permission sets for whatever snapshot revision is available at the moment, and won't reflect the schema changes.
+  Client **must** provide the revision token after a [breaking schema change]
+  through `optional_starting_after`, otherwise Materialize will start streaming
+  permission sets for whatever snapshot revision is available at the moment, and
+  won't reflect the schema changes.
 </Callout>
 
 The current cursor is provided with each event in the stream, so if the consumer client crashes it knows where to restart from, alongside the revision at which the data is computed.
 Once an event is received, the recommended course of action is to store the following as part of the same transaction in your database:
 
-- The data to insert into the permission sets table  
-- The cursor into a table denoting the current state of the backfill  
+- The data to insert into the permission sets table
+- The cursor into a table denoting the current state of the backfill
 - The current revision token into a table denoting the snapshot revision of the stored Materialize data
 
 In the event of the customer consumer being restarted, it should:
 
-- Select the current cursor from the backfill cursor table  
-- Issue a [LookupPermissionSets] request with `optional_starting_after` set to the stored cursor  
+- Select the current cursor from the backfill cursor table
+- Issue a [LookupPermissionSets] request with `optional_starting_after` set to the stored cursor
 - Resume ingestion as usual
 
 <Callout type="info">
-  While AuthZed treats correctness very seriously, bugs may be identified that affect the correctness of the denormalized permissions computed by Materialize.
-  Those incidents should be rare, but consumers must have all the machinery in place to re-index via [LookupPermissionSets] at any given time.
+  While AuthZed treats correctness very seriously, bugs may be identified that
+  affect the correctness of the denormalized permissions computed by
+  Materialize. Those incidents should be rare, but consumers must have all the
+  machinery in place to re-index via [LookupPermissionSets] at any given time.
 </Callout>
 
 #### Reindexing After A Breaking Schema Change
@@ -482,7 +492,7 @@ During this period, the previously ingested permission sets data will be stale.
 We are working on several options to minimize the lag caused and improve the developer experience:
 
 - On-Band: Stream breaking schema changes over [WatchPermissionSets] instead of requiring a [LookupPermissionSets] call.
-This will reduce the amount of changes to stream and reduce the time to reindex.
+  This will reduce the amount of changes to stream and reduce the time to reindex.
 - Off-Band: Support Staging Schemas in SpiceDB so that your application can call [LookupPermissionSets] over the staged schema changes
 
 These are the two recommended strategies to handle breaking schema events in your application:
@@ -494,7 +504,7 @@ This will naturally lead to lag, but depending on the volume of data, your appli
 The tradeoff here is development velocity versus lag.
 If your application can't withstand lag during reindexing, please consider the off-band strategy.
 
-In this scenario, we recommend using the *versioned permission set tables strategy*: your application will keep track of various versions of the permission set.
+In this scenario, we recommend using the _versioned permission set tables strategy_: your application will keep track of various versions of the permission set.
 One will be the currently ingested and being updated with [WatchPermissionSets], and the new version is the result of a [BreakingSchemaChange] and is ingested with [LookupPermissionSets] while the previous version of the permission sets are being served.
 You should keep track of what is the current revision being served.
 
@@ -509,7 +519,8 @@ Once your index is ingested and is updated with [WatchPermissionSets], your appl
 This strategy requires more steps and careful planning, but in exchange completely avoids any lag.
 
 <Callout type="info">
-  For the time being, Materialize instances are not self-serve, so you'll need to work with your Account Team to execute the off-band ingestion strategy.
+  For the time being, Materialize instances are not self-serve, so you'll need
+  to work with your Account Team to execute the off-band ingestion strategy.
 </Callout>
 
 #### Request
@@ -528,32 +539,31 @@ This strategy requires more steps and careful planning, but in exchange complete
 
 ```json
 {
-    "change": {
-        "at_revision": {
-            "token": "GiAKHjE3MTUzMzk0Mzg2MjA4NzI1MDIuMDAwMDAwMDAwMA=="
-        },
-        "operation": "SET_OPERATION_ADDED",
-        "parent_set": {
-            "object_type": "thumper/resource",
-            "object_id": "seconddoc",
-            "permission_or_relation": "reader"
-        },
-        "child_member": {
-            "object_type": "thumper/user",
-            "object_id": "tom",
-            "optional_permission_or_relation": ""
-        }
+  "change": {
+    "at_revision": {
+      "token": "GiAKHjE3MTUzMzk0Mzg2MjA4NzI1MDIuMDAwMDAwMDAwMA=="
     },
-    "cursor": {
-        "limit": 10000,
-        "token": {
-            "token": "GiAKHjE3MTUzMzk0Mzg2MjA4NzI1MDIuMDAwMDAwMDAwMA=="
-        },
-        "starting_index": 1,
-        "completed_members": false
+    "operation": "SET_OPERATION_ADDED",
+    "parent_set": {
+      "object_type": "thumper/resource",
+      "object_id": "seconddoc",
+      "permission_or_relation": "reader"
+    },
+    "child_member": {
+      "object_type": "thumper/user",
+      "object_id": "tom",
+      "optional_permission_or_relation": ""
     }
+  },
+  "cursor": {
+    "limit": 10000,
+    "token": {
+      "token": "GiAKHjE3MTUzMzk0Mzg2MjA4NzI1MDIuMDAwMDAwMDAwMA=="
+    },
+    "starting_index": 1,
+    "completed_members": false
+  }
 }
-
 ```
 
 The payload comes with the permission set data to store in your database table, and the cursor that points to that permission set in case resumption is necessary.

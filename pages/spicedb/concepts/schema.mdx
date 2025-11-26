@@ -1,6 +1,6 @@
-import { Callout } from 'nextra/components';
-import YouTube from 'react-youtube';
-import { InlinePlayground } from '@/components/playground';
+import { Callout } from "nextra/components";
+import YouTube from "react-youtube";
+import { InlinePlayground } from "@/components/playground";
 
 # Schema Language Reference
 
@@ -189,7 +189,9 @@ definition document {
 ```
 
 <Callout type="info">
-    When writing relationships in SpiceDB, you cannot write a relationship that references a *permission*, only a relationship that references a  *relation*. This means that it's easy to change a permission, but not a relation.
+  When writing relationships in SpiceDB, you cannot write a relationship that
+  references a *permission*, only a relationship that references a *relation*.
+  This means that it's easy to change a permission, but not a relation.
 </Callout>
 
 ### Operations
@@ -342,11 +344,12 @@ definition resource {
 The arrow `parent->something` refers to the `something` permission on the **group**, and `#member` will be ignored.
 
 <Callout type="warn">
-  It is recommended to not use arrows over relations that allow for subject relations without noting that fact via a comment.
-  Why? In one word: performance. If arrows operated over
-  the subject's relation or permission, a full LookupSubjects call would be
-  necessary for the arrow to correctly "walk", which would make these
-  CheckPermission requests potentially *incredibly* expensive.
+  It is recommended to not use arrows over relations that allow for subject
+  relations without noting that fact via a comment. Why? In one word:
+  performance. If arrows operated over the subject's relation or permission, a
+  full LookupSubjects call would be necessary for the arrow to correctly "walk",
+  which would make these CheckPermission requests potentially *incredibly*
+  expensive.
 </Callout>
 
 #### .any (Arrow)
@@ -410,7 +413,8 @@ definition document {
 In the above example, the user must be in the `member` relation for _all_ groups defined on the `group` relation of a document in order to have the `view` permission.
 
 <Callout type="warning">
-  Intersection arrows can impact performance since they require loading **all** results for the arrow.
+  Intersection arrows can impact performance since they require loading **all**
+  results for the arrow.
 </Callout>
 
 ### Naming Permissions

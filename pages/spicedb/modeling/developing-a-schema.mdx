@@ -1,6 +1,6 @@
-import { Callout } from 'nextra/components'
-import YouTube from 'react-youtube'
-import { InlinePlayground } from '@/components/playground'
+import { Callout } from "nextra/components";
+import YouTube from "react-youtube";
+import { InlinePlayground } from "@/components/playground";
 
 # Developing a Schema
 
@@ -82,7 +82,8 @@ Once we've [created test relationships][understanding-rels], we can define tests
 
 ### Check Watches
 
-<br /><YouTube videoId="UmvGPU8iQ-0" />
+<br />
+<YouTube videoId="UmvGPU8iQ-0" />
 
 ### Assertions
 
@@ -252,12 +253,14 @@ Note that the contents of the angled brackets for `differentuser` and `specificu
   **Info:**
   Expected Relations includes the relation by which a subject was found for a permission to ensure that not only is the permission is valid, but also that the _way_ a permission was validated matches that expected.
 
-  If there are multiple ways that a subject can be found for a permission, Expected Relations will require _all_ of them to be listed to be valid.
+If there are multiple ways that a subject can be found for a permission, Expected Relations will require _all_ of them to be listed to be valid.
+
 </Callout>
 
 #### Working example
 
-<br/><InlinePlayground reference="qWR_YFS_KR1L"/>
+<br />
+<InlinePlayground reference="qWR_YFS_KR1L" />
 
 ### Preparing to inherit permissions
 
@@ -319,8 +322,8 @@ document:specificdocument#docorg@organization:someorg
 ```
 
 <Callout type="info">
-  **Info:**
-  Note the use of the organization as the **subject** in this relationship
+  **Info:** Note the use of the organization as the **subject** in this
+  relationship
 </Callout>
 
 ### Inheriting permissions
@@ -363,10 +366,9 @@ The expression `docorg->view_all_documents` indicates to SpiceDB or Authzed to f
 By use of this expression, any user defined as an administrator of the organization that owns the document will also be able to view the document!
 
 <Callout type="info">
-  **Info:**
-  It is _recommended_ that the right side of all arrows refer to **permissions**, instead
-of relations.
-  This allows for easy nested computation, and is more readable.
+  **Info:** It is _recommended_ that the right side of all arrows refer to
+  **permissions**, instead of relations. This allows for easy nested
+  computation, and is more readable.
 </Callout>
 
 ### Adding an administrator user
@@ -413,4 +415,5 @@ document:specificdocument#writer:
 
 If you've been following along this entire document, you might find it useful to study this example including everything discussed:
 
-<br/><InlinePlayground reference="qli9YpRRUg3x"/>
+<br />
+<InlinePlayground reference="qli9YpRRUg3x" />

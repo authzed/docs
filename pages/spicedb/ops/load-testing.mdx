@@ -1,7 +1,7 @@
-import { Callout, Tabs } from 'nextra/components'
-import YouTube from 'react-youtube';
+import { Callout, Tabs } from "nextra/components";
+import YouTube from "react-youtube";
 
-import { InlinePlayground } from '@/components/playground'
+import { InlinePlayground } from "@/components/playground";
 
 # Load Testing SpiceDB
 
@@ -22,7 +22,8 @@ High relationship cardinality often means that SpiceDB will need to spend more t
 
 The below schema, relationships, and CheckPermission request are an example of how relationship cardinality can affect performance.
 
-<br/><InlinePlayground reference="InFMt9UMVzW8" />
+<br />
+<InlinePlayground reference="InFMt9UMVzW8" />
 
 If the following CheckPermissionRequest occurred on the above schema and set of relationships, SpiceDB had to compute the answer to three sub-problems in order to determine if evan has `view` permission on `document:somedocument`.
 
@@ -78,8 +79,8 @@ Here are some helpful tips (these tips assume you already have a schema finalize
   Now that you’ve completed the thought exercise, you’ll need to codify this information in relationship generating code.
 
 <Callout type="info">
-  **Info:**
-  If you're struggling or want help, [reach out to the Authzed team][reach out] or [the community in Discord][discord].
+  **Info:** If you're struggling or want help, [reach out to the Authzed
+  team][reach out] or [the community in Discord][discord].
 </Callout>
 
 We highly recommend that you pre-seed your relationships data before a load test.
@@ -161,14 +162,16 @@ Writes impact datastore performance far more than they impact SpiceDB node perfo
   **Warning:**
   CockroachDB Datastore users have [special considerations][crdb] to understand.
 
-  [crdb]: ../concepts/datastores#overlap-strategy
+[crdb]: ../concepts/datastores#overlap-strategy
+
 </Callout>
 
 <Callout type="info">
   **Info:**
   Postgres Datastore users should note that `CREATE` is always more performant than `TOUCH`.
 
-  `TOUCH` always performs a delete and then an insert, while `CREATE` performs an insert, throwing an error if the data already exists.
+`TOUCH` always performs a delete and then an insert, while `CREATE` performs an insert, throwing an error if the data already exists.
+
 </Callout>
 
 ### Identifying SpiceDB Write Distribution Patterns
@@ -226,7 +229,7 @@ There is also the `datastore-revision-quantization-max-staleness-percent` settin
 The `datastore-revision-quantization-max-staleness-percent` specifies the percentage of the revision quantization interval where we may opt to select a stale revision for performance reasons.
 Increasing both or either numbers is likely to increase cache utilization which will lead to better performance.
 
- Read [this article](https://authzed.com/blog/hotspot-caching-in-google-zanzibar-and-spicedb) for more information on the staleness and performance implications of quantization.
+Read [this article](https://authzed.com/blog/hotspot-caching-in-google-zanzibar-and-spicedb) for more information on the staleness and performance implications of quantization.
 
 ### SpiceDB Consistency Performance
 

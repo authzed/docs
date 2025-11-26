@@ -1,4 +1,4 @@
-import { Callout } from 'nextra/components'
+import { Callout } from "nextra/components";
 
 # Relationships
 
@@ -75,9 +75,10 @@ This relationship can be read as: "every object that has the `member` relation t
   In a real system, Object IDs are most likely a computer-friendly string than something human readable.
   Many use-cases use UUIDs or unsigned integers representing the primary key from that data's canonical datastore.
 
-  Users are no exception to this pattern and can be [represented in various ways][modeling-users], such as the `sub` field of an JWT from an Identity Provider.
+Users are no exception to this pattern and can be [represented in various ways][modeling-users], such as the `sub` field of an JWT from an Identity Provider.
 
-  Regardless of their representation, Object IDs must be **unique and stable** within the set of IDs for an Object Type.
+Regardless of their representation, Object IDs must be **unique and stable** within the set of IDs for an Object Type.
+
 </Callout>
 
 ### Graph traversals
@@ -105,7 +106,7 @@ When checking "Can user `emilia` edit document `readme`?", SpiceDB:
 2. Follows the `editor` relation to find `team:engineering#member`
 3. Follows the `member` relation to find `user:emilia`
 
-[//]: # (TODO add drawing)
+[//]: # "TODO add drawing"
 
 Note how we followed a chain of relationships to answer the question. Or, put differently, we traversed a [graph].
 
@@ -131,9 +132,10 @@ It is the application's responsibility to keep the relationships within SpiceDB 
 <Callout type="info">
   Want to learn more about writing relationships to SpiceDB, the various strategies and their pros and cons?
 
-  Read our [blog post about writing relationships][write-blog].
+Read our [blog post about writing relationships][write-blog].
 
-  [write-blog]: https://authzed.com/blog/writing-relationships-to-spicedb/
+[write-blog]: https://authzed.com/blog/writing-relationships-to-spicedb/
+
 </Callout>
 
 ### SpiceDB-only relationships
@@ -203,7 +205,8 @@ In this design, any updates to the relationships in both databases are published
 <Callout type="warning">
   Before adopting an asynchronous system, you should deeply consider the [consistency] implications.
 
-  [consistency]: ./consistency
+[consistency]: ./consistency
+
 </Callout>
 
 If an application does not require up-to-the-second consistent permissions checking, and some replication lag in permissions checking is acceptable, then asynchronous updates of the relationships in SpiceDB can be used.

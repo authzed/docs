@@ -103,16 +103,16 @@ spec:
     datastoreEngine: memory
   secretName: dev-spicedb-config
   patches:
-  - kind: Deployment
-    patch:
-      metadata:
-        labels:
-          added: via-patch 
-      spec:
-         template:
-           metadata:
-             labels: 
-               added: pod-label-via-patch
+    - kind: Deployment
+      patch:
+        metadata:
+          labels:
+            added: via-patch
+        spec:
+          template:
+            metadata:
+              labels:
+                added: pod-label-via-patch
 ```
 
 Explicit JSON6902 Patch:
@@ -127,12 +127,12 @@ spec:
     datastoreEngine: memory
   secretName: dev-spicedb-config
   patches:
-  - kind: Deployment
-    patch:
-      op: add
-      path: /metadata/labels
-      value: 
-        added: via-patch
+    - kind: Deployment
+      patch:
+        op: add
+        path: /metadata/labels
+        value:
+          added: via-patch
 ```
 
 You can specify multiple patches for the same object (later in the list are applied over top of earlier in the list):
@@ -147,20 +147,20 @@ spec:
     datastoreEngine: memory
   secretName: dev-spicedb-config
   patches:
-  - kind: Deployment
-    patch:
-      op: add
-      path: /metadata/labels
-      value:
-        added: via-patch
-  - kind: Deployment
-    patch:
-      metadata:
-        labels:
-          added-2: via-patch-2
+    - kind: Deployment
+      patch:
+        op: add
+        path: /metadata/labels
+        value:
+          added: via-patch
+    - kind: Deployment
+      patch:
+        metadata:
+          labels:
+            added-2: via-patch-2
 ```
 
-Wildcard * can be used to apply a patch to all resources:
+Wildcard \* can be used to apply a patch to all resources:
 
 ```yaml
 apiVersion: authzed.com/v1alpha1
@@ -172,12 +172,12 @@ spec:
     datastoreEngine: memory
   secretName: dev-spicedb-config
   patches:
-  - kind: '*'
-    patch:
-      op: add
-      path: /metadata/labels
-      value:
-        added: via-wildcard-patch
+    - kind: "*"
+      patch:
+        op: add
+        path: /metadata/labels
+        value:
+          added: via-wildcard-patch
 ```
 
 ### Bootstrapping CRDs

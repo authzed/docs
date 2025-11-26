@@ -1,4 +1,4 @@
-import { Callout } from 'nextra/components';
+import { Callout } from "nextra/components";
 
 # Access-Control Management
 
@@ -34,7 +34,7 @@ definition repository {
   permission read = role_reader + write
   permission write = role_writer + admin
   permission admin = role_adminer
-  
+
 }
 ```
 
@@ -66,14 +66,14 @@ definition user{}
 definition repository {
   relation grants: role_grant
 
-  permission create_issue = grants->create_issue 
+  permission create_issue = grants->create_issue
 }
 
 definition role_grant {
   relation role: role
   relation grantee: user | team#user
 
-  permission create_issue = role->create_issue & grantee 
+  permission create_issue = role->create_issue & grantee
   permission delete_issue = role->delete_issue & grantee
 }
 

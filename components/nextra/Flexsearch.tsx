@@ -21,45 +21,44 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import cn from 'clsx';
+import cn from "clsx";
 // flexsearch types are incorrect, they were overwritten in tsconfig.json
-import { Document } from 'flexsearch';
-import { useRouter } from 'next/router';
-import type { SearchData } from 'nextra';
-import type { ReactElement, ReactNode } from 'react';
-import { useCallback, useState } from 'react';
-import ExternalIcon from './ExternalIcon';
-import { HighlightMatches } from './HighlightMatches';
-import { Search } from './Search';
-import { SearchResult } from './types';
+import { Document } from "flexsearch";
+import { useRouter } from "next/router";
+import type { SearchData } from "nextra";
+import type { ReactElement, ReactNode } from "react";
+import { useCallback, useState } from "react";
+import ExternalIcon from "./ExternalIcon";
+import { HighlightMatches } from "./HighlightMatches";
+import { Search } from "./Search";
+import { SearchResult } from "./types";
 
 // Diff: Inlined definitions
-export const DEFAULT_LOCALE = 'en-US';
+export const DEFAULT_LOCALE = "en-US";
 
 type SectionIndex = {
-    id: string;
-    url: string;
-    title: string;
-    pageId: string;
-    content: string;
-    display?: string;
-  }
+  id: string;
+  url: string;
+  title: string;
+  pageId: string;
+  content: string;
+  display?: string;
+};
 
 type PageIndex = {
-    id: number;
-    title: string;
-    content: string;
-  }
+  id: number;
+  title: string;
+  content: string;
+};
 
 // Diff: Additional index for blog posts
-type BlogIndex =
-  {
-    id: number;
-    title: string;
-    content: string;
-    url: string;
-    summary: string;
-  }
+type BlogIndex = {
+  id: number;
+  title: string;
+  content: string;
+  url: string;
+  summary: string;
+};
 
 type Result = {
   _page_rk: number;
@@ -71,7 +70,7 @@ type Result = {
 
 // This can be global for better caching.
 const indexes: {
-    // tuple is PageIndex, SectionIndex
+  // tuple is PageIndex, SectionIndex
   [locale: string]: [Document, Document];
 } = {};
 
@@ -79,18 +78,18 @@ const indexes: {
 // Associated type is BlogIndex
 const blogIndex = new Document({
   cache: 100,
-  tokenize: 'forward',
+  tokenize: "forward",
   document: {
-    id: 'id',
-    index: 'content',
-    store: ['title', 'url', 'summary'],
+    id: "id",
+    index: "content",
+    store: ["title", "url", "summary"],
   },
 });
 
 // Caches promises that load the index
 const loadIndexesPromises = new Map<string, Promise<void>>();
 const loadIndexes = (basePath: string, locale: string): Promise<void> => {
-  const key = basePath + '@' + locale;
+  const key = basePath + "@" + locale;
   if (loadIndexesPromises.has(key)) {
     return loadIndexesPromises.get(key)!;
   }
@@ -101,8 +100,8 @@ const loadIndexes = (basePath: string, locale: string): Promise<void> => {
 
 // Diff: Function for loading blog posts
 const loadBlogData = async (basePath: string | undefined) => {
-  const response = await fetch(`${basePath ?? ''}/feed.json`, {
-    cache: 'force-cache',
+  const response = await fetch(`${basePath ?? ""}/feed.json`, {
+    cache: "force-cache",
   });
   const content = await response.json();
 
@@ -110,7 +109,7 @@ const loadBlogData = async (basePath: string | undefined) => {
     return {
       id: i,
       title: item.title,
-      content: item['content_html'],
+      content: item["content_html"],
       url: item.url,
       summary: item.summary,
     };
@@ -119,10 +118,10 @@ const loadBlogData = async (basePath: string | undefined) => {
 
 const loadIndexesImpl = async (
   basePath: string,
-  locale: string
+  locale: string,
 ): Promise<void> => {
   const response = await fetch(
-    `${basePath}/_next/static/chunks/nextra-data-${locale}.json`
+    `${basePath}/_next/static/chunks/nextra-data-${locale}.json`,
   );
   const searchData = (await response.json()) as SearchData;
   // Diff: Load blog data
@@ -131,11 +130,11 @@ const loadIndexesImpl = async (
   // Associated type is PageIndex
   const pageIndex = new Document({
     cache: 100,
-    tokenize: 'full',
+    tokenize: "full",
     document: {
-      id: 'id',
-      index: 'content',
-      store: ['title'],
+      id: "id",
+      index: "content",
+      store: ["title"],
     },
     context: {
       resolution: 9,
@@ -147,12 +146,12 @@ const loadIndexesImpl = async (
   // Associated type is SectionIndex
   const sectionIndex = new Document({
     cache: 100,
-    tokenize: 'full',
+    tokenize: "full",
     document: {
-      id: 'id',
-      index: 'content',
-      tag: 'pageId',
-      store: ['title', 'content', 'url', 'display'],
+      id: "id",
+      index: "content",
+      tag: "pageId",
+      store: ["title", "content", "url", "display"],
     },
     context: {
       resolution: 9,
@@ -164,14 +163,14 @@ const loadIndexesImpl = async (
   let pageId = 0;
 
   for (const [route, structurizedData] of Object.entries(searchData)) {
-    let pageContent = '';
+    let pageContent = "";
     ++pageId;
 
     for (const [key, content] of Object.entries(structurizedData.data)) {
-      const [headingId, headingValue] = key.split('#');
-      const url = route + (headingId ? '#' + headingId : '');
+      const [headingId, headingValue] = key.split("#");
+      const url = route + (headingId ? "#" + headingId : "");
       const title = headingValue || structurizedData.title;
-      const paragraphs = content.split('\n');
+      const paragraphs = content.split("\n");
 
       sectionIndex.add({
         id: url,
@@ -220,7 +219,7 @@ export function Flexsearch({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [results, setResults] = useState<SearchResult[]>([]);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
 
   const doSearch = (search: string) => {
     if (!search) return;
@@ -260,8 +259,8 @@ export function Flexsearch({
         }
         const { url, title } = doc;
         const content = doc.display || doc.content;
-        if (occurred[url + '@' + content]) continue;
-        occurred[url + '@' + content] = true;
+        if (occurred[url + "@" + content]) continue;
+        occurred[url + "@" + content] = true;
         results.push({
           _page_rk: i,
           _section_rk: j,
@@ -269,8 +268,8 @@ export function Flexsearch({
           prefix: isFirstItemOfPage && (
             <div
               className={cn(
-                'nx-mx-2.5 nx-mb-2 nx-mt-6 nx-select-none nx-border-b nx-border-black/10 nx-px-2.5 nx-pb-1.5 nx-text-xs nx-font-semibold nx-uppercase nx-text-gray-500 first:nx-mt-0 dark:nx-border-white/20 dark:nx-text-gray-300',
-                'contrast-more:nx-border-gray-600 contrast-more:nx-text-gray-900 contrast-more:dark:nx-border-gray-50 contrast-more:dark:nx-text-gray-50'
+                "nx-mx-2.5 nx-mb-2 nx-mt-6 nx-select-none nx-border-b nx-border-black/10 nx-px-2.5 nx-pb-1.5 nx-text-xs nx-font-semibold nx-uppercase nx-text-gray-500 first:nx-mt-0 dark:nx-border-white/20 dark:nx-text-gray-300",
+                "contrast-more:nx-border-gray-600 contrast-more:nx-text-gray-900 contrast-more:dark:nx-border-gray-50 contrast-more:dark:nx-text-gray-50",
               )}
             >
               {result.doc.title}
@@ -336,9 +335,9 @@ export function Flexsearch({
         prefix: (
           <div
             className={cn(
-              'nx-mx-2.5 nx-mb-2 nx-mt-6 nx-select-none nx-border-b nx-border-black/10 nx-px-2.5 nx-pb-1.5 nx-text-xs nx-font-semibold nx-uppercase nx-text-gray-500 first:nx-mt-0 dark:nx-border-white/20 dark:nx-text-gray-300',
-              'contrast-more:nx-border-gray-600 contrast-more:nx-text-gray-900 contrast-more:dark:nx-border-gray-50 contrast-more:dark:nx-text-gray-50',
-              'flex gap-1 items-center'
+              "nx-mx-2.5 nx-mb-2 nx-mt-6 nx-select-none nx-border-b nx-border-black/10 nx-px-2.5 nx-pb-1.5 nx-text-xs nx-font-semibold nx-uppercase nx-text-gray-500 first:nx-mt-0 dark:nx-border-white/20 dark:nx-text-gray-300",
+              "contrast-more:nx-border-gray-600 contrast-more:nx-text-gray-900 contrast-more:dark:nx-border-gray-50 contrast-more:dark:nx-text-gray-50",
+              "flex gap-1 items-center",
             )}
           >
             AuthZed Blog <ExternalIcon className="h-4" />
@@ -374,7 +373,7 @@ export function Flexsearch({
         setLoading(false);
       }
     },
-    [locale, basePath]
+    [locale, basePath],
   );
 
   const handleChange = async (value: string) => {

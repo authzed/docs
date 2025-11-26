@@ -1,18 +1,19 @@
-import YouTube from 'react-youtube'
-import { Callout } from 'nextra/components'
+import YouTube from "react-youtube";
+import { Callout } from "nextra/components";
 
 # Consistency
 
 Consistency is a fundamental concept in distributed systems, databases, and authorization.
 
 SpiceDB is no exception!
-In fact, the paper that inspired SpiceDB is entitled "Zanzibar: Google's __**Consistent**__, Global Authorization System".
+In fact, the paper that inspired SpiceDB is entitled "Zanzibar: Google's \***\*Consistent\*\***, Global Authorization System".
 
 ## What is consistency?
 
 The following presentation submitted to the [CNCF] gives an overview and examples of consistency and why it's important:
 
-<br /><YouTube videoId="cbZusvT3PLs" />
+<br />
+<YouTube videoId="cbZusvT3PLs" />
 
 [CNCF]: https://cncf.io
 
@@ -37,7 +38,7 @@ Consistency is provided via the [Consistency message][msg] on supported API call
 ### Defaults
 
 | API                   | Default Consistency |
-|-----------------------|---------------------|
+| --------------------- | ------------------- |
 | `WriteRelationships`  | `fully_consistent`  |
 | `DeleteRelationships` | `fully_consistent`  |
 | `ReadSchema`          | `fully_consistent`  |
@@ -51,7 +52,8 @@ Consistency is provided via the [Consistency message][msg] on supported API call
 `minimize_latency` will attempt to minimize the latency of the API call by selecting data that is most likely to exist in the cache.
 
 <Callout type="warning">
-  If used exclusively, this can lead to a window of time where the [New Enemy Problem] can occur.
+  If used exclusively, this can lead to a window of time where the [New Enemy
+  Problem] can occur.
 </Callout>
 
 [New Enemy Problem]: ./zanzibar#new-enemy-problem
@@ -74,13 +76,14 @@ Consistency { at_least_as_fresh: ZedToken { token: "..." } }
 
 #### At Exact Snapshot
 
-`at_exact_snapshot` will ensure that all data used for computing the response is that found at the *exact* point-in-time specified in the [ZedToken].
+`at_exact_snapshot` will ensure that all data used for computing the response is that found at the _exact_ point-in-time specified in the [ZedToken].
 
 <Callout type="warning">
   Requests specifying `at_exact_snapshot` can fail with a _Snapshot Expired_ error because SpiceDB eventually collects garbage over time.
 
-  It is recommended to only use this option if you are paginating over results within a short window.
-  This window is determined by the `--datastore-gc-window` flag.
+It is recommended to only use this option if you are paginating over results within a short window.
+This window is determined by the `--datastore-gc-window` flag.
+
 </Callout>
 
 ```proto
@@ -93,14 +96,15 @@ Consistency { at_exact_snapshot: ZedToken { token: "..." } }
 
 `fully_consistent` will ensure that all data used is fully consistent with the latest data available within the SpiceDB datastore.
 
-Note that the snapshot used will be loaded at the beginning of the API call, and that new data written *after* the API starts executing will be ignored.
+Note that the snapshot used will be loaded at the beginning of the API call, and that new data written _after_ the API starts executing will be ignored.
 
 <Callout type="warning">
   This consistency mode explicitly bypasses caching, dramatically impacting latency.
 
-  If you need read-after-write consistency, consider using a [ZedToken]
+If you need read-after-write consistency, consider using a [ZedToken]
 
-  [ZedToken]: #zedtokens
+[ZedToken]: #zedtokens
+
 </Callout>
 
 ```proto
@@ -148,7 +152,8 @@ If a fixed-width column is preferred, we recommend `varchar(1024)`.
 <Callout type="info">
   For this purpose, Google's Zanzibar has a [ContentChangeCheck API][ccc-api] because it doesn't support configurable consistency like SpiceDB.
 
-  [ccc-api]: https://authzed.com/zanzibar#annotations/intro/content-change-check
+[ccc-api]: https://authzed.com/zanzibar#annotations/intro/content-change-check
+
 </Callout>
 
 Data can be complex and designed with hierarchies in mind.

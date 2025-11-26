@@ -1,0 +1,22 @@
+export default {
+  schedule: {
+    title: "Schedule a Call",
+    href: "https://authzed.com/call?utm_source=docs",
+    newWindow: true,
+  },
+  changelog: {
+    title: "Changelog",
+    href: "https://changelog.authzed.cloud?utm_source=docs",
+    newWindow: true,
+  },
+  "security-policies": {
+    title: "Security Policies",
+    href: "https://security.authzed.com?utm_source=docs",
+    newWindow: true,
+  },
+  status: {
+    title: "Service Status Page",
+    href: "https://status.authzed.com?utm_source=docs",
+    newWindow: true,
+  },
+};

@@ -1,10 +1,10 @@
 {
-	"version": "0.1",
-	"name": "Authzed",
-	"scopeName": "source.authzed",
+  "version": "0.1",
+  "name": "Authzed",
+  "scopeName": "source.authzed",
   "foldingStartMarker": "\\{\\s*$",
   "foldingStopMarker": "^\\s*\\}",
-	"patterns": [
+  "patterns": [
     { "include": "#comment" },
     { "include": "#importStatement" },
     { "include": "#objectDefinition" },
@@ -197,10 +197,7 @@
     },
     "importStatement": {
       "comment": "things that appear on lines that start with import",
-      "patterns": [
-        { "include": "#import" },
-        { "include": "#importPath" }
-      ],
+      "patterns": [{ "include": "#import" }, { "include": "#importPath" }],
       "repository": {
         "import": {
           "comment": "the word import",
@@ -240,10 +237,7 @@
       }
     },
     "objectPermission": {
-      "patterns": [
-        { "include": "#permission" },
-        { "include": "#variable" }
-      ],
+      "patterns": [{ "include": "#permission" }, { "include": "#variable" }],
       "repository": {
         "permission": {
           "comment": "the word permission",
@@ -257,6 +251,5 @@
         }
       }
     }
-
   }
 }

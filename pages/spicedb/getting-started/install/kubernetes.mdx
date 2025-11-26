@@ -1,4 +1,4 @@
-import { Callout } from 'nextra/components'
+import { Callout } from "nextra/components";
 
 # Installing SpiceDB on Kubernetes
 
@@ -12,10 +12,11 @@ Additionally, SpiceDB has some additional logic for things such as peer discover
   **Did You Know?**
   The team behind SpiceDB helped pioneer the container and Kubernetes ecosystem.
 
-  SpiceDB was born out of frustration by folks from [CoreOS] and [OpenShift].
+SpiceDB was born out of frustration by folks from [CoreOS] and [OpenShift].
 
-  [CoreOS]: https://en.wikipedia.org/wiki/Container_Linux
-  [OpenShift]: https://en.wikipedia.org/wiki/OpenShift
+[CoreOS]: https://en.wikipedia.org/wiki/Container_Linux
+[OpenShift]: https://en.wikipedia.org/wiki/OpenShift
+
 </Callout>
 
 ## Installing SpiceDB using the SpiceDB Operator
@@ -46,7 +47,7 @@ kind: Secret
 metadata:
   name: dev-spicedb-config
 stringData:
-  preshared_key: "averysecretpresharedkey" 
+  preshared_key: "averysecretpresharedkey"
 EOF
 ```
 
@@ -72,8 +73,8 @@ If you're looking for something production-ready, install the [SpiceDB Operator]
 ## Installing SpiceDB using Helm
 
 <Callout type="warning">
-  **Warning:**
-  There is no officially supported Helm Chart for SpiceDB; use this at your own risk.
+  **Warning:** There is no officially supported Helm Chart for SpiceDB; use this
+  at your own risk.
 </Callout>
 
 There is a [community maintained Chart][chart] by the folks over at [Bushel].
