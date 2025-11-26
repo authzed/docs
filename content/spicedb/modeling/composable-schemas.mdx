@@ -1,0 +1,206 @@
+import { Callout, Tabs } from "nextra/components";
+
+# Composable Schemas (Preview)
+
+<Callout type="info">
+  This preview feature's functionality may change before general release.
+</Callout>
+
+To make it easier to organize your schema and collaborate across teams, `zed` version v0.27.0 introduced a new schema compilation command that allows you to modularize your schema.
+
+```
+zed preview schema compile root.zed
+```
+
+The command allows you to combine a schema that is spread across many files, for example:
+
+<Tabs items={["root.zed", "subjects.zed"]}>
+<Tabs.Tab>
+
+```zed
+import "./subjects.zed"
+
+partial view_partial {
+    relation user: user
+    permission view = user
+}
+
+definition resource {
+    ...view_partial
+
+    relation organization: organization
+    permission manage = organization
+}
+```
+
+</Tabs.Tab>
+<Tabs.Tab>
+
+```zed
+definition user {}
+definition organization {}
+```
+
+</Tabs.Tab>
+</Tabs>
+
+And it produces an output schema that can be understood by SpiceDB's `WriteSchema` API:
+
+```zed
+definition user {}
+
+definition organization {}
+
+definition resource {
+    relation user: user
+    permission view = user
+
+    relation organization: organization
+    permission manage = organization
+}
+```
+
+There are three new pieces of syntax: [import statements](#import-statements), [partial declarations](#partial-declarations), and [partial references](#partial-references).
+
+## Breaking Changes
+
+The composable schema compiler has some breaking changes relative to the compiler used internally by SpiceDB on a `WriteSchema` call.
+A new version of SpiceDB should not cause your schema to break.
+However, the schema compiler introduces some new keywords (among other changes), which may result in a schema that can be
+written to SpiceDB but not compiled.
+
+The obvious breaking changes are `import` and `partial` becoming keywords, so if you have a permission or
+relation with those names, your schema can't be compiled.
+We have also reserved some keywords for future use, such as `use`, `and`, `or`, and `not`.
+If you get an unexpected `TokenTypeKeyword` error, this is probably why.
+A full list of reserved keywords can be found in [`keyword` map definition](https://github.com/authzed/spicedb/blob/main/pkg/composableschemadsl/lexer/lex_def.go#L74) in the lexer.
+
+## Import Statements
+
+Import statements allow you to break down a schema along the lines of top-level declarations.
+
+<Tabs items={["root.zed", "one.zed", "two.zed"]}>
+<Tabs.Tab>
+
+```zed
+// An import keyword followed by a quoted relative filepath
+import "./one.zed"
+
+// Note that a bare filename works as a relative path
+import "two.zed"
+
+// The imports are included by the compilation process, which means that
+// they can be referenced by other definitions
+definition resource {
+    relation user: user
+    relation organization: organization
+
+    permission view = user + organization
+}
+```
+
+</Tabs.Tab>
+<Tabs.Tab>
+
+```zed
+definition user {}
+```
+
+</Tabs.Tab>
+<Tabs.Tab>
+
+```zed
+definition organization {}
+```
+
+</Tabs.Tab>
+
+</Tabs>
+
+### Good to Know
+
+- Import references must be within the folder where `zed` is invoked.
+- Import cycles are treated as errors.
+- All definitions in all imported files are pulled in.
+  Any duplicate definitions will cause an error.
+
+## Partials
+
+Partial declarations and references provide a means of decomposing a schema along lines that cross definition boundaries.
+
+### Partial Declarations
+
+A partial declaration is a top-level block that is declared using the `partial` keyword.
+It can contain relations, permissions, and partial references just like a `definition` block, but its contents
+must be referenced by a [partial reference](#partial-references) to show up in the compiled schema.
+
+```zed
+partial view_partial {
+    ...some_other_partial
+
+    relation user: user
+    permission view = user
+}
+```
+
+#### Good to Know
+
+- Any partial that isn't referenced is ignored by the compilation process.
+- Partial declarations can contain partial references, allowing for partials to be composed.
+
+### Partial References
+
+A partial reference takes a `partial` and includes the relations and permissions defined in that partial.
+It works similarly to [JS spread syntax](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax)
+or [python's dictionary unpacking](https://docs.python.org/3/reference/expressions.html#dictionary-displays).
+
+This syntax:
+
+```zed
+partial view_partial {
+    relation viewer: user
+    permission view = viewer
+}
+
+partial edit_partial {
+    relation editor: user
+    permission edit = editor
+}
+
+definition resource {
+    ...view_partial
+    ...edit_partial
+}
+```
+
+is equivalent to this declaration:
+
+```zed
+definition resource {
+    relation user: user
+    permission view = user
+
+    relation editor: user
+    permission edit = editor
+}
+```
+
+#### Good to Know
+
+- Duplicate relations and permissions introduced by a partial reference are treated as errors.
+- Circular references between partials are treated as errors.
+- You can only reference partial declarations.
+  Attempting to reference other declaration types (e.g. a definition or a caveat) with a partial reference will result in a error.
+- A partial can be referenced any number of times, and a partial or definition can contain any number of partial references.
+
+## An Example Workflow
+
+1. Make a change to your multi-file schema
+1. Run `zed validate` to ensure that the changes are valid
+1. Make a PR to your schema repository
+1. CI runs `zed validate` again
+
+Then on merge:
+
+1. CI runs `zed preview schema compile`
+1. CI calls SpiceDB's WriteSchema API with the compiled schema

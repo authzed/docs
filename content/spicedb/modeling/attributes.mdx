@@ -1,0 +1,107 @@
+import { InlinePlayground } from "@/components/playground";
+import { Callout } from "nextra/components";
+
+# Attributes
+
+If you are migrating to SpiceDB from a pre-existing authorization system, it's likely that attributes play a part in your authorization evaluations.
+
+SpiceDB is a Relationship Based Access control system.
+This gives SpiceDB the flexibility to evaluate attributes for access control alongside more complicated access control logic like roles and/or relationships.
+
+The sections below will provide practical examples for implementing various kinds of attributes in the SpiceDB schema language.
+Before reading this guide, it's recommended that you have some familiarity with the SpiceDB schema language. [These documents](/spicedb/modeling/developing-a-schema) are a good place to start.
+
+## Boolean Attributes
+
+A boolean attribute is an attribute on an object that affects authorization by enabling or disabling an authorization setting.
+Boolean attributes can often be thought of as a toggle.
+Feature flag authorization can be enabled with boolean attributes.
+
+### Wildcards
+
+[Wildcards](/spicedb/concepts/schema#wildcards) are a way to implement boolean attributes.
+Wildcards modify a type so that a relationship can be written to all objects of a resource type but not individual objects.
+
+In the example below, the schema enforces the following authorization logic: a user will have `edit` permission on the document if they are related to the document as an `editor` and they relate to the document through `edit_enabled`.
+Both are required because `editor` and `edit_enabled` are [intersected](/spicedb/concepts/schema#-intersection) at the `edit` permission definition.
+To enable document editing, you need to establish a relationship that connects all users to the document using the `edit_enabled` relation: `document:somedocument#edit_enabled@user:*`.
+
+<InlinePlayground reference="p6ltnJZ2Zso7" />
+
+<Callout type="info">
+  Wildcards are adequate for most binary attribute scenarios; however, wildcards
+  are not currently supported by [Authzed
+  Materialize](/authzed/concepts/authzed-materialize). Those who plan to use
+  Materialize should use self relationships for binary attributes.
+</Callout>
+
+### Self Relationships
+
+Self relationships are another way to implement boolean attributes.
+Self relationships relate an object to itself.
+A self relationship is walked with an [arrow](/spicedb/concepts/schema#--arrow) back to an object's self.
+In practice, relating something to itself toggles something on.
+
+In the example below, there is a schema that enforces the following authorization logic: a user can only view a document if the user is related to the document as viewer and editing is enabled for the document (this is the same authorization logic used in the wildcard example above).
+
+In the example below, to enable editing for a document, a self relationship using the `edit_enabled` relation must be written.
+When a `document` is related to itself with the `edit_enabled` relation, that relation can be walked to itself (with the arrow) to determine who relates to the document as an `editor`.
+
+In summary, a `user` has permission to edit a `document` if they are related to that document as an `editor` and that document is related to itself with `edit_enabled`.
+
+<InlinePlayground reference="ifgMyLGN-Hjw" />
+
+<Callout type="warning">
+  There is no mechanism in the SpiceDB schema language that enforces that a
+  relation be used as a self relation. In order to avoid accidentally misusing a
+  self relation (e.g. relating an object to a different instance of the same
+  type) it is recommended to implement client side logic that enforces only
+  using the self relation for it's intended purpose.
+</Callout>
+
+## Attribute Matching
+
+For this guide, attribute matching is defined as scenarios where a user or group of users needs to have an attribute (or set of attributes) required by a resource in order to perform a specific action on the resource.
+
+### Match at Least One Attribute of a Single Type
+
+Attribute matching can be achieved by relating a user to an attribute as a "member" and relating a resource to its required attribute objects.
+
+In the example below, users must match **at least one** of the document's country attributes in order to view the document.
+
+Country attributes are represented by the `country` object definition and every user that has a specific country attribute is related to the specific country.
+When a `document` has a country attribute that can grant `edit` permission for a user, it is related to that country.
+
+<InlinePlayground reference="RAl67nbN8HXr" />
+
+### Match all Attributes of a Single Type
+
+It's possible to specify that **_all_** attributes must be satisfied by using an [intersection arrow](/spicedb/concepts/schema#all-intersection-arrow).
+
+In the example below, users must match **all** of the document's `country` attributes in order to view the document.
+
+This example is similar to the one above, except it requires that all attributes are satisfied instead of at least one attribute.
+
+<InlinePlayground reference="XlzC7_cVWrxh" />
+
+### Match at Least One Attribute from Each Type of Attribute
+
+When you have several types of attributes, it's recommended that you have an object definition for each type of attribute and that you use [subject relations](/spicedb/concepts/schema#subject-relations) to connect resources to the required attribute.
+
+<InlinePlayground reference="oBZyiY66Y81J" />
+
+### Match All Attributes from Each Type of Attribute
+
+It's possible to specify that **_all_** attributes must be satisfied by using an [intersection arrow](/spicedb/concepts/schema#all-intersection-arrow).
+
+In the example below, users must match **all** of the document's `country` and `status` attributes in order to view the document.
+
+This example is similar to the one above, except it requires that all `country` and `status` attributes are satisfied instead of at least one attribute of each type.
+
+<InlinePlayground reference="I1-zYgAIAq5E" />
+
+## Caveats
+
+In almost all cases, [caveats](/spicedb/concepts/caveats) should only be used when data required to evaluate a CheckPermission request is only available at the time of the request (e.g. user's current location or time of day).
+Using caveats for static data (e.g. a document's status) can have negative performance impacts.
+Static attribute data should always be modeled in the schema using patterns similar to those described above.

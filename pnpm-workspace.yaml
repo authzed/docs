@@ -1,0 +1,15 @@
+ignoredBuiltDependencies:
+  - '@scarf/scarf'
+  - '@vercel/speed-insights'
+  - core-js
+  - core-js-pure
+  - sharp
+  - tree-sitter
+  - tree-sitter-json
+
+onlyBuiltDependencies:
+  - '@fortawesome/fontawesome-common-types'
+  - '@fortawesome/fontawesome-svg-core'
+  - '@fortawesome/free-brands-svg-icons'
+  - '@fortawesome/free-solid-svg-icons'
+  - '@tree-sitter-grammars/tree-sitter-yaml'

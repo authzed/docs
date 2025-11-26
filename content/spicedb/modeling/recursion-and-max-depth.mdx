@@ -1,0 +1,149 @@
+# Recursion and Max Depth
+
+Permissions questions in SpiceDB are answered by traversing the **tree** constructed from the graph formed
+by combining the [schema] (structure) and [relationships] (data).
+
+A `CheckPermission` request will, for example, traverse starting from the resource+permission requested,
+along any referenced permissions and relations, until the subject is found or maximum depth is
+reached.
+
+[schema]: /spicedb/concepts/schema
+[relationships]: /spicedb/concepts/relationships
+
+## Max Depth
+
+In order to prevent requests from traversing without bounds, SpiceDB comes with a defaults to a depth of
+`50`, after which computation is halted and an error is returned to the caller.
+
+This max depth is configurable via the `--dispatch-max-depth` flag.
+
+## Recursion in Relationships
+
+As a result of expecting the permissions graph to be a **tree**, SpiceDB _does not_ support recursive data dependencies that result in operations
+(such as `CheckPermission`) visiting the _same_ object more than once.
+
+### Example
+
+The following is an example of an **unsupported** nesting of groups:
+
+```zed
+definition user {}
+
+definition group {
+	relation member: user | group#member
+}
+
+definition resource {
+	relation viewer: user | group#member
+	permission view = viewer
+}
+```
+
+and relationships:
+
+```
+resource:someresource#viewer@group:firstgroup#member
+group:firstgroup#member@group:secondgroup#member
+group:secondgroup#member@group:thirdgroup#member
+group:thirdgroup#member@group:firstgroup#member
+```
+
+When computing a permission answer for `resource:someresource`, SpiceDB will attempt this walk: `resource:someresource#viewer`
+-> `group:firstgroup#member` -> `group:secondgroup#member` -> `group:thirdgroup#member` ->
+`group:firstgroup#member` -> ..., causing a cycle.
+
+## Common Questions
+
+### Why doesn't SpiceDB simply support tracking the objects it has walked?
+
+1. Nested recursive "sets" have unclear semantics.
+
+2. Undesirable overhead.
+
+#### Nested sets have semantics issues
+
+[Zanzibar] and ReBAC in general operate on _sets_: when a permission check is made, SpiceDB is
+answering whether the requested subject is a member of the _set_ formed of all subjects that are
+visited by walking the permissions tree.
+
+[Zanzibar]: https://zanzibar.tech
+
+The question becomes: if a group's members contains the members of _itself_, is that legal within
+a set?
+Much academic literature has been written about this topic (which we won't repeat here),
+but the very question raises whether allowing such an approach is semantically valid.
+
+As a real example, imagine the following schema and relationships:
+
+```zed
+definition user {}
+
+definition group {
+  relation direct_member: user | group#member
+  relation banned: user | group#member
+  permission member = direct_member - banned
+}
+```
+
+```
+group:firstgroup#direct_member@group:secondgroup#member
+group:firstgroup#banned@group:bannedgroup#member
+group:secondgroup#direct_member@user:tom
+group:bannedgroup#direct_member@group:firstgroup#member
+```
+
+As we see above,`user:tom` is a `direct_member` of `secondgroup`, which makes him a member
+of `firstgroup` -> which implies he's a member of `bannedgroup` -> which implies he's _not_
+a member of `firstgroup` -> thus making him no longer `banned` -> (logical inconsistency)
+
+Thus, to prevent the above issue from occurring, Zanzibar and other ReBAC implementations such
+as SpiceDB assume the permissions graph is a [tree].
+
+[tree]: https://zanzibar.tech/2SMVg4W_Wx:N:k
+
+#### Overhead
+
+From a practical perspective, tracking of visited objects when computing `CheckPermission` and
+other permissions queries results in having significant amount of overhead over the wire and in
+memory to track the full set of encountered objects and check for duplicates.
+
+### What do I do about a max depth error on CheckPermission?
+
+If you've received an error like:
+
+```
+the check request has exceeded the allowable maximum depth of 50: this usually indicates a recursive or too deep data dependency. Try running zed with --explain to see the dependency
+```
+
+Run `zed --explain` with the parameters of the check to show whether the issue is due to recursion or because the tree is simply too deep:
+
+```sh
+zed permission check resource:someresource view user:someuser --explain
+```
+
+```ansi
+1:36PM INF debugging requested on check
+! resource:someresource viewer (4.084125ms)
+└── ! group:firstgroup member (3.445417ms)
+    └── ! group:secondgroup member (3.338708ms)
+        └── ! group:thirdgroup member (3.260125ms)
+            └── ! group:firstgroup member (cycle) (3.194125ms)
+```
+
+### Why did my check work with recursion?
+
+SpiceDB automatically short-circuits `CheckPermission` operations when the target subject has been
+found.
+
+If the subject was found before the maximum depth was hit, then the operation will complete
+successfully.
+_However_, if the subject was not found, SpiceDB will continue walking, and ultimately return
+the error you saw.
+
+### How do I check for a possible recursion when writing a relationship?
+
+Use the `CheckPermission` API to check if the subject contains the resource.
+
+For example, if writing the relationship `group:someparent#member@group:somechild#member` a check
+can be made for `group:somechild#member@group:someparent#member`: if the _parent_ has permission
+_on the child_, then the addition of this relationship will cause a recursion.

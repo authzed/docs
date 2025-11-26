@@ -1,0 +1,28 @@
+Pagefind logging initialized
+[Status]: Running Pagefind v1.4.0 (Extended)
+[Info]: Running in verbose mode
+[Info]: Running from: "/home/tstirrat/authzed/docs"
+[Info]: Source:       "out"
+[Info]: Output:       "public/_pagefind"
+[Status]: [Walking source directory]
+[Info]: Found 68 files matching **/*.{html}
+[Status]: [Parsing files]
+[Info]: Found a data-pagefind-body element on the site.
+↳ Ignoring pages without this tag.
+[Status]: [Reading languages]
+[Info]: Discovered 1 language: en
+[Info]:   * en: 57 pages
+[Status]: [Building search indexes]
+[Info]: Language en: 
+  Indexed 57 pages
+  Indexed 2945 words
+  Indexed 0 filters
+  Indexed 0 sorts
+
+[Info]: Total: 
+  Indexed 1 language
+  Indexed 57 pages
+  Indexed 2945 words
+  Indexed 0 filters
+  Indexed 0 sorts
+[Status]: Finished in 0.306 seconds

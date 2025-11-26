@@ -4,6 +4,8 @@ node_modules/*
 .next
 .env*
 tsconfig.tsbuildinfo
+_pagefind/
+out/
 
 # Generated
 public/robots.txt

@@ -1,0 +1,10 @@
+import type { MetaRecord } from 'nextra'
+
+export default {
+  macos: "macOS",
+  docker: "Docker",
+  kubernetes: "Kubernetes",
+  debian: "Ubuntu/Debian",
+  rhel: "RHEL/CentOS",
+  windows: "Windows",
+} satisfies MetaRecord;

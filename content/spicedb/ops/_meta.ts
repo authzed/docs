@@ -1,0 +1,13 @@
+import type { MetaRecord } from 'nextra'
+
+export default {
+  operator: "SpiceDB Kubernetes Operator",
+  "deploying-spicedb-operator": "Deploying the SpiceDB Kubernetes Operator",
+  eks: "Deploying to AWS EKS",
+  data: "Writing data to SpiceDB",
+  performance: "Improving Performance",
+  observability: "Observability Tooling",
+  "ai-agent-authorization": "Authorization for AI Agents",
+  "secure-rag-pipelines":
+    "Secure Your RAG Pipelines with Fine Grained Authorization",
+} satisfies MetaRecord;

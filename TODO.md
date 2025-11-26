@@ -1,0 +1,7 @@
+- [ ] check styling of footer against live
+- [ ] check styling of header against live
+- [ ] check styling of search bar against live
+- [ ] check behavior of search bar, especially around docs results ranking higher than non-docs
+- [x] make sure that search bar works (check pagefind) 
+- [x] finish pagefind thought
+- [ ] make styling of swagger page look nice

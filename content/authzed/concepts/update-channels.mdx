@@ -1,0 +1,34 @@
+# Update Channels
+
+Update Channels dictate the flow of updates to running SpiceDB clusters.
+
+All channels offer a trade-off between feature availability and update churn.
+While each channel has different qualification standards, all channels offer fully tested GA releases of SpiceDB.
+
+While open source users of the [SpiceDB Operator] have a single update channel of open source releases, AuthZed maintains two configurable channels:
+
+- **Rapid**: every enterprise release of SpiceDB
+- **Regular**: releases qualified by time spent deployed to Rapid, usually trailing by 1-2 releases
+
+[SpiceDB Operator]: ../../spicedb/ops/operator
+
+## Configuring Updates
+
+Once a channel is selected, Update Channels can be configured on two more dimensions: update strategy and rollout strategy.
+
+### Update Strategy
+
+By default, channels are configured for automatic updates.
+
+By unchecking a box, updates can be applied manually by selecting the next release whenever one so chooses.
+
+Regardless of choice, updates can only occur between compatible versions of SpiceDB as dictated by the Update Channel.
+
+### Rollout Strategy
+
+There are two different strategies for upgrading to a new version of SpiceDB:
+
+- **Rolling Update**: zero-downtime, gradual deployment of new SpiceDB instances
+- **Immediate**: involves downtime, but is the fastest way to upgrade
+
+By default, a SpiceDB upgrade is applied using a Rolling Update to avoid downtime.

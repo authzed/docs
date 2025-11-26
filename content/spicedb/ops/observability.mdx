@@ -1,0 +1,159 @@
+import { Callout, Tabs } from "nextra/components";
+import YouTube from "react-youtube";
+
+# Observability Tooling
+
+In order to operate SpiceDB in a reliable and performant fashion, SpiceDB exposes various forms of [observability] metadata.
+
+[observability]: https://www.ibm.com/topics/observability
+
+## Prometheus
+
+Every SpiceDB [command] has a configurable HTTP server that serves observability data.
+
+A [Prometheus metrics endpoint][prom-endpoint] can be found on this server at the path `/metrics`.
+
+Available metrics include operational information about the Go runtime and serving metrics for any servers that are enabled.
+
+[command]: /spicedb/concepts/commands
+[prom-endpoint]: https://prometheus.io/docs/concepts/jobs_instances/
+
+## Profiling
+
+Every SpiceDB [command] has a configurable HTTP server that serves observability data.
+
+[pprof endpoints][go-pprof] for various types of profiles can be found on this server at the path `/debug/pprof`.
+
+The types of profiles available are:
+
+- **cpu**: where a program spends its time while actively consuming CPU cycles
+- **heap**: monitor current and historical memory usage, and to check for memory leaks
+- **threadcreate**: sections of the program that lead the creation of new OS threads
+- **goroutine**: stack traces of all current goroutines
+- **block**: where goroutines block waiting on synchronization primitives (including timer channels)
+- **mutex**: lock contention
+
+For example, to download a CPU profile, you can run the following command:
+
+```sh
+go tool pprof 'http://spicedb.local:9090/debug/pprof/profile'
+```
+
+This will download the profile to `$HOME/pprof` and drop you into a REPL for exploring the data.
+
+Alternatively, you can upload profiles to [pprof.me][pprofme] to share with others.
+
+[command]: /spicedb/concepts/commands
+[go-pprof]: https://pkg.go.dev/runtime/pprof
+[pprofme]: https://pprof.me
+
+## OpenTelemetry Tracing
+
+SpiceDB uses [OpenTelemetry][otel] for [tracing] the lifetime of requests.
+
+You can configure the tracing in SpiceDB via [command flags], prefixed with `otel`.
+
+Here's a video walking through SpiceDB traces using [Jaeger]:
+
+<YouTube videoId="Oa6gB5GRUyA" />
+
+[otel]: https://opentelemetry.io
+[tracing]: https://opentelemetry.io/docs/concepts/signals/traces/
+[command flags]: /spicedb/concepts/commands
+[Jaeger]: https://www.jaegertracing.io
+
+## Structured Logging
+
+SpiceDB emits logs to [standard streams][stdinouterr] using [zerolog].
+
+Logs come in two formats (`console`, `JSON`) and can be configured with the `--log-format` [command flag].
+
+If a output device is non-interactive (i.e. not a terminal) these logs are emitted in [NDJSON] by default.
+
+Here's a comparison of the logs starting up a single SpiceDB v1.25 instance:
+
+<Tabs items={['Console', 'JSON']}>
+  <Tabs.Tab>
+    ```ansi
+    [90m8:00PM[0m [32mINF[0m configured logging [36masync=[0mfalse [36mformat=[0mconsole [36mlog_level=[0minfo [36mprovider=[0mzerolog
+    [90m8:00PM[0m [32mINF[0m configured opentelemetry tracing [36mendpoint=[0m [36minsecure=[0mfalse [36mprovider=[0mnone [36msampleRatio=[0m0.01 [36mservice=[0mspicedb [36mv=[0m0
+    [90m8:00PM[0m [31mWRN[0m this version of SpiceDB is out of date. See: https://github.com/authzed/spicedb/releases/tag/v1.26.0 [36mlatest-released-version=[0mv1.26.0 [36mthis-version=[0mv1.25.0
+    [90m8:00PM[0m [32mINF[0m configuration [36mClusterDispatchCacheConfig.Enabled=[0mtrue [36mClusterDispatchCacheConfig.MaxCost=[0m70% [36mClusterDispatchCacheConfig.Metrics=[0mtrue [36mClusterDispatchCacheConfig.Name=[0mcluster_dispatch [36mClusterDispatchCacheConfig.NumCounters=[0m100000 [36mDatastore=[0mnil [36mDatastoreConfig.BootstrapFileContents=[0m"(map of size 0)" [36mDatastoreConfig.BootstrapFiles=[0m[] [36mDatastoreConfig.BootstrapOverwrite=[0mfalse [36mDatastoreConfig.BootstrapTimeout=[0m10000 [36mDatastoreConfig.ConnectRate=[0m100 [36mDatastoreConfig.DisableStats=[0mfalse [36mDatastoreConfig.EnableConnectionBalancing=[0mtrue [36mDatastoreConfig.EnableDatastoreMetrics=[0mtrue [36mDatastoreConfig.Engine=[0mmemory [36mDatastoreConfig.FollowerReadDelay=[0m4800 [36mDatastoreConfig.GCInterval=[0m180000 [36mDatastoreConfig.GCMaxOperationTime=[0m60000 [36mDatastoreConfig.GCWindow=[0m86400000 [36mDatastoreConfig.LegacyFuzzing=[0m-0.000001 [36mDatastoreConfig.MaxRetries=[0m10 [36mDatastoreConfig.MaxRevisionStalenessPercent=[0m0.1 [36mDatastoreConfig.MigrationPhase=[0m(empty) [36mDatastoreConfig.OverlapKey=[0mkey [36mDatastoreConfig.OverlapStrategy=[0mstatic [36mDatastoreConfig.ReadConnPool.HealthCheckInterval=[0m30000 [36mDatastoreConfig.ReadConnPool.MaxIdleTime=[0m1800000 [36mDatastoreConfig.ReadConnPool.MaxLifetime=[0m1800000 [36mDatastoreConfig.ReadConnPool.MaxLifetimeJitter=[0m0 [36mDatastoreConfig.ReadConnPool.MaxOpenConns=[0m20 [36mDatastoreConfig.ReadConnPool.MinOpenConns=[0m20 [36mDatastoreConfig.ReadOnly=[0mfalse [36mDatastoreConfig.RequestHedgingEnabled=[0mfalse [36mDatastoreConfig.RequestHedgingInitialSlowValue=[0m10 [36mDatastoreConfig.RequestHedgingMaxRequests=[0m1000000 [36mDatastoreConfig.RequestHedgingQuantile=[0m0.95 [36mDatastoreConfig.RevisionQuantization=[0m5000 [36mDatastoreConfig.SpannerCredentialsFile=[0m(empty) [36mDatastoreConfig.SpannerEmulatorHost=[0m(empty) [36mDatastoreConfig.TablePrefix=[0m(empty) [36mDatastoreConfig.URI=[0m(empty) [36mDatastoreConfig.WatchBufferLength=[0m1024 [36mDatastoreConfig.WriteConnPool.HealthCheckInterval=[0m30000 [36mDatastoreConfig.WriteConnPool.MaxIdleTime=[0m1800000 [36mDatastoreConfig.WriteConnPool.MaxLifetime=[0m1800000 [36mDatastoreConfig.WriteConnPool.MaxLifetimeJitter=[0m0 [36mDatastoreConfig.WriteConnPool.MaxOpenConns=[0m10 [36mDatastoreConfig.WriteConnPool.MinOpenConns=[0m10 [36mDisableV1SchemaAPI=[0mfalse [36mDisableVersionResponse=[0mfalse [36mDispatchCacheConfig.Enabled=[0mtrue [36mDispatchCacheConfig.MaxCost=[0m30% [36mDispatchCacheConfig.Metrics=[0mtrue [36mDispatchCacheConfig.Name=[0mdispatch [36mDispatchCacheConfig.NumCounters=[0m10000 [36mDispatchClientMetricsEnabled=[0mtrue [36mDispatchClientMetricsPrefix=[0m(empty) [36mDispatchClusterMetricsEnabled=[0mtrue [36mDispatchClusterMetricsPrefix=[0m(empty) [36mDispatchConcurrencyLimits.Check=[0m0 [36mDispatchConcurrencyLimits.LookupResources=[0m0 [36mDispatchConcurrencyLimits.LookupSubjects=[0m0 [36mDispatchConcurrencyLimits.ReachableResources=[0m0 [36mDispatchHashringReplicationFactor=[0m100 [36mDispatchHashringSpread=[0m1 [36mDispatchMaxDepth=[0m50 [36mDispatchServer.Address=[0m:50053 [36mDispatchServer.BufferSize=[0m0 [36mDispatchServer.ClientCAPath=[0m(empty) [36mDispatchServer.Enabled=[0mfalse [36mDispatchServer.MaxConnAge=[0m30000 [36mDispatchServer.MaxWorkers=[0m0 [36mDispatchServer.Network=[0mtcp [36mDispatchServer.TLSCertPath=[0m(empty) [36mDispatchServer.TLSKeyPath=[0m(empty) [36mDispatchUpstreamAddr=[0m(empty) [36mDispatchUpstreamCAPath=[0m(empty) [36mDispatchUpstreamTimeout=[0m60000 [36mDispatcher=[0mnil [36mEnableExperimentalWatchableSchemaCache=[0mfalse [36mGRPCAuthFunc=[0m(value) [36mGRPCServer.Address=[0m:50051 [36mGRPCServer.BufferSize=[0m0 [36mGRPCServer.ClientCAPath=[0m(empty) [36mGRPCServer.Enabled=[0mtrue [36mGRPCServer.MaxConnAge=[0m30000 [36mGRPCServer.MaxWorkers=[0m0 [36mGRPCServer.Network=[0mtcp [36mGRPCServer.TLSCertPath=[0m(empty) [36mGRPCServer.TLSKeyPath=[0m(empty) [36mGlobalDispatchConcurrencyLimit=[0m50 [36mHTTPGateway.HTTPAddress=[0m:8443 [36mHTTPGateway.HTTPEnabled=[0mfalse [36mHTTPGateway.HTTPTLSCertPath=[0m(empty) [36mHTTPGateway.HTTPTLSKeyPath=[0m(empty) [36mHTTPGatewayCorsAllowedOrigins=[0m[*] [36mHTTPGatewayCorsEnabled=[0mfalse [36mHTTPGatewayUpstreamAddr=[0m(empty) [36mHTTPGatewayUpstreamTLSCertPath=[0m(empty) [36mMaxCaveatContextSize=[0m4096 [36mMaxDatastoreReadPageSize=[0m1000 [36mMaxRelationshipContextSize=[0m25000 [36mMaximumPreconditionCount=[0m1000 [36mMaximumUpdatesPerWrite=[0m1000 [36mMetricsAPI.HTTPAddress=[0m:9090 [36mMetricsAPI.HTTPEnabled=[0mtrue [36mMetricsAPI.HTTPTLSCertPath=[0m(empty) [36mMetricsAPI.HTTPTLSKeyPath=[0m(empty) [36mNamespaceCacheConfig.Enabled=[0mtrue [36mNamespaceCacheConfig.MaxCost=[0m32MiB [36mNamespaceCacheConfig.Metrics=[0mtrue [36mNamespaceCacheConfig.Name=[0mnamespace [36mNamespaceCacheConfig.NumCounters=[0m1000 [36mPresharedSecureKey=[0m(sensitive) [36mSchemaPrefixesRequired=[0mfalse [36mShutdownGracePeriod=[0m0 [36mSilentlyDisableTelemetry=[0mfalse [36mStreamingAPITimeout=[0m30000 [36mTelemetryCAOverridePath=[0m(empty) [36mTelemetryEndpoint=[0mhttps://telemetry.authzed.com [36mTelemetryInterval=[0m3600000 [36mV1SchemaAdditiveOnly=[0mfalse
+    [90m8:00PM[0m [32mINF[0m using memory datastore engine
+    [90m8:00PM[0m [31mWRN[0m in-memory datastore is not persistent and not feasible to run in a high availability fashion
+    [90m8:00PM[0m [32mINF[0m configured namespace cache [36mdefaultTTL=[0m0 [36mmaxCost=[0m"32 MiB" [36mnumCounters=[0m1000
+    [90m8:00PM[0m [32mINF[0m datastore driver explicitly asked to skip schema watch [36mdatastore-type=[0m*memdb.memdbDatastore
+    [90m8:00PM[0m [32mINF[0m configured dispatch cache [36mdefaultTTL=[0m20600 [36mmaxCost=[0m"7.6 GiB" [36mnumCounters=[0m10000
+    [90m8:00PM[0m [32mINF[0m configured dispatcher [36mbalancerconfig=[0m{"loadBalancingConfig":[{"consistent-hashring":{"replicationFactor":100,"spread":1}}]} [36mconcurrency-limit-check-permission=[0m50 [36mconcurrency-limit-lookup-resources=[0m50 [36mconcurrency-limit-lookup-subjects=[0m50 [36mconcurrency-limit-reachable-resources=[0m50
+    [90m8:00PM[0m [32mINF[0m grpc server started serving [36maddr=[0m:50051 [36minsecure=[0mtrue [36mnetwork=[0mtcp [36mservice=[0mgrpc [36mworkers=[0m0
+    [90m8:00PM[0m [32mINF[0m running server [36mdatastore=[0m*proxy.observableProxy
+    [90m8:00PM[0m [32mINF[0m checking for startable datastore
+    [90m8:00PM[0m [32mINF[0m http server started serving [36maddr=[0m:9090 [36minsecure=[0mtrue [36mservice=[0mmetrics
+    [90m8:00PM[0m [32mINF[0m telemetry reporter scheduled [36mendpoint=[0mhttps://telemetry.authzed.com [36minterval=[0m1h0m0s [36mnext=[0m1m35s
+    [90m8:00PM[0m [32mINF[0m received interrupt
+    [90m8:00PM[0m [32mINF[0m shutting down
+    [90m8:00PM[0m [32mINF[0m http server stopped serving [36maddr=[0m:9090 [36mservice=[0mmetrics
+    [90m8:00PM[0m [32mINF[0m grpc server stopped serving [36maddr=[0m:50051 [36mnetwork=[0mtcp [36mservice=[0mgrpc
+    ```
+  </Tabs.Tab>
+
+  <Tabs.Tab>
+    ```json
+    {"level":"info","format":"json","log_level":"info","provider":"zerolog","async":false,"time":"2023-11-02T16:48:07-04:00","message":"configured logging"}
+    {"level":"info","v":0,"provider":"none","endpoint":"","service":"spicedb","insecure":false,"sampleRatio":0.01,"time":"2023-11-02T16:48:07-04:00","message":"configured opentelemetry tracing"}
+    {"level":"warn","this-version":"v1.25.0","latest-released-version":"v1.26.0","time":"2023-11-02T16:48:07-04:00","message":"this version of SpiceDB is out of date. See: https://github.com/authzed/spicedb/releases/tag/v1.26.0"}
+    {"level":"info","ClusterDispatchCacheConfig.Enabled":true,"ClusterDispatchCacheConfig.MaxCost":"70%","ClusterDispatchCacheConfig.Metrics":true,"ClusterDispatchCacheConfig.Name":"cluster_dispatch","ClusterDispatchCacheConfig.NumCounters":100000,"Datastore":"nil","DatastoreConfig.BootstrapFileContents":"(map of size 0)","DatastoreConfig.BootstrapFiles":"[]","DatastoreConfig.BootstrapOverwrite":false,"DatastoreConfig.BootstrapTimeout":10000,"DatastoreConfig.ConnectRate":100,"DatastoreConfig.DisableStats":false,"DatastoreConfig.EnableConnectionBalancing":true,"DatastoreConfig.EnableDatastoreMetrics":true,"DatastoreConfig.Engine":"memory","DatastoreConfig.FollowerReadDelay":4800,"DatastoreConfig.GCInterval":180000,"DatastoreConfig.GCMaxOperationTime":60000,"DatastoreConfig.GCWindow":86400000,"DatastoreConfig.LegacyFuzzing":-0.000001,"DatastoreConfig.MaxRetries":10,"DatastoreConfig.MaxRevisionStalenessPercent":0.1,"DatastoreConfig.MigrationPhase":"(empty)","DatastoreConfig.OverlapKey":"key","DatastoreConfig.OverlapStrategy":"static","DatastoreConfig.ReadConnPool.HealthCheckInterval":30000,"DatastoreConfig.ReadConnPool.MaxIdleTime":1800000,"DatastoreConfig.ReadConnPool.MaxLifetime":1800000,"DatastoreConfig.ReadConnPool.MaxLifetimeJitter":0,"DatastoreConfig.ReadConnPool.MaxOpenConns":20,"DatastoreConfig.ReadConnPool.MinOpenConns":20,"DatastoreConfig.ReadOnly":false,"DatastoreConfig.RequestHedgingEnabled":false,"DatastoreConfig.RequestHedgingInitialSlowValue":10,"DatastoreConfig.RequestHedgingMaxRequests":1000000,"DatastoreConfig.RequestHedgingQuantile":0.95,"DatastoreConfig.RevisionQuantization":5000,"DatastoreConfig.SpannerCredentialsFile":"(empty)","DatastoreConfig.SpannerEmulatorHost":"(empty)","DatastoreConfig.TablePrefix":"(empty)","DatastoreConfig.URI":"(empty)","DatastoreConfig.WatchBufferLength":1024,"DatastoreConfig.WriteConnPool.HealthCheckInterval":30000,"DatastoreConfig.WriteConnPool.MaxIdleTime":1800000,"DatastoreConfig.WriteConnPool.MaxLifetime":1800000,"DatastoreConfig.WriteConnPool.MaxLifetimeJitter":0,"DatastoreConfig.WriteConnPool.MaxOpenConns":10,"DatastoreConfig.WriteConnPool.MinOpenConns":10,"DisableV1SchemaAPI":false,"DisableVersionResponse":false,"DispatchCacheConfig.Enabled":true,"DispatchCacheConfig.MaxCost":"30%","DispatchCacheConfig.Metrics":true,"DispatchCacheConfig.Name":"dispatch","DispatchCacheConfig.NumCounters":10000,"DispatchClientMetricsEnabled":true,"DispatchClientMetricsPrefix":"(empty)","DispatchClusterMetricsEnabled":true,"DispatchClusterMetricsPrefix":"(empty)","DispatchConcurrencyLimits.Check":0,"DispatchConcurrencyLimits.LookupResources":0,"DispatchConcurrencyLimits.LookupSubjects":0,"DispatchConcurrencyLimits.ReachableResources":0,"DispatchHashringReplicationFactor":100,"DispatchHashringSpread":1,"DispatchMaxDepth":50,"DispatchServer.Address":":50053","DispatchServer.BufferSize":0,"DispatchServer.ClientCAPath":"(empty)","DispatchServer.Enabled":false,"DispatchServer.MaxConnAge":30000,"DispatchServer.MaxWorkers":0,"DispatchServer.Network":"tcp","DispatchServer.TLSCertPath":"(empty)","DispatchServer.TLSKeyPath":"(empty)","DispatchUpstreamAddr":"(empty)","DispatchUpstreamCAPath":"(empty)","DispatchUpstreamTimeout":60000,"Dispatcher":"nil","EnableExperimentalWatchableSchemaCache":false,"GRPCAuthFunc":"(value)","GRPCServer.Address":":50051","GRPCServer.BufferSize":0,"GRPCServer.ClientCAPath":"(empty)","GRPCServer.Enabled":true,"GRPCServer.MaxConnAge":30000,"GRPCServer.MaxWorkers":0,"GRPCServer.Network":"tcp","GRPCServer.TLSCertPath":"(empty)","GRPCServer.TLSKeyPath":"(empty)","GlobalDispatchConcurrencyLimit":50,"HTTPGateway.HTTPAddress":":8443","HTTPGateway.HTTPEnabled":false,"HTTPGateway.HTTPTLSCertPath":"(empty)","HTTPGateway.HTTPTLSKeyPath":"(empty)","HTTPGatewayCorsAllowedOrigins":"[*]","HTTPGatewayCorsEnabled":false,"HTTPGatewayUpstreamAddr":"(empty)","HTTPGatewayUpstreamTLSCertPath":"(empty)","MaxCaveatContextSize":4096,"MaxDatastoreReadPageSize":1000,"MaxRelationshipContextSize":25000,"MaximumPreconditionCount":1000,"MaximumUpdatesPerWrite":1000,"MetricsAPI.HTTPAddress":":9090","MetricsAPI.HTTPEnabled":true,"MetricsAPI.HTTPTLSCertPath":"(empty)","MetricsAPI.HTTPTLSKeyPath":"(empty)","NamespaceCacheConfig.Enabled":true,"NamespaceCacheConfig.MaxCost":"32MiB","NamespaceCacheConfig.Metrics":true,"NamespaceCacheConfig.Name":"namespace","NamespaceCacheConfig.NumCounters":1000,"PresharedSecureKey":"(sensitive)","SchemaPrefixesRequired":false,"ShutdownGracePeriod":0,"SilentlyDisableTelemetry":false,"StreamingAPITimeout":30000,"TelemetryCAOverridePath":"(empty)","TelemetryEndpoint":"https://telemetry.authzed.com","TelemetryInterval":3600000,"V1SchemaAdditiveOnly":false,"time":"2023-11-02T16:48:07-04:00","message":"configuration"}
+    {"level":"info","time":"2023-11-02T16:48:07-04:00","message":"using memory datastore engine"}
+    {"level":"warn","time":"2023-11-02T16:48:07-04:00","message":"in-memory datastore is not persistent and not feasible to run in a high availability fashion"}
+    {"level":"info","maxCost":"32 MiB","numCounters":1000,"defaultTTL":0,"time":"2023-11-02T16:48:07-04:00","message":"configured namespace cache"}
+    {"level":"info","datastore-type":"*memdb.memdbDatastore","time":"2023-11-02T16:48:07-04:00","message":"datastore driver explicitly asked to skip schema watch"}
+    {"level":"info","maxCost":"7.6 GiB","numCounters":10000,"defaultTTL":20600,"time":"2023-11-02T16:48:07-04:00","message":"configured dispatch cache"}
+    {"level":"info","concurrency-limit-check-permission":50,"concurrency-limit-lookup-resources":50,"concurrency-limit-lookup-subjects":50,"concurrency-limit-reachable-resources":50,"balancerconfig":{"loadBalancingConfig":[{"consistent-hashring":{"replicationFactor":100,"spread":1}}]},"time":"2023-11-02T16:48:07-04:00","message":"configured dispatcher"}
+    {"level":"info","addr":":50051","network":"tcp","service":"grpc","workers":0,"insecure":true,"time":"2023-11-02T16:48:07-04:00","message":"grpc server started serving"}
+    {"level":"info","datastore":"*proxy.observableProxy","time":"2023-11-02T16:48:07-04:00","message":"running server"}
+    {"level":"info","time":"2023-11-02T16:48:07-04:00","message":"checking for startable datastore"}
+    {"level":"info","addr":":9090","service":"metrics","insecure":true,"time":"2023-11-02T16:48:07-04:00","message":"http server started serving"}
+    {"level":"info","interval":"1h0m0s","endpoint":"https://telemetry.authzed.com","next":"7s","time":"2023-11-02T16:48:07-04:00","message":"telemetry reporter scheduled"}
+    {"level":"info","time":"2023-11-02T16:48:08-04:00","message":"received interrupt"}
+    {"level":"info","time":"2023-11-02T16:48:08-04:00","message":"shutting down"}
+    {"level":"info","addr":":9090","service":"metrics","time":"2023-11-02T16:48:08-04:00","message":"http server stopped serving"}
+    {"level":"info","addr":":50051","network":"tcp","service":"grpc","time":"2023-11-02T16:48:08-04:00","message":"grpc server stopped serving"}
+    ```
+  </Tabs.Tab>
+</Tabs>
+
+[zerolog]: https://github.com/rs/zerolog
+[command flag]: /spicedb/concepts/commands
+[stdinouterr]: https://en.wikipedia.org/wiki/Standard_streams
+[NDJSON]: https://github.com/ndjson/ndjson-spec
+
+## Audit Logs
+
+Audit Logging is functionality exclusive to AuthZed products that publishes logs of SpiceDB API operations to a log sink.
+
+You can read more about this functionality on the [Audit Logging documentation][audit-logging].
+
+[audit-logging]: ../../authzed/concepts/audit-logging
+
+## Telemetry
+
+SpiceDB reports metrics that are used to understand how clusters are being configured and the performance they are experiencing.
+The intent of collecting this information is to prioritize development that will have the most impact on the community.
+
+<Callout type="info">
+  Telemetry never shares data stored in SpiceDB that may contain anything sensitive.
+
+Telemetry can always be disabled by providing the flag `--telemetry-endpoint=""`.
+
+</Callout>
+
+[TELEMETRY.md] documents the exact information being collected.
+
+You can find all of the code in [internal/telemetry].
+
+Telemetry is reported via the [Prometheus Remote Write protocol][prom-remote-write].
+Any metrics prefixed with `spicedb_telemetry` are reported hourly to `telemetry.authzed.com`.
+
+[TELEMETRY.md]: https://github.com/authzed/spicedb/blob/main/TELEMETRY.md
+[internal/telemetry]: https://github.com/authzed/spicedb/tree/main/internal/telemetry
+[prom-remote-write]: https://prometheus.io/docs/concepts/remote_write_spec/

@@ -23,8 +23,7 @@ const textProtoGrammar = JSON.parse(
 );
 
 const withNextra = nextra({
-  theme: "nextra-theme-docs",
-  themeConfig: "./theme.config.tsx",
+  contentDirBasePath: '/docs',
   latex: true,
   search: { codeblocks: false },
   defaultShowCopyCode: true,
@@ -60,6 +59,10 @@ const withNextra = nextra({
 
 export default withNextra({
   basePath: process.env.NEXT_PUBLIC_BASE_DIR ?? undefined,
+  // NOTE: when you're using the `content` dir approach with nextra,
+  // you need this setting to make it so that static HTML is generated
+  // during the build step. This is also what enables pagefind to work.
+  output: "export",
   assetPrefix:
     process.env.VERCEL_ENV === "production"
       ? "https://docs-authzed.vercel.app/docs"
