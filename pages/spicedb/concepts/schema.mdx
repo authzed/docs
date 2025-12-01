@@ -437,6 +437,41 @@ Examples:
   to a _computed_ set of subjects.
 </Callout>
 
+### Private/Internal Identifiers
+
+SpiceDB supports using an underscore (`_`) prefix for identifiers to establish a convention for marking definitions, relations, or permissions as "private" or "internal". This is a naming convention only—it does not enforce any access restrictions.
+
+This convention is useful for:
+
+- **Synthetic permissions**: Permissions that exist only to compose other permissions
+- **Internal relations**: Relations not meant to be directly referenced by application code
+- **Implementation details**: Parts of your schema that may change without affecting the public API
+
+```zed
+definition document {
+    relation viewer: user
+    relation _internal_viewer: user  // private: internal use only
+
+    permission _can_view = viewer + _internal_viewer  // private: synthetic
+    permission view = _can_view  // public API
+}
+```
+
+<Callout type="info">
+  The underscore prefix is purely a naming convention to signal intent to other
+  developers. SpiceDB does not treat underscore-prefixed identifiers differently
+  at runtime—they can still be used in relationships and permission checks like
+  any other identifier.
+</Callout>
+
+#### Identifier Rules
+
+- Identifiers can begin with a lowercase letter (`a-z`) or underscore (`_`)
+- After the first character, identifiers can contain lowercase letters, numbers, and underscores
+- Identifiers must be 3-64 characters long and end with an alphanumeric character
+- Valid: `_ab`, `_private`, `_internal_relation`, `_helper123`
+- Invalid: `_` (too short), `_a` (too short), `_trailing_` (cannot end with underscore)
+
 ## Comments
 
 ### Documentation Comments
