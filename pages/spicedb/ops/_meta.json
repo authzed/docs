@@ -2,5 +2,6 @@
   "observability": "Observability Tooling",
   "deploying-spicedb-operator": "Deploying the SpiceDB Operator",
   "ai-agent-authorization": "Authorization for AI Agents",
-  "secure-rag-pipelines": "Secure Your RAG Pipelines with Fine Grained Authorization"
+  "secure-rag-pipelines": "Secure Your RAG Pipelines with Fine Grained Authorization",
+  "spicedb-langchain-langgraph-rag": "Fine-Grained Authorization for RAG using LangChain & LangGraph"
 }
