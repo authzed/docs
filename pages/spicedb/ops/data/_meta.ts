@@ -1,5 +1,5 @@
 export default {
   "bulk-operations": "Bulk Importing Relationships",
   "writing-relationships": "Writing Relationships",
-  migrations: "Migrations",
+  migrations: "Migrating between SpiceDB instances",
 };
