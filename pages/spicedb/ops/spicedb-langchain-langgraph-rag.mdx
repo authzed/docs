@@ -47,13 +47,13 @@ sys.path.append("/path/to/spicedb-rag-authorization")
 ## 2. Prerequisites
 
 This guide will demonstrate how to do fine-grained authorization with SpiceDB, for RAG running locally.
-To run in production, run SpiceDB on [AuthZed Cloud](https://authzed.com/docs/spicedb/getting-started/protecting-a-blog#create-a-permissions-system-on-authzed-cloud)
 
-### Run SpiceDB locally
+### Run SpiceDB
+
+To run locally, use:
 
 ```bash
 docker run --rm -p 50051:50051 authzed/spicedb serve --grpc-preshared-key "sometoken" --grpc-no-tls
-```
 
 ### Create a SpiceDB schema
 
