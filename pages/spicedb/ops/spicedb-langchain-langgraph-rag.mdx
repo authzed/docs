@@ -14,7 +14,7 @@ However, **standard RAG pipelines do not consider permissions** - meaning LLMs m
 This guide shows how to solve that problem using:
 
 - **SpiceDB** as the source of truth for authorization
-- [**spicedb-rag-authorization**](..link...) for fast post-retrieval filtering
+- [**spicedb-rag-authorization**](https://github.com/sohanmaheshwar/spicedb-rag-authorization) for fast post-retrieval filtering
 - **LangChain** for LLM pipelines (or)
 - **LangGraph** for stateful, multi-step workflows and agents
 
@@ -26,7 +26,19 @@ The library implements **post-filter authorization**, meaning:
 
 ---
 
-## 1. Installation
+## 1. Prerequisites
+
+### Run SpiceDB
+
+To run locally, use:
+
+```bash
+docker run --rm -p 50051:50051 authzed/spicedb serve --grpc-preshared-key "sometoken" --grpc-no-tls
+```
+
+---
+
+## 2. Installation
 
 The package is not yet published on PyPI.
 Install directly from GitHub:
@@ -35,25 +47,12 @@ Install directly from GitHub:
 pip install "git+https://github.com/sohanmaheshwar/spicedb-rag-authorization.git#egg=spicedb-rag-auth[all]"
 ```
 
-Or clone locally with `git clone ....` and then run:
+Or clone locally with `git clone https://github.com/sohanmaheshwar/spicedb-rag-authorization.git` and then run:
 
 ```python
 import sys
 sys.path.append("/path/to/spicedb-rag-authorization")
 ```
-
----
-
-## 2. Prerequisites
-
-This guide will demonstrate how to do fine-grained authorization with SpiceDB, for RAG running locally.
-
-### Run SpiceDB
-
-To run locally, use:
-
-```bash
-docker run --rm -p 50051:50051 authzed/spicedb serve --grpc-preshared-key "sometoken" --grpc-no-tls
 
 ### Create a SpiceDB schema
 
@@ -70,6 +69,7 @@ definition article {
 }
 EOF
 )
+```
 
 ### Add relationships
 
@@ -93,10 +93,10 @@ Document(
 )
 ```
 
-The metadata key must match the configured `resource_id_key`.
+The metadata key must match the configured `resource_id_key` which in this case is `article_id`.
 
 ---
-
+    
 ## 4. LangChain Integration
 
 This is the simplest way to add authorization to a LangChain RAG pipeline.
@@ -172,7 +172,7 @@ You would choose LangGraph when:
 
 LangGraph is ideal for more advanced AI systems, such as conversational RAG assistants, agents with tool-use, or pipelines with complex authorization or business logic.
 
-Our [library](..link..) provides:
+Our [library](https://github.com/sohanmaheshwar/spicedb-rag-authorization) provides:
 
 - `RAGAuthState` — a TypedDict defining the required state fields  
 - `create_auth_node()` — auto-configured authorization node  
