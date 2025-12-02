@@ -144,6 +144,8 @@ client = Client(
     "localhost:50051",
     bearer_token_credentials("your-token-here"),
 )
+metadata = Struct()
+metadata.update({"request_id": "12345"})
 client.WriteRelationships(WriteRelationshipsRequest(
   updates=[
       RelationshipUpdate(
@@ -160,7 +162,7 @@ client.WriteRelationships(WriteRelationshipsRequest(
                 ),
       ),
   ],
-  optional_transaction_metadata=Struct({"request_id": "12345"}),
+  optional_transaction_metadata=metadata,
 })
 
 ...
