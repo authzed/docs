@@ -57,28 +57,19 @@ docker run --rm -p 50051:50051 authzed/spicedb serve --grpc-preshared-key "somet
 
 ### Create a SpiceDB schema
 
-```
-definition user {}
 
-definition article {
-    relation viewer: user
-    permission view = viewer
-}
-```
-
-We use [zed](https://github.com/authzed/zed) - the CLI for SpiceDB, to write schema and relationships.
-Typically, this would be a gRPC/API call in your application.
+We will use the [zed](https://github.com/authzed/zed) CLI to write schema and relationships. In your production application, this would be replaced with an API call.
 
 ```bash
-zed schema write <(cat << EOF
+zed context set local localhost:50051 sometoken --insecure
+zed schema write --insecure <(cat << EOF
 definition user {}
 definition article {
     relation viewer: user
     permission view = viewer
 }
 EOF
-) --insecure
-```
+)
 
 ### Add relationships
 
