@@ -57,7 +57,8 @@ sys.path.append("/path/to/spicedb-rag-authorization")
 ### Create a SpiceDB schema
 
 
-We will use the [zed](https://github.com/authzed/zed) CLI to write schema and relationships. In your production application, this would be replaced with an API call.
+We will use the [zed](https://github.com/authzed/zed) CLI to write schema and relationships.
+In your production application, this would be replaced with an API call.
 
 ```bash
 zed context set local localhost:50051 sometoken --insecure
@@ -96,7 +97,7 @@ Document(
 The metadata key must match the configured `resource_id_key` which in this case is `article_id`.
 
 ---
-    
+
 ## 4. LangChain Integration
 
 This is the simplest way to add authorization to a LangChain RAG pipeline.
