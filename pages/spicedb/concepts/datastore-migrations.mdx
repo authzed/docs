@@ -6,7 +6,7 @@ Like all actively developed software, SpiceDB has new versions of the software r
 Updates are published to the [SpiceDB GitHub releases page] and announced via [Twitter] and [Discord].
 
 Transitioning between versions is often as simple as executing a new binary or container, but there are times when updates are more complex.
-For example, releases that include changes to datastore can require that users update to specific versions and perform a series of actions in order to update while avoiding any downtime.
+Releases that include changes to datastore (for example, adding a new index) can require that users run a command to update the datastore version.
 
 <Callout type="info">
   This page explains migrating the schema of a datastore underlying SpiceDB. If
@@ -16,82 +16,51 @@ For example, releases that include changes to datastore can require that users u
   [here](/spicedb/modeling/migrating-schema).
 </Callout>
 
-<Callout type="warning">
-  SpiceDB strives to main compatibility across each version and its following minor version.
-
-You should refer to the Upgrade Notes section of each release to find instructions for updating to avoid downtime.
-
-To automate upgrades without downtime, consider deploying the [SpiceDB Operator].
-
 [SpiceDB Operator]: /spicedb/ops/operator
-
-</Callout>
-
 [SpiceDB GitHub releases page]: https://github.com/authzed/spicedb/releases
 [Twitter]: https://twitter.com/authzed
 [Discord]: https://authzed.com/discord
-[datastore migrations]: #what-are-migrations
 
-## Migrations
-
-### What are migrations?
+## Overview
 
 Before a datastore can be used by SpiceDB or before running a new version of SpiceDB, you must execute all available migrations.
 
 <Callout type="info">
-  The only exception is the [memdb datastore](datastores#memdb) because it does
-  not persist any data.
+  All datastores supported by SpiceDB (CockroachDB, MySQL, etc) support
+  migrations. The only exception is the [memdb datastore](datastores#memdb)
+  because it does not persist any data.
 </Callout>
 
-In order to migrate a datastore, run the following command with your desired values:
+For this purpose, the SpiceDB binary contains a migration command, `spicedb datastore migrate`. To migrate your datastore to the latest revision, run the following command with your desired values:
 
 ```
-spicedb migrate head \
+spicedb datastore migrate head \
     --datastore-engine $DESIRED_ENGINE \
     --datastore-conn-uri $CONNECTION_STRING
 ```
 
-For all software that maintains data, there can be updates to code that rely on also updating the data, too.
-The process of updating data to use new versions of software is called _migrating_.
+In most cases, this command will not actually cause downtime, but one should confirm that's the case in a non-production environment before executing on production environments with uptime requirements.
 
-SpiceDB users will see migrations crop up in two places: when they update versions of SpiceDB and when they write backwards incompatible changes to their schema.
-This document's focus is on the former; the latter is documented [here].
+## Migration Compatibility
 
-[here]: ../modeling/migrating-schema
-
-### SpiceDB migration tooling
-
-SpiceDB ships with a migration command: `spicedb migrate`.
-This command powers all of Authzed products' zero down-time migrations, so it's guaranteed to be battle-tested and supportable.
-And while you are free to explore other tools to help you migrate, we cannot recommend them.
-
-If you do not care about causing downtime or you are bringing up a new cluster, you can always run the following command to migrate:
-
-```
-spicedb migrate head
-```
-
-In most cases, this command will not actually cause downtime, but one should confirm that's the case before executing on production environments with uptime requirements.
-
-## DB Migration Compatibility
-
-On startup, SpiceDB checks to see whether its desired DB migration tag matches the DB migration tag held in the database.
-If they differ, the instance will error out, which prevents an instance from coming up when it can't run against the current datastore DDL.
-
-SpiceDB only performs this check on startup, which means that a new DB migration won't cause existing SpiceDB instances to break (unless they restart for other reasons),
+On startup, SpiceDB checks to see whether its desired datastore migration tag matches the migration tag held in the datastore itself.
+If they differ, SpiceDB will error out. SpiceDB only performs this check on startup, which means that a new datastore migration won't cause existing SpiceDB instances to break (unless they restart for other reasons),
 provided that the DDL is compatible with the existing instance.
 
-The information in the Upgrade Notes of a given release can help determine whether the DDL will be compatible between two versions.
-Using the SpiceDB Operator is the easiest way to ensure that all DB migrations are compatible and applied correctly.
+SpiceDB strives to main compatibility across each version and its following minor version. When doing a major version update, we recommend reading the Upgrade Notes of the target release to see if any additional steps are required on your side.
+
+Using the [SpiceDB Operator] is the easiest way to ensure that all datastore migrations are compatible and applied correctly.
 
 ### Overriding Migration Compatibility
 
-Under some circumstances, you may want to run a version of SpiceDB against a DB migration other than the one it's expecting.
-If you know that the version of SpiceDB you want to run is compatible with the DB migration, you can use the `--datastore-allowed-migrations`
+Under some circumstances, you may want to run a version of SpiceDB against a datastore migration other than the one it's expecting.
+If you know that the version of SpiceDB you want to run is compatible with the datastore migration, you can use the `--datastore-allowed-migrations`
 flag on `spicedb serve` to provide a list of compatible DB migrations:
 
 ```
-spicedb serve <...> --datastore-allowed-migrations add-expiration-support --datastore-allowed-migrations add-transaction-metadata-table
+spicedb serve <...> \
+  --datastore-allowed-migrations add-expiration-support \
+  --datastore-allowed-migrations add-transaction-metadata-table
 ```
 
 More information on the use case/motivation is available in [this issue](https://github.com/authzed/spicedb/issues/2135).

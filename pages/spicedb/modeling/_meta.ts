@@ -5,7 +5,7 @@ export default {
   "validation-testing-debugging": "Validation, Testing, Debugging",
   "recursion-and-max-depth": "Recursion & Max Depth",
   "protecting-a-list-endpoint": "Protecting a List Endpoint",
-  "migrating-schema": "Updating and Migrating Schema",
+  "migrating-schema": "Migrating a Schema",
   "access-control-management": "Access Control Management",
   "access-control-audit": "Access Control Audit",
   attributes: "Incorporating Attributes",
