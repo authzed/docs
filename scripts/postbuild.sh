@@ -6,4 +6,4 @@ set -e
 pnpm exec next-sitemap
 
 # Generate search
-pnpm gen:pagefind
+pagefind --site out --output-path public/_pagefind --verbose

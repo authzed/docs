@@ -26,11 +26,3 @@ export function TocCTA() {
     <></>
   );
 }
-
-export function NavCTA() {
-  const pathname = usePathname();
-  const isCommercial = pathname.startsWith("/authzed/");
-
-  // TODO: No-ops for now
-  return isCommercial ? <></> : <></>;
-}

@@ -1,12 +1,12 @@
 import { Layout, Navbar, Footer } from 'nextra-theme-docs'
 import Link from "next/link";
-import { Head, Search } from 'nextra/components'
+import { Head, Search, Banner } from 'nextra/components'
 import { getPageMap } from 'nextra/page-map'
 import 'nextra-theme-docs/style.css'
 import Logo from '@/components/icons/logo.svg'
 import LogoIcon from '@/components/icons/logo-icon.svg'
-import Banner from '@/components/banner'
-import { NavCTA, TocCTA } from "@/components/cta";
+import BannerContents from '@/components/banner'
+import { TocCTA } from "@/components/cta";
 import type { Metadata } from 'next'
 
 // TODO: make sure this is all right
@@ -29,9 +29,7 @@ export default async function RootLayout({ children }) {
       logoLink="https://authzed.com"
       chatLink="https://authzed.com/discord"
       projectLink="https://github.com/authzed/spicedb"
-    >
-    <NavCTA />
-    </Navbar>
+    />
   )
   // TODO
   /*
@@ -70,19 +68,18 @@ export default async function RootLayout({ children }) {
       data-pagefind-sort="internal:1"
       >
         <Layout
-          banner={<Banner />}
+          banner={
+            <Banner dismissible={false}>
+            <BannerContents />
+            </Banner>
+          }
           navbar={navbar}
           footer={<Footer>
-                      <div className="size-sm">
-            {/* TODO: Add footer links here */}
             <Link href="https://authzed.com" title="AuthZed">
               <LogoIcon height={20} />
             </Link>
-          </div>
-
-          <div className="nx-text-xs">
-            &copy; {new Date().getFullYear()} AuthZed.
-          </div>
+            {' '}
+          &copy; {new Date().getFullYear()} AuthZed.
             </Footer>
             }
           darkMode
