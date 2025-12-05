@@ -1,4 +1,4 @@
-import { Callout, Steps } from 'nextra/components'
+import { Callout, Steps } from "nextra/components";
 
 # Deploying the SpiceDB Operator
 
@@ -6,7 +6,7 @@ The [SpiceDB Operator] is the best way to run SpiceDB in production.
 
 This guide will walk you through the steps to deploy the SpiceDB Operator to a [Kubernetes] cluster and confirm it's functional by creating a simple SpiceDB deployment.
 
-[SpiceDB Operator]: ../concepts/operator
+[SpiceDB Operator]: ../ops/operator
 [Kubernetes]: https://kubernetes.io
 
 ## Steps
@@ -60,7 +60,8 @@ You can now create and configure SpiceDB clusters by applying `SpiceDBCluster` r
 <Callout type="warning">
   The following manifests configure a simple deployment, not a secure one.
 
-  Do not use these values in production.
+Do not use these values in production.
+
 </Callout>
 
 Apply a SpiceDBCluster and required [Secret] using the following command:

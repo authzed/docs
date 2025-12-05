@@ -1,46 +1,43 @@
-import { Callout } from 'nextra/components'
+import { Callout } from "nextra/components";
 
-## Relationships
+# Relationships
 
-Relationships bind together two Objects (a Subject and a Resource) via a Relation.
-The concept behind ReBAC authorization systems is that by following a chain of relationships, one can determine access.
-
-In SpiceDB, a functioning Permissions System is the combination of [Schema], which defines the structure of data, and Relationships which are the data.
+In SpiceDB, a functioning Permissions System is the combination of [Schema], which defines the structure of data, and Relationships, which are the data.
 
 [schema]: ./schema
 
 ## Understanding Relationships
 
-At its core, authorization logic fundamentally reduces to asking a single question:
+Let's start with a simple schema that models a document sharing system:
 
-> Is this actor allowed to perform this action on this resource?
+```zed
+definition user {}
 
-This question can be broken down into core components:
+definition team {
+  relation member: user
+}
 
+definition document {
+  # both specific users and all members of specific teams can edit the document
+  relation editor: user | team#member
+}
 ```
-Is this actor allowed to perform this action on this resource?
-   /¯¯¯¯¯¯¯/                     /¯¯¯¯¯¯¯¯¯/    /¯¯¯¯¯¯¯¯¯¯¯/
-    object                      permission or      object
-   (subject)                     relation        (resource)
-```
 
-In SpiceDB parlance, _this actor_ and _this resource_ are both [Objects] and _this action_ is a [Permission] or [Relation] (consider them equivalant for now).
-By focusing solely on these components of the question, it becomes clear that this is the same structure as a Relationship: two Objects and a Relation.
+This schema defines three types of [Objects]: `user`, `team` and `document`. The `document` type has one **relation** defined on it: `editor`.
 
-The power of ReBAC comes from transforming this basic question into another one:
+A **relation** is like a class definition in Object-Oriented programming or a type in a strongly-typed language: it represents a possible type of connection defined in your schema. For example: "documents have editors".
 
-> Does there exist a chain of relationships starting at this resource through this relation that ultimately reaches this subject?
+A **relationship** is a specific instance of a relation - it's the actual data. For example: "user `emilia` is an editor of document `readme`"
 
-This new question is one of [graph reachability].
-General purpose graph databases optimize for a couple different types of graph traversals; usually [breadth-first search] and [depth-first search], but ReBAC systems are optimized for scalably and efficiently computing reachability along with all of the assumptions that come with the domain of authorization.
+### Relationship Syntax
 
-The syntax used for relationships in the [paper that popularized ReBAC](./zanzibar) is as follows:
+The syntax used for relationships in the [paper that popularized ReBAC](./zanzibar) and that we use throughout this website is:
 
 ```
 document:readme#editor@user:emilia
 ```
 
-Here it is with labels explaining each section around the delimiters:
+Let's break this down:
 
 ```
         resource      subject
@@ -48,24 +45,81 @@ Here it is with labels explaining each section around the delimiters:
          \ˍˍˍˍˍ\       \ˍˍ\
  document:readme#editor@user:emilia
 /¯¯¯¯¯¯¯/       /¯¯¯¯¯/     /¯¯¯¯¯/
-resource      permission   subject
-  type        or relation    ID
+resource       relation     subject
+  type                        ID
 ```
+
+This relationship can be read as: "user `emilia` is an `editor` of document `readme`". Note how this is connecting two specific objects.
+
+We can also write relationships that link one object to a set of objects.
+
+```
+document:readme#editor@team:engineering#member
+```
+
+Let's break this down:
+
+```
+        resource      subject
+           ID          type
+         \ˍˍˍˍˍ\       \ˍˍ\
+ document:readme#editor@team:engineering#member
+/¯¯¯¯¯¯¯/       /¯¯¯¯¯/     /¯¯¯¯¯¯¯¯¯¯//¯¯¯¯¯/
+resource       relation     subject     subject
+  type                        ID        relation
+```
+
+This relationship can be read as: "every object that has the `member` relation to `team:engineering` is an `editor` of document `readme`".
 
 <Callout type="info">
   In a real system, Object IDs are most likely a computer-friendly string than something human readable.
   Many use-cases use UUIDs or unsigned integers representing the primary key from that data's canonical datastore.
 
-  Users are no exception to this pattern and can be [represented in various ways][modeling-users], such as the `sub` field of an JWT from an Identity Provider.
+Users are no exception to this pattern and can be [represented in various ways][modeling-users], such as the `sub` field of an JWT from an Identity Provider.
 
-  Regardless of their representation, Object IDs must be **unique and stable** within the set of IDs for an Object Type.
+Regardless of their representation, Object IDs must be **unique and stable** within the set of IDs for an Object Type.
+
 </Callout>
 
-Relationships are powerful because of their duality: they are both the question and, when written in aggregate, the answer.
+### Graph traversals
+
+At its core, authorization logic fundamentally reduces to asking:
+
+> Is this actor allowed to perform this action on this resource?
+
+For example: "Is user `emilia` allowed to `edit` document `readme`?"
+
+If you had these relationships written in SpiceDB:
+
+- `document:readme#editor@user:emilia`
+
+Then the answer is trivial: yes, `emilia` can edit the document.
+
+If, instead, you had these relationships written in SpiceDB:
+
+- `team:engineering#member@user:emilia` - emilia is on the engineering team
+- `document:readme#editor@team:engineering#member` - every member on the engineering team can edit the readme
+
+When checking "Can user `emilia` edit document `readme`?", SpiceDB:
+
+1. Starts at `document:readme#editor`
+2. Follows the `editor` relation to find `team:engineering#member`
+3. Follows the `member` relation to find `user:emilia`
+
+[//]: # "TODO add drawing"
+
+Note how we followed a chain of relationships to answer the question. Or, put differently, we traversed a [graph].
+
+The real power of ReBAC comes from transforming authorization questions into [graph reachability] problems, and then answering them efficiently:
+
+> Is there a chain of **relationships** starting at this resource and relation that ultimately reaches this subject?
+
+This is what makes relationships powerful: they are both **the question you ask** ("does this relationship path exist?") and, when you write many of them together, **they form the answer** (by creating paths through the graph that SpiceDB can traverse).
 
 [Objects]: ./schema#object-type-definitions
 [Permission]: ./schema#permissions
 [Relation]: ./schema#relations
+[graph]: https://en.wikipedia.org/wiki/Graph_(abstract_data_type)
 [graph reachability]: https://en.wikipedia.org/wiki/Reachability
 [breadth-first search]: https://en.wikipedia.org/wiki/Breadth-first_search
 [depth-first search]: https://en.wikipedia.org/wiki/Depth-first_search
@@ -78,9 +132,10 @@ It is the application's responsibility to keep the relationships within SpiceDB 
 <Callout type="info">
   Want to learn more about writing relationships to SpiceDB, the various strategies and their pros and cons?
 
-  Read our [blog post about writing relationships][write-blog].
+Read our [blog post about writing relationships][write-blog].
 
-  [write-blog]: https://authzed.com/blog/writing-relationships-to-spicedb/
+[write-blog]: https://authzed.com/blog/writing-relationships-to-spicedb/
+
 </Callout>
 
 ### SpiceDB-only relationships
@@ -150,7 +205,8 @@ In this design, any updates to the relationships in both databases are published
 <Callout type="warning">
   Before adopting an asynchronous system, you should deeply consider the [consistency] implications.
 
-  [consistency]: ./consistency
+[consistency]: ./consistency
+
 </Callout>
 
 If an application does not require up-to-the-second consistent permissions checking, and some replication lag in permissions checking is acceptable, then asynchronous updates of the relationships in SpiceDB can be used.

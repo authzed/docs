@@ -1,62 +1,81 @@
-import nextra from 'nextra'
-import { getHighlighter, BUNDLED_LANGUAGES } from 'shiki'
+import nextra from "nextra";
+import { createHighlighter } from "shiki";
+import { readFileSync } from "fs";
+import { join } from "path";
+
+const authzedGrammar = JSON.parse(
+  readFileSync(
+    join(import.meta.dirname, "./grammars/authzed.tmLanguage.json"),
+    "utf8",
+  ),
+);
+const celGrammar = JSON.parse(
+  readFileSync(
+    join(import.meta.dirname, "./grammars/cel.tmLanguage.json"),
+    "utf8",
+  ),
+);
+const textProtoGrammar = JSON.parse(
+  readFileSync(
+    join(import.meta.dirname, "./grammars/textproto.tmLanguage.json"),
+    "utf8",
+  ),
+);
 
 const withNextra = nextra({
-  theme: 'nextra-theme-docs',
-  themeConfig: './theme.config.tsx',
+  theme: "nextra-theme-docs",
+  themeConfig: "./theme.config.tsx",
   latex: true,
-  flexsearch: { codeblocks: false },
+  search: { codeblocks: false },
   defaultShowCopyCode: true,
   mdxOptions: {
     rehypePrettyCodeOptions: {
-      getHighlighter: options =>
-        getHighlighter({
+      getHighlighter: (options) =>
+        createHighlighter({
           ...options,
           langs: [
-            ...BUNDLED_LANGUAGES,
             {
-              id: 'zed',
-              scopeName: 'source.authzed',
-              aliases: ['zed', 'authzed'],
-              path: '../../../../../public/authzed.tmLanguage.json',
+              name: "zed",
+              scopeName: "source.authzed",
+              aliases: ["zed", "authzed"],
+              ...authzedGrammar,
             },
             {
-              id: 'cel',
-              scopeName: 'source.cel',
-              aliases: ['cel'],
-              path: '../../../../../public/cel.tmLanguage.json',
+              name: "cel",
+              scopeName: "source.cel",
+              aliases: ["cel"],
+              ...celGrammar,
             },
             {
-              id: 'textproto',
-              scopeName: 'source.textproto',
-              aliases: ['textproto'],
-              path: '../../../../../public/textproto.tmLanguage.json',
+              name: "textproto",
+              scopeName: "source.textproto",
+              aliases: ["textproto"],
+              ...textProtoGrammar,
             },
-          ]
-        })
-    }
+          ],
+        }),
+    },
   },
-})
+});
 
 export default withNextra({
   basePath: process.env.NEXT_PUBLIC_BASE_DIR ?? undefined,
   assetPrefix:
-    process.env.VERCEL_ENV === 'production'
-      ? 'https://docs-authzed.vercel.app/docs'
+    process.env.VERCEL_ENV === "production"
+      ? "https://docs-authzed.vercel.app/docs"
       : undefined,
-  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
+  webpack: (config) => {
     config.module.rules.push(
       ...[
         {
           test: /\.yaml$/,
-          // type: 'json',
-          use: 'yaml-loader',
+          use: "yaml-loader",
         },
         {
           test: /\.svg$/,
-          use: '@svgr/webpack',
+          use: "@svgr/webpack",
         },
-      ]
+      ],
     );
     return config;
   },

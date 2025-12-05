@@ -1,6 +1,6 @@
-import Link from 'next/link';
-import { LogoIcon } from './logo';
-import Scripts from './scripts';
+import Link from "next/link";
+import { LogoIcon } from "./logo";
+import Scripts from "./scripts";
 
 export default function Footer() {
   return (

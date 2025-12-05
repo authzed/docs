@@ -1,52 +1,64 @@
-import { Callout } from 'nextra/components';
-import YouTube from 'react-youtube';
-import { InlinePlayground } from '@/components/playground';
+import { Callout } from "nextra/components";
+import YouTube from "react-youtube";
+import { InlinePlayground } from "@/components/playground";
 
-# Schema Language
+# Schema Language Reference
 
-A SpiceDB schema defines the types of objects found, how those objects relate to one another, and the permissions that can be computed off of those relations.
+A SpiceDB schema defines the types of objects found your application, how those objects can relate to one another, and the permissions that can be computed off of those relations.
 
-The schema language's extension for use on a file system is `.zed`.
+This page is a reference guide that uses examples that are loosely based on trying to write a schema for Google Docs. For a detailed guide on how to write your own schema from scratch, see [Developing a Schema].
 
-You can experiment with schemas in real-time with the [Playground](https://play.authzed.com).
-
-The following video provides an overview of schema development using the Playground:
-
-<br />
-<YouTube videoId="AoK0LrkGFDY" />
-
-After studying this page's content, you may want to also read the [Developing a Schema] doc.
+The schema language's extension for use on a file system is `.zed`, and you can experiment with schemas in real-time with the [Playground](https://play.authzed.com).
 
 [Developing a Schema]: ../modeling/developing-a-schema
 
 ## Definitions
 
-The top level of a Schema consists of zero or more [Object Type definitions](#object-type-definitions) and [Caveats](./caveats).
-
-```zed
-/**
- * somecaveat is a caveat defined
- */
-caveat somecaveat(someparameter int) {
-    someparameter == 42
-}
-
-/**
- * someobjecttype is some type that I've decided to define
- */
-definition someobjecttype {}
-```
+The top level of a Schema consists of one or more [Object Type definitions](#object-type-definitions) and zero or more [Caveats](./caveats).
 
 ### Object Type Definitions
 
-An Object Type definition is used to represent a new type of object.
-Objects are how SpiceDB represents instances of resources or subjects.
+An Object Type definition is used to represent classes of objects.
 
-It might help to think about Object Type definitions as similar to a class definition in an object-oriented programming language or a table definition in a SQL database.
+It might help to think about Object Type definitions as similar to a class definition in an Object-Oriented programming language. When you [write relationships](relationships), you will "instantiate" those classes.
+
+```zed
+definition document {}
+
+definition group {}
+
+definition user {}
+```
+
+You can add prefixes to each definition, which is useful (for example) if you want to write a schema that supports multiple products within your organization.
+
+```zed
+definition docs/document {}
+
+definition docs/folder {}
+
+definition iam/group {}
+
+definition iam/user {}
+```
 
 ### Caveat Definitions
 
-Caveats are a feature within SpiceDB that allows for relationships to be defined conditionally: the relationship will only be considered present if the caveat expression evaluates to true at query time.
+Caveats are expressions that can return true or false, and they can be attached (by name) to relationships.
+
+They allow relationships to be defined conditionally: when executing permission checks (e.g. [CheckPermission]), the caveated relationship will only be considered present if the caveat expression evaluates to true at the time you run the `CheckPermission`.
+
+[CheckPermission]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.CheckPermission
+
+```zed
+caveat ip_allowlist(user_ip ipaddress, cidr string) {
+  user_ip.in_cidr(cidr)
+}
+
+definition document {
+  relation reader: user with ip_allowlist
+}
+```
 
 See the [Caveats documentation][caveats] to learn more.
 
@@ -57,17 +69,22 @@ See the [Caveats documentation][caveats] to learn more.
 A `relation` defines how two objects (or an object and subject) can relate to one another.
 For example, a `reader` on a document, or a `member` of a group.
 
-Relations are always defined with a _name_ and one (or more) allowed _types_ of objects that can be the subjects of that relation:
+Relations are always defined with a _name_ and one or more allowed _types_ of objects that can be the subjects of that relation.
+
+### Relations to specific objects
+
+In the schema below, the `member` relation on `group` and the `reader` relation on `document` both allow only concrete relationships to specific `users`.
 
 ```zed
-/**
- * user represents a user
- */
 definition user {}
 
-/**
- * document represents a document in the system
- */
+definition group {
+     /**
+     * member defines who is part of a group
+     */
+     relation member: user
+}
+
 definition document {
     /**
      * reader relates a user that is a reader on the document
@@ -76,46 +93,42 @@ definition document {
 }
 ```
 
-<Callout type="info">
-  In the above example, the `user` on `reader` does not contain a sub-relation.
-
-Occasionally you will see a subject which has a sub-relation such as `usergroup:admins#members` which refers not just to the `usergroup` as a whole, but the set of members which have that relation to the `usergroup`.
-
-</Callout>
-
 ### Subject Relations
 
-Relations can also "contain" references to other relations/permissions.
-
-For example, a group's `member` relation might include the set of objects marked as `member` of another group, indicating that the other group's members are, themselves, members of this group:
+In the example below, the `owner` relation allows you to grant "roles" to specific subjects and also _sets_ of subjects.
 
 ```zed
 definition user {}
 
 definition group {
-    /**
-     * member can include both users and *the set of members* of other specific groups.
+     /**
+     * member defines who is part of a group
      */
-    relation member: user | group#member
+     relation member: user
+}
+
+definition document {
+    /**
+     * an owner can be a specific user, or the set of members which have that relation to the group.
+     * so you can write relationships such as:
+     * - document:budget#owner@user:anne, or
+     * - document:budget#owner@group:finance#member
+     */
+    relation owner: user | group#member
 }
 ```
 
-<Callout type="info">
-  Subject Relations are useful in RBAC-style permissions systems to grant
-  "roles" to _sets_ of subjects, such as the members of a team.
-</Callout>
-
 ### Wildcards
 
-Relations can also specify wildcards to indicate that a grant can be made to the resource _type_ as a whole, rather than a particular resource.
+Relations can specify wildcards to indicate that a grant can be made to the resource _type_ as a whole, rather than a particular resource.
 This allows _public_ access to be granted to a particular subject type.
 
-For example, a `viewer` might indicate that _all_ users can be granted the ability to view the resource:
+For example, the following schema allows one to specify that _all_ users can be granted the ability to view a document:
 
 ```zed
 definition user {}
 
-definition resource {
+definition document {
     /**
      * viewer can be granted to a specific user or granted to *all* users.
      */
@@ -123,13 +136,13 @@ definition resource {
 }
 ```
 
-To be made public, the wildcard relationship would be written linking the specific document to _any_ user:
+To be made public, a wildcard relationship must be written linking the specific document to _any_ user:
 
 ```relationship
-resource:someresource viewer user:*
+document:public#viewer@user:*
 ```
 
-Now _any_ user is a `viewer` of the resource.
+Now _any_ user (present or future) that exists in SpiceDB is a `viewer` of object `document:public`.
 
 <Callout type="warning">
   Be **very careful** with wildcard support in your schema! **Only** grant it to
@@ -151,10 +164,10 @@ Examples:
 
 ## Permissions
 
-A `permission` defines a _computed set of subjects_ that have a permission of some kind on the parent object.
+A permission defines a _computed_ set of subjects that have a permission of some kind on the object.
 For example, is a user within the set of users that can `edit` a document.
 
-Permissions are always defined with a _name_ and an _expression_ defining how that permission's allowed set of subjects is computed:
+Permissions are always defined with a _name_, and an _expression_ with one or more _operations_ defining how that permission's allowed set of subjects is computed.
 
 ```zed
 definition user {}
@@ -164,20 +177,51 @@ definition document {
     relation reader: user
 
     /**
-     * edit determines whether a user can edit the document
+     * edit determines whether a user can edit the document. if you are writer, you can edit.
      */
     permission edit = writer
 
     /**
-     * view determines whether a user can view the document
+     * view determines whether a user can view the document. If you are reader or a writer, you can view.
      */
     permission view = reader + writer
 }
 ```
 
+<Callout type="info">
+  When writing relationships in SpiceDB, you cannot write a relationship that
+  references a *permission*, only a relationship that references a *relation*.
+  This means that it's easy to change a permission, but not a relation.
+</Callout>
+
 ### Operations
 
-Permissions support four kinds of operations: **union**, **intersection**, **exclusion** and **arrow**.
+Permissions support four kinds of operations: **union**, **intersection**, **exclusion** and **arrows**.
+
+<Callout type="warning">
+**Important: Union Precedence**
+
+For historical reasons, union (`+`) takes precedence over intersection (`&`) and exclusion (`-`), which can lead to unexpected results.
+For example, `a + b & c` is evaluated as `(a + b) & c`, not `a + (b & c)`.
+
+We intend to add a flag to fix this precedence issue in the future.
+
+It is highly recommended to either:
+
+- Break complex expressions into intermediate permissions:
+
+  ```zed
+  permission writers_and_admins = writer & admin
+  permission view = reader + writers_and_admins
+  ```
+
+- Use explicit parentheses to clarify precedence:
+
+  ```zed
+  permission view = reader + (writer & admin)
+  ```
+
+</Callout>
 
 #### `+` (Union)
 
@@ -185,10 +229,10 @@ Unions together the relations/permissions referenced.
 
 Union is the most common operation and is used to join different relations or permissions together to form a set of allowed subjects.
 
-For example, to grant a permission to both the `reader`s and `writer`s of a document:
+For example, to grant a permission `admin` to a document, a user must be either a `reader` or a `writer` (or both) of the document:
 
 ```zed
-permission combined = reader + writer
+permission admin = reader + writer
 ```
 
 #### `&` (Intersection)
@@ -197,10 +241,10 @@ Intersects the set of subjects found for the relations/permissions referenced.
 
 Intersection allows for a permission to only include those subjects that were found in **both** relations/permissions.
 
-For example, to grant a permission to a user that is both a `reader` and a `writer` of a document:
+For example, to grant a permission `admin` to a document, a user must be a `reader` AND a `writer` of the document:
 
 ```zed
-permission read_and_write = reader & writer
+permission admin = reader & writer
 ```
 
 #### `-` (Exclusion)
@@ -217,9 +261,7 @@ permission can_only_read = reader - writer
 
 #### `->` (Arrow)
 
-Arrows allow for "walking" the hierarchy of relations (and permissions) defined for an **object** of a subject, referencing a permission or relation on the _resulting_ subject's object.
-
-For example, imagine a schema where a document is found under a folder:
+Imagine a schema where a document is found under a folder:
 
 ```zed
 definition user {}
@@ -236,11 +278,11 @@ definition document {
 }
 ```
 
-We likely want to allow any `reader` of the folder to **also** be a reader of the document.
+We likely want to allow any `reader` of the `parent_folder` to **also** be a reader of the `document`.
 
-To accomplish this, we can use the arrow operator to walk to the `parent_folder`'s `read` permission, thus including any subjects found there as well:
+To accomplish this, we can use the arrow operator to indicate that if a `user` has the `read` permission on the `parent_folder`, then the `user` can `read` the `document`:
 
-```zed
+```zed {11}
 definition user {}
 
 definition folder {
@@ -251,9 +293,6 @@ definition folder {
 definition document {
     relation parent_folder: folder
 
-    /**
-     * read defines whether a user can read the document
-     */
     permission read = parent_folder->read
 }
 ```
@@ -275,7 +314,9 @@ definition document {
     relation reader: user
 
     /**
-     * read defines whether a user can read the document
+     * if a user has the reader relation, or
+     * if a user has the read permission on the parent_folder,
+     * then the user can read the document
      */
     permission read = reader + parent_folder->read
 }
@@ -289,39 +330,31 @@ definition document {
 
 ##### Subject relations and Arrows
 
-<Callout type="warning">
-  Arrows operate on the **object** of the subject(s) found on a `relation`. They
-  *do not* operate on the relation/permission of a subject, *even if the subject
-  refers to a relation or permission*.
-</Callout>
+Arrows operate on the **object** of the subject(s) found on a `relation`. They do **not** operate on the relation/permission of a subject, **even if the subject refers to a relation or permission**.
 
 For example, in:
 
-```
+```zed
 definition resource {
   relation parent: group#member
   permission someperm = parent->something
 }
 ```
 
-`parent->something` refers to the `something` permission on the **group**, and `#member` will be ignored for the arrow.
+The arrow `parent->something` refers to the `something` permission on the **group**, and `#member` will be ignored.
 
-It is recommended to not use arrows over relations that allow for subject relations without noting that
-fact via a comment.
-
-<Callout type="info">
-  Why is this the case? In one word: **performance**. If arrows operated over
-  the subject's relation or permission, a full LookupSubjects call would be
-  necessary for the arrow to correctly "walk", which would make these
-  CheckPermission requests potentially *incredibly* expensive.
+<Callout type="warn">
+  It is recommended to not use arrows over relations that allow for subject
+  relations without noting that fact via a comment. Why? In one word:
+  performance. If arrows operated over the subject's relation or permission, a
+  full LookupSubjects call would be necessary for the arrow to correctly "walk",
+  which would make these CheckPermission requests potentially *incredibly*
+  expensive.
 </Callout>
 
 #### .any (Arrow)
 
-`.any` is an alias for the standard arrow operation.
-Arrows allow for "walking" the hierarchy of a subject object's relations and permissions and reference a permission or relation on the resulting subject's object.
-
-`parent_folder.any(read)` is equivalent to `parent_folder->read`:
+`.any` is an alias for the [arrow](#--arrow) operation. `parent_folder.any(read)` is equivalent to `parent_folder->read`:
 
 ```zed {13} /parent_folder.any(read)/
 definition user {}
@@ -342,10 +375,12 @@ definition document {
 
 #### .all (Intersection Arrow)
 
-`.all` defines an _intersection_ arrow: Similar to the standard arrow, it walks over all subjects on the referenced relation to a referenced permission/relation.
-Unlike the standard arrow, intersection arrow requires that **all** subjects found on the left side of the arrow have the requested permission/relation.
+`.all` defines an _intersection_ arrow.
 
-For example, imagine a schema where a document is viewable by a user if they are a member of any group for the document:
+Similar to the standard [arrow](#--arrow), it walks over all subjects on the referenced relation to a referenced permission/relation.
+But unlike the standard [arrow](#--arrow), intersection arrow requires that **all** subjects found on the left side of the arrow have the requested permission/relation.
+
+For example, imagine a schema where a `document` is viewable by a `user` if they are a `member` of any `group` for the document:
 
 ```zed {9}
 definition user {}
@@ -360,7 +395,7 @@ definition document {
 }
 ```
 
-If the goal was to instead allow documents to be viewable only if the user is a member of _all_ the document's groups, the intersection arrow operator (`.all`) could be used:
+If the goal was to instead allow documents to be viewable only if the `user` is a member of _all_ the document's `group`s, the intersection arrow operator (`.all`) could be used:
 
 ```zed {9} /group.all(member)/
 definition user {}
@@ -378,7 +413,8 @@ definition document {
 In the above example, the user must be in the `member` relation for _all_ groups defined on the `group` relation of a document in order to have the `view` permission.
 
 <Callout type="warning">
-  Intersection arrows can impact performance since they require loading **all** results for the arrow. This is especially a concern for arrows that traverse relationship graphs with a high branching factor.
+  Intersection arrows can impact performance since they require loading **all**
+  results for the arrow.
 </Callout>
 
 ### Naming Permissions

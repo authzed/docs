@@ -1,61 +1,49 @@
-import { useRouter } from 'next/router';
-import { DocsThemeConfig, useConfig } from 'nextra-theme-docs';
-import Banner from './components/banner';
-import { NavCTA, TocCTA } from './components/cta';
-import Footer from './components/footer';
-import { Logo } from './components/logo';
-import { Flexsearch } from './components/nextra/Flexsearch';
+import { useRouter } from "next/router";
+import { DocsThemeConfig, useConfig } from "nextra-theme-docs";
+import Banner from "./components/banner";
+import { NavCTA, TocCTA } from "./components/cta";
+import Footer from "./components/footer";
+import { Logo } from "./components/logo";
+import { Flexsearch } from "./components/nextra/Flexsearch";
 
 const config: DocsThemeConfig = {
   logo: Logo,
-  logoLink: 'https://authzed.com',
-  project: { link: 'https://github.com/authzed/spicedb' },
-  useNextSeoProps() {
+  logoLink: "https://authzed.com",
+  project: { link: "https://github.com/authzed/spicedb" },
+  head: () => {
     const { asPath } = useRouter();
-    const { title, frontMatter } = useConfig();
+    const { title: titleContent, frontMatter } = useConfig();
     const desc =
       frontMatter.description ||
-      'Welcome to the SpiceDB and AuthZed docs site.';
-
-    const defaultConfig = {
-      defaultTitle: 'AuthZed Docs',
-      titleTemplate: '%s – AuthZed Docs',
-      description: desc,
-      canonical: `https://authzed.com${
-        process.env.NEXT_PUBLIC_BASE_DIR ?? ''
-      }${asPath}`,
-      openGraph: {
-        title,
-        description: desc,
-      },
-    };
-
-    return defaultConfig;
-  },
-  head: () => {
-    const isProd = process.env.VERCEL_ENV === 'production';
-
+      "Welcome to the SpiceDB and AuthZed docs site.";
+    const resolvedTitle = titleContent
+      ? `${titleContent} - Authzed Docs`
+      : "Authzed Docs";
     return (
       <>
-        {isProd && (
-          <script
-            defer
-            data-domain="authzed.com"
-            data-api="/api/event"
-            src="/js/script.js"
-          ></script>
-        )}
+        <title>{resolvedTitle}</title>
+        <meta name="description" content={desc} />
+        <meta property="og:title" content={resolvedTitle} />
+        <meta property="og:description" content={desc} />
+        <link
+          rel="canonical"
+          href={`https://authzed.com${
+            process.env.NEXT_PUBLIC_BASE_DIR ?? ""
+          }${asPath}`}
+        />
       </>
     );
   },
   darkMode: true,
-  primaryHue: { dark: 45, light: 290 },
-  primarySaturation: { dark: 100, light: 100 },
-  chat: { link: 'https://discord.gg/spicedb' },
-  docsRepositoryBase: 'https://github.com/authzed/docs/blob/main',
+  color: {
+    hue: { dark: 45, light: 290 },
+    saturation: { dark: 100, light: 100 },
+  },
+  chat: { link: "https://authzed.com/discord" },
+  docsRepositoryBase: "https://github.com/authzed/docs/blob/main",
   banner: {
     dismissible: false,
-    text: <Banner />,
+    content: <Banner />,
   },
   navbar: {
     extraContent: <NavCTA />,
@@ -77,7 +65,7 @@ const config: DocsThemeConfig = {
   footer: {
     component: <Footer />,
   },
-  ...(process.env.NEXT_PUBLIC_ENABLE_SEARCH_BLOG_INTEGRATION === 'true'
+  ...(process.env.NEXT_PUBLIC_ENABLE_SEARCH_BLOG_INTEGRATION === "true"
     ? {
         search: {
           component: <Flexsearch />,

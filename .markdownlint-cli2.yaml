@@ -1,5 +1,4 @@
 config:
-  fenced-code-langauage: false
   fenced-code-language: false
   first-line-h1: false
   line-length: false
@@ -8,6 +7,9 @@ config:
   no-hard-tabs: false
   no-inline-html: false
   no-multiple-blanks: false
+  no-trailing-spaces: false
+  max-one-sentence-per-line: false
+  list-marker-space: false
 customRules:
   - "markdownlint-rule-max-one-sentence-per-line"
 fix: false

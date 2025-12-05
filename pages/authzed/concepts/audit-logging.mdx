@@ -1,4 +1,4 @@
-import { Callout, Tabs } from 'nextra/components'
+import { Callout, Tabs } from "nextra/components";
 
 # Audit Logging
 
@@ -21,43 +21,43 @@ Logs contain the full details related to a request including:
 
 ```json
 {
- "specversion": "1.0",
- "id": "819b4d52db4797491e31d0228f381543",
- "source": "/ps/dev-ps/rc/us-east-1/p/dev-ps-abcd1234",
- "type": "/authzed.api.v1.PermissionsService/CheckPermission",
- "datacontenttype": "application/json",
- "time": "2023-12-18T17:33:11.783093248Z",
- "data": {
-   "request": {
-     "@type": "type.googleapis.com/authzed.api.v1.CheckPermissionRequest",
-     "consistency": {
-       "minimizeLatency": true
-     },
-     "resource": {
-       "objectType": "resource",
-       "objectId": "firstdoc",
-       "permission": "read"
-     },
-     "subject": {
-       "object": {
-         "objectType": "user",
-         "objectId": "tom"
-       }
-     },
-     "response": {
-       "@type": "type.googleapis.com/authzed.api.v1.CheckPermissionResponse",
-       "checkedAt": {
-         "token": "GgoKCENKcmt4QTA9"
-       },
-       "permissionship": "PERMISSIONSHIP_HAS_PERMISSION"
-     },
-     "metadata": {
-       "token_hash": "c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2",
-       "user-agent": "grpc-go/1.58.3",
-       "x-request-id": "819b4d52db4797491e31d0228f381543"
-     }
-   }
- }
+  "specversion": "1.0",
+  "id": "819b4d52db4797491e31d0228f381543",
+  "source": "/ps/dev-ps/rc/us-east-1/p/dev-ps-abcd1234",
+  "type": "/authzed.api.v1.PermissionsService/CheckPermission",
+  "datacontenttype": "application/json",
+  "time": "2023-12-18T17:33:11.783093248Z",
+  "data": {
+    "request": {
+      "@type": "type.googleapis.com/authzed.api.v1.CheckPermissionRequest",
+      "consistency": {
+        "minimizeLatency": true
+      },
+      "resource": {
+        "objectType": "resource",
+        "objectId": "firstdoc",
+        "permission": "read"
+      },
+      "subject": {
+        "object": {
+          "objectType": "user",
+          "objectId": "tom"
+        }
+      },
+      "response": {
+        "@type": "type.googleapis.com/authzed.api.v1.CheckPermissionResponse",
+        "checkedAt": {
+          "token": "GgoKCENKcmt4QTA9"
+        },
+        "permissionship": "PERMISSIONSHIP_HAS_PERMISSION"
+      },
+      "metadata": {
+        "token_hash": "c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2",
+        "user-agent": "grpc-go/1.58.3",
+        "x-request-id": "819b4d52db4797491e31d0228f381543"
+      }
+    }
+  }
 }
 ```
 
@@ -99,7 +99,8 @@ Log Sinks are the targets where logs will be shipped in order to be persisted.
   **Info:**
   We're exploring additional Log Sinks.
 
-  Please reach out to your success team with any requests.
+Please reach out to your success team with any requests.
+
 </Callout>
 
 ### AWS Kinesis and Kinesis Firehose
@@ -111,17 +112,15 @@ This is an example policy that grants the necessary permissions to write to a Fi
 
 ```json
 {
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "",
-            "Effect": "Allow",
-            "Action": [
-                "firehose:PutRecord"
-            ],
-            "Resource": "EXAMPLE_FIREHOSE_ARN"
-        }
-    ]
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Action": ["firehose:PutRecord"],
+      "Resource": "EXAMPLE_FIREHOSE_ARN"
+    }
+  ]
 }
 ```
 
@@ -141,37 +140,51 @@ This is an example trust policy that allows the AuthZed account to assume the ro
 
 ```json
 {
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Principal": {
-                "AWS": "EXAMPLE_AUTHZED_ACCOUNT_ID"
-            },
-            "Action": "sts:AssumeRole",
-            "Condition": {
-                "StringEquals": {
-                    "sts:ExternalId": "EXAMPLE_EXTERNAL_ID"
-                }
-            }
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "EXAMPLE_AUTHZED_ACCOUNT_ID"
+      },
+      "Action": "sts:AssumeRole",
+      "Condition": {
+        "StringEquals": {
+          "sts:ExternalId": "EXAMPLE_EXTERNAL_ID"
         }
-    ]
+      }
+    }
+  ]
 }
 ```
 
 ## Configuration
 
 The process for setting up audit logging varies depending on the AuthZed product you're using.
-Find the instructions for your product below.
 
-### Dedicated
+### Dedicated & Cloud
 
 Using the web dashboard, navigate to the Permission System's settings page to find the Audit Log settings.
 
 ### Self-Hosted
 
-Audit logging is configured using command-line flags.
-See the full list of flags in the [Extenders section](extenders#flags).
+Use the following command-line flags:
+
+| Flag                                             | Description                                                                                                                                                          | Default   |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| --extender-enabled                               | must be set to`authzed-audit`                                                                                                                                        |           |
+| --extender-audit-batch-size-limit                | defines the maximum number of audit events to be processed as a unit                                                                                                 | `10000`   |
+| --extender-audit-buffer-size                     | defines the size of the audit log buffer that holds events to be processed by workers                                                                                | `1000000` |
+| --extender-audit-buffer-window                   | defines maximum amount of time events are buffered before being pushed                                                                                               | `1s`      |
+| --extender-audit-disabled-on-methods strings     | list of comma-separated, fully-qualified API methods to disable events for. Watch API is always excluded (e.g. `/authzed.api.v1.PermissionsService/CheckPermission`) |           |
+| --extender-audit-initial-retry-interval duration | sets the first retry backoff in case of a failure to push audit events to the backend                                                                                | `1s`      |
+| --extender-audit-max-retry-interval duration     | sets the maximum backoff duration in case of failure to push events                                                                                                  | `30s`     |
+| --extender-audit-retry-randomizer-factor         | sets the randomization factor for the backoff duration - this helps prevent thundering herds on event push errors                                                    | `0.5`     |
+| --extender-audit-stream-name                     | defines the name of the target stream/topic (e.g. Kafka Topic, Kinesis Stream...)                                                                                    | `spicedb` |
+| --extender-audit-target-configuration            | target-type specific configuration                                                                                                                                   | `[]`      |
+| --extender-audit-target-endpoint-url string      | defines the URL of target endpoint to ingest audit events. If left unspecified, some types will try to determine automatically (e.g. AWS SDK)                        |           |
+| --extender-audit-target-type                     | defines the type of target to ingest audit events                                                                                                                    | `noop`    |
+| --extender-audit-worker-count                    | defines the number of worker goroutines to process audit events (default 5)                                                                                          |           |
 
 ### Tokens in Audit Logs
 

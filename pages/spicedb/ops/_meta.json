@@ -1,7 +1,0 @@
-{
-  "observability": "Observability Tooling",
-  "deploying-spicedb-operator": "Deploying the SpiceDB Operator",
-  "spicedb-langchain-langgraph-rag": "Secure your RAG Pipelines using LangChain & LangGraph",
-  "ai-agent-authorization": "Tutorial: Authorization for AI Agents using SpiceDB",
-  "secure-rag-pipelines": "Tutorial: Securing RAG Pipelines with SpiceDB"
-}

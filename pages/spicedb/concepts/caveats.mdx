@@ -1,14 +1,18 @@
-import { Callout } from 'nextra/components'
+import { Callout } from "nextra/components";
 
 # Caveats
 
-Caveats are a feature within SpiceDB that allows for relationships to be defined conditionally: the relationship will only be considered present if the caveat expression evaluates to true.
+Caveats are expressions that can return true or false, and they can be attached (by name) to relationships.
+
+They allow relationships to be defined conditionally: when executing permission checks (e.g. [CheckPermission]), the caveated relationship will only be considered present if the caveat expression evaluates to true at the time you run the `CheckPermission`.
+
+[CheckPermission]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.CheckPermission
 
 Caveats allow for an elegant way to model dynamic policies and ABAC-style (Attribute Based Access Control) decisions while still providing scalability and performance guarantees.
 
 ## Defining Caveats
 
-Caveats are named expressions that are defined in schema alongside definitions for object types.
+Caveats are named expressions that are defined in the [schema](./schema) alongside definitions for object types.
 A caveat definition includes a name, one or more well-typed parameters, and a [CEL expression] returning a boolean value.
 
 [CEL expression]: https://github.com/google/cel-spec
@@ -25,8 +29,8 @@ caveat first_caveat(first_parameter int, second_parameter string) {
 
 The following table documents the CEL types available for values in caveat expressions:
 
-| Type      | Description                                      |
-|-----------|--------------------------------------------------|
+| Type        | Description                                      |
+| ----------- | ------------------------------------------------ |
 | `any`       | any value is allowed; useful for types that vary |
 | `int`       | 64-bit signed integer                            |
 | `uint`      | 64-bit unsigned integer                          |
@@ -203,8 +207,9 @@ zed check -r resource:specificresource#view -p view -s user:specificuser --cavea
 ```
 
 <Callout type="info">
-    Please note the use of single quotes to escape the characters in the JSON representation of the context.
-    You don't need character escaping when providing context using zed in the Authzed Playground.
+  Please note the use of single quotes to escape the characters in the JSON
+  representation of the context. You don't need character escaping when
+  providing context using zed in the Authzed Playground.
 </Callout>
 
 ## Full Example
@@ -316,5 +321,6 @@ document:specificdocument#view:
 <Callout type="info">
   Expected Relations does **not** evaluate caveats, even if the necessary context is fully specified on the relationship.
 
-  This means that a caveated subject that might actually return `HAS_PERMISSION` will appear as `subject[...]` in expected relations
+This means that a caveated subject that might actually return `HAS_PERMISSION` will appear as `subject[...]` in expected relations
+
 </Callout>

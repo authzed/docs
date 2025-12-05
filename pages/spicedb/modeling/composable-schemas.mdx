@@ -1,9 +1,9 @@
-import { Callout, Tabs } from 'nextra/components'
+import { Callout, Tabs } from "nextra/components";
 
 # Composable Schemas (Preview)
 
 <Callout type="info">
-This preview feature's functionality may change before general release.
+  This preview feature's functionality may change before general release.
 </Callout>
 
 To make it easier to organize your schema and collaborate across teams, `zed` version v0.27.0 introduced a new schema compilation command that allows you to modularize your schema.
@@ -71,7 +71,7 @@ written to SpiceDB but not compiled.
 
 The obvious breaking changes are `import` and `partial` becoming keywords, so if you have a permission or
 relation with those names, your schema can't be compiled.
-We have also reserved some keywords for future use, such as `and`, `or`, and `not`.
+We have also reserved some keywords for future use, such as `use`, `and`, `or`, and `not`.
 If you get an unexpected `TokenTypeKeyword` error, this is probably why.
 A full list of reserved keywords can be found in [`keyword` map definition](https://github.com/authzed/spicedb/blob/main/pkg/composableschemadsl/lexer/lex_def.go#L74) in the lexer.
 
@@ -94,7 +94,7 @@ import "two.zed"
 definition resource {
     relation user: user
     relation organization: organization
-    
+
     permission view = user + organization
 }
 ```
@@ -119,10 +119,10 @@ definition organization {}
 
 ### Good to Know
 
-* Import references must be within the folder where `zed` is invoked.
-* Import cycles are treated as errors.
-* All definitions in all imported files are pulled in.
-Any duplicate definitions will cause an error.
+- Import references must be within the folder where `zed` is invoked.
+- Import cycles are treated as errors.
+- All definitions in all imported files are pulled in.
+  Any duplicate definitions will cause an error.
 
 ## Partials
 
@@ -137,7 +137,7 @@ must be referenced by a [partial reference](#partial-references) to show up in t
 ```zed
 partial view_partial {
     ...some_other_partial
-    
+
     relation user: user
     permission view = user
 }
@@ -145,8 +145,8 @@ partial view_partial {
 
 #### Good to Know
 
-* Any partial that isn't referenced is ignored by the compilation process.
-* Partial declarations can contain partial references, allowing for partials to be composed.
+- Any partial that isn't referenced is ignored by the compilation process.
+- Partial declarations can contain partial references, allowing for partials to be composed.
 
 ### Partial References
 
@@ -187,11 +187,11 @@ definition resource {
 
 #### Good to Know
 
-* Duplicate relations and permissions introduced by a partial reference are treated as errors.
-* Circular references between partials are treated as errors.
-* You can only reference partial declarations.
-Attempting to reference other declaration types (e.g. a definition or a caveat) with a partial reference will result in a error.
-* A partial can be referenced any number of times, and a partial or definition can contain any number of partial references.
+- Duplicate relations and permissions introduced by a partial reference are treated as errors.
+- Circular references between partials are treated as errors.
+- You can only reference partial declarations.
+  Attempting to reference other declaration types (e.g. a definition or a caveat) with a partial reference will result in a error.
+- A partial can be referenced any number of times, and a partial or definition can contain any number of partial references.
 
 ## An Example Workflow
 
