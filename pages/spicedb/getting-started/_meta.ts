@@ -5,6 +5,6 @@ export default {
   "client-libraries": "Client Libraries",
   "installing-zed": "Installing the CLI",
   "coming-from": "Coming From",
-  "protecting-a-blog": "Example: Protecting a Blog Application",
+  "protecting-a-blog": "Tutorial: Protecting a Blog Application",
   faq: "FAQ",
 };

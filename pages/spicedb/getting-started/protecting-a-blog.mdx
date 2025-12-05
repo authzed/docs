@@ -1,14 +1,10 @@
 import { Callout, Tabs } from "nextra/components";
-import YouTube from "react-youtube";
 
-# Protecting a Blog Application
+# Tutorial: Protecting a Blog Application
 
-This guide walks through the steps required to deeply integrate an application with Authzed or SpiceDB.
-Not all software requires this level of integration, but it is preferable for greenfield applications or applications that are central in an architecture with multiple services.
+This guide walks through the steps required to integrate end-to-end an application with SpiceDB. We are going to pretend that our application is a blog.
 
 Instead of introducing an unfamiliar example app and altering various locations in its code, this guide is written such that each step is a standalone snippet of code that demonstrates an integration point and finding where those points exist in your codebase is an exercise left to the reader.
-
-Scroll to the bottom of this page for a video walkthrough of creating a Permissions System using AuthZed Cloud.
 
 ## Prerequisites
 
@@ -29,77 +25,17 @@ docker run --rm -p 50051:50051 authzed/spicedb serve --grpc-preshared-key "t_you
 [SpiceDB]: https://github.com/authzed/spicedb
 [running instance]: /spicedb/getting-started/installing-spicedb
 
-## Create a Permissions System on AuthZed Cloud
-
-Sign in to [AuthZed Cloud](https://app.authzed.cloud) and click on the **+Create** button to create a Permissions System (PS) and fill in the necessary details:
-
-- The type of the PS can be either Production or Development
-- Give it a name
-- Choose a datastore.
-- The update channel can be either be `rapid` or `regular` which determines the behavior of automatic updates when new SpiceDB releases are made available
-- The Deployments tab has the following options:
-  - The name of the deployment
-  - A dropdown for the region in which the deployment is made.
-    Currently `us-east-1` and `eu-central-1` are available
-  - The number of vCPUs for your deployment.
-    The recommendation is to start with 2 vCPUs and then monitor the Metrics and change it based on your workload
-  - The number of replicas to deploy SpiceDB with primarily read workloads.
-    The recommendation is 3 but will depend on your latency requirements.
-
-Click the Save button to create a Permissions System
-
-## Configuring Access
-
-Before using the Permissions System, let's configure access to it.
-This functionality enables organizations to apply the principle of least-privilege to services accessing SpiceDB.
-For example, read-only tokens can be created for services that should never need to write to SpiceDB.
-Read more about it [here](https://authzed.com/docs/authzed/concepts/restricted-api-access)
-
-Let’s start by creating a **Service Account** which is something that represents your unique workload.
-We recommend creating a Service Account for each application that will access the SpiceDB API.
-Add a name such as `blog-app` and a description before hitting Save.
-
-Now let’s create a **token**.
-Tokens are long-lived credentials for Service Accounts.
-SpiceDB clients must provide a Token in the Authorization header of an API request to perform actions granted to the Service Account.
-Click on the `blog-app` service account you just created and then the Tokens item in the menu.
-Create a token by providing a name and description.
-
-Let’s now provide a **Role** and attach a **Policy** to that Role.
-A Role defines rules for accessing the SpiceDB API.
-Roles are bound to Service Accounts.
-Click the Roles -> Create Role and provide a name and a description.
-Add the following permissions for this demo:
-
-```
-ReadSchema
-WriteSchema
-DeleteRelationships
-ReadRelationships
-WriteRelationships
-CheckPermission
-```
-
-Finally, let’s create a Policy.
-Policies are what bind Roles to a Service Account.
-Click on Policies -> Create policy.
-Provide a name and a description and pick the Service Account and Role created in the steps above to bind the two.
-
-You’re now ready to use AuthZed Cloud Permissions System!
-
-## Client Installation
+## Installing the Client
 
 The first step to integrating any software is ensuring you have an API client.
 Each client is installed with its ecosystem's package management tools:
-
-You can also interact with the Permissions System using [zed](https://github.com/authzed/zed) - the command-line client for managing SpiceDB clusters.
 
 <Tabs items={['zed', 'Node', 'Go', 'Python', 'Ruby', 'Java']}>
 <Tabs.Tab>
 
 ```sh
 brew install authzed/tap/zed
-zed context set <name> <ps-endpoint> <token>
+zed context set <name> <endpoint> <token>
 ```
 
 </Tabs.Tab>
@@ -150,27 +86,21 @@ dependencies {
 </Tabs.Tab>
 </Tabs>
 
-You can find the endpoint on the AuthZed Cloud dashboard.
-Click on the Permissions System that's just been created and locate the **Connect** button.
-Copy the zed command and paste it in your terminal.
-It should look like this:
+<Callout>
 
-```
-zed context set us-east-1 acme-permission-system-xyz.aws.authzed.cloud:443 <token-here>
-```
+    If you are using [AuthZed Cloud],
+    click on the **Connect** button on the dashboard to get both the endpoint that you use to connect to your permission system,
+    and the full `zed` command needed to connect to it.
 
-where `us-east-1` is the name of the PS followed by the endpoint.
-Replace the `token-here` with the token that was generated in the earlier step.
+</Callout>
 
-## Defining and Applying a Schema
+## Writing a Schema
 
-Regardless of whether or not you have a preexisting schema written, integrating a new application will typically require you add new definitions to the [Schema].
+[Schemas] define the objects in our application, their relations, and their checkable permissions that will be available to be used with the Permission System.
 
-[Schema]: /spicedb/concepts/schema
+[Schemas]: /spicedb/concepts/schema
 
-As a quick recap, Schemas define the objects, their relations, and their checkable permissions that will be available to be used with the Permission System.
-
-We'll be using the following blog example throughout this guide:
+We'll be using the following schema to model our blog application:
 
 ```zed
 definition user {}
@@ -190,14 +120,9 @@ Feel free to modify and test your own experiments in the [playground].
 
 [playground]: https://play.authzed.com/s/mVBBpf5poNd8/schema
 
-With a schema designed, we can now move on to using our client to apply that schema to the Permission System.
+With a schema designed, we can now move on to using our client to write that schema to the Permission System.
 
-<Callout type="info">
-Similar to applying schema changes for relational databases, all changes to a schema must be backwards compatible.
-
-In production environments where relations change, you will likely want to write data migrations and apply those changes using a schema migration toolchain.
-
-</Callout>
+[migration guide]: ../modeling/migrating-schema
 
 <Tabs items={['zed', 'Node', 'Go', 'Python', 'Ruby', 'Java']}>
 <Tabs.Tab>
@@ -214,6 +139,11 @@ definition post {
 EOF
 )
 ```
+
+<Callout type="info">
+  If, later on, you wish to make updates to this schema, please read the
+  [migration guide].
+</Callout>
 
 </Tabs.Tab>
 <Tabs.Tab>
@@ -384,7 +314,7 @@ public class App {
 </Tabs.Tab>
 </Tabs>
 
-## Storing Relationships
+## Writing Relationships
 
 After a permission system has its schema applied, it is ready to have its relationships created, touched, or deleted.
 Relationships are live instances of relations between objects.
@@ -715,31 +645,16 @@ Permissions Systems that have stored relationships are capable of performing per
 Checks not only test for the existence of direct relationships, but also compute and traverse transitive relationships.
 For example, in our example schema, writers have both write and read permissions, so there's no need to create a read relationship for a subject that is already a writer.
 
-<Callout type="info">
-In addition to checking _permissions_, it is also possible to perform checks on _relations_ to determine membership.
-
-However, this goes against best practice: permissions can be redefined in backwards compatible ways by changing the schema, so it's ideal to rely on permissions as the contract between SpiceDB and applications querying SpiceDB.
-
-</Callout>
-
-<Callout type="warning">
-When doing a permission check, in order to get read-after-write consistency, you must provide a [ZedToken] from the WriteRelationships response or request [full consistency].
-
-[ZedToken]: /spicedb/concepts/consistency#zedtokens
-[full consistency]: /spicedb/concepts/consistency#fully-consistent
-
-</Callout>
-
-The following examples demonstrate the transitive property of checks:
+Let's perform some permission checks:
 
 <Tabs items={['zed', 'Node', 'Go', 'Python', 'Ruby', 'Java']}>
 <Tabs.Tab>
 
 ```sh
-zed permission check post:1 read  user:emilia   --revision "zedtokenfromwriterel" # true
-zed permission check post:1 write user:emilia   --revision "zedtokenfromwriterel" # true
-zed permission check post:1 read  user:beatrice --revision "zedtokenfromwriterel" # true
-zed permission check post:1 write user:beatrice --revision "zedtokenfromwriterel" # false
+zed permission check post:1 read  user:emilia  # true
+zed permission check post:1 write user:emilia  # true
+zed permission check post:1 read  user:beatrice # true
+zed permission check post:1 write user:beatrice # false
 ```
 
 </Tabs.Tab>
@@ -1110,6 +1025,17 @@ public class App {
 </Tabs.Tab>
 </Tabs>
 
-Here's a video walkthrough of creating a Permissions System on AuthZed Cloud:
+<Callout type="info">
+    In addition to checking _permissions_, it is also possible to perform checks on _relations_ to determine membership.
 
-<YouTube videoId="O325tG4s66g" className="youtubeContainer" />
+    However, this goes against best practice: permissions can be redefined in backwards compatible ways by changing the schema, so it's ideal to rely on permissions as the contract between SpiceDB and applications querying SpiceDB.
+
+</Callout>
+
+<Callout type="warning">
+    When doing a permission check, in order to get read-after-write consistency, you must provide a [ZedToken] from the WriteRelationships response or request [full consistency].
+
+    [ZedToken]: /spicedb/concepts/consistency#zedtokens
+    [full consistency]: /spicedb/concepts/consistency#fully-consistent
+
+</Callout>
