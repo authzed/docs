@@ -64,7 +64,11 @@ export default async function RootLayout({ children }) {
       saturation: { dark: 100, light: 100 },
     }}
     />
-      <body>
+      <body
+      // This is how we tell pagefind that this is a doc page
+      // which should rank higher than blogs in search results.
+      data-pagefind-sort="internal:1"
+      >
         <Layout
           banner={<Banner />}
           navbar={navbar}
@@ -83,7 +87,14 @@ export default async function RootLayout({ children }) {
             }
           darkMode
           docsRepositoryBase="https://github.com/authzed/docs/tree/main"
-          search={enableSearch && <Search />}
+          search={enableSearch && <Search
+            searchOptions={{
+              sort: {
+                // This is how we rank blog stuff below docs stuff.
+                external: "desc"
+              }
+            }}
+            />}
           sidebar={{
             defaultMenuCollapseLevel: 1,
             toggleButton: true,

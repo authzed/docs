@@ -57,6 +57,8 @@ const main = async () => {
         // TODO: make sure these work as expected
         date: item.date_modified,
         published: item.date_published,
+        // This is how we rank blog stuff below docs stuff - we sort desc on this field.
+        internal: "0"
       }
     })
   )))
