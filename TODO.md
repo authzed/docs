@@ -3,7 +3,9 @@
 - [x] Fix styling of top header thing
 - [x] check styling of search bar against live
 - [x] check behavior of search bar, especially around docs results ranking higher than non-docs
-- [x] make sure that search bar works (check pagefind) 
+- [x] make sure that search bar works (check pagefind)
 - [x] finish pagefind thought
 - [ ] make styling of swagger page look nice
 - [ ] ensure that metadata is still showing up as expected
+- [ ] do migration to app folder
+- [ ] make sure that app.tsx is rendering properly

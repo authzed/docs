@@ -1,27 +1,33 @@
-import { Layout, Navbar, Footer } from 'nextra-theme-docs'
+import { Layout, Navbar, Footer } from "nextra-theme-docs";
 import Link from "next/link";
-import { Head, Search, Banner } from 'nextra/components'
-import { getPageMap } from 'nextra/page-map'
-import 'nextra-theme-docs/style.css'
-import Logo from '@/components/icons/logo.svg'
-import LogoIcon from '@/components/icons/logo-icon.svg'
-import BannerContents from '@/components/banner'
+import { Head, Search, Banner } from "nextra/components";
+import { getPageMap } from "nextra/page-map";
+import "nextra-theme-docs/style.css";
+import Logo from "@/components/icons/logo.svg";
+import LogoIcon from "@/components/icons/logo-icon.svg";
+import BannerContents from "@/components/banner";
+import Providers from "@/components/providers";
 import { TocCTA } from "@/components/cta";
-import type { Metadata } from 'next'
+import type { Metadata } from "next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import "./globals.css";
+
+import { default as OurLayout } from "@/components/layout";
 
 // TODO: make sure this is all right
 export const metadata: Metadata = {
-  metadataBase: new URL('https://authzed.com'),
+  metadataBase: new URL("https://authzed.com"),
   title: {
     default: "Authzed Docs",
-    template: '%s - Authzed Docs'
+    template: "%s - Authzed Docs",
   },
   description: "Welcome to the SpiceDB and AuthZed docs site.",
-}
+};
 
 export default async function RootLayout({ children }) {
-  const pageMap = await getPageMap()
-  const enableSearch = process.env.NEXT_PUBLIC_ENABLE_SEARCH_BLOG_INTEGRATION === "true";
+  const pageMap = await getPageMap();
+  const enableSearch =
+    process.env.NEXT_PUBLIC_ENABLE_SEARCH_BLOG_INTEGRATION === "true";
 
   const navbar = (
     <Navbar
@@ -30,7 +36,7 @@ export default async function RootLayout({ children }) {
       chatLink="https://authzed.com/discord"
       projectLink="https://github.com/authzed/spicedb"
     />
-  )
+  );
   // TODO
   /*
     const { title: titleContent, frontMatter } = useConfig();
@@ -52,46 +58,47 @@ export default async function RootLayout({ children }) {
    */
 
   return (
-    <html
-    lang="en"
-    dir="ltr"
-    suppressHydrationWarning
-    >
-    <Head color={{
-      hue: { dark: 45, light: 290 },
-      saturation: { dark: 100, light: 100 },
-    }}
-    />
+    <html lang="en" dir="ltr" suppressHydrationWarning>
+      <Head
+        color={{
+          hue: { dark: 45, light: 290 },
+          saturation: { dark: 100, light: 100 },
+        }}
+      />
       <body
-      // This is how we tell pagefind that this is a doc page
-      // which should rank higher than blogs in search results.
-      data-pagefind-sort="internal:1"
+        // This is how we tell pagefind that this is a doc page
+        // which should rank higher than blogs in search results.
+        data-pagefind-sort="internal:1"
       >
         <Layout
           banner={
             <Banner dismissible={false}>
-            <BannerContents />
+              <BannerContents />
             </Banner>
           }
           navbar={navbar}
-          footer={<Footer>
-            <Link href="https://authzed.com" title="AuthZed">
-              <LogoIcon height={20} />
-            </Link>
-            {' '}
-          &copy; {new Date().getFullYear()} AuthZed.
+          footer={
+            <Footer>
+              <Link href="https://authzed.com" title="AuthZed">
+                <LogoIcon height={20} />
+              </Link>{" "}
+              &copy; {new Date().getFullYear()} AuthZed.
             </Footer>
-            }
+          }
           darkMode
           docsRepositoryBase="https://github.com/authzed/docs/tree/main"
-          search={enableSearch && <Search
-            searchOptions={{
-              sort: {
-                // This is how we rank blog stuff below docs stuff.
-                external: "desc"
-              }
-            }}
-            />}
+          search={
+            enableSearch && (
+              <Search
+                searchOptions={{
+                  sort: {
+                    // This is how we rank blog stuff below docs stuff.
+                    external: "desc",
+                  },
+                }}
+              />
+            )
+          }
           sidebar={{
             defaultMenuCollapseLevel: 1,
             toggleButton: true,
@@ -100,17 +107,20 @@ export default async function RootLayout({ children }) {
           feedback={{
             content: (
               <span>
-              Something unclear?
-              <br />
-              Create an issue →
+                Something unclear?
+                <br />
+                Create an issue →
               </span>
             ),
           }}
           toc={{ backToTop: true, extraContent: <TocCTA /> }}
         >
-          {children}
+          <OurLayout>
+            <SpeedInsights />
+            <Providers>{children}</Providers>
+          </OurLayout>
         </Layout>
       </body>
     </html>
-  )
+  );
 }

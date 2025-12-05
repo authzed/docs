@@ -23,7 +23,7 @@ const textProtoGrammar = JSON.parse(
 );
 
 const withNextra = nextra({
-  contentDirBasePath: '/docs',
+  contentDirBasePath: "/docs",
   latex: true,
   search: { codeblocks: false },
   defaultShowCopyCode: true,
