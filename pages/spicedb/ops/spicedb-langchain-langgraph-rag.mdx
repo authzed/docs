@@ -22,7 +22,7 @@ The library implements **post-filter authorization**, meaning:
 
 1. Retrieve the best semantic matches.
 2. Filter them using SpiceDB permission checks.
-3. Feed *only authorized documents* to the LLM.
+3. Feed _only authorized documents_ to the LLM.
 
 ---
 
@@ -55,7 +55,6 @@ sys.path.append("/path/to/spicedb-rag-authorization")
 ```
 
 ### Create a SpiceDB schema
-
 
 We will use the [zed](https://github.com/authzed/zed) CLI to write schema and relationships.
 In your production application, this would be replaced with an API call.
@@ -175,9 +174,9 @@ LangGraph is ideal for more advanced AI systems, such as conversational RAG assi
 
 Our [library](https://github.com/sohanmaheshwar/spicedb-rag-authorization) provides:
 
-- `RAGAuthState` — a TypedDict defining the required state fields  
-- `create_auth_node()` — auto-configured authorization node  
-- `AuthorizationNode` — reusable class-based node  
+- `RAGAuthState` — a TypedDict defining the required state fields
+- `create_auth_node()` — auto-configured authorization node
+- `AuthorizationNode` — reusable class-based node
 
 ---
 
@@ -329,16 +328,16 @@ graph.add_node("auth_kb", kb_auth)
 
 The library exposes:
 
-- number of retrieved documents  
-- number authorized  
-- denied resource IDs  
-- latency per SpiceDB check  
+- number of retrieved documents
+- number authorized
+- denied resource IDs
+- latency per SpiceDB check
 
 ### In LangChain
 
 ```python
 auth = SpiceDBAuthFilter(..., subject_id="alice", return_metrics=True)
-result = await auth.ainvoke(docs) 
+result = await auth.ainvoke(docs)
 
 print(result.authorized_documents)
 print(result.total_authorized)
@@ -368,7 +367,7 @@ print(result["auth_results"]["check_latency_ms"])
 
 ## 7. Complete Example
 
-See the full example in the [repo here](<https://github.com/sohanmaheshwar/spicedb-rag-authorization>)
+See the full example in the [repo here](https://github.com/sohanmaheshwar/spicedb-rag-authorization)
 
 - `langchain_example.py`
 - `README_langchain.md`
@@ -379,4 +378,4 @@ See the full example in the [repo here](<https://github.com/sohanmaheshwar/spice
 
 - Read [this guide](https://authzed.com/blog/building-a-multi-tenant-rag-with-fine-grain-authorization-using-motia-and-spicedb) on creating a production-grade RAG with SpiceDB & Motia.dev
 - Check out this [self-guided workshop](https://github.com/authzed/workshops/tree/main/secure-rag-pipelines) for a closer look at how fine-grained authorization with SpiceDB works in RAG.
-This guide also includes the pre-filtration technique.
+  This guide also includes the pre-filtration technique.
