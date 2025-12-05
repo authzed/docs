@@ -2,26 +2,27 @@ import { Callout } from "nextra/components";
 
 # Datastores
 
-In order to reduce operational complexity, SpiceDB leverages existing, popular systems for persisting data.
+SpiceDB uses existing, popular database systems for persisting data.
 
 AuthZed has standardized our managed services on CockroachDB, but we give self-hosted customers the option to pick the datastore that best suits their operational requirements.
 
-- [CockroachDB](#cockroachdb) - Recommended for self hosted deployments with high throughput and/or multi-region requirements
+- [CockroachDB](#cockroachdb) - Recommended for self-hosted deployments with high throughput and/or multi-region requirements
 - [Cloud Spanner](#cloud-spanner) - Recommended for self-hosted Google Cloud deployments
 - [PostgreSQL](#postgresql) - Recommended for self-hosted single-region deployments
 - [MySQL](#mysql) - Not recommended; only use if you cannot use PostgreSQL
 - [memdb](#memdb) - Recommended for local development and integration testing against applications
 
+<Callout type="warning">
+    If the database you want to run SpiceDB on isn't listed above, please file an issue (or search for existing ones) in our [GitHub repository]
+    so that we can gauge interest and guide development.
+
+    [GitHub repository]: https://github.com/authzed/spicedb
+
+</Callout>
+
 ## CockroachDB
 
 ### Usage Notes
-
-<Callout type="warning">
-  SpiceDB's Watch API requires CockroachDB's [Experimental Changefeed] to be enabled.
-
-[Experimental Changefeed]: https://www.cockroachlabs.com/docs/v22.1/changefeed-for
-
-</Callout>
 
 - Recommended for multi-region deployments, with configurable region awareness
 - Enables horizontal scalability by adding more SpiceDB and CockroachDB instances
@@ -81,11 +82,12 @@ AuthZed has standardized our managed services on CockroachDB, but we give self-h
 
 #### Overlap Strategy
 
-In distributed systems, you can trade-off consistency for performance.
+In distributed systems, you can trade-off [consistency] for performance.
 
 CockroachDB datastore users that are willing to rely on more subtle guarantees to mitigate the [New Enemy Problem] can configure `--datastore-tx-overlap-strategy`.
 
 [New Enemy Problem]: /spicedb/concepts/zanzibar#new-enemy-problem
+[consistency]: /spicedb/concepts/consistency
 
 The available strategies are:
 
@@ -122,20 +124,17 @@ ALTER ZONE default CONFIGURE ZONE USING gc.ttlseconds = 90000;
 
 #### Relationship Integrity
 
-Relationship Integrity is a new experimental feature in SpiceDB that ensures that data written into the supported backing datastores (currently: only CockroachDB) is validated as having been written by SpiceDB itself.
+Relationship Integrity is a feature in SpiceDB that ensures that data written into the supported backing datastores (currently: only CockroachDB) is validated as either having been written by SpiceDB itself, or that the caller has access to the key(s) necessary to write those relationships.
 
-- **What does relationship integrity ensure?**
-  Relationship integrity primarily ensures that all relationships written into the backing datastore were written via a trusted instance of SpiceDB or that the caller has access to the key(s) necessary to write those relationships.
-  It ensures that if someone gains access to the underlying datastore, they cannot simply write new relationships of their own invention.
+It ensures that if someone gains access to the underlying datastore, they cannot simply write new relationships of their own invention.
 
-- **What does relationship integrity _not_ ensure?**
-  Since the relationship integrity feature signs each individual relationship, it does not ensure that removal of relationships is by a trusted party.
-  Schema is also currently unverified, so an untrusted party could change it as well.
-  Support for schema changes will likely come in a future version.
+Since the relationship integrity feature signs each individual relationship, it does not ensure that removal of relationships is by a trusted party.
+Schema is also currently unverified, so an untrusted party could change it as well.
+Support for schema changes will likely come in a future version.
 
 ##### Setting up relationship integrity
 
-To run with relationship integrity, new flags must be given to SpiceDB:
+To run with relationship integrity, the following flags must be given to SpiceDB:
 
 ```zed
 spicedb serve ...existing flags...
@@ -144,19 +143,19 @@ spicedb serve ...existing flags...
 --datastore-relationship-integrity-current-key-filename="some.key"
 ```
 
-Place the generated key contents (which must support an HMAC key) in `some.key`
+Place the generated key contents (which must support an HMAC key) in `some.key`.
 
 ##### Deployment Process
 
-1. Start with a **clean** datastore for SpiceDB. **At this time, migrating an existing SpiceDB installation is not supported.**
-2. Run the standard `migrate` command but with relationship integrity flags included.
-3. Run SpiceDB with the relationship integrity flags included.
+1. Start with a **clean** datastore for SpiceDB. (Migrating from an existing SpiceDB installation is not supported).
+2. Run the standard `spicedb migrate head` command.
+3. Run SpiceDB with the flags specified in the section above.
 
 ## Cloud Spanner
 
 ### Usage Notes
 
-- Requires a Google Cloud Account with an active Cloud Spanner instance
+- Requires a Google Cloud Account with an active Cloud Spanner instance.
 - Take advantage of Google's TrueTime.
   The Spanner driver assumes the database is linearizable and skips the transaction overlap strategy required by CockroachDB.
 
