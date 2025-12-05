@@ -1,0 +1,382 @@
+# Fine-Grained Authorization for RAG Applications using LangChain (or LangGraph)
+
+This guide explains how to enforce **fine-grained, per-document authorization** in Retrieval-Augmented Generation (RAG) pipelines using **SpiceDB**, **LangChain**, and **LangGraph**.
+
+It demonstrates how to plug authorization directly into an LLM workflow using a post-retrieval filter powered by SpiceDB — ensuring that **every document used by the LLM has been explicitly authorized** for the requesting user.
+
+---
+
+## Overview
+
+Modern AI-assisted applications use RAG to retrieve documents and generate responses.  
+However, **standard RAG pipelines do not consider permissions** - meaning LLMs may hallucinate or leak information from unauthorized sources.
+
+This guide shows how to solve that problem using:
+
+- **SpiceDB** as the source of truth for authorization
+- [**spicedb-rag-authorization**](https://github.com/sohanmaheshwar/spicedb-rag-authorization) for fast post-retrieval filtering
+- **LangChain** for LLM pipelines (or)
+- **LangGraph** for stateful, multi-step workflows and agents
+
+The library implements **post-filter authorization**, meaning:
+
+1. Retrieve the best semantic matches.
+2. Filter them using SpiceDB permission checks.
+3. Feed *only authorized documents* to the LLM.
+
+---
+
+## 1. Prerequisites
+
+### Run SpiceDB
+
+To run locally, use:
+
+```bash
+docker run --rm -p 50051:50051 authzed/spicedb serve --grpc-preshared-key "sometoken" --grpc-no-tls
+```
+
+---
+
+## 2. Installation
+
+The package is not yet published on PyPI.
+Install directly from GitHub:
+
+```bash
+pip install "git+https://github.com/sohanmaheshwar/spicedb-rag-authorization.git#egg=spicedb-rag-auth[all]"
+```
+
+Or clone locally with `git clone https://github.com/sohanmaheshwar/spicedb-rag-authorization.git` and then run:
+
+```python
+import sys
+sys.path.append("/path/to/spicedb-rag-authorization")
+```
+
+### Create a SpiceDB schema
+
+
+We will use the [zed](https://github.com/authzed/zed) CLI to write schema and relationships.
+In your production application, this would be replaced with an API call.
+
+```bash
+zed context set local localhost:50051 sometoken --insecure
+zed schema write --insecure <(cat << EOF
+definition user {}
+definition article {
+    relation viewer: user
+    permission view = viewer
+}
+EOF
+)
+```
+
+### Add relationships
+
+```bash
+zed relationship create article:doc1 viewer user:alice --insecure
+zed relationship create article:doc2 viewer user:bob --insecure
+zed relationship create article:doc4 viewer user:alice --insecure
+```
+
+---
+
+## 3. Document Metadata Requirements
+
+Every document used in RAG **must include a resource ID** in metadata.
+This is what enables SpiceDB to check which `user` has what permissions for each `doc`.
+
+```python
+Document(
+    page_content="Example text",
+    metadata={"article_id": "doc4"}
+)
+```
+
+The metadata key must match the configured `resource_id_key` which in this case is `article_id`.
+
+---
+
+## 4. LangChain Integration
+
+This is the simplest way to add authorization to a LangChain RAG pipeline.
+
+[LangChain](https://www.langchain.com/langchain) is a framework for building LLM-powered applications by composing modular components such as retrievers, prompts, memory, tools, and models.
+It provides a high-level abstraction called the LangChain Expression Language (LCEL) which lets you construct RAG pipelines as reusable, declarative graphs — without needing to manually orchestrate each step.
+
+You would typically use LangChain when:
+
+- You want a composable pipeline that chains together retrieval, prompting, model calls, and post-processing.
+- You are building a RAG system where each step (retriever → filter → LLM → parser) should be easily testable and swappable.
+- You need integrations with many LLM providers, vector stores, retrievers, and tools.
+- You want built-in support for streaming, parallelism, or structured output.
+
+LangChain is an excellent fit for straightforward RAG pipelines where the control flow is mostly linear.
+For more complex, branching, stateful, or agent-style workflows, you would likely [choose LangGraph](#5-langgraph-integration) instead.
+
+**Core component:** `SpiceDBAuthFilter` or `SpiceDBAuthLambda`.
+
+### Example Pipeline
+
+```python
+auth = SpiceDBAuthFilter(
+    spicedb_endpoint="localhost:50051",
+    spicedb_token="sometoken",
+    resource_type="article",
+    resource_id_key="article_id",
+)
+```
+
+Build your chain once:
+
+```python
+chain = (
+    RunnableParallel({
+        "context": retriever | auth,  # Authorization happens here
+        "question": RunnablePassthrough(),
+    })
+    | prompt
+    | llm
+    | StrOutputParser()
+)
+```
+
+Invoke:
+
+```python
+# Pass user at runtime - reuse same chain for different users
+answer = await chain.ainvoke(
+    "Your question?",
+    config={"configurable": {"subject_id": "alice"}}
+)
+
+# Different user, same chain
+answer = await chain.ainvoke(
+    "Another question?",
+    config={"configurable": {"subject_id": "bob"}}
+)
+```
+
+---
+
+## 5. LangGraph Integration
+
+[LangGraph](https://www.langchain.com/langgraph) is a framework for building stateful, multi-step, and branching LLM applications using a graph-based architecture.
+Unlike LangChain’s linear pipelines, LangGraph allows you to define explicit nodes, edges, loops, and conditional branches — enabling **deterministic**, reproducible, agent-like workflows.
+
+You would choose LangGraph when:
+
+- You are building multi-step RAG pipelines (retrieve → authorize → rerank → generate → reflect).
+- Your application needs state management across steps (conversation history, retrieved docs, user preferences).
+- You require a strong separation of responsibilities (e.g., retriever node, authorization node, generator node).
+
+LangGraph is ideal for more advanced AI systems, such as conversational RAG assistants, agents with tool-use, or pipelines with complex authorization or business logic.
+
+Our [library](https://github.com/sohanmaheshwar/spicedb-rag-authorization) provides:
+
+- `RAGAuthState` — a TypedDict defining the required state fields  
+- `create_auth_node()` — auto-configured authorization node  
+- `AuthorizationNode` — reusable class-based node  
+
+---
+
+## 5.1 LangGraph Example
+
+```python
+from langgraph.graph import StateGraph, END
+from spicedb_rag_auth import create_auth_node, RAGAuthState
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+
+# Use the provided RAGAuthState TypedDict
+graph = StateGraph(RAGAuthState)
+
+# Define your nodes
+def retrieve_node(state):
+    """Retrieve documents from vector store"""
+    docs = retriever.invoke(state["question"])
+    return {"retrieved_documents": docs}
+
+def generate_node(state):
+    """Generate answer from authorized documents"""
+    # Create prompt
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", "Answer based only on the provided context."),
+        ("human", "Question: {question}\n\nContext:\n{context}")
+    ])
+
+    # Format context from authorized documents
+    context = "\n\n".join([doc.page_content for doc in state["authorized_documents"]])
+
+    # Generate answer
+    llm = ChatOpenAI(model="gpt-4o-mini")
+    messages = prompt.format_messages(question=state["question"], context=context)
+    answer = llm.invoke(messages)
+
+    return {"answer": answer.content}
+
+# Add nodes
+graph.add_node("retrieve", retrieve_node)
+graph.add_node("authorize", create_auth_node(
+    spicedb_endpoint="localhost:50051",
+    spicedb_token="sometoken",
+    resource_type="article",
+    resource_id_key="article_id",
+))
+graph.add_node("generate", generate_node)
+
+# Wire it up
+graph.set_entry_point("retrieve")
+graph.add_edge("retrieve", "authorize")
+graph.add_edge("authorize", "generate")
+graph.add_edge("generate", END)
+
+# Compile and run
+app = graph.compile()
+result = await app.ainvoke({
+    "question": "What is SpiceDB?",
+    "subject_id": "alice",
+})
+
+print(result["answer"])  # The actual answer to the question
+```
+
+---
+
+## 5.2 Extending State with LangGraph
+
+Add custom fields to track additional state like conversation history, user preferences, or metadata.
+
+```python
+class MyCustomState(RAGAuthState):
+    user_preferences: dict
+    conversation_history: list
+
+graph = StateGraph(MyCustomState)
+# ... add nodes and edges
+```
+
+**When to use:**
+
+- Multi-turn conversations that need history
+- Personalized responses based on user preferences
+- Complex workflows requiring additional context
+
+**Example use case:** A chatbot that remembers previous questions and tailors responses based on user role (engineer vs manager).
+
+---
+
+## 5.3 Reusable Class-Based Authorization Node
+
+Create reusable authorization node instances that can be shared across multiple graphs or configured with custom state key mappings.
+
+```python
+from spicedb_rag_auth import AuthorizationNode
+
+auth_node = AuthorizationNode(
+    spicedb_endpoint="localhost:50051",
+    spicedb_token="sometoken",
+    resource_type="article",
+    resource_id_key="article_id",
+)
+
+graph = StateGraph(RAGAuthState)
+graph.add_node("authorize", auth_node)
+```
+
+You can define it once and reuse everywhere.
+
+```python
+article_auth = AuthorizationNode(resource_type="article", ...)
+video_auth = AuthorizationNode(resource_type="video", ...)
+
+# Use in multiple graphs
+blog_graph.add_node("auth", article_auth)
+media_graph.add_node("auth", video_auth)
+learning_graph.add_node("auth_articles", article_auth)
+```
+
+**When to use:**
+
+- Multiple graphs need the same authorization logic
+- Your state uses different key names than the defaults
+- Building testable code (easy to swap prod/test instances)
+- Team collaboration (security team provides authZ nodes)
+
+**Example use case:** A multi-resource platform (articles, videos, code snippets) where each resource type has its own authorization node that's reused across different workflows.
+
+For production applications, you'll often use a mix of Option 2 and 3: A custom state for your workflow + reusable authZ nodes for flexibility.
+Here's an example:
+
+```python
+class CustomerSupportState(RAGAuthState):
+    conversation_history: list
+    customer_tier: str
+    sentiment_score: float
+
+docs_auth = AuthorizationNode(resource_type="support_doc", ...)
+kb_auth = AuthorizationNode(resource_type="knowledge_base", ...)
+
+graph = StateGraph(CustomerSupportState)
+graph.add_node("auth_docs", docs_auth)
+graph.add_node("auth_kb", kb_auth)
+```
+
+---
+
+## 6. Metrics & Observability
+
+The library exposes:
+
+- number of retrieved documents  
+- number authorized  
+- denied resource IDs  
+- latency per SpiceDB check  
+
+### In LangChain
+
+```python
+auth = SpiceDBAuthFilter(..., subject_id="alice", return_metrics=True)
+result = await auth.ainvoke(docs) 
+
+print(result.authorized_documents)
+print(result.total_authorized)
+print(result.check_latency_ms)
+# ... all other metrics
+```
+
+### In LangGraph
+
+Metrics appear in `auth_results` in the graph state.
+
+```python
+graph = StateGraph(RAGAuthState)
+# ... add nodes including create_auth_node()
+
+result = await app.ainvoke({"question": "...", "subject_id": "alice"})
+
+# Access metrics from state
+print(result["auth_results"]["total_retrieved"])
+print(result["auth_results"]["total_authorized"])
+print(result["auth_results"]["authorization_rate"])
+print(result["auth_results"]["denied_resource_ids"])
+print(result["auth_results"]["check_latency_ms"])
+```
+
+---
+
+## 7. Complete Example
+
+See the full example in the [repo here](<https://github.com/sohanmaheshwar/spicedb-rag-authorization>)
+
+- `langchain_example.py`
+- `README_langchain.md`
+
+---
+
+## 8. Next Steps
+
+- Read [this guide](https://authzed.com/blog/building-a-multi-tenant-rag-with-fine-grain-authorization-using-motia-and-spicedb) on creating a production-grade RAG with SpiceDB & Motia.dev
+- Check out this [self-guided workshop](https://github.com/authzed/workshops/tree/main/secure-rag-pipelines) for a closer look at how fine-grained authorization with SpiceDB works in RAG.
+This guide also includes the pre-filtration technique.
