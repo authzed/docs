@@ -1,0 +1,65 @@
+import { Callout } from "nextra/components";
+import YouTube from "@/components/youtube-wrapper";
+
+# Getting Started with AuthZed Cloud
+
+This page provides a guide on how to get up and running with a permission system in AuthZed Cloud.
+
+If you prefer a guide in video format, watch this:
+
+<YouTube videoId="O325tG4s66g" className="youtubeContainer" />
+
+## Create a Permissions System on AuthZed Cloud
+
+Sign in to [AuthZed Cloud](https://app.authzed.cloud) and click on the **+Create** button to create a Permissions System (PS) and fill in the necessary details:
+
+- The type can be either "Production" or "Development".
+- Give it a name.
+- Choose the underlying datastore.
+- The update channel can be either be `rapid` or `regular` which determines the behavior of automatic updates when new SpiceDB releases are made available:
+  - `rapid` gets the latest release immediately.
+  - `regular` is one release behind.
+- Add SpiceDB deployments:
+  - Give them a name.
+  - Choose the region where the deployment will live.
+  - Choose the number of vCPUs for your deployment. The recommendation is to start with 2 vCPUs and then monitor the Metrics and change it based on your workload.
+  - Choose the number of replicas to deploy SpiceDB with primarily read workloads. The recommendation is 3 but will depend on your latency requirements.
+
+## Configuring Access
+
+Before using the Permissions System, let's configure access to it.
+This functionality enables organizations to apply the principle of least-privilege to services accessing SpiceDB.
+For example, read-only tokens can be created for services that should never need to write to SpiceDB.
+Read more about it [here](https://authzed.com/docs/authzed/concepts/restricted-api-access)
+
+Let’s start by creating a **Service Account** which is something that represents your unique workload.
+We recommend creating a Service Account for each application that will access the SpiceDB API.
+Add a name such as `blog-app` and a description before hitting Save.
+
+Now let’s create a **token**.
+Tokens are long-lived credentials for Service Accounts.
+SpiceDB clients must provide a Token in the Authorization header of an API request to perform actions granted to the Service Account.
+Click on the `blog-app` service account you just created and then the Tokens item in the menu.
+Create a token by providing a name and description.
+
+Let’s now provide a **Role** and attach a **Policy** to that Role.
+A Role defines rules for accessing the SpiceDB API.
+Roles are bound to Service Accounts.
+Click the Roles -> Create Role and provide a name and a description.
+Add the following permissions for this demo:
+
+```
+ReadSchema
+WriteSchema
+DeleteRelationships
+ReadRelationships
+WriteRelationships
+CheckPermission
+```
+
+Finally, let’s create a Policy.
+Policies are what bind Roles to a Service Account.
+Click on Policies -> Create policy.
+Provide a name and a description and pick the Service Account and Role created in the steps above to bind the two.
+
+You’re now ready to use your Permissions System!
