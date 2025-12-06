@@ -14,7 +14,6 @@ import "./globals.css";
 
 import { default as OurLayout } from "@/components/layout";
 
-// TODO: make sure this is all right
 export const generateMetadata = async (
   _props: unknown,
   parentPromise: ResolvingMetadata,
@@ -82,18 +81,7 @@ export default async function RootLayout({ children }) {
           }
           darkMode
           docsRepositoryBase="https://github.com/authzed/docs/tree/main"
-          search={
-            enableSearch && (
-              <Search
-                searchOptions={{
-                  sort: {
-                    // This is how we rank blog stuff below docs stuff.
-                    external: "desc",
-                  },
-                }}
-              />
-            )
-          }
+          search={enableSearch && <Search />}
           sidebar={{
             defaultMenuCollapseLevel: 1,
             toggleButton: true,
