@@ -1,8 +1,9 @@
+import type { MetaRecord } from "nextra";
+
 export default {
   "grpc-api": {
     title: "gRPC API Reference",
     href: "https://buf.build/authzed/api/docs/main:authzed.api.v1",
-    newWindow: true,
   },
   "http-api": {
     title: "HTTP API Reference",
@@ -10,6 +11,5 @@ export default {
   postman: {
     title: "Postman Collection",
     href: "https://www.postman.com/authzed/workspace/spicedb/overview",
-    newWindow: true,
   },
-};
+} satisfies MetaRecord;

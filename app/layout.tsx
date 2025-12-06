@@ -8,20 +8,38 @@ import LogoIcon from "@/components/icons/logo-icon.svg";
 import BannerContents from "@/components/banner";
 import Providers from "@/components/providers";
 import { TocCTA } from "@/components/cta";
-import type { Metadata } from "next";
+import type { Metadata, ResolvingMetadata } from "next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
 import { default as OurLayout } from "@/components/layout";
 
 // TODO: make sure this is all right
-export const metadata: Metadata = {
-  metadataBase: new URL("https://authzed.com"),
-  title: {
-    default: "Authzed Docs",
-    template: "%s - Authzed Docs",
-  },
-  description: "Welcome to the SpiceDB and AuthZed docs site.",
+export const generateMetadata = async (
+  _props: unknown,
+  parentPromise: ResolvingMetadata,
+): Promise<Metadata> => {
+  const { description } = await parentPromise;
+  return {
+    metadataBase: new URL("https://authzed.com"),
+    title: {
+      default: "Authzed Docs",
+      template: "%s - Authzed Docs",
+    },
+    description: "Welcome to the SpiceDB and AuthZed docs site.",
+    openGraph: {
+      title: {
+        default: "Authzed Docs",
+        template: "%s - Authzed Docs",
+      },
+      description: description ?? undefined,
+    },
+    alternates: {
+      // This is how you say "the current page is the canonical one",
+      // using the metadataBase field.
+      canonical: "./",
+    },
+  };
 };
 
 export default async function RootLayout({ children }) {
@@ -37,25 +55,6 @@ export default async function RootLayout({ children }) {
       projectLink="https://github.com/authzed/spicedb"
     />
   );
-  // TODO
-  /*
-    const { title: titleContent, frontMatter } = useConfig();
-    const desc =
-      frontMatter.description ||
-      ;
-    const resolvedTitle = titleContent
-      ? `${titleContent} - Authzed Docs`
-      : "Authzed Docs";
-
-        <meta property="og:title" content={resolvedTitle} />
-        <meta property="og:description" content={desc} />
-        <link
-          rel="canonical"
-          href={`https://authzed.com${
-            process.env.NEXT_PUBLIC_BASE_DIR ?? ""
-          }${asPath}`}
-        />
-   */
 
   return (
     <html lang="en" dir="ltr" suppressHydrationWarning>
@@ -65,11 +64,7 @@ export default async function RootLayout({ children }) {
           saturation: { dark: 100, light: 100 },
         }}
       />
-      <body
-        // This is how we tell pagefind that this is a doc page
-        // which should rank higher than blogs in search results.
-        data-pagefind-sort="internal:1"
-      >
+      <body>
         <Layout
           banner={
             <Banner dismissible={false}>

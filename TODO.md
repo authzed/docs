@@ -5,7 +5,8 @@
 - [x] check behavior of search bar, especially around docs results ranking higher than non-docs
 - [x] make sure that search bar works (check pagefind)
 - [x] finish pagefind thought
-- [ ] make styling of swagger page look nice
-- [ ] ensure that metadata is still showing up as expected
-- [ ] do migration to app folder
-- [ ] make sure that app.tsx is rendering properly
+- [ ] make styling of swagger page look nice (?)
+- [x] ensure that metadata is still showing up as expected
+- [x] do migration to app folder
+- [ ] make sure that app.tsx is rendering properly (not sure what i meant by this)
+- [ ] rebase
