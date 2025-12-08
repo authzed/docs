@@ -4,49 +4,8 @@ import { Callout } from "nextra/components";
 # Writing relationships
 
 This page will provide some practical recommendations for writing relationships to SpiceDB.
-If you are interested in relationships as a concept, check out this [page](/spicedb/concepts/relationships).
-
-## Retries
-
-When making requests to SpiceDB, it's important to implement proper retry logic to handle transient failures. [SpiceDB APIs use gRPC\*](/spicedb/getting-started/client-libraries), which can experience various types of temporary failures that can be resolved through retries.
-
-Retries are recommended for all gRPC methods, not just WriteRelationships.
-
-\*SpiceDB can also expose an [HTTP API](/spicedb/getting-started/client-libraries#http-clients); however, gRPC is recommended.
-
-### Implementing Retry Policies
-
-You can implement your own retry policies using the gRPC Service Config.
-Below, you will find a recommended Retry Policy.
-
-```
-"retryPolicy": {
-  "maxAttempts": 3,
-  "initialBackoff": "1s",
-  "maxBackoff": "4s",
-  "backoffMultiplier": 2,
-  "retryableStatusCodes": [
-    'UNAVAILABLE', 'RESOURCE_EXHAUSTED', 'DEADLINE_EXCEEDED', 'ABORTED',
-  ]
-}
-```
-
-This retry policy configuration provides exponential backoff with the following behavior:
-
-**`maxAttempts: 3`** - Allows for a maximum of 3 total attempts (1 initial request + 2 retries).
-This prevents infinite retry loops while giving sufficient opportunity for transient issues to resolve.
-
-**`initialBackoff: "1s"`** - Sets the initial delay to 1 second before the first retry attempt.
-This gives the system time to recover from temporary issues.
-
-**`maxBackoff: "4s"`** - Caps the maximum delay between retries at 4 seconds to prevent excessively long waits that could impact user experience.
-
-**`backoffMultiplier: 2`** - Doubles the backoff time with each retry attempt.
-Combined with the other settings, this creates a retry pattern of: 1s → 2s → 4s.
-
-**`retryableStatusCodes`** - Only retries on specific gRPC status codes that indicate transient failures: -`UNAVAILABLE`: SpiceDB is temporarily unavailable -`RESOURCE_EXHAUSTED`: SpiceDB is overloaded -`DEADLINE_EXCEEDED`: Request timed out -`ABORTED`: Operation was aborted, often due to conflicts that may resolve on retry
-
-You can find a python retry example [here](https://github.com/authzed/examples/blob/main/data/retry/main.py).
+If you are interested in relationships as a concept, check out [this page](/spicedb/concepts/relationships).
+If you are interested in improving the resilience of your writes, check out [this page](/spicedb/ops/resilience).
 
 ## Writes: Touch vs Create
 
