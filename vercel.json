@@ -13,6 +13,10 @@
         {
           "key": "x-robots-tag",
           "value": "index, follow"
+        },
+        {
+          "key": "content-security-policy",
+          "value": "default-src 'self' docs-authzed.vercel.app"
         }
       ]
     },
