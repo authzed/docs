@@ -16,7 +16,7 @@
         },
         {
           "key": "content-security-policy",
-          "value": "default-src 'self' docs-authzed.vercel.app"
+          "value": "default-src 'self' docs-authzed.vercel.app;"
         }
       ]
     },
