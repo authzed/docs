@@ -40,6 +40,9 @@ const withNextra = nextra({
 
 export default withNextra({
   basePath: process.env.NEXT_PUBLIC_BASE_DIR ?? undefined,
+  // This is necessary because we're using CDN domains.
+  // It adds `cross-origin="anonymous"` to script tags
+  crossOrigin: "anonymous",
   assetPrefix:
     process.env.VERCEL_ENV === "production"
       ? "https://docs-authzed.vercel.app/docs"
