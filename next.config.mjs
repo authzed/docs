@@ -1,30 +1,10 @@
 import nextra from "nextra";
 import { createHighlighter } from "shiki";
-import { readFileSync } from "fs";
-import { join } from "path";
-
-const authzedGrammar = JSON.parse(
-  readFileSync(
-    join(import.meta.dirname, "./grammars/authzed.tmLanguage.json"),
-    "utf8",
-  ),
-);
-const celGrammar = JSON.parse(
-  readFileSync(
-    join(import.meta.dirname, "./grammars/cel.tmLanguage.json"),
-    "utf8",
-  ),
-);
-const textProtoGrammar = JSON.parse(
-  readFileSync(
-    join(import.meta.dirname, "./grammars/textproto.tmLanguage.json"),
-    "utf8",
-  ),
-);
+import authzedGrammar from "./grammars/authzed.tmLanguage.json" with { type: "json" };
+import celGrammar from "./grammars/cel.tmLanguage.json" with { type: "json" };
+import textProtoGrammar from "./grammars/textproto.tmLanguage.json" with { type: "json" };
 
 const withNextra = nextra({
-  theme: "nextra-theme-docs",
-  themeConfig: "./theme.config.tsx",
   latex: true,
   search: { codeblocks: false },
   defaultShowCopyCode: true,
@@ -60,6 +40,9 @@ const withNextra = nextra({
 
 export default withNextra({
   basePath: process.env.NEXT_PUBLIC_BASE_DIR ?? undefined,
+  // This is necessary because we're using CDN domains.
+  // It adds `cross-origin="anonymous"` to script tags
+  crossOrigin: "anonymous",
   assetPrefix:
     process.env.VERCEL_ENV === "production"
       ? "https://docs-authzed.vercel.app/docs"

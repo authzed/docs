@@ -1,8 +1,10 @@
+"use client";
+
 import { usePathname } from "next/navigation";
 
 export default function Banner() {
   const pathname = usePathname();
-  const isCommercial = pathname.startsWith("/authzed/");
+  const isCommercial = pathname?.startsWith("/authzed/");
 
   return isCommercial ? (
     <a href="https://authzed.com/zanzibar?utm_source=docs">
