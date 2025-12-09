@@ -1,0 +1,104 @@
+import { Callout } from "nextra/components";
+
+# Picking the right AuthZed Product
+
+AuthZed offers both self-hosted and managed SpiceDB services and support.
+
+This document is designed to give a high-level overview of the features supported in each so that you can decide which option is better for your use case.
+
+## Feature Matrix
+
+| Feature                      | [Open Source] | [Cloud] | [Dedicated] | [Enterprise] |
+| ---------------------------- | :-----------: | :-----: | :---------: | :----------: |
+| Self-Hosted                  |      ✅       |   ❌    |     ❌      |      ✅      |
+| No-commit pricing            |      ✅       |   ✅    |     ❌      |      ❌      |
+| [Materialize (Early Access)] |      ❌       |   ✅    |     ✅      |      ❌      |
+| [Management Dashboard]       |      ❌       |   ✅    |     ✅      |      ❌      |
+| [Private Networking]         |      DIY      |   ❌    |     ✅      |     DIY      |
+| [Workload Isolation]         |      DIY      |   ✅    |     ✅      |     DIY      |
+| [Automated Updates]          |      DIY      |   ✅    |     ✅      |     DIY      |
+| [SOC2 Compliance]            |      DIY      |   ✅    |     ✅      |     DIY      |
+| [Audit Logging]              |      ❌       |   ✅    |     ✅      |      ✅      |
+| [Multi-Region Deployments]   |      DIY      |   ❌    |     ✅      |     DIY      |
+| [Security Embargo]           |      ❌       |   ✅    |     ✅      |      ✅      |
+| [Restricted API Access]      |      DIY      |   ✅    |     ✅      |      ✅      |
+| [Expedited Support]          |      ❌       |   ✅    |     ✅      |      ✅      |
+
+[Cloud]: #cloud
+[Dedicated]: #dedicated
+[Enterprise]: #enterprise
+[Open Source]: #open-source
+[Materialize (Early Access)]: ../concepts/authzed-materialize
+[Audit Logging]: ../concepts/audit-logging
+[Automated Updates]: ../concepts/update-channels
+[Management Dashboard]: ../concepts/management-dashboard
+[Multi-Region Deployments]: ../concepts/multi-region
+[SOC2 Compliance]: https://security.authzed.com
+[Security Embargo]: ../concepts/security-embargo
+[Expedited Support]: https://authzed.com/pricing#support-packages
+[Private Networking]: ../concepts/private-networking
+[Workload Isolation]: ../concepts/workload-isolation
+[Restricted API Access]: ../concepts/restricted-api-access
+
+## Product Overviews
+
+### Cloud
+
+<Callout type="info">
+  **Info:**
+  AuthZed Cloud is now available to everyone!
+
+[Sign up](https://authzed.com/cloud/signup)
+
+</Callout>
+
+AuthZed Cloud is our self-service platform that allows you to provision, manage, and scale your authorization infrastructure on demand.
+
+Functionality includes:
+
+- Creating organizations, teams, and delegating access with your SSO provider
+- Commitment-free, usage-based monthly pricing
+- Possibility of creating your permission system in more regions, including Europe
+- Enterprise features like Audit Logs, Restricted API Access
+
+AuthZed Cloud is built on the same foundation that's serving critical production workloads in AuthZed Dedicated.
+
+### Dedicated
+
+Dedicated is a managed service that offers fully private deployments of our cloud platform in your cloud provider and regions of choice.
+
+Dedicated is sold and renewed on an annual basis.
+
+You can [schedule a call] to learn more.
+
+[schedule a call]: https://authzed.com/call?utm_source=docs
+
+### Enterprise
+
+AuthZed Enterprise provides access to a licensed version of enterprise releases of SpiceDB for running in self-hosted/on-premise environments.
+
+You can [schedule a call] to learn more.
+
+[schedule a call]: https://authzed.com/call?utm_source=docs
+
+### Open Source
+
+We understand that AuthZed's product suite will not satisfy all use cases and, for that reason, we've built and continue to invest in an open-source community around SpiceDB.
+
+Community support is available to absolutely everyone and does not require any form of payment or usage of AuthZed products.
+
+[Discord] is the first line of support for asking questions or getting help with SpiceDB in real time.
+[GitHub Discussions] is also available for asynchronous questions.
+For bug reports, feature requests, and development discussion, [GitHub Issues] are available to all for participation.
+
+<Callout type="info">
+  The community encompasses not only folks paid to contribute, but maintainers and end-users volunteering their time to answer your questions.
+
+Please be respectful and read over the community [Code of Conduct] before interacting.
+
+</Callout>
+
+[discord]: https://authzed.com/discord
+[github discussions]: https://github.com/orgs/authzed/discussions/categories/q-a
+[github issues]: https://github.com/authzed/spicedb/issues
+[Code of Conduct]: https://github.com/authzed/spicedb/blob/main/CODE-OF-CONDUCT.md
