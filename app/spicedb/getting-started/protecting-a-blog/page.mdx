@@ -648,17 +648,10 @@ For example, in our example schema, writers have both write and read permissions
 Let's perform some permission checks:
 
 <Callout type="info">
-When developing locally with SpiceDB running without TLS (`--grpc-no-tls`), use insecure credentials:
-- **Node.js**: `v1.ClientSecurity.INSECURE_PLAINTEXT_CREDENTIALS`
-- **Python**: `insecure_bearer_token_credentials()`
-- **Go**: `grpcutil.WithInsecureBearerToken()` + `grpc.WithTransportCredentials(insecure.NewCredentials())`
-- **Ruby**: `credentials: :this_channel_is_insecure`
-- **Java**: `.usePlaintext()`
-- **Dotnet**: `ChannelCredentials.Insecure` with `UnsafeUseInsecureChannelCallCredentials = true` (requires `AppContext.SetSwitch` for HTTP/2)
-
-For TLS with self-signed certificates, use `v1.ClientSecurity.INSECURE_LOCALHOST_ALLOWED` (Node.js) instead. **Warning:** This skips CA verification and is only safe for localhost - never use against remote endpoints.
-
-See [Client Libraries](./client-libraries#local-development) for full details. Always switch to secure credentials before production.
+  If developing locally against SpiceDB, see
+  [this](./client-libraries#local-development) for full details on how to setup
+  credentials. Always switch to secure credentials before launching to
+  production.
 </Callout>
 
 <Tabs items={['zed', 'Node', 'Go', 'Python', 'Ruby', 'Java']}>
