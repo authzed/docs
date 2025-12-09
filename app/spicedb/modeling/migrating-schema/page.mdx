@@ -1,0 +1,206 @@
+import { Callout } from "nextra/components";
+
+# Migrating a Schema in SpiceDB
+
+<Callout type="info">
+  This page explains how to migrate a SpiceDB schema. If you need information
+  about migrating the schema of a datastore underlying SpiceDB, like Postgres or
+  CockroachDB, go [here](/spicedb/concepts/datastore-migrations). If you need
+  information about migrating between SpiceDB instances, go
+  [here](/spicedb/ops/data/migrations).
+</Callout>
+
+A [Schema] in SpiceDB is the file that represents the structural definitions of which relationships are allowed
+in SpiceDB and how permissions are computed. It can be updated or migrated via the [WriteSchema] API.
+
+[Schema]: developing-a-schema
+
+SpiceDB processes all calls to the [WriteSchema] in a **safe** manner: it is not possible to
+break the type safety of a schema. This means that, for example, it is not possible to accidentally
+remove a relation that is still referenced by one or more relationships. However, this does mean that some operations
+require us to do some steps beforehand.
+
+[WriteSchema]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.SchemaService.WriteSchema
+
+## Safe Migrations
+
+### Adding a new relation
+
+Adding a new `relation` to a `definition` is always allowed, as it cannot change any existing
+types or computation:
+
+```zed {3}
+definition resource {
+  relation existing: user
+  relation newrelation: user
+  permission view = existing
+}
+```
+
+### Changing a permission
+
+Changing how a permission is computed is always allowed, so long as the expression
+references other defined permissions or relations:
+
+```zed {4} /+ editor/
+definition resource {
+  relation viewer: user
+  relation editor: user
+  permission view = viewer + editor
+}
+```
+
+### Adding a new subject type to a relation
+
+Adding a new allowed subject type to a relation is always allowed:
+
+```zed {2} /group#member/
+definition resource {
+  relation viewer: user | group#member
+  permission view = viewer
+}
+```
+
+### Deleting a permission
+
+Removing a permission is always allowed, so long as it is not referenced by another
+permission or relation.
+
+<Callout type="warning">
+  While this cannot break the schema, it *can* break API callers if they are
+  making checks or other API requests against the permission. It is up to your
+  own CI system to verify that removed permissions are no longer referenced
+  externally.
+</Callout>
+
+## Contingent Migrations
+
+For type safety reasons, any removal of a `relation` with data, or a `relation` or `permission`
+referenced by _another_ `relation` or `permission` is disallowed.
+
+### Removing a relation
+
+A `relation` can _only_ be removed if _all_ of the relationships referencing it
+have been deleted _and_ it is not referenced by any other `relation` or `permission`
+in the schema.
+
+#### Process for removing a relation
+
+Given this example schema and we wish to remove relation `editor`:
+
+```zed {3} /relation editor: user/
+definition resource {
+  relation viewer: user
+  relation editor: user
+  permission view = viewer + editor
+}
+```
+
+To remove `relation editor`:
+
+1. Change the schema to no longer reference the relation and call [WriteSchema] with the changes:
+
+   ```zed {4}
+   definition resource {
+     relation viewer: user
+     relation editor: user
+     permission view = viewer
+   }
+   ```
+
+1. Issue a [DeleteRelationships] call to delete _all_ relationships for the `editor` relation
+
+   [DeleteRelationships]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.DeleteRelationships
+
+1. Update the schema to remove the relation entirely and call [WriteSchema] with the changes:
+
+   ```zed
+   definition resource {
+     relation viewer: user
+     permission view = viewer
+   }
+   ```
+
+### Removing an allowed subject type
+
+Similar to removing a relation itself, removing an allowed subject type can only be performed
+once all relationships with that subject type on the relation have been deleted.
+
+#### Process for removing an allowed subject type
+
+Given this example schema and we wish to remove supporting `group#member` on `viewer`:
+
+```zed {2} /group#member/
+definition resource {
+  relation viewer: user | group#member
+  permission view = viewer
+}
+```
+
+1. Issue a [DeleteRelationships] call to delete _all_ relationships for the `viewer` relation with subject type `group#member`
+
+1. Update the schema to remove the allowed subject type call [WriteSchema] with the changes:
+
+```zed
+definition resource {
+  relation viewer: user
+  permission view = viewer
+}
+```
+
+## Migrating data from one `relation` to another
+
+Given the constraints described above, migrating relationships from one `relation` to another
+requires a few steps.
+
+Let's take a sample schema and walk through migrating data from `relation viewer` to a new `relation new_viewer`:
+
+```zed
+definition resource {
+  relation viewer: user
+  permission view = viewer
+}
+```
+
+1. Add the new relation:
+
+   We start by adding the new relation and adding it to the `view` permission:
+
+   ```zed {3,4} /relation new_viewer: user2/ /+ new_viewer/
+   definition resource {
+     relation viewer: user
+     relation new_viewer: user2
+     permission view = viewer + new_viewer
+   }
+   ```
+
+1. Update the application so that it writes relationships to _both_ `relation viewer` and `relation new_viewer`.
+   This ensures that once we run the backfill (the next step), both relations are fully specified.
+
+1. Backfill the relationships:
+
+   We next backfill the relationships by having our application write the relationships
+   for the `new_viewer` relation.
+   Make sure to copy _all_ relevant relationships in this step.
+
+1. Drop `viewer` from the permission:
+
+   Once the relationships for `new_viewer` have been fully written and the permission has been verified,
+   (typically by issuing a CheckPermission request _directly_ to `new_viewer`), the `viewer` relation
+   can be dropped from the `view` permission:
+
+   ```zed {4}
+   definition resource {
+     relation viewer: user
+     relation new_viewer: user2
+     permission view = new_viewer
+   }
+   ```
+
+1. Update the application:
+
+   We next update our application to no longer write relationships to the `viewer` relation, as it is no longer used.
+
+1. Delete the relation `viewer`:
+
+   Finally, follow the instructions above for deleting a `relation` to delete the now-unused relation.

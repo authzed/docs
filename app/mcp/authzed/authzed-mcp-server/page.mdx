@@ -1,0 +1,216 @@
+# AuthZed MCP Server
+
+Connect your AI tools to AuthZed and SpiceDB documentation using the Model Context Protocol (MCP).
+Access comprehensive documentation, API references, and authorization pattern examples directly from your AI assistant.
+
+## Overview
+
+AuthZed MCP Server is a remote MCP server available at `https://mcp.authzed.com`.
+It provides tools with searchable access to SpiceDB and AuthZed resources, enabling you to learn about authorization systems, explore APIs, and find implementation examples without leaving your LLM chat or development environment.
+
+### What You Can Do
+
+- **Search Documentation**: Find relevant information across all SpiceDB and AuthZed documentation pages
+- **Discover APIs**: Explore all API methods and message types with detailed specifications
+- **Find Examples**: Browse authorization pattern examples including RBAC, document sharing, and more with SpiceDB schemas included
+- **Learn Concepts**: Access comprehensive guides on schema design, relationships, and permissions
+
+## Supported Clients
+
+Works with any MCP-compatible AI client including:
+
+- ChatGPT
+- Claude Code and Claude Desktop
+- Cursor
+- VS Code with Copilot
+- Windsurf
+- Zed Editor
+- Other MCP-compatible tools
+
+## Setup
+
+### ChatGPT
+
+Available on Pro and Plus accounts.
+
+1. Enable **Developer mode** in Settings
+2. Create connector:
+
+- **Name**: AuthZed
+- **MCP server URL**: `https://mcp.authzed.com`
+- **Authentication**: None
+
+### Claude Code
+
+```bash
+claude mcp add --transport http authzed https://mcp.authzed.com
+
+# Start Claude Code
+claude
+```
+
+### Claude Desktop
+
+Available on Pro, Max, Team, and Enterprise plans.
+
+1. Open **Settings** → **Connectors**
+2. Select **Add custom connector**
+3. Configure:
+
+- **Name**: AuthZed
+- **URL**: `https://mcp.authzed.com`
+
+### Cursor
+
+Add to `.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "authzed": {
+      "url": "https://mcp.authzed.com"
+    }
+  }
+}
+```
+
+### VS Code with Copilot
+
+1. Command Palette → **MCP: Add Server**
+2. Select **HTTP**
+3. Configure:
+
+- **URL**: `https://mcp.authzed.com`
+- **Name**: AuthZed
+
+### Windsurf
+
+Add to `mcp_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "authzed": {
+      "serverUrl": "https://mcp.authzed.com"
+    }
+  }
+}
+```
+
+## Using the Server
+
+### Learning SpiceDB
+
+Ask natural language questions about SpiceDB concepts:
+
+- "How do I define a relationship in SpiceDB?"
+- "What are the best practices for schema design?"
+- "Explain how Zedtokens work"
+- "What is the difference between relations and permissions?"
+
+### Exploring the API
+
+Discover API methods and understand their usage:
+
+- "How do I check permissions using the API?"
+- "Show me all read-related API methods"
+- "What parameters does WriteRelationships accept?"
+- "Explain the CheckPermission response structure"
+
+### Finding Examples
+
+Search for authorization patterns and implementation examples:
+
+- "Show me docs sharing examples"
+- "How do I implement role-based access control?"
+- "Example schema with caveats"
+- "Show me the Google IAM pattern in SpiceDB schema language"
+
+### Browsing Resources
+
+List and explore available resources:
+
+- "What example schemas are available?"
+- "List all API methods"
+- "Show me documentation about caveats"
+
+### Getting Help
+
+Get information about using the server effectively:
+
+- "How does the AuthZed MCP server work?"
+- "What can I do with this server?"
+
+Use `system_instructions` to understand server capabilities and usage patterns.
+
+### Providing Feedback
+
+Share your experience to help improve the server:
+
+- "I'd like to provide feedback about the documentation"
+- "The search results weren't helpful for my query"
+- "I have a suggestion for the MCP server"
+
+The assistant uses `send_feedback` to guide you through submitting structured feedback about the MCP server, documentation quality, tool effectiveness, or your general experience.
+
+## Available Tools
+
+**`search_docs`** - Search documentation pages by content, URL, or path
+
+**`search_api`** - Search API methods and message types with type filtering
+
+**`search_examples`** - Search authorization pattern examples by title or description
+
+**`list_resources`** - List all documentation pages, API methods, messages, and examples
+
+**`send_feedback`** - Send the AuthZed team feedback about the MCP server
+
+## Prompts
+
+**`system_instructions`** - View the system instructions for the AuthZed MCP server, including how it works and how to use it effectively.
+
+**`explain_concept`** - Ask questions about SpiceDB concepts, AuthZed features, schema design, API usage, best practices, or troubleshooting.
+Returns authoritative answers with documentation references and examples.
+
+**`send_feedback`** - Provide feedback about the AuthZed MCP server, documentation, tools, or your general experience.
+The prompt guides you through submitting structured feedback.
+
+## Available Resources
+
+- **Documentation**: Doc pages are accessible with `docs://` URIs
+- **API Methods**: API methods are accessible with `api://methods/` URIs
+- **API Messages**: Message types are accessible `api://messages/` URIs
+- **Examples**: Schema examples are accessible with `examples://schemas/` URIs
+
+## Security
+
+### Public Information Only
+
+The server provides access to:
+
+- Public SpiceDB and AuthZed documentation
+- Publicly available API specifications
+- Open source schema examples
+
+The server does **not** access:
+
+- Your AuthZed or SpiceDB instances
+- Your authorization data
+- Your application schemas
+- Any private information
+
+### Verify the Endpoint
+
+Always confirm you're connecting to:
+
+```
+https://mcp.authzed.com
+```
+
+When using third-party marketplaces, verify the domain name before connecting.
+
+## Troubleshooting
+
+**Connection issues**: Verify the URL is `https://mcp.authzed.com` and your client supports remote HTTP MCP servers
+
+**No search results**: Try broader terms, check spelling, or use `list_resources` to see available content

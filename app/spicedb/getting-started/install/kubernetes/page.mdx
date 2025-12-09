@@ -1,0 +1,90 @@
+import { Callout } from "nextra/components";
+
+# Installing SpiceDB on Kubernetes
+
+This document outlines how to install SpiceDB for systems running Kubernetes.
+
+SpiceDB runs great in many environments, but our recommendation is to use Kubernetes in production deployments.
+The SpiceDB developers have deep experience with Kubernetes and can offer the best support in this environment.
+Additionally, SpiceDB has some additional logic for things such as peer discovery that make the experience a bit more seamless when using Kubernetes.
+
+<Callout type="info">
+  **Did You Know?**
+  The team behind SpiceDB helped pioneer the container and Kubernetes ecosystem.
+
+SpiceDB was born out of frustration by folks from [CoreOS] and [OpenShift].
+
+[CoreOS]: https://en.wikipedia.org/wiki/Container_Linux
+[OpenShift]: https://en.wikipedia.org/wiki/OpenShift
+
+</Callout>
+
+## Installing SpiceDB using the SpiceDB Operator
+
+The SpiceDB Operator is the best way to deploy SpiceDB in production.
+
+To install the latest version of the SpiceDB Operator you can run the following command:
+
+```sh
+kubectl apply --server-side -f https://github.com/authzed/spicedb-operator/releases/latest/download/bundle.yaml
+```
+
+After installation, you can create an example deployment of SpiceDB by applying a SpiceDBCluster Custom Resource:
+
+```sh
+kubectl apply --server-side -f - <<EOF
+apiVersion: authzed.com/v1alpha1
+kind: SpiceDBCluster
+metadata:
+  name: dev
+spec:
+  config:
+    datastoreEngine: memory
+  secretName: dev-spicedb-config
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dev-spicedb-config
+stringData:
+  preshared_key: "averysecretpresharedkey"
+EOF
+```
+
+To learn more about the SpiceDB Operator, you can read [its documentation][op].
+
+[op]: ../../ops/operator
+
+## Installing SpiceDB using kubectl
+
+If you prefer writing your own Kubernetes manifests from scratch and are looking for a starting place with SpiceDB, you can install an example deployment using the following command:
+
+```sh
+kubectl apply --server-side -f https://raw.githubusercontent.com/authzed/examples/main/kubernetes/example.yaml
+```
+
+You should [read through these example manifests][manifests] as it contains comments for quickly configuring certain features.
+
+If you're looking for something production-ready, install the [SpiceDB Operator][installop].
+
+[installop]: #installing-spicedb-using-the-spicedb-operator
+[manifests]: https://github.com/authzed/examples/blob/main/kubernetes/example.yaml
+
+## Installing SpiceDB using Helm
+
+<Callout type="warning">
+  **Warning:** There is no officially supported Helm Chart for SpiceDB; use this
+  at your own risk.
+</Callout>
+
+There is a [community maintained Chart][chart] by the folks over at [Bushel].
+As per their instructions, you can install it like this:
+
+```sh
+helm repo add spicedb-operator-chart https://bushelpowered.github.io/spicedb-operator-chart/
+helm repo update
+helm repo upgrade --install ... $RELEASE spicedb-operator-chart/spicedb-operator
+```
+
+[chart]: https://github.com/bushelpowered/spicedb-operator-chart
+[Bushel]: https://bushelpowered.com

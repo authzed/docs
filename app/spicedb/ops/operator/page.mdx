@@ -1,0 +1,251 @@
+# SpiceDB Operator
+
+The [SpiceDB Operator] is a [Kubernetes Operator] that can manage the installation and lifecycle of SpiceDB clusters.
+
+SpiceDB is designed not only with cloud-native principles, but also Kubernetes-native principles.
+The SpiceDB Operator is the best way to run SpiceDB in production.
+Under the hood, all managed AuthZed products leverage the SpiceDB Operator.
+
+Once the SpiceDB Operator is installed, Kubernetes clusters have a new [Resource] named `SpiceDBCluster`.
+
+Clusters created with SpiceDBCluster resource have features including:
+
+- Centralized management for cluster configurations
+- Automated SpiceDB upgrades
+- Zero-downtime, automated datastore migrations when upgrading SpiceDB
+
+[SpiceDB Operator]: ../ops/operator
+[kubernetes operator]: https://kubernetes.io/docs/concepts/extend-kubernetes/operator/
+[resource]: https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#custom-resources
+
+## Configuration
+
+### Flags
+
+SpiceDB flags can be set via the `.spec.config` field on the `SpiceDBCluster` object:
+
+```yaml
+apiVersion: authzed.com/v1alpha1
+kind: SpiceDBCluster
+metadata:
+  name: dev
+spec:
+  config:
+    replicas: 2
+    datastoreEngine: cockroachdb
+    logLevel: debug
+```
+
+Any CLI flag for SpiceDB can be set in `config` by converting the name of the flag to camelCase and removing dashes.
+For example: `--log-level` becomes `logLevel`, `--datastore-engine` becomes `datastoreEngine`, and so on.
+The values for these flags are expected to be strings, unless the operator has implemented special support for a specific flag.
+This allows the operator to be forward-compatible with new versions of SpiceDB, even if it doesn't know about new features and flags.
+There may be exceptions to this rule, but they will be documented in release notes if and when they occur.
+
+The operator also introduces some new flags that are not present on the CLI:
+
+| Flag                         | Description                                                                                                                                                          | Type                        |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| image                        | A specific container image to run.                                                                                                                                   | string                      |
+| replicas                     | The number of nodes to run for this cluster.                                                                                                                         | string or int               |
+| skipMigrations               | If true, the operator will not run migrations on changes to this cluster.                                                                                            | string or bool              |
+| tlsSecretName                | The name of a Kubernetes secret in the same namespace to use as the TLS credentials for SpiceDB services.                                                            | string                      |
+| dispatchUpstreamCASecretName | The name of a Kubernetes secret in the same namespace to use as the TLS CA validation. This should be the CA cert that was used to issue the cert in `tlsSecretName` | string                      |
+| datastoreTLSSecretName       | The name of a Kubernetes secret containing a TLS secret to use when connecting to the datastore.                                                                     | string                      |
+| spannerCredentials           | The name of a Kubernetes secret containing credentials for talking to Cloud Spanner. Typically, this would not be used, in favor of workload identity.               | string                      |
+| extraPodLabels               | A set of additional labels to add to the spicedb pods.                                                                                                               | string or map[string]string |
+| extraPodAnnotations          | A set of additional annotations to add to the spicedb pods.                                                                                                          | string or map[string]string |
+
+All other flags are passed through to SpiceDB without any additional processing.
+
+### Global Config
+
+The operator comes with a global config file baked into the image.
+This defines what the default is and what SpiceDB images are allowed (the operator will run any image as SpiceDB, but will warn if it is not in this list).
+
+The file is located at `/opt/operator/config.yaml` in released images, and can be changed with the `--config` flag on the operator.
+
+Example:
+
+```yaml
+allowedImages:
+  - ghcr.io/authzed/spicedb
+  - authzed/spicedb
+  - quay.io/authzed/spicedb
+allowedTags:
+  - v1.11.0
+  - v1.10.0
+disableImageValidation: false
+imageName: ghcr.io/authzed/spicedb
+imageTag: v1.11.0
+```
+
+If `disableImageValidation` is `true`, then the operator will not warn if it is running an image outside the allowed list.
+
+### Passing Additional Configuration
+
+You can use the `patches` field on the on the `SpiceDBCluster` to modify the resources the operator creates using [Strategic Merge Patch] patches or with [JSON6902] patch operations.
+
+[Strategic Merge Patch]: https://kubernetes.io/docs/tasks/manage-kubernetes-objects/update-api-object-kubectl-patch/
+[JSON6902]: https://www.rfc-editor.org/rfc/rfc6902
+
+#### Examples
+
+Strategic merge patch:
+
+```yaml
+apiVersion: authzed.com/v1alpha1
+kind: SpiceDBCluster
+metadata:
+  name: dev
+spec:
+  config:
+    datastoreEngine: memory
+  secretName: dev-spicedb-config
+  patches:
+    - kind: Deployment
+      patch:
+        metadata:
+          labels:
+            added: via-patch
+        spec:
+          template:
+            metadata:
+              labels:
+                added: pod-label-via-patch
+```
+
+Explicit JSON6902 Patch:
+
+```yaml
+apiVersion: authzed.com/v1alpha1
+kind: SpiceDBCluster
+metadata:
+  name: dev
+spec:
+  config:
+    datastoreEngine: memory
+  secretName: dev-spicedb-config
+  patches:
+    - kind: Deployment
+      patch:
+        op: add
+        path: /metadata/labels
+        value:
+          added: via-patch
+```
+
+You can specify multiple patches for the same object (later in the list are applied over top of earlier in the list):
+
+```yaml
+apiVersion: authzed.com/v1alpha1
+kind: SpiceDBCluster
+metadata:
+  name: dev
+spec:
+  config:
+    datastoreEngine: memory
+  secretName: dev-spicedb-config
+  patches:
+    - kind: Deployment
+      patch:
+        op: add
+        path: /metadata/labels
+        value:
+          added: via-patch
+    - kind: Deployment
+      patch:
+        metadata:
+          labels:
+            added-2: via-patch-2
+```
+
+Wildcard \* can be used to apply a patch to all resources:
+
+```yaml
+apiVersion: authzed.com/v1alpha1
+kind: SpiceDBCluster
+metadata:
+  name: dev
+spec:
+  config:
+    datastoreEngine: memory
+  secretName: dev-spicedb-config
+  patches:
+    - kind: "*"
+      patch:
+        op: add
+        path: /metadata/labels
+        value:
+          added: via-wildcard-patch
+```
+
+### Bootstrapping CRDs
+
+The operator can optionally bootstrap CRDs on start up with `--crds=true`.
+
+This is not generally recommended; it requires granting CRD create permission to the operator.
+
+### Static SpiceDBClusters
+
+The operator can optionally take in a set of "static" SpiceDBClusters that it will create on startup, via `--bootstrap-spicedbs`.
+This argument is expected to be a file with a yaml list of SpiceDBCluster objects.
+
+This is not generally recommended; it is primarily for CD of the operator itself.
+
+### Debug, Logs, Health, and Metrics
+
+The operator serves a debug endpoint, health, and metrics from the same address, defined by `--debug-addr` (`:8080` by default):
+
+- `/metrics` serves a prometheus metric endpoint, which includes controller queue depths and stats about abnormal SpiceDBClusters.
+- `/debug/pprof/` for profiling data
+- `/healthz` for health
+
+Log level can be configured with `--v` and accepts standard klog flags.
+
+## Updating
+
+### Updating the Operator
+
+Updating the operator is as simple as re-running:
+
+```sh
+kubectl apply --server-side -k github.com/authzed/spicedb-operator/config
+```
+
+whenever there is an [update available].
+
+[update available]: https://github.com/authzed/spicedb-operator/releases
+
+### Updating Managed SpiceDBClusters
+
+The operator supports different strategies for updating SpiceDB clusters, described below.
+
+If keeping on top of updates sounds daunting, [Authzed Dedicated] provides a simple interface for managing SpiceDB upgrades without the hassle.
+
+[authzed dedicated]: https://authzed.com/pricing
+
+#### Automatic Updates
+
+Every release of SpiceDB Operator comes with a version of SpiceDB that it considers the "default" version.
+This default version is used for every `SpiceDBCluster` that does not specify a specific `image` in its `.spec.config`.
+When either the operator or its config file is updated, every cluster under management will be rolled to the new default version.
+
+This is recommended primarily for development environments.
+
+If you wish to have truly zero-touch upgrades, you can automate the updating of the operator with standard git-ops tooling like [Flux] or [ArgoCD].
+In the future, other update mechanisms may become available.
+
+[flux]: https://github.com/fluxcd/flux2/
+[argocd]: https://argoproj.github.io/cd/
+
+#### Manual upgrades
+
+If you specify a container image from a [SpiceDB release] in `.spec.config.image`, the cluster will not be updated automatically.
+You can choose when and how to update to a new release of SpiceDB, which is recommended for production deployments.
+
+Each operator release only "knows" about previous SpiceDB releases.
+Although the operator attempts to be forward-compatible as much as possible, the guarantees are only best-effort.
+We recommend updating SpiceDB operator before updating SpiceDB whenever possible.
+
+[spicedb release]: https://github.com/authzed/spicedb/releases/

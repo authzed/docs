@@ -1,4 +1,15 @@
-.docusaurus/*
 build/*
 node_modules/*
 .vercel
+.next
+.env*
+tsconfig.tsbuildinfo
+_pagefind/
+out/
+pagefind.log
+
+# Generated
+public/robots.txt
+public/sitemap-0.xml
+public/sitemap.xml
+public/feed.json

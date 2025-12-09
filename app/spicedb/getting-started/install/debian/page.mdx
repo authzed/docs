@@ -1,0 +1,73 @@
+import { Callout } from "nextra/components";
+
+# Installing SpiceDB on Ubuntu or Debian
+
+This document outlines how to install SpiceDB for systems running [Debian-like Linux distributions][debianlike].
+
+Every release of SpiceDB publishes `.deb` packages, [snap] packages, and tarballs for AMD64 and ARM64 Linux.
+
+Looking for `.rpm` packages?
+Visit the doc on [Installing SpiceDB on RHEL/CentOS][rhel]
+
+[debianlike]: https://en.wikipedia.org/wiki/List_of_Linux_distributions#Debian-based
+[rhel]: ./rhel
+[snap]: https://snapcraft.io/spicedb
+
+## Installing SpiceDB using apt-get
+
+First, download the public signing key for the repository:
+
+```sh
+# In releases older than Debian 12 and Ubuntu 22.04, the folder `/etc/apt/keyrings` does not exist by default, and it should be created before the curl command.
+# sudo mkdir -p -m 755 /etc/apt/keyrings
+
+curl -sS https://pkg.authzed.com/apt/gpg.key | sudo gpg --dearmor --yes -o /etc/apt/keyrings/authzed.gpg
+```
+
+Then add the list file for the repository:
+
+```sh
+echo "deb [signed-by=/etc/apt/keyrings/authzed.gpg] https://pkg.authzed.com/apt/ * *"  | sudo tee /etc/apt/sources.list.d/authzed.list
+sudo chmod 644 /etc/apt/sources.list.d/authzed.list  # helps tools such as command-not-found to work correctly
+```
+
+Alternatively, if you want to use the new `deb822`-style `authzed.sources` format, put the following in `/etc/apt/sources.list.d/authzed.sources`:
+
+```
+Types: deb
+URIs: https://pkg.authzed.com/apt/
+Suites: *
+Components: *
+Signed-By: /etc/apt/keyrings/authzed.gpg
+```
+
+Once you've defined the sources and updated your apt cache, it can be installed just like any other package:
+
+```sh
+sudo apt update
+sudo apt install -y spicedb
+```
+
+## Installing SpiceDB using snap
+
+SpiceDB is available in the [Snap Store][snap] making it a single command to install:
+
+```sh
+sudo snap install spicedb
+```
+
+## Manually installing SpiceDB binary for Linux
+
+Manual installations of SpiceDB can use the following command to download the latest release for their platform and architecture:
+
+```sh
+curl https://api.github.com/repos/authzed/spicedb/releases | \
+jq --arg platform $(uname | tr '[:upper:]' '[:lower:]') --arg arch $(uname -m) '.[0].assets.[] | select (.name | contains($platform+"_"+$arch)) | .browser_download_url' -r | \
+xargs curl -LO
+```
+
+Afterwards, it is up to the user to extract the archive and decide where to place its contents on their systems.
+
+We recommend following the [XDG Base Directory Specification][xdg] if you're not trying to install SpiceDB system-wide.
+
+[xdg]: https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html

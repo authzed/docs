@@ -12,11 +12,20 @@ jobs:
     name: "Lint Everything"
     runs-on: "ubuntu-latest"
     steps:
-      - uses: "actions/checkout@v2"
-      - uses: "bewuethr/yamllint-action@v1.1.1"
+      - uses: "actions/checkout@v6"
+      - uses: "bewuethr/yamllint-action@v1.3.0"
         with:
           config-file: ".yamllint"
-      - uses: "nosborn/github-action-markdown-cli@v2.0.0"
+      - uses: "pnpm/action-setup@v4"
         with:
-          files: "."
-          config_file: ".markdownlint.yaml"
+          run_install: false
+      - name: "Install Node.js"
+        uses: "actions/setup-node@v6"
+        with:
+          cache: "pnpm"
+      - name: "Install dependencies"
+        run: "pnpm install"
+      - name: "Lint Markdown"
+        run: "pnpm run lint:markdown"
+      - name: "Check Formatting"
+        run: "pnpm run format:check"

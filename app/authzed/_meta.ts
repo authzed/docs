@@ -1,0 +1,6 @@
+export default {
+  guides: "Guides",
+  concepts: "Concepts",
+  links: "Links",
+  api: "API Reference",
+};

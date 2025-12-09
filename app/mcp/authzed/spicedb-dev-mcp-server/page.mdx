@@ -1,0 +1,326 @@
+import { Callout } from "nextra/components";
+
+# SpiceDB Dev MCP Server
+
+<Callout type="info">
+  The SpiceDB Dev MCP server is available as Experimental.
+
+Experimental functionality enables you to try features and provide feedback during the development process.
+However, these features may change or be removed before reaching a stable release.
+
+</Callout>
+
+Run a local SpiceDB development environment directly in your AI coding assistant.
+Build, test, and debug permissions systems interactively with an in-memory SpiceDB instance.
+
+## Overview
+
+SpiceDB Dev MCP Server is a local development tool that runs an in-memory SpiceDB instance accessible through MCP.
+It's designed for developers actively building permissions systems who want to iterate quickly on schemas and test permission logic with AI assistance.
+
+**Key characteristics**:
+
+- Runs locally on your machine
+- In-memory only (no persistence)
+- No external dependencies
+- Does not connect to running SpiceDB instances
+- Integrated with Zed CLI
+
+Perfect for: schema development, permission testing, learning SpiceDB through hands-on practice, debugging authorization logic.
+
+## Prerequisites
+
+Install the latest version of the zed CLI:
+
+[Installing zed](/spicedb/getting-started/installing-zed)
+
+## Starting the Server
+
+Start the development server:
+
+```bash
+zed mcp experimental-run
+```
+
+The server starts on `http://localhost:9999/mcp` with an empty in-memory SpiceDB instance.
+
+**Important**: The server runs in-memory only.
+All schemas and relationships are lost when you stop the server.
+
+## Connecting Clients
+
+### Claude Code
+
+To use with Claude Code, run `zed mcp experimental-run` to start the SpiceDB Dev MCP server and then run the following to add the server to your Claude Code integrations:
+
+```bash
+claude mcp add --transport http spicedb http://localhost:9999/mcp
+```
+
+Then start developing:
+
+```bash
+claude
+```
+
+### Other Clients
+
+For MCP clients supporting HTTP transport, configure:
+
+```
+Transport: HTTP
+URL: http://localhost:9999/mcp
+```
+
+## Development Workflow
+
+### 1. Write a Schema
+
+Start by defining your authorization model:
+
+> You: "Create a schema for a document sharing system.
+> Documents have owners, editors, and viewers.
+> Owners can share documents, editors can edit, and viewers can only read."
+
+The assistant uses `write_schema` to create the schema in your development instance.
+
+### 2. Create Test Data
+
+Build relationships to test your model:
+
+> You: "Create test data where alice owns doc:readme, bob is an editor, and charlie is a viewer."
+
+The assistant uses `update_relationships` to populate your instance with test relationships.
+
+### 3. Test Permissions
+
+Validate your authorization logic:
+
+> You: "Can charlie edit doc:readme?"
+
+The assistant uses `check_permission` to test the logic and returns `NO_PERMISSION` (charlie is only a viewer).
+
+> You: "Can bob edit doc:readme?"
+
+Returns `HAS_PERMISSION` (bob is an editor).
+
+### 4. Explore the Graph
+
+Query your authorization relationships:
+
+> You: "Which documents can alice share?"
+
+The assistant uses `lookup_resources` to show all documents alice has owner permissions on.
+
+> You: "Who can view doc:readme?"
+
+The assistant uses `lookup_subjects` to show alice, bob, and charlie.
+
+### 5. Iterate
+
+Refine your schema based on testing:
+
+> You: "Add a manager role that can edit and also share documents"
+
+The assistant updates the schema with `write_schema` and you can immediately test the new permissions.
+
+## Available Tools
+
+**`write_schema`** - Write or update the SpiceDB schema
+
+**`update_relationships`** - Add or update relationships in the instance
+
+**`delete_relationships`** - Remove relationships from the instance
+
+**`check_permission`** - Check if a subject has a specific permission on a resource
+
+**`lookup_resources`** - Find all resources a subject can access with a given permission
+
+**`lookup_subjects`** - Find all subjects that have a given permission on a resource
+
+## Available Resources
+
+**`schema://current`** - View the current SpiceDB schema
+
+**`relationships://all`** - View all relationships in the instance
+
+**`instructions://`** - Get instructions on using the development server
+
+**`validation://current`** - Access the current validation file for testing
+
+## Development Tips
+
+### Iterative Development
+
+1. Start with a simple schema
+2. Add test relationships
+3. Check permissions to validate behavior
+4. Refine the schema based on results
+5. Repeat
+
+### Testing Edge Cases
+
+Use the development server to test:
+
+- Indirect permissions through [subject relations](/spicedb/concepts/schema#subject-relations)
+- Complex permission unions and intersections
+- Caveat evaluation with different contexts
+- Deeply nested organizational hierarchies
+
+### Validation Files
+
+Use validation files to:
+
+- Define expected permission outcomes
+- Test your schema systematically
+- Document authorization requirements
+- Share test cases with your team
+
+Access with `validation://current` resource.
+
+### Saving Your Work
+
+The MCP server works with your AI assistant to help you save schemas and validation files to disk.
+
+#### Exporting Schemas
+
+Ask your assistant to save the current schema to a file:
+
+> You: "Save my schema to schema.zed"
+>
+> You: "Write the current schema to permissions/document-sharing.zed"
+
+The assistant reads from `schema://current` and writes the schema to your specified file path.
+
+#### Exporting Validation Files
+
+Save validation test cases to preserve your permission tests:
+
+> You: "Save the validation file to tests/permissions.yaml"
+>
+> You: "Export validation to document-tests.yaml"
+
+The assistant reads from `validation://current` and writes the validation YAML to your specified file.
+
+#### Loading Existing Files
+
+You can also load schemas from existing files:
+
+> You: "Load the schema from schema.zed and apply it to the dev server"
+>
+> You: "Read permissions/document-sharing.zed and write it to the MCP server"
+
+The assistant reads your file and uses `write_schema` to apply it to the development instance.
+
+## Security Considerations
+
+### Local Development Only
+
+**Never use in production**:
+
+- No authentication or authorization on the server itself
+- In-memory only, no data persistence
+- Designed for localhost access only
+- No audit logging or compliance features
+
+### Network Isolation
+
+- Server binds to localhost (127.0.0.1) by default
+- Do not expose port 9999 to external networks
+
+### Test Data Only
+
+- Use fictional data, never real user information
+- Do not test with production credentials
+- Avoid sensitive or confidential information
+- Remember: all data is lost on shutdown
+
+### Development Hygiene
+
+- Track schemas in version control
+- Document permission models separately
+- Review schemas before production deployment
+- Use validation files to capture test cases
+
+## Troubleshooting
+
+### Server Won't Start
+
+**Check Zed CLI installation**:
+
+```bash
+zed version
+```
+
+**Port 9999 in use**:
+
+```bash
+# macOS/Linux
+lsof -i :9999
+
+# Windows
+netstat -an | findstr 9999
+```
+
+**Solution**: Stop the conflicting process or restart your machine.
+
+### Client Connection Fails
+
+- Verify server is running: `zed mcp experimental-run` should be active
+- Confirm URL is `http://localhost:9999/mcp`
+- Check client supports HTTP transport
+- Ensure localhost is not blocked by firewall
+
+### Schema Errors
+
+**Syntax errors**: Review against [SpiceDB schema documentation](/spicedb/modeling/developing-a-schema)
+
+**Undefined types**: Ensure all referenced types are defined in the schema
+
+**View detailed errors**: Access `validation://current` resource
+
+### Unexpected Permission Results
+
+**Debug process**:
+
+1. View current schema: `schema://current`
+2. List all relationships: `relationships://all`
+3. Check indirect permission paths
+4. Use lookup tools to explore the authorization graph
+5. Verify relation chains are correct
+
+### Data Loss
+
+**Remember**: The server is in-memory only.
+All data is lost when stopped.
+
+**To preserve work**:
+
+- Save schemas to files regularly
+- Export relationships for test cases
+- Use validation files to document expected behavior
+- Commit schemas to version control frequently
+
+## Moving to Production
+
+When ready to move beyond development:
+
+1. **Export your schema**: Save the final schema from `schema://current`
+   - Ask your assistant: "Save my schema to schema.zed"
+2. **Document permissions**: Create comprehensive validation files
+   - Ask your assistant: "Save validation to tests/permissions.yaml"
+3. **Deploy SpiceDB**: See [Deploying with SpiceDB Operator](/spicedb/ops/deploying-spicedb-operator)
+4. **Connect your application**: Use [SpiceDB client libraries](/spicedb/getting-started/client-libraries)
+5. **Import relationships**: Migrate test relationships if appropriate
+6. **Test thoroughly**: Validate in staging before production
+
+The development server is not suitable for production use.
+Deploy a proper SpiceDB instance with authentication, persistence, and monitoring.
+
+## Resources
+
+- [SpiceDB Documentation](/spicedb/getting-started/discovering-spicedb)
+- [Schema Language Reference](/spicedb/modeling/developing-a-schema)
+- [Zed CLI Documentation](/spicedb/getting-started/installing-zed)
+- [SpiceDB Client Libraries](/spicedb/getting-started/client-libraries)
+- [Validation Testing Guide](/spicedb/modeling/validation-testing-debugging)

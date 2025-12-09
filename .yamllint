@@ -4,6 +4,10 @@ yaml-files:
   - "*.yaml"
   - "*.yml"
   - ".yamllint"
+ignore: |
+  pnpm-lock.yaml
+  pnpm-workspace.yaml
+  node_modules/
 extends: "default"
 rules:
   quoted-strings: "enable"

@@ -1,0 +1,35 @@
+---
+name: "Link Checker"
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+jobs:
+  preview:
+    name: "Preview Deploy"
+    runs-on: "ubuntu-latest"
+    outputs:
+      preview_url: "${{ steps.waitForVercelPreviewDeployment.outputs.url }}"
+    steps:
+      - name: "Wait for Vercel preview deployment to be ready"
+        uses: "patrickedqvist/wait-for-vercel-preview@v1.3.1"
+        id: "waitForVercelPreviewDeployment"
+        with:
+          token: "${{ secrets.GITHUB_TOKEN }}"
+          check_interval: 30
+          max_timeout: 600
+          allow_inactive: true
+
+  link_checker:
+    name: "Link Checker"
+    runs-on: "ubuntu-latest"
+    needs: "preview"
+    timeout-minutes: 15
+    steps:
+      - uses: "actions/checkout@v3"
+      - name: "Link Checker"
+        uses: "filiph/linkcheck@3.0.0"
+        with:
+          arguments: "--skip-file /github/workspace/linkcheck-skip.txt ${{ needs.preview.outputs.preview_url }}"

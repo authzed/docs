@@ -1,0 +1,19 @@
+---
+name: "Link Checker with External Links"
+
+on:
+  schedule:
+    - cron: "0 18 * * *" # Daily at 18:00 UTC
+  workflow_dispatch:
+
+jobs:
+  link_checker:
+    name: "Link Checker"
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 15
+    steps:
+      - uses: "actions/checkout@v3"
+      - name: "Link Checker"
+        uses: "filiph/linkcheck@3.0.0"
+        with:
+          arguments: "--skip-file /github/workspace/linkcheck-skip.txt -e --no-connection-failures-as-warnings --no-check-anchors https://authzed.com/docs"
