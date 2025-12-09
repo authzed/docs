@@ -103,7 +103,68 @@ desc = No schema has been defined; please call WriteSchema to start
 
 ## GCP Steps
 
-Coming Soon
+Most users of AuthZed Dedicated on GCP privately connect to SpiceDB with GCP [Private Service Connect](https://docs.cloud.google.com/vpc/docs/private-service-connect). Private Service Connect enables a private connection from your GCP Project and VPC to SpiceDB. Users of AuthZed Dedicated also have the option to configure SpiceDB to be accessed from the open internet.
+
+![gcp_dedicated_diagram.png](/images/gcp_dedicated_diagram.png)
+
+<Steps>
+
+### Configure the VPC Endpoint
+
+1. Navigate to “Private Service Connect” and make sure you are on the “Connected Endpoints” tab.
+1. Click “Connect Endpoint”
+
+    | Option                 | Selection                                      |
+    |------------------------|------------------------------------------------|
+    | Target                 | “Published service”                            |
+    | Target service         | This will be provided to you by Authzed        |
+    | Endpoint name          | Name this whatever you want                    |
+    | Network and subnetwork | Select the networks you need connectivity from |
+    | IP address             | Choose whatever IP you'd like                  |
+
+### Enable DNS
+
+1. Navigate to Cloud DNS and create a zone
+
+    | Option    | Selection                                                                 |
+    |-----------|---------------------------------------------------------------------------|
+    | Zone type | private                                                                   |
+    | DNS Name  | This will be provided to you by Authzed                                   |
+    | Networks  | Select the network where the Private Service Connect endpoint is deployed |
+
+1. Add record set
+
+    | Option     | Selection                                      |
+    |------------|------------------------------------------------|
+    | DNS name   | This will be provided to you by Authzed        |
+    | IP address | Enter your Private Service Connect endpoint IP |
+
+### Add Permission System
+
+1. Login to your SpiceDB management console
+2. On the homepage, select "Add Permission System"
+3. Configure your permission system to your liking and create it
+4. If you enabled [Restricted API Access](../concepts/restricted-api-access), configure it and provision a token. Otherwise, provision a token without FGAM
+
+### Verify Connectivity
+
+Verify connectivity from client machine with the [Zed CLI tool](https://github.com/authzed/zed)
+
+``` zed
+zed context set permission_system_name example.com:443 sdbst_h256_123
+```
+
+``` zed
+zed schema write example.yaml
+```
+
+``` zed
+zed schema read
+```
+
+The last Zed command should display the schema to your terminal.
+
+</Steps>
 
 ## Azure Steps
 
