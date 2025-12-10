@@ -647,6 +647,13 @@ For example, in our example schema, writers have both write and read permissions
 
 Let's perform some permission checks:
 
+<Callout type="info">
+  If developing locally against SpiceDB, see
+  [this](./client-libraries#local-development) for full details on how to setup
+  credentials. Always switch to secure credentials before launching to
+  production.
+</Callout>
+
 <Tabs items={['zed', 'Node', 'Go', 'Python', 'Ruby', 'Java']}>
 <Tabs.Tab>
 
@@ -665,8 +672,8 @@ import { v1 } from "@authzed/authzed-node";
 
 const { promises: client } = v1.NewClient(
   "t_your_token_here_1234567deadbeef",
-  "grpc.authzed.com:50051",
-  // NOTE: Remove if SpiceDB is behind TLS
+  "localhost:50051",
+  // For local development without TLS (remove for AuthZed Cloud)
   v1.ClientSecurity.INSECURE_PLAINTEXT_CREDENTIALS,
 );
 

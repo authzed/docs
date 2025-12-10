@@ -1,3 +1,5 @@
+import { Tabs } from "nextra/components";
+
 # Official Client Libraries
 
 SpiceDB is primarily accessed by a [gRPC] API and thus client libraries can be generated for any programming language.
@@ -9,12 +11,54 @@ AuthZed builds and maintains gRPC client libraries for the following languages:
 - [Python](https://github.com/authzed/authzed-py)
 - [Ruby](https://github.com/authzed/authzed-rb)
 - [Java](https://github.com/authzed/authzed-java)
-- [Dotnet](https://github.com/authzed/authzed-dotnet)
+- [.NET](https://github.com/authzed/authzed-dotnet)
 
 Because the above libraries are generated from protobuf definitions in our [API repo],
 the primary documentation for the gRPC API is in the [buf documentation] for SpiceDB's services.
 The gRPC client documentation associated with each host language will also be helpful for putting together invocations.
 Additionally, there are `example` directories in the client libraries that provide example usages.
+
+## Local Development
+
+When developing locally, you'll need to configure your client based on how SpiceDB is running.
+
+### SpiceDB running without TLS (most common)
+
+If SpiceDB is started without TLS (using `--grpc-no-tls`), use insecure plaintext credentials:
+
+<Tabs items={["Node", "Go", "Python", "Ruby", "Java", ".NET"]}>
+  <Tabs.Tab>`v1.ClientSecurity.INSECURE_PLAINTEXT_CREDENTIALS`</Tabs.Tab>
+  <Tabs.Tab>
+    `grpcutil.WithInsecureBearerToken()` and
+    `grpc.WithTransportCredentials(insecure.NewCredentials())`
+  </Tabs.Tab>
+  <Tabs.Tab>`insecure_bearer_token_credentials()`</Tabs.Tab>
+  <Tabs.Tab>`credentials: :this_channel_is_insecure`</Tabs.Tab>
+  <Tabs.Tab>`.usePlaintext()`</Tabs.Tab>
+  <Tabs.Tab>
+    `ChannelCredentials.Insecure` with `UnsafeUseInsecureChannelCallCredentials
+    = true` (also requires
+    `AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport",
+    true)`)
+  </Tabs.Tab>
+</Tabs>
+
+This applies to localhost, Docker, OrbStack, and other local environments running without TLS.
+
+### SpiceDB running with TLS using self-signed certificates
+
+If SpiceDB is running with TLS but using a self-signed or untrusted certificate:
+
+<Tabs items={['Node', 'Go']}>
+    <Tabs.Tab>
+        `v1.ClientSecurity.INSECURE_LOCALHOST_ALLOWED` (allows localhost connections without CA verification)
+    </Tabs.Tab>
+    <Tabs.Tab>
+        Load the self-signed CA explicitly with `grpcutil.WithCustomCerts()` or use `grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{InsecureSkipVerify: true}))` for localhost only (not recommended for production)
+    </Tabs.Tab>
+</Tabs>
+
+See the [Protecting a Blog Application](./protecting-a-blog#checking-permissions) tutorial for examples.
 
 ## HTTP Clients
 
