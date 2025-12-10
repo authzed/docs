@@ -1,0 +1,52 @@
+import { Callout } from "nextra/components";
+
+# Querying Data
+
+This page walks through the main ways to query data in SpiceDB. The options are listed from most preferred to least preferred, but the right choice always depends on your use case.
+
+<Callout type="important">
+  When invoking any of our APIs, you can send a header `X-Request-ID=somevalue`
+  and it will be echoed back in the response, which makes correlating logs or
+  tracing requests easy.
+</Callout>
+
+<Callout type="important">
+  In most of the APIs below, if you want to be able to read your write, you can
+  pass a `consistency` parameter to the queries. Use either `fully_consistent`
+  or `at_least_as_fresh(revision)` depending on how strict you need to be. See
+  [Consistency](consistency) for more details.
+</Callout>
+
+## CheckPermissions
+
+[`CheckPermissions`](https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.CheckPermission) is the go-to for most access checks. It’s fast, cached, and designed for high-traffic workloads.
+
+You can debug a check locally with `zed permission check resource:someresource somepermission user:someuser --explain` to see how the decision was made.
+
+When your schema uses caveats and you don't provide all the required context in the request parameters, the API will tell you that in the response that the result is "conditional" instead of simply denying or allowing, and it's up to you to inspect that result.
+
+The `subject` of the query can be a single user (e.g. `user:maria`) or a set of users (e.g. `group:engineering#member`).
+
+## CheckBulkPermissions
+
+[`CheckBulkPermissions`](https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.CheckBulkPermissions) is great for UI workloads where you need to check multiple permissions at once: think tables, lists, and dashboards.
+
+## Watch
+
+The Watch API is not meant to answer permission questions but to serve other use-cases, like auditing. See [this](watch) for more details.
+
+## LookupResources
+
+[`LookupResources`](https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.LookupResources) is a good choice when you need to find all resources of a given type that a specific subject can access. It supports pagination and works well for moderate result sizes.
+
+If you’re expecting more than ~1,000 results, this isn't ideal. At that point you'll get better performance and cost efficiency from our [Materialize] offering.
+
+[Materialize]: /authzed/concepts/authzed-materialize
+
+## LookupSubjects
+
+[`LookupSubjects`](https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.LookupSubjects) returns all subjects that have access to a specific resource. It’s handy, but it does not support pagination.
+
+## ReadRelationships
+
+[`ReadRelationships`](https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.ReadRelationships) should be your last resort. It's slower, it doesn't populate or use the permissions cache, and it won't evaluate caveats. Use it only when you truly need raw relationship data and none of the higher-level APIs fit the job.
