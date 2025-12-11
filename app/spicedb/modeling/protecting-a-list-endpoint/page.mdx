@@ -23,7 +23,7 @@ your API, in addition to the overall size of your data.
 
 ## Filtering with LookupResources
 
-If the number of resources that a user has access to is sufficiently small, you can use the [`LookupResources`] API to get the full
+If the number of resources that a user has access to is small (e.g. less than 10,000 resources), you can use the [`LookupResources`] API to get the full
 list of resources for which a user has a particular permission, and then use that as a filtering clause in your database
 query.
 In python pseudocode:
