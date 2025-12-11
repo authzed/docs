@@ -105,15 +105,14 @@ You should be testing the logic of your schema to ensure that it behaves the way
 Tags: **schema**
 
 If an authorization concept can be expressed using relations, it should be.
-We provide caveats as an escape hatch; they should only be used for context that’s only available at request time, or else ABAC logic that cannot be expressed in terms of relationships.
+We provide caveats as an escape hatch; they should only be used for context that’s only available at request time, or for ABAC logic that cannot be expressed in terms of relationships.
 
-This is because caveats come with a performance penalty.
-A caveated relationship is both harder to cache and also slows down computation of the graph walk required to compute a permission.
+This is because caveats come with a performance penalty: a caveated relationship is both harder to cache and also slows down computation of the graph walk required to compute a permission.
 
 Some examples:
 
-- A banlist - this could be expressed as a list in caveat context, but it can also be expressed as a relation with negation.
-- A notion of public vs internal - boolean flags seem like an obvious caveat use case, but they can also be expressed using self relations.
+- A banlist - this could be expressed as a list in caveat context, but it can also be expressed as a relation with [exclusion](https://authzed.com/docs/spicedb/concepts/schema#--exclusion).
+- A notion of public vs internal - boolean flags seem like an obvious caveat use case, but they can also be expressed using [loop relationships](https://authzed.com/docs/spicedb/modeling/attributes#loop-relationships).
 - Dynamic roles - these could be expressed as a list in caveats, and it’s not immediately obvious how to build them into a SpiceDB schema, but our [Google Cloud IAM example](https://authzed.com/blog/google-cloud-iam-modeling) shows how it’s possible.
 
 ### Make Your Writes Idempotent

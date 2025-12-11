@@ -5,8 +5,7 @@ import { Callout } from "nextra/components";
 
 If you are migrating to SpiceDB from a pre-existing authorization system, it's likely that attributes play a part in your authorization evaluations.
 
-SpiceDB is a Relationship Based Access control system.
-This gives SpiceDB the flexibility to evaluate attributes for access control alongside more complicated access control logic like roles and/or relationships.
+SpiceDB can evaluate attributes for access control decisions alongside more complicated access control logic like roles and/or relationships.
 
 The sections below will provide practical examples for implementing various kinds of attributes in the SpiceDB schema language.
 Before reading this guide, it's recommended that you have some familiarity with the SpiceDB schema language.
@@ -14,40 +13,36 @@ Before reading this guide, it's recommended that you have some familiarity with 
 
 ## Boolean Attributes
 
-A boolean attribute is an attribute on an object that affects authorization by enabling or disabling an authorization setting.
-Boolean attributes can often be thought of as a toggle.
-Feature flag authorization can be enabled with boolean attributes.
+A boolean or binary attribute is an attribute on an object that can affect authorization.
+Boolean attributes can often be thought of as a toggle. For example, feature flag authorization can be enabled with boolean attributes.
 
 ### Loop Relationships
 
 Loop relationships are one way to implement boolean attributes.
 
-In the example below, there is a schema that enforces the following authorization logic: a user can
-only view a document if the user is related to the document as viewer and editing is enabled for the
-document (this is the same authorization logic used in the wildcard example below).
+In the example below, there is a schema that enforces the following authorization logic: a `user` can
+only `view` a `document` if a) the `user` is related to the document as `editor`, and b) if editing is enabled for the
+`document`.
 
-In the example below, to enable editing for a document, a loop relationship using the `edit_enabled` relation must be written.
+To enable editing for a document, a loop relationship using the `edit_enabled` relation must be written.
 When a `document` is related to itself with the `edit_enabled` relation, that relation can be walked to itself
 (with the arrow) to determine who relates to the document as an `editor`.
-
-In summary, a `user` has permission to edit a `document` if they are related to that document as an `editor`
-and that document is related to itself with `edit_enabled`.
 
 <InlinePlayground reference="ifgMyLGN-Hjw" />
 
 <Callout type="warning">
   There is no mechanism in the SpiceDB schema language that enforces that a relation be used as a
-  loop relation. In order to avoid accidentally misusing a loop relation (e.g. relating an object to
-  a different instance of the same type) it is recommended to implement client side logic that
-  enforces only using the loop relation for its intended purpose.
+  loop relation. In order to avoid accidentally misusing a loop relation (e.g. by writing the
+  relationship like `document:1#edit_enabled@document:2`) it is recommended to implement client side
+  logic that enforces only using the loop relation for its intended purpose.
 </Callout>
 
 ### Wildcards
 
-[Wildcards](/spicedb/concepts/schema#wildcards) are a way to implement boolean attributes.
+[Wildcards](/spicedb/concepts/schema#wildcards) are another way to implement boolean attributes.
 Wildcards modify a type so that a relationship can be written to all objects of a resource type but not individual objects.
 
-In the example below, the schema enforces the following authorization logic: a user will have `edit` permission on the document if they are related to the document as an `editor` and they relate to the document through `edit_enabled`.
+In the example below, the schema enforces the following authorization logic: a `user` will have `edit` permission on the document if a)they are related to the document as an `editor` and, b) they relate to the document through `edit_enabled`.
 Both are required because `editor` and `edit_enabled` are [intersected](/spicedb/concepts/schema#-intersection) at the `edit` permission definition.
 To enable document editing, you need to establish a relationship that connects all users to the document using the `edit_enabled` relation: `document:somedocument#edit_enabled@user:*`.
 
@@ -104,4 +99,4 @@ This example is similar to the one above, except it requires that all `country` 
 
 In almost all cases, [caveats](/spicedb/concepts/caveats) should only be used when data required to evaluate a CheckPermission request is only available at the time of the request (e.g. user's current location or time of day).
 Using caveats for static data (e.g. a document's status) can have negative performance impacts.
-Static attribute data should always be modeled in the schema using patterns similar to those described above.
+Static attribute data should always be modeled in the schema using the patterns described above.
