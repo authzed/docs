@@ -37,7 +37,7 @@ It's always preferable to perform one call to `CheckBulkPermissions` with N chec
 
 [`LookupResources`](https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.LookupResources) is a good choice when you need to find all resources of a given type that a specific subject can access. It supports cursoring and works well for moderate result sizes.
 
-If you’re expecting more than ~10,000 results, this isn't ideal. At that point you'll get better performance and cost efficiency from our [Materialize] offering.
+If you’re expecting more than ~10,000 results, this isn't ideal. See [this](../modeling/protecting-a-list-endpoint) for more details.
 
 [Materialize]: /authzed/concepts/authzed-materialize
 

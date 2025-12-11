@@ -14,20 +14,16 @@ and SpiceDB and combining the queries into a response.
 
 Broadly speaking, there are three ways to do this:
 
-- filtering with [LookupResources]
-- checking with [CheckBulkPermissions]
+- filtering with [`LookupResources`]
+- checking with [`CheckBulkPermissions`]
 - using [Authzed Materialize] to create a denormalized local view of a user's permissions.
 
 Which one you choose will depend on whether the set of accessible resources is much larger than a page of results returned by
 your API, in addition to the overall size of your data.
 
-[LookupResources]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.LookupResources
-[CheckBulkPermissions]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.CheckBulkPermissions
-[Authzed Materialize]: https://authzed.com/products/authzed-materialize
-
 ## Filtering with LookupResources
 
-If the number of resources that a user has access to is sufficiently small, you can use `LookupResources` to get the full
+If the number of resources that a user has access to is sufficiently small, you can use the [`LookupResources`] API to get the full
 list of resources for which a user has a particular permission, and then use that as a filtering clause in your database
 query.
 In python pseudocode:
@@ -44,14 +40,13 @@ WHERE id = ANY(ARRAY[<resource_ids>])
 ```
 
 This is the simplest approach from a bookkeeping perspective and is a good place to start.
-It should be noted that `LookupResources` can get heavy quickly - with a sufficiently large relation dataset,
+It should be noted that [`LookupResources`] can get slow quickly: with a sufficiently large relation dataset,
 a sufficiently complex schema, or a sufficiently large set of accessible results, you'll need to take a different approach.
 
 ## Checking with CheckBulkPermissions
 
-If the number of resources that a user has access to is sufficiently large and `LookupResources` can't satisfy the use case
-anymore, another approach is to fetch a page of results and then call `CheckBulkPermissions` to determine which of the
-resources are accessible to the user.
+If the number of resources that a user has access to is sufficiently large and [`LookupResources`] can't satisfy the use case
+anymore, another approach is to fetch a page of resources from your database, and then call [`CheckBulkPermissions`] on those resources to determine which of them are accessible to the user.
 In python pseudocode:
 
 ```python
@@ -85,9 +80,9 @@ This approach is handy for search interfaces since the filters on a search can r
 to the point where checking them via bulk check is relatively easy.
 
 <Callout type="info">
-  It's recommended to run the various CheckBulkPermissions API calls at the same
-  revision to get a consistent view of the permissions. (e.g. take the ZedToken
-  from the first call, and use it in all subsequent calls)
+  It's recommended to run the various [`CheckBulkPermissions`] API calls at the
+  same revision to get a consistent view of the permissions. (i.e. take the
+  ZedToken from the first call, and use it in all subsequent calls).
 </Callout>
 
 ## Using Materialize
@@ -123,3 +118,7 @@ There's a difference between "data exists but the user isn't allowed to see it" 
 In a coarse-grained authorization system, it may make sense to return a 403 as a response from a list endpoint to
 indicate that the user cannot access anything.
 In a fine-grained authorization system backed by SpiceDB, it often makes sense to treat "there is no data" and "there is nothing you're authorized to see" as the same, by returning a successful response with an empty result set.
+
+[`LookupResources`]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.LookupResources
+[`CheckBulkPermissions`]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.CheckBulkPermissions
+[Authzed Materialize]: https://authzed.com/products/authzed-materialize
