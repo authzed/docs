@@ -4,6 +4,7 @@ export default {
   relationships: "Writing Relationships",
   caveats: "Writing Relationships with Caveats",
   "expiring-relationships": "Writing Relationships that Expire",
+  "querying-data": "Querying Data",
   commands: "SpiceDB Commands & Parameters",
   consistency: "Consistency",
   datastores: "Datastores",
