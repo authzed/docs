@@ -60,6 +60,14 @@ Choose based on your scale: start with LookupResources, move to CheckBulkPermiss
 
 [Learn more]: ../modeling/protecting-a-list-endpoint
 
+## How do I get all of the permissions a subject has on a resource?
+
+There isn't an API that answers this question directly. Instead, you should use the
+[`CheckBulkPermissions`](https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.CheckBulkPermissions) API and send a check for each of the permissions you want to check.
+
+It means that you'll need to update your permission checks when you add a new permission, but you'd need to update the calling code
+to handle the concept that a new permission represents anyway.
+
 ## How can I get involved with SpiceDB?
 
 The best first step is to join [Discord].

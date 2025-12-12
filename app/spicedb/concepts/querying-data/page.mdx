@@ -2,7 +2,7 @@ import { Callout } from "nextra/components";
 
 # Querying Data
 
-This page walks through the main ways to query data in SpiceDB. The options are listed from most preferred to least preferred in terms of performance, but the right choice always depends on your use case.
+This page walks through the main ways to query data in SpiceDB. The options are listed roughly in the order of how often you should be calling them, and roughly in order of their expected performance. Choose the one that makes sense for your use case, but consider whether your use case actually requires the call you're looking at.
 
 <Callout type="info">
   In most of the APIs below, if you want to be able to read your write, you can
@@ -19,6 +19,18 @@ This page walks through the main ways to query data in SpiceDB. The options are 
 
 ## Check Permission
 
+Send:
+
+- Subject Type
+- Subject ID
+- Permission (or relation)
+- Object Type
+- Object ID
+
+Receive:
+
+- Yes/no (or a provisional response if missing caveat data)
+
 [`CheckPermission`](https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.CheckPermission) is the go-to for most access checks. It’s designed for high-traffic workloads.
 
 You can debug a check locally with `zed permission check resource:someresource somepermission user:someuser --explain` to understand how the decision was made.
@@ -29,21 +41,69 @@ The `subject` of the query can be a single user (e.g. `user:someuser`) or a set 
 
 ### CheckBulkPermissions
 
+Send Many:
+
+- Subject Type
+- Subject ID
+- Permission (or relation)
+- Object Type
+- Object ID
+
+Receive Many:
+
+- Yes/no (or a provisional response if missing caveat data)
+
 If your app needs to do multiple checks (for example, for various subjects), use the [`CheckBulkPermissions`](https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.CheckBulkPermissions) API. It's great for UI workloads where you need to check multiple permissions at once: think tables, lists, and dashboards.
+
+It's also the recommended way to ask "what permissions does a given subject have on a resource?"
+Make a check for each permission in your schema. This will require you to update calling code when you add permissions,
+but the consuming code will need to be changed to include the logic associated with the new permission in any case.
 
 It's always preferable to perform one call to `CheckBulkPermissions` with N checks than N calls to `CheckPermission`, unless you don't want to wait for the N checks to finish.
 
 ## LookupResources
 
+Send Many:
+
+- Subject Type
+- Subject ID
+- Permission (or relation)
+- Object Type
+
+Receive many:
+
+- Object ID
+
 [`LookupResources`](https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.LookupResources) is a good choice when you need to find all resources of a given type that a specific subject can access. It supports cursoring and works well for moderate result sizes.
 
-If you’re expecting more than ~10,000 results, this isn't ideal. See [this](../modeling/protecting-a-list-endpoint#checking-with-checkbulkpermissions) for more details.
-
-[Materialize]: /authzed/concepts/authzed-materialize
+It's a good way to do [prefiltering of results](/spicedb/modeling/protecting-a-list-endpoint#filtering-with-lookupresources) in
+a List endpoint, but it's a heavy request that can cause performance problems when more than 10k results are involved.
+In that case we recommend postfiltering with [CheckBulk](#checkbulkpermissions), and if that still doesn't work,
+we recommend evaluating [Materialize](/authzed/concepts/authzed-materialize).
 
 ## LookupSubjects
 
-[`LookupSubjects`](https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.LookupSubjects) returns all subjects that have access to a specific resource. It does not support cursoring, and the response includes a list of objects that have been explicitly excluded.
+Send Many:
+
+- Subject Type
+- Permission (or relation)
+- Object Type
+- Object ID
+
+Receive many:
+
+- Subject ID
+
+[`LookupSubjects`](https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.LookupSubjects) returns
+all subjects that have access to a specific resource. It does not support cursoring.
+
+It's commonly used to drive UIs and APIs that list users with given permission or set of permissions, such as a table of Admins
+on a particular Organization.
+
+Note that LookupSubjects will do a full path walk between an object and a subject, and will consider all valid paths between object and subject.
+If you are looking to find all the subjects that are on a specific relation, use `ReadRelationships` instead of `LookupSubjects`.
+
+If your schema includes exclusions and wildcards, the response can include a list of subjects that have been explicitly excluded.
 
 For example, if the schema is
 
@@ -67,16 +127,41 @@ document:finance#blocked@user:bob
 
 Then `LookupSubjects` for `document:finance` will return a response of the form `{user:* - [user:anne,user:bob]}`.
 
-If you are looking to find all the subjects that are on a specific relation, use `ReadRelationships` instead of `LookupSubjects`.
-
 ## ReadRelationships
 
-[`ReadRelationships`](https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.ReadRelationships) should be your last resort. It's slower, it doesn't populate or use the permissions cache, and it won't evaluate caveats. Use it only when you truly need raw relationship data and none of the higher-level APIs fit the job.
+[`ReadRelationships`](https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.ReadRelationships) is intended a an escape hatch,
+and should only be considered if no other API matches your use case.
+
+It's considerably more flexible in that you can send any combination of:
+
+- Subject Type
+- Subject ID
+- Permission (or relation)
+- Object Type
+- Object ID
+
+And receive all relationships that match that filter, but it comes with some important caveats:
+
+- It's generally less optimized than the `Check` and `Lookup` APIs because of that flexibility
+- It does no caching. The `Check` and `Lookup` APIs gain much of their performance by caching the results of subproblem computation; `ReadRelationships` does no caching and will go directly to the database every time.
+- The indexes in the backing [datastores](/spicedb/concepts/datastores) are optimized around the `Check` and `Lookup` APIs, so it's possible to
+  craft a `ReadRelationships` request that misses indexes and requires a full table scan. This is because covering all combinations of filters
+  with an index would impact write performance too much.
+
+Some use cases where `ReadRelationships` may be warranted:
+
+- Deleting all relationships in a subtree, where a simple [RelationshipFilter](https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.RelationshipFilter) in a [DeleteRelationships](https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.DeleteRelationshipsRequest) would be insufficient
+- Admin UIs that show lists of roles or relationships between objects
 
 ## Watch
 
-The Watch API is not meant to answer permission questions but to serve other use-cases, like auditing. See [this](watch) for more details.
+The Watch API is not meant to answer permission questions but to serve other use-cases, like auditing. See [the Watch API documentation](/spicedb/concepts/watch) for more details.
 
 ## ExpandPermissionTree
 
-This [ExpandPermissionTree](https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.ExpandPermissionTree) API is useful in scenarios where your UI needs to show which users _and groups_ have access to something.
+This [ExpandPermissionTree](https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.ExpandPermissionTree) API
+comes from the [Zanzibar Paper](https://authzed.com/zanzibar#2.4.5-expand). It allows you to examine the subtree of relationships
+around a particular point in the graph, and is useful in scenarios like your UI needing to show which users _and groups_ have access to something.
+
+In practice we don't see many uses of this API, especially because it only resolves one "hop" in the graph at a time and must be called
+repeatedly to get a full picture of a subtree.

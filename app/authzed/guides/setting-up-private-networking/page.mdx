@@ -114,30 +114,30 @@ Most users of AuthZed Dedicated on GCP privately connect to SpiceDB with GCP [Pr
 1. Navigate to “Private Service Connect” and make sure you are on the “Connected Endpoints” tab.
 1. Click “Connect Endpoint”
 
-    | Option                 | Selection                                      |
-    |------------------------|------------------------------------------------|
-    | Target                 | “Published service”                            |
-    | Target service         | This will be provided to you by Authzed        |
-    | Endpoint name          | Name this whatever you want                    |
-    | Network and subnetwork | Select the networks you need connectivity from |
-    | IP address             | Choose whatever IP you'd like                  |
+   | Option                 | Selection                                      |
+   | ---------------------- | ---------------------------------------------- |
+   | Target                 | “Published service”                            |
+   | Target service         | This will be provided to you by Authzed        |
+   | Endpoint name          | Name this whatever you want                    |
+   | Network and subnetwork | Select the networks you need connectivity from |
+   | IP address             | Choose whatever IP you'd like                  |
 
 ### Enable DNS
 
 1. Navigate to Cloud DNS and create a zone
 
-    | Option    | Selection                                                                 |
-    |-----------|---------------------------------------------------------------------------|
-    | Zone type | private                                                                   |
-    | DNS Name  | This will be provided to you by Authzed                                   |
-    | Networks  | Select the network where the Private Service Connect endpoint is deployed |
+   | Option    | Selection                                                                 |
+   | --------- | ------------------------------------------------------------------------- |
+   | Zone type | private                                                                   |
+   | DNS Name  | This will be provided to you by Authzed                                   |
+   | Networks  | Select the network where the Private Service Connect endpoint is deployed |
 
 1. Add record set
 
-    | Option     | Selection                                      |
-    |------------|------------------------------------------------|
-    | DNS name   | This will be provided to you by Authzed        |
-    | IP address | Enter your Private Service Connect endpoint IP |
+   | Option     | Selection                                      |
+   | ---------- | ---------------------------------------------- |
+   | DNS name   | This will be provided to you by Authzed        |
+   | IP address | Enter your Private Service Connect endpoint IP |
 
 ### Add Permission System
 
@@ -150,15 +150,15 @@ Most users of AuthZed Dedicated on GCP privately connect to SpiceDB with GCP [Pr
 
 Verify connectivity from client machine with the [Zed CLI tool](https://github.com/authzed/zed)
 
-``` zed
+```zed
 zed context set permission_system_name example.com:443 sdbst_h256_123
 ```
 
-``` zed
+```zed
 zed schema write example.yaml
 ```
 
-``` zed
+```zed
 zed schema read
 ```
 
