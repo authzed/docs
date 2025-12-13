@@ -5,7 +5,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { Router } from "next/router";
 import Script from "next/script";
 import posthog from "posthog-js";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 const isProd = process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
 const baseDir = process.env.NEXT_PUBLIC_BASE_DIR || "";
@@ -112,10 +112,10 @@ function Posthog() {
 
 export default function Scripts() {
   return (
-    <div>
+    <Suspense fallback={<></>}>
       <Reo />
       <HubSpot />
       <Posthog />
-    </div>
+    </Suspense>
   );
 }
