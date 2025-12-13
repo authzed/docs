@@ -10,38 +10,6 @@ import { Suspense, useEffect, useState } from "react";
 const isProd = process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
 const baseDir = process.env.NEXT_PUBLIC_BASE_DIR || "";
 
-function Reo() {
-  const reoClientId = process.env.NEXT_PUBLIC_REO_CLIENT_ID;
-  const [loadReo, setLoadReo] = useState(false);
-  const [afterLoad, setAfterLoad] = useState(false);
-
-  useEffect(() => {
-    if (window) {
-      setLoadReo(!inEU());
-    }
-  }, [loadReo]);
-
-  useEffect(() => {
-    // @ts-ignore
-    if (afterLoad && window.Reo) {
-      // @ts-ignore
-      window.Reo.init({ clientID: reoClientId });
-    }
-  }, [afterLoad]);
-
-  return (
-    <div>
-      {reoClientId && isProd && loadReo && (
-        <Script
-          src={`https://static.reo.dev/${reoClientId}/reo.js`}
-          onLoad={() => setAfterLoad(true)}
-          defer
-        ></Script>
-      )}
-    </div>
-  );
-}
-
 function HubSpot() {
   const hsId = process.env.NEXT_PUBLIC_HUBSPOT_ID;
   const [loadHs, setLoadHs] = useState(false);
@@ -83,39 +51,10 @@ function HubSpot() {
   );
 }
 
-function Posthog() {
-  useEffect(() => {
-    if (inEU() || !process.env.NEXT_PUBLIC_POSTHOG_KEY) {
-      return;
-    }
-
-    posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY ?? "", {
-      api_host: isProd ? "/i" : process.env.NEXT_PUBLIC_POSTHOG_HOST, // See Posthog rewrites in next config
-      ui_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-      person_profiles: "always",
-      loaded: (posthog) => {
-        if (process.env.NODE_ENV === "development") posthog.debug();
-      },
-    });
-
-    const handleRouteChange = () => posthog?.capture("$pageview");
-
-    Router.events.on("routeChangeComplete", handleRouteChange);
-
-    return () => {
-      Router.events.off("routeChangeComplete", handleRouteChange);
-    };
-  }, []);
-
-  return <></>;
-}
-
 export default function Scripts() {
   return (
     <Suspense fallback={<></>}>
-      <Reo />
       <HubSpot />
-      <Posthog />
     </Suspense>
   );
 }
