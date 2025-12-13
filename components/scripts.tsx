@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import inEU from '@segment/in-eu';
-import { usePathname, useSearchParams } from 'next/navigation';
-import { Router } from 'next/router';
-import Script from 'next/script';
-import posthog from 'posthog-js';
-import { Suspense, useEffect, useState } from 'react';
+import inEU from "@segment/in-eu";
+import { usePathname, useSearchParams } from "next/navigation";
+import { Router } from "next/router";
+import Script from "next/script";
+import posthog from "posthog-js";
+import { Suspense, useEffect, useState } from "react";
 
-const isProd = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production';
-const baseDir = process.env.NEXT_PUBLIC_BASE_DIR || '';
+const isProd = process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
+const baseDir = process.env.NEXT_PUBLIC_BASE_DIR || "";
 
 function HubSpot() {
   const hsId = process.env.NEXT_PUBLIC_HUBSPOT_ID;
@@ -31,8 +31,8 @@ function HubSpot() {
       if (searchParams && searchParams.toString()) {
         path = path + `?${searchParams.toString()}`;
       }
-      hs.push(['setPath', path]);
-      hs.push(['trackPageView']);
+      hs.push(["setPath", path]);
+      hs.push(["trackPageView"]);
     }
   }, [afterLoad, pathname, searchParams]);
 
