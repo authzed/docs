@@ -275,7 +275,6 @@ If you want to apply a configuration to an existing SpiceDB cluster without down
 2. Prepare the FGAM configuration YAML.
    You'll add the hashes that you generated in the previous step to the `hash` key in the `token` list for each respective token.
    This process heavily depends on what each client needs:
-
    1. You may want to start with FGAM tokens bound to a admin-like Role, since that's what the original PSKs effectively were.
       This is probably lower risk, and then from there you can move to start trimming down permissions.
    2. Or you may want to move directly to downscoped tokens for your individual services, creating the tokens you need.
