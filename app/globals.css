@@ -93,3 +93,244 @@ body {
 .swagger-ui .scheme-container {
   display: none;
 }
+
+/* Base Swagger UI styling */
+.swagger-ui {
+  background-color: transparent;
+  font-family: inherit;
+}
+
+/* ============================================
+   Dark mode styling for Swagger UI
+   Fixes issue #440: dark mode text was unreadable
+   Light mode uses Swagger UI defaults (works fine)
+   ============================================ */
+
+/* Dark mode text colors - excluding links (handled separately) */
+html.dark .swagger-ui .opblock-tag,
+html.dark .swagger-ui .opblock-tag small,
+html.dark .swagger-ui .info .title,
+html.dark .swagger-ui .info .title small,
+html.dark .swagger-ui .info .title small pre,
+html.dark .swagger-ui .info li,
+html.dark .swagger-ui .info p,
+html.dark .swagger-ui .info table,
+html.dark .swagger-ui .info h1,
+html.dark .swagger-ui .info h2,
+html.dark .swagger-ui .info h3,
+html.dark .swagger-ui .info h4,
+html.dark .swagger-ui .info h5,
+html.dark .swagger-ui .tab li,
+html.dark .swagger-ui .model-title,
+html.dark .swagger-ui .model .property.primitive,
+html.dark .swagger-ui .responses-inner h4,
+html.dark .swagger-ui .responses-inner h5,
+html.dark .swagger-ui .response-col_status,
+html.dark .swagger-ui .response-col_links,
+html.dark .swagger-ui .opblock .opblock-summary-description,
+html.dark .swagger-ui .opblock-description-wrapper p,
+html.dark .swagger-ui .opblock-external-docs-wrapper,
+html.dark .swagger-ui .opblock-title_normal,
+html.dark .swagger-ui .parameter__name,
+html.dark .swagger-ui .parameter__type,
+html.dark .swagger-ui .parameter__deprecated,
+html.dark .swagger-ui .parameter__in,
+html.dark .swagger-ui .response-col_description__inner p,
+html.dark .swagger-ui .response-col_description__inner span,
+html.dark .swagger-ui .prop-type,
+html.dark .swagger-ui .prop-format,
+html.dark .swagger-ui table thead tr th,
+html.dark .swagger-ui table thead tr td,
+html.dark .swagger-ui table tbody tr th,
+html.dark .swagger-ui table tbody tr td,
+html.dark .swagger-ui .renderedMarkdown p,
+html.dark .swagger-ui .renderedMarkdown li,
+html.dark .swagger-ui .renderedMarkdown code,
+html.dark .swagger-ui .markdown p,
+html.dark .swagger-ui .markdown li,
+html.dark .swagger-ui .markdown code {
+  color: var(--color-primary-200);
+}
+
+/* Dark mode links - green for visibility */
+html.dark .swagger-ui a {
+  color: #6ee7b7;
+}
+
+/* Dark mode code blocks */
+html.dark .swagger-ui .highlight-code,
+html.dark .swagger-ui .microlight {
+  background-color: var(--color-primary-800) !important;
+}
+
+html.dark .swagger-ui pre.microlight {
+  background-color: var(--color-primary-800) !important;
+  color: var(--color-primary-200) !important;
+}
+
+html.dark .swagger-ui pre.microlight code {
+  color: var(--color-primary-200) !important;
+}
+
+/* Dark mode operation blocks - GET */
+html.dark .swagger-ui .opblock.opblock-get {
+  background: rgba(97, 175, 254, 0.15);
+  border-color: #61affe;
+}
+
+html.dark .swagger-ui .opblock.opblock-get .opblock-summary {
+  border-color: #61affe;
+}
+
+/* Dark mode operation blocks - POST */
+html.dark .swagger-ui .opblock.opblock-post {
+  background: rgba(73, 204, 144, 0.15);
+  border-color: #49cc90;
+}
+
+html.dark .swagger-ui .opblock.opblock-post .opblock-summary {
+  border-color: #49cc90;
+}
+
+/* Dark mode operation blocks - PUT */
+html.dark .swagger-ui .opblock.opblock-put {
+  background: rgba(252, 161, 48, 0.15);
+  border-color: #fca130;
+}
+
+html.dark .swagger-ui .opblock.opblock-put .opblock-summary {
+  border-color: #fca130;
+}
+
+/* Dark mode operation blocks - DELETE */
+html.dark .swagger-ui .opblock.opblock-delete {
+  background: rgba(249, 62, 62, 0.15);
+  border-color: #f93e3e;
+}
+
+html.dark .swagger-ui .opblock.opblock-delete .opblock-summary {
+  border-color: #f93e3e;
+}
+
+/* Dark mode operation blocks - PATCH */
+html.dark .swagger-ui .opblock.opblock-patch {
+  background: rgba(80, 227, 194, 0.15);
+  border-color: #50e3c2;
+}
+
+html.dark .swagger-ui .opblock.opblock-patch .opblock-summary {
+  border-color: #50e3c2;
+}
+
+/* Dark mode expanded operation block body */
+html.dark .swagger-ui .opblock-body pre.microlight {
+  background-color: #1a1a1a !important;
+  border: 1px solid var(--color-primary-700);
+}
+
+/* Dark mode response section */
+html.dark .swagger-ui .responses-wrapper,
+html.dark .swagger-ui .response {
+  background-color: transparent;
+}
+
+html.dark .swagger-ui .response-col_description__inner {
+  background-color: transparent;
+}
+
+/* Dark mode models section */
+html.dark .swagger-ui .models {
+  border-color: var(--color-primary-700);
+}
+
+html.dark .swagger-ui .model-container {
+  background-color: #1a1a1a;
+  border-color: var(--color-primary-700);
+}
+
+html.dark .swagger-ui .model-box {
+  background-color: var(--color-primary-800) !important;
+}
+
+html.dark .swagger-ui .model {
+  color: var(--color-primary-200);
+}
+
+/* Dark mode tables */
+html.dark .swagger-ui table {
+  background-color: transparent;
+}
+
+html.dark .swagger-ui table thead tr th,
+html.dark .swagger-ui table thead tr td {
+  border-bottom-color: var(--color-primary-700);
+}
+
+html.dark .swagger-ui table tbody tr td {
+  border-bottom-color: #333;
+}
+
+/* Dark mode buttons and interactive elements */
+html.dark .swagger-ui .btn {
+  background-color: var(--color-primary-700);
+  color: var(--color-primary-200);
+  border-color: var(--color-primary-600);
+}
+
+html.dark .swagger-ui .btn:hover {
+  background-color: var(--color-primary-600);
+}
+
+/* Dark mode tab styling */
+html.dark .swagger-ui .tab li {
+  background-color: transparent;
+  border-color: var(--color-primary-700);
+}
+
+html.dark .swagger-ui .tab li.active {
+  background-color: var(--color-primary-800);
+}
+
+/* Dark mode parameters table */
+html.dark .swagger-ui .parameters-col_description {
+  color: var(--color-primary-400);
+}
+
+html.dark .swagger-ui .parameter__name.required::after {
+  color: #f87171;
+}
+
+/* Dark mode copy button - target the SVG inside */
+html.dark .swagger-ui .copy-to-clipboard {
+  background-color: var(--color-primary-700);
+}
+
+html.dark .swagger-ui .copy-to-clipboard svg {
+  fill: var(--color-primary-200);
+}
+
+/* Dark mode expand/collapse icons */
+html.dark .swagger-ui .expand-operation svg,
+html.dark .swagger-ui .expand-methods svg {
+  fill: var(--color-primary-400);
+}
+
+/* Dark mode arrow icons */
+html.dark .swagger-ui .arrow {
+  fill: var(--color-primary-400);
+}
+
+/* Dark mode loading spinner */
+html.dark .swagger-ui .loading-container .loading::after {
+  border-color: var(--color-primary-700);
+  border-top-color: var(--color-primary-200);
+}
+
+/* Dark mode section borders */
+html.dark .swagger-ui section.models.is-open {
+  border-color: var(--color-primary-700);
+}
+
+html.dark .swagger-ui .opblock-tag-section {
+  border-bottom-color: var(--color-primary-700);
+}
