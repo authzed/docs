@@ -1,0 +1,431 @@
+---
+title: "Rate Limiting"
+description: "Configure distributed rate limiting for AuthZed API requests"
+---
+
+import { Callout } from 'nextra/components'
+
+# Rate Limiting
+
+<Callout type="warning">
+  **Tech Preview**: This feature is currently in Tech Preview and is subject to change. It is available exclusively in AuthZed Dedicated and SpiceDB Enterprise.
+</Callout>
+
+AuthZed Dedicated and SpiceDB Enterprise include a distributed rate limiting feature that allows you to control API request rates using flexible matching and bucketing rules. Rate limits are configured via YAML and can be applied globally, per-endpoint, per-service-account, or using custom CEL expressions.
+
+This feature works seamlessly with [Restricted API Access](/authzed/concepts/restricted-api-access) to provide comprehensive control over how your services interact with AuthZed.
+
+## Overview
+
+The rate limiting feature provides:
+
+- **Flexible Matching**: Apply rate limits based on endpoints, service accounts, roles, headers, or custom CEL expressions
+- **Custom Bucketing**: Group requests into rate limit buckets by service account, token, headers, or custom logic
+- **Distributed Coordination**: Coordinate rate limits globally across multiple replicas
+- **Graceful Degradation**: Automatically adjusts limits when coordination is unavailable
+
+## Configuration
+
+The process for configuring rate limiting varies depending on the AuthZed product you're using.
+
+### Dedicated & Cloud
+
+For AuthZed Dedicated, rate limits are configured using the same FGAM configuration file used for [Restricted API Access](/authzed/concepts/restricted-api-access).
+
+Upload your FGAM configuration file (which can include both Restricted API Access and rate limiting rules) through the web dashboard in the Permission System's "Access" tab.
+
+Create a YAML file with your rate limit definitions:
+
+```yaml /dev/null/rate-limits.yaml#L1-50
+rate_limits:
+  # Global rate limit (applies to all requests)
+  - id: "global-limit"
+    displayName: "Global API Rate Limit"
+    match:
+      all: true
+    limit:
+      unit: "second"
+      requests_per_unit: 1000
+
+  # Per-endpoint rate limit
+  - id: "check-permission-limit"
+    displayName: "CheckPermission Rate Limit"
+    match:
+      endpoint: ["CheckPermission"]
+    limit:
+      unit: "second"
+      requests_per_unit: 500
+
+  # Multiple endpoints
+  - id: "read-endpoints-limit"
+    displayName: "Read Endpoints Rate Limit"
+    match:
+      endpoint:
+        - "CheckPermission"
+        - "ReadRelationships"
+    limit:
+      unit: "second"
+      requests_per_unit: 1000
+
+  # Per-service-account with bucketing
+  - id: "sa-limit"
+    displayName: "Service Account Limit"
+    match:
+      service_account: ["high-volume-client"]
+    bucket_by:
+      service_account: true
+    limit:
+      unit: "minute"
+      requests_per_unit: 10000
+
+  # Using headers for tenant-based rate limiting
+  - id: "tenant-limit"
+    displayName: "Per-Tenant Rate Limit"
+    match:
+      endpoint:
+        - "CheckPermission"
+        - "ReadRelationships"
+    bucket_by:
+      request: 'headers["x-tenant-id"]'
+    limit:
+      unit: "second"
+      requests_per_unit: 100
+```
+
+<Callout type="info">
+  For Dedicated & Cloud, the rate limiting configuration is applied through the FGAM file upload. There is no separate UI or API for rate limiting configuration at this time.
+</Callout>
+
+## Rate Limit Configuration Reference
+
+### Matching Criteria
+
+Every rate limit **must** specify at least one match criterion. All fields within a match use AND logic (all conditions must be true).
+
+#### Available Match Fields
+
+- **`all`**: Matches all requests (must be the only field in match)
+- **`endpoint`**: Array of API method names (OR logic within array)
+- **`service_account`**: Array of FGAM service account IDs (OR logic within array)
+- **`role`**: Array of FGAM role names (OR logic within array)
+- **`header`**: Array of header match objects (OR logic within array)
+- **`request`**: CEL expression for complex matching logic
+
+#### Match Examples
+
+```yaml /dev/null/match-examples.yaml#L1-60
+rate_limits:
+  # Global rate limit
+  - id: "global"
+    match:
+      all: true
+    limit:
+      unit: "second"
+      requests_per_unit: 1000
+
+  # Single endpoint
+  - id: "single-endpoint"
+    match:
+      endpoint: ["CheckPermission"]
+    limit:
+      unit: "second"
+      requests_per_unit: 100
+
+  # Multiple endpoints (OR logic)
+  - id: "multiple-endpoints"
+    match:
+      endpoint:
+        - "CheckPermission"
+        - "ReadRelationships"
+        - "LookupResources"
+    limit:
+      unit: "second"
+      requests_per_unit: 200
+
+  # Endpoint AND role (both must match)
+  - id: "admin-reads"
+    match:
+      endpoint: ["ReadRelationships"]
+      role: ["admin"]
+    limit:
+      unit: "minute"
+      requests_per_unit: 5000
+
+  # Header matching (single header)
+  - id: "premium-tier"
+    match:
+      header:
+        - name: "x-tier"
+          value: "premium"
+    limit:
+      unit: "second"
+      requests_per_unit: 500
+
+  # Multiple headers (OR logic)
+  - id: "high-tier"
+    match:
+      header:
+        - name: "x-tier"
+          value: "premium"
+        - name: "x-tier"
+          value: "enterprise"
+    limit:
+      unit: "second"
+      requests_per_unit: 1000
+```
+
+### CEL Expressions
+
+Use CEL expressions for advanced matching and bucketing logic. CEL expressions have access to:
+
+- **`endpoint`**: The API endpoint string
+- **`serviceAccount`**: The service account ID
+- **`headers`** or **`meta`**: gRPC metadata headers as `map[string]string`
+- **Request fields**: Access request proto fields (e.g., `CheckPermissionRequest.resource.object_type`)
+
+#### CEL Match Examples
+
+```yaml /dev/null/cel-match-examples.yaml#L1-40
+rate_limits:
+  # Pattern matching on service account
+  - id: "batch-services"
+    match:
+      request: 'serviceAccount.startsWith("batch-")'
+    limit:
+      unit: "minute"
+      requests_per_unit: 50000
+
+  # Complex cross-field logic
+  - id: "premium-endpoints"
+    match:
+      request: |
+        (endpoint in ["CheckPermission", "ReadRelationships"]) &&
+        (headers.get("x-tier", "") in ["premium", "enterprise"])
+    limit:
+      unit: "second"
+      requests_per_unit: 2000
+
+  # Request content filtering
+  - id: "document-checks"
+    displayName: "Per-Document Check Limit"
+    match:
+      endpoint: ["CheckPermission"]
+      request: 'CheckPermissionRequest.resource.object_type == "document"'
+    limit:
+      unit: "second"
+      requests_per_unit: 10
+
+  # Conditional based on request size
+  - id: "bulk-writes"
+    match:
+      endpoint: ["WriteRelationships"]
+      request: "size(WriteRelationshipsRequest.updates) > 100"
+    limit:
+      unit: "minute"
+      requests_per_unit: 100
+```
+
+### Bucketing
+
+Bucketing determines how requests are grouped into separate rate limit counters.
+
+#### Bucketing Options
+
+- **`service_account: true`**: Separate bucket per service account
+- **`token: true`**: Separate bucket per API token
+- **`header: "<header-name>"`**: Separate bucket per header value
+- **`request: "<CEL-expression>"`**: Custom bucketing logic via CEL
+
+#### Bucketing Examples
+
+```yaml /dev/null/bucketing-examples.yaml#L1-55
+rate_limits:
+  # Per-service-account bucketing
+  - id: "per-sa"
+    match:
+      all: true
+    bucket_by:
+      service_account: true
+    limit:
+      unit: "second"
+      requests_per_unit: 100
+
+  # Per-tenant bucketing using header
+  - id: "per-tenant"
+    match:
+      endpoint: ["CheckPermission"]
+    bucket_by:
+      request: 'headers["x-tenant-id"]'
+    limit:
+      unit: "second"
+      requests_per_unit: 50
+
+  # Bucket by request field
+  - id: "per-document"
+    match:
+      endpoint: ["CheckPermission"]
+      request: 'CheckPermissionRequest.resource.object_type == "document"'
+    bucket_by:
+      request: "CheckPermissionRequest.resource.object_id"
+    limit:
+      unit: "second"
+      requests_per_unit: 10
+
+  # Complex bucketing combining multiple values
+  - id: "composite-bucket"
+    match:
+      endpoint:
+        - "CheckPermission"
+        - "ReadRelationships"
+    bucket_by:
+      request: |
+        endpoint + "/" + 
+        headers.get("x-tenant-id", "default") + "/" +
+        serviceAccount
+    limit:
+      unit: "minute"
+      requests_per_unit: 1000
+```
+
+### Rate Limit Units
+
+The `unit` field supports:
+- `"second"`
+- `"minute"`
+- `"hour"`
+- `"day"`
+
+You can also specify custom durations using Go duration syntax (e.g., `"30s"`, `"15m"`, `"2h"`, `"90s"`).
+
+## Error Responses
+
+When a rate limit is exceeded, the API returns:
+
+- **gRPC Status Code**: `RESOURCE_EXHAUSTED`
+- **Response Trailers**:
+  - `x-ratelimit-id`: The rate limit ID that was exceeded
+  - `x-ratelimit-key`: The bucket key
+  - `retry-after`: Seconds until the client can retry
+
+Example error handling in Go:
+
+```go /dev/null/error-handling.go#L1-20
+import (
+    "google.golang.org/grpc/codes"
+    "google.golang.org/grpc/status"
+)
+
+resp, err := client.CheckPermission(ctx, req)
+if err != nil {
+    if st, ok := status.FromError(err); ok {
+        if st.Code() == codes.ResourceExhausted {
+            // Rate limit exceeded
+            trailer := // extract trailer metadata
+            rateLimitID := trailer.Get("x-ratelimit-id")
+            retryAfter := trailer.Get("retry-after")
+            
+            // Implement backoff logic
+            log.Printf("Rate limit %s exceeded, retry after %s seconds", 
+                rateLimitID, retryAfter)
+        }
+    }
+}
+```
+
+## Self-Hosted Configuration
+
+The following sections apply only to self-hosted SpiceDB Enterprise deployments.
+
+### Basic Setup
+
+For self-hosted SpiceDB Enterprise deployments, use the following command-line flag:
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--rate-limit-config` | Path to YAML file containing rate limit definitions | |
+
+```bash /dev/null/self-hosted-basic.sh#L1-3
+spicedb serve \
+  --rate-limit-config=/path/to/config.yaml \
+  ...
+```
+
+The YAML file follows the same format as shown in the configuration examples above.
+
+### Distributed Rate Limiting
+
+<Callout type="info">
+  Distributed rate limiting with gossip coordination is only configurable for self-hosted SpiceDB Enterprise deployments. AuthZed Dedicated handles this automatically.
+</Callout>
+
+For self-hosted deployments, you can enable distributed coordination across replicas using gossip for accurate global rate limits.
+
+#### Enabling Gossip
+
+```bash /dev/null/gossip-flags.sh#L1-10
+spicedb serve \
+  --rate-limit-config=/path/to/config.yaml \
+  --rate-limit-gossip-enabled=true \
+  --rate-limit-gossip-listen-addr=:6000 \
+  --rate-limit-gossip-target-service=spicedb \
+  --rate-limit-gossip-port-name=gossip \
+  --rate-limit-gossip-replicas=3 \
+  --rate-limit-gossip-use-dispatch-tls=true \
+  ...
+```
+
+#### Gossip Configuration Flags
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--rate-limit-gossip-enabled` | `false` | Enable distributed rate limiting via gossip |
+| `--rate-limit-gossip-listen-addr` | `:6000` | Address for gossip connections |
+| `--rate-limit-gossip-target-service` | `spicedb` | Kubernetes service name for peer discovery |
+| `--rate-limit-gossip-port-name` | `""` | Port name to use for peer addresses |
+| `--rate-limit-gossip-replicas` | `1` | Number of replicas for rate division |
+| `--rate-limit-gossip-use-dispatch-tls` | `false` | Use dispatch TLS certificates for gossip |
+| `--rate-limit-gossip-tls-cert` | `""` | TLS certificate for gossip |
+| `--rate-limit-gossip-tls-key` | `""` | TLS key for gossip |
+| `--rate-limit-gossip-tls-ca` | `""` | TLS CA for mutual TLS |
+| `--rate-limit-gossip-tls-server-name` | `""` | Server name for TLS verification |
+
+### Monitoring
+
+For self-hosted SpiceDB Enterprise deployments, rate limiting exposes Prometheus metrics for monitoring:
+
+| Metric | Type | Description |
+|--------|------|-------------|
+| `spicedb_ratelimit_check_latency_seconds` | Histogram | Rate limit check latency |
+| `spicedb_ratelimit_gossip_messages_sent_total` | Counter | Gossip messages sent |
+| `spicedb_ratelimit_gossip_messages_dropped_total` | Counter | Messages dropped (buffer full) |
+| `spicedb_ratelimit_gossip_peers_active` | Gauge | Active peer connections |
+| `spicedb_ratelimit_gossip_connection_errors_total` | Counter | Connection failures |
+
+Monitor the `spicedb_ratelimit_gossip_peers_active` metric to ensure gossip coordination is healthy.
+
+### Troubleshooting
+
+#### Rate Limits Not Applied
+
+- Verify the configuration file is being loaded with `--rate-limit-config`
+- Check logs for configuration parsing errors
+- Ensure match criteria are correctly specified (arrays for endpoints, service accounts, etc.)
+
+#### Gossip Connectivity Issues
+
+- Verify the gossip port (default `:6000`) is accessible between pods
+- Check TLS configuration if using encrypted gossip
+- Monitor `spicedb_ratelimit_gossip_peers_active` - should equal `replicas - 1`
+- Review `spicedb_ratelimit_gossip_connection_errors_total` for connectivity problems
+
+#### Rate Limits Too Restrictive in Safe Mode
+
+- Increase `--rate-limit-gossip-replicas` if it doesn't match actual deployment
+- Fix gossip connectivity to enable coordinated mode
+- Consider adjusting base rate limits to account for safe mode operation
+
+#### CEL Expression Errors
+
+- Test CEL expressions with representative requests
+- Use `.get("key", "default")` for optional headers
+- Check logs for CEL evaluation errors
