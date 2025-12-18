@@ -107,6 +107,8 @@ body {
    ============================================ */
 
 /* Dark mode text colors - excluding links (handled separately) */
+html.dark .swagger-ui .opblock-summary-path,
+html.dark .swagger-ui .opblock-summary-path span,
 html.dark .swagger-ui .opblock-tag,
 html.dark .swagger-ui .opblock-tag small,
 html.dark .swagger-ui .info .title,
@@ -333,4 +335,37 @@ html.dark .swagger-ui section.models.is-open {
 
 html.dark .swagger-ui .opblock-tag-section {
   border-bottom-color: var(--color-primary-700);
+}
+
+/* Dark mode section headers (Parameters, Request body, Responses) */
+html.dark .swagger-ui .opblock-section-header {
+  background-color: var(--color-primary-800);
+  border-bottom-color: var(--color-primary-700);
+}
+
+html.dark .swagger-ui .opblock-section-header h4,
+html.dark .swagger-ui .opblock-section-header label {
+  color: var(--color-primary-200);
+}
+
+/* Dark mode Example Value / Model tabs */
+html.dark .swagger-ui .tab li button,
+html.dark .swagger-ui .tab li button.tablinks {
+  color: var(--color-primary-300);
+  background-color: transparent;
+}
+
+html.dark .swagger-ui .tab li button.tablinks.active,
+html.dark .swagger-ui .tab li button:focus {
+  color: var(--color-primary-100);
+}
+
+/* Dark mode model/schema display */
+html.dark .swagger-ui .model-toggle::after {
+  background-color: var(--color-primary-400);
+}
+
+html.dark .swagger-ui .model span,
+html.dark .swagger-ui .model-title__text {
+  color: var(--color-primary-200);
 }
