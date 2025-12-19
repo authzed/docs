@@ -3,12 +3,14 @@ title: "Rate Limiting"
 description: "Configure distributed rate limiting for AuthZed API requests"
 ---
 
-import { Callout } from 'nextra/components'
+import { Callout } from "nextra/components";
 
 # Rate Limiting
 
 <Callout type="warning">
-  **Tech Preview**: This feature is currently in Tech Preview and is subject to change. It is available exclusively in AuthZed Dedicated and SpiceDB Enterprise.
+  **Tech Preview**: This feature is currently in Tech Preview and is subject to
+  change. It is available exclusively in AuthZed Dedicated and SpiceDB
+  Enterprise.
 </Callout>
 
 AuthZed Dedicated and SpiceDB Enterprise include a distributed rate limiting feature that allows you to control API request rates using flexible matching and bucketing rules. Rate limits are configured via YAML and can be applied globally, per-endpoint, per-service-account, or using custom CEL expressions.
@@ -93,7 +95,9 @@ rate_limits:
 ```
 
 <Callout type="info">
-  For Dedicated & Cloud, the rate limiting configuration is applied through the FGAM file upload. There is no separate UI or API for rate limiting configuration at this time.
+  For Dedicated & Cloud, the rate limiting configuration is applied through the
+  FGAM file upload. There is no separate UI or API for rate limiting
+  configuration at this time.
 </Callout>
 
 ## Rate Limit Configuration Reference
@@ -290,6 +294,7 @@ rate_limits:
 ### Rate Limit Units
 
 The `unit` field supports:
+
 - `"second"`
 - `"minute"`
 - `"hour"`
@@ -323,9 +328,9 @@ if err != nil {
             trailer := // extract trailer metadata
             rateLimitID := trailer.Get("x-ratelimit-id")
             retryAfter := trailer.Get("retry-after")
-            
+
             // Implement backoff logic
-            log.Printf("Rate limit %s exceeded, retry after %s seconds", 
+            log.Printf("Rate limit %s exceeded, retry after %s seconds",
                 rateLimitID, retryAfter)
         }
     }
@@ -340,9 +345,9 @@ The following sections apply only to self-hosted SpiceDB Enterprise deployments.
 
 For self-hosted SpiceDB Enterprise deployments, use the following command-line flag:
 
-| Flag | Description | Default |
-|------|-------------|---------|
-| `--rate-limit-config` | Path to YAML file containing rate limit definitions | |
+| Flag                  | Description                                         | Default |
+| --------------------- | --------------------------------------------------- | ------- |
+| `--rate-limit-config` | Path to YAML file containing rate limit definitions |         |
 
 ```bash /dev/null/self-hosted-basic.sh#L1-3
 spicedb serve \
@@ -355,7 +360,9 @@ The YAML file follows the same format as shown in the configuration examples abo
 ### Distributed Rate Limiting
 
 <Callout type="info">
-  Distributed rate limiting with gossip coordination is only configurable for self-hosted SpiceDB Enterprise deployments. AuthZed Dedicated handles this automatically.
+  Distributed rate limiting with gossip coordination is only configurable for
+  self-hosted SpiceDB Enterprise deployments. AuthZed Dedicated handles this
+  automatically.
 </Callout>
 
 For self-hosted deployments, you can enable distributed coordination across replicas using gossip for accurate global rate limits.
@@ -376,30 +383,30 @@ spicedb serve \
 
 #### Gossip Configuration Flags
 
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--rate-limit-gossip-enabled` | `false` | Enable distributed rate limiting via gossip |
-| `--rate-limit-gossip-listen-addr` | `:6000` | Address for gossip connections |
-| `--rate-limit-gossip-target-service` | `spicedb` | Kubernetes service name for peer discovery |
-| `--rate-limit-gossip-port-name` | `""` | Port name to use for peer addresses |
-| `--rate-limit-gossip-replicas` | `1` | Number of replicas for rate division |
-| `--rate-limit-gossip-use-dispatch-tls` | `false` | Use dispatch TLS certificates for gossip |
-| `--rate-limit-gossip-tls-cert` | `""` | TLS certificate for gossip |
-| `--rate-limit-gossip-tls-key` | `""` | TLS key for gossip |
-| `--rate-limit-gossip-tls-ca` | `""` | TLS CA for mutual TLS |
-| `--rate-limit-gossip-tls-server-name` | `""` | Server name for TLS verification |
+| Flag                                   | Default   | Description                                 |
+| -------------------------------------- | --------- | ------------------------------------------- |
+| `--rate-limit-gossip-enabled`          | `false`   | Enable distributed rate limiting via gossip |
+| `--rate-limit-gossip-listen-addr`      | `:6000`   | Address for gossip connections              |
+| `--rate-limit-gossip-target-service`   | `spicedb` | Kubernetes service name for peer discovery  |
+| `--rate-limit-gossip-port-name`        | `""`      | Port name to use for peer addresses         |
+| `--rate-limit-gossip-replicas`         | `1`       | Number of replicas for rate division        |
+| `--rate-limit-gossip-use-dispatch-tls` | `false`   | Use dispatch TLS certificates for gossip    |
+| `--rate-limit-gossip-tls-cert`         | `""`      | TLS certificate for gossip                  |
+| `--rate-limit-gossip-tls-key`          | `""`      | TLS key for gossip                          |
+| `--rate-limit-gossip-tls-ca`           | `""`      | TLS CA for mutual TLS                       |
+| `--rate-limit-gossip-tls-server-name`  | `""`      | Server name for TLS verification            |
 
 ### Monitoring
 
 For self-hosted SpiceDB Enterprise deployments, rate limiting exposes Prometheus metrics for monitoring:
 
-| Metric | Type | Description |
-|--------|------|-------------|
-| `spicedb_ratelimit_check_latency_seconds` | Histogram | Rate limit check latency |
-| `spicedb_ratelimit_gossip_messages_sent_total` | Counter | Gossip messages sent |
-| `spicedb_ratelimit_gossip_messages_dropped_total` | Counter | Messages dropped (buffer full) |
-| `spicedb_ratelimit_gossip_peers_active` | Gauge | Active peer connections |
-| `spicedb_ratelimit_gossip_connection_errors_total` | Counter | Connection failures |
+| Metric                                             | Type      | Description                    |
+| -------------------------------------------------- | --------- | ------------------------------ |
+| `spicedb_ratelimit_check_latency_seconds`          | Histogram | Rate limit check latency       |
+| `spicedb_ratelimit_gossip_messages_sent_total`     | Counter   | Gossip messages sent           |
+| `spicedb_ratelimit_gossip_messages_dropped_total`  | Counter   | Messages dropped (buffer full) |
+| `spicedb_ratelimit_gossip_peers_active`            | Gauge     | Active peer connections        |
+| `spicedb_ratelimit_gossip_connection_errors_total` | Counter   | Connection failures            |
 
 Monitor the `spicedb_ratelimit_gossip_peers_active` metric to ensure gossip coordination is healthy.
 
