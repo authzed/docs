@@ -21,7 +21,7 @@ export const generateMetadata = async (
 ): Promise<Metadata> => {
   const { description } = await parentPromise;
   return {
-    metadataBase: new URL("https://authzed.com"),
+    metadataBase: new URL("https://authzed.com/docs"),
     title: {
       default: "Authzed Docs",
       template: "%s - Authzed Docs",
