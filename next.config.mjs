@@ -47,6 +47,12 @@ export default withNextra({
     process.env.VERCEL_ENV === "production"
       ? "https://docs-authzed.vercel.app/docs"
       : undefined,
+  // NOTE: we still use webpack instead of turbopack for dev
+  // because turbopack doesn't support non-serializable nextjs options.
+  // The rehypePrettyCodeOptions in the block above include a function,
+  // which cannot be serialized. If nextra figures out how to provide
+  // those options in a different manner or if turbopack starts supporting
+  // them we can migrate.
   webpack: (config) => {
     config.module.rules.push(
       ...[
