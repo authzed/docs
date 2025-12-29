@@ -983,7 +983,9 @@ zed preview schema compile <file> [flags]
 
 	Write to stdout:
 		zed preview schema compile root.zed
-	Write to an output file:
+	Write to redirected stdout:
+		zed preview schema compile schema.zed 1> compiled.zed
+	Write to a file:
 		zed preview schema compile root.zed --out compiled.zed
 	
 ```
