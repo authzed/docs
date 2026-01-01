@@ -99,6 +99,7 @@ Fatalf
 FdV
 Firehose
 FontAwesomeIcon
+GCRA
 GC
 GCP
 GKE
@@ -553,7 +554,10 @@ pseudocode
 py
 qiqBPvCrlLuc
 qux
+QUIC
+quic
 radius
+ratelimit
 randomizer
 rb
 reachability
@@ -610,6 +614,8 @@ substring
 sudo
 svg
 systemCerts
+TAT
+tat
 tc
 testpresharedkey
 th
