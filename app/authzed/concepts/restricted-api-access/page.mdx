@@ -99,6 +99,15 @@ Policies are what bind Roles to a Service Account.
 
 Each policy is composed of a unique identifier for the policy itself, the principal (the target of the role assignment), and any roles being assigned.
 
+<Callout type="info">
+  **Policies are additive.** When multiple policies apply to the same Service
+  Account, the resulting permissions are the union of all permissions granted by
+  those policies. This means a Service Account with multiple policies will have
+  access to any API method allowed by any of its policies. For example, if one
+  policy grants read access and another grants write access, the Service Account
+  will have both read and write access.
+</Callout>
+
 ## Task-Specific Configuration
 
 ### `zed backup`/`zed restore`
