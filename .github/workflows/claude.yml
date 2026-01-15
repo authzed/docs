@@ -6,45 +6,86 @@ on:
   pull_request_review_comment:
     types: [created]
   issues:
-    types: [opened, assigned]
+    types: [opened, assigned, labeled, unlabeled]
   pull_request_review:
     types: [submitted]
 
 jobs:
-  claude:
+  # Disable general claude invocations
+  # claude:
+  #   if: |
+  #     (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+  #     (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+  #     (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
+  #     (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     contents: read
+  #     pull-requests: read
+  #     issues: read
+  #     id-token: write
+  #     actions: read # Required for Claude to read CI results on PRs
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 1
+  #
+  #     - name: Run Claude Code
+  #       id: claude
+  #       uses: anthropics/claude-code-action@v1
+  #       with:
+  #         anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+  #
+  #         # This is an optional setting that allows Claude to read CI results on PRs
+  #         additional_permissions: |
+  #           actions: read
+  #
+  #         # Optional: Give a custom prompt to Claude. If this is not specified, Claude will perform the instructions specified in the comment that tagged it.
+  #         # prompt: 'Update the pull request description to include a summary of changes.'
+  #
+  #         # Optional: Add claude_args to customize behavior and configuration
+  #         # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
+  #         # or https://code.claude.com/docs/en/cli-reference for available options
+  #         # claude_args: '--allowed-tools Bash(gh pr:*)'
+
+  suggestion:
+    name: Suggestion Handler
     if: |
-      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
-      (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
+      github.event_name == 'issues' &&
+      github.event.action == 'labeled' &&
+      contains(github.event.issue.labels.*.name, 'suggestion/accepted')
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       pull-requests: read
       issues: read
       id-token: write
-      actions: read # Required for Claude to read CI results on PRs
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
-      - name: Run Claude Code
-        id: claude
+      - name: Run Claude Code for Suggestion
+        id: claude-suggestion
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Read the repository documentation structure and the issue description for issue #${{ github.event.issue.number }}.
 
-          # This is an optional setting that allows Claude to read CI results on PRs
-          additional_permissions: |
-            actions: read
+            The issue has been labeled as "suggestion/accepted" and contains a documentation request or improvement.
 
-          # Optional: Give a custom prompt to Claude. If this is not specified, Claude will perform the instructions specified in the comment that tagged it.
-          # prompt: 'Update the pull request description to include a summary of changes.'
+            Your task:
+            1. Read and understand the current documentation structure in this repository
+            2. Review the issue description and any comments to understand what documentation changes are needed
+            3. Implement the requested documentation changes by editing existing pages or creating new pages as appropriate
+            4. Ensure all changes follow the existing documentation style, formatting, and structure
+            5. Commit your changes with messages that include "Fixes #${{ github.event.issue.number }}" so the issue will automatically close when the PR is merged.
 
-          # Optional: Add claude_args to customize behavior and configuration
-          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
-          # or https://code.claude.com/docs/en/cli-reference for available options
-          # claude_args: '--allowed-tools Bash(gh pr:*)'
+            Focus only on documentation changes. Make app changes necessary to support the documentation such as adding visual components, icons, and structure.
+            Otherwise, do not modify application code, configuration files, or CI/CD workflows.
+          claude_args: |
+            --allowedTools "Bash(git:*)"
 
