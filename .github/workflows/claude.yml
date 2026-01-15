@@ -66,7 +66,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: read
-      issues: read
+      issues: write
       id-token: write
     steps:
       - name: Checkout repository
@@ -103,12 +103,20 @@ jobs:
             Your task:
             1. Read and understand the current documentation structure in this repository
             2. Review the issue description and any comments to understand what documentation changes are needed
-            3. Implement the requested documentation changes by editing existing pages or creating new pages as appropriate
-            4. Ensure all changes follow the existing documentation style, formatting, and structure
-            5. Commit your changes with messages that include "Fixes #${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || github.event.issue.number }}" so the issue will automatically close when the PR is merged.
+            3. Create a new branch using the format: suggestion/issue-${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || github.event.issue.number }}-<short-description>
+               Example: suggestion/issue-1-starter-program-docs
+               Use: git checkout -b <branch-name>
+            4. Implement the requested documentation changes by editing existing pages or creating new pages as appropriate
+            5. Ensure all changes follow the existing documentation style, formatting, and structure
+            6. Commit your changes with messages that include "Fixes #${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || github.event.issue.number }}" so the issue will automatically close when the PR is merged.
+            7. Push your branch to origin using: git push -u origin <branch-name>
+            8. Post a comment to issue #${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || github.event.issue.number }} with:
+               - Summary of changes made
+               - Link to create a PR using: https://github.com/${{ github.repository }}/compare/<branch-name>?expand=1
+               Use the gh CLI: gh issue comment ${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || github.event.issue.number }} --body "<your comment>"
 
             Focus only on documentation changes. Make app changes necessary to support the documentation such as adding visual components, icons, and structure.
             Otherwise, do not modify application code, configuration files, or CI/CD workflows.
           claude_args: |
-            --allowedTools "Read,Write,Edit,Bash(git:*),Bash(gh:*),WebFetch(authzed.com)"
+            --allowedTools "Read,Write,Edit,Bash(git:*),Bash(gh:*),WebFetch(domain:authzed.com)"
 
