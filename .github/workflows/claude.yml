@@ -109,5 +109,5 @@ jobs:
             Focus only on documentation changes. Make app changes necessary to support the documentation such as adding visual components, icons, and structure.
             Otherwise, do not modify application code, configuration files, or CI/CD workflows.
           claude_args: |
-            --allowedTools "Bash(git:*),Bash(gh:*)"
+            --allowedTools "Read,Write,Edit,Bash(git:*),Bash(gh:*),WebFetch(authzed.com)"
 
