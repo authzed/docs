@@ -9,6 +9,12 @@ on:
     types: [opened, assigned, labeled, unlabeled]
   pull_request_review:
     types: [submitted]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue number to process'
+        required: true
+        type: number
 
 jobs:
   # Disable general claude invocations
@@ -52,9 +58,10 @@ jobs:
   suggestion:
     name: Suggestion Handler
     if: |
-      github.event_name == 'issues' &&
-      github.event.action == 'labeled' &&
-      contains(github.event.issue.labels.*.name, 'suggestion/accepted')
+      (github.event_name == 'issues' &&
+       github.event.action == 'labeled' &&
+       contains(github.event.issue.labels.*.name, 'suggestion/accepted')) ||
+      github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -67,13 +74,28 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Validate issue label for manual trigger
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+        run: |
+          labels=$(gh issue view $ISSUE_NUMBER --json labels --jq '.labels[].name' || echo "")
+          if ! echo "$labels" | grep -q "suggestion/accepted"; then
+            echo "Error: Issue #$ISSUE_NUMBER does not have the 'suggestion/accepted' label"
+            exit 1
+          fi
+          echo "Issue #$ISSUE_NUMBER has the required 'suggestion/accepted' label"
+
       - name: Run Claude Code for Suggestion
         id: claude-suggestion
         uses: anthropics/claude-code-action@v1
+        env:
+          ISSUE_NUMBER: ${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || github.event.issue.number }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt: |
-            Read the repository documentation structure and the issue description for issue #${{ github.event.issue.number }}.
+            Read the repository documentation structure and the issue description for issue #${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || github.event.issue.number }}.
 
             The issue has been labeled as "suggestion/accepted" and contains a documentation request or improvement.
 
@@ -82,10 +104,10 @@ jobs:
             2. Review the issue description and any comments to understand what documentation changes are needed
             3. Implement the requested documentation changes by editing existing pages or creating new pages as appropriate
             4. Ensure all changes follow the existing documentation style, formatting, and structure
-            5. Commit your changes with messages that include "Fixes #${{ github.event.issue.number }}" so the issue will automatically close when the PR is merged.
+            5. Commit your changes with messages that include "Fixes #${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || github.event.issue.number }}" so the issue will automatically close when the PR is merged.
 
             Focus only on documentation changes. Make app changes necessary to support the documentation such as adding visual components, icons, and structure.
             Otherwise, do not modify application code, configuration files, or CI/CD workflows.
           claude_args: |
-            --allowedTools "Bash(git:*)"
+            --allowedTools "Bash(git:*),Bash(gh:*)"
 
