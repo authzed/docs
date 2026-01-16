@@ -1,21 +1,21 @@
-name: Claude Code
+name: "Claude Code"
 # Note: only users with write permissions can invoke Claude jobs
 
-on:
+"on":
   issue_comment:
-    types: [created]
+    types: ["created"]
   pull_request_review_comment:
-    types: [created]
+    types: ["created"]
   issues:
-    types: [labeled]
+    types: ["labeled"]
   pull_request_review:
-    types: [submitted]
+    types: ["submitted"]
   workflow_dispatch:
     inputs:
       issue_number:
         description: 'Issue number to process'
         required: true
-        type: number
+        type: "number"
 
 jobs:
   # Disable general claude invocations
@@ -57,26 +57,26 @@ jobs:
   #         # claude_args: '--allowed-tools Bash(gh pr:*)'
 
   suggestion:
-    name: Suggestion Handler
+    name: "Suggestion Handler"
     if: |
       (github.event_name == 'issues' &&
        github.event.action == 'labeled' &&
        contains(github.event.issue.labels.*.name, 'suggestion/accepted')) ||
       github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-latest"
     permissions:
-      contents: write
-      pull-requests: read
-      issues: write
-      id-token: write
+      contents: "write"
+      pull-requests: "read"
+      issues: "write"
+      id-token: "write"
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: "Checkout repository"
+        uses: "actions/checkout@v4"
         with:
           fetch-depth: 0
 
-      - name: Validate issue label for manual trigger
-        if: github.event_name == 'workflow_dispatch'
+      - name: "Validate issue label for manual trigger"
+        if: "github.event_name == 'workflow_dispatch'"
         env:
           GH_TOKEN: ${{ github.token }}
           ISSUE_NUMBER: ${{ inputs.issue_number }}
@@ -90,9 +90,9 @@ jobs:
 
         # Runs claude code implement the suggestion.
         # Configured to give 50 turns to claude based on observations. This can be increased if we observe sessions failing to complete
-      - name: Run Claude Code for Suggestion
-        id: claude-suggestion
-        uses: anthropics/claude-code-action@v1
+      - name: "Run Claude Code for Suggestion"
+        id: "claude-suggestion"
+        uses: "anthropics/claude-code-action@v1"
         env:
           ISSUE_NUMBER: ${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || github.event.issue.number }}
         with:
