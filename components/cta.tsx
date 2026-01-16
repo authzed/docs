@@ -10,11 +10,11 @@ export function TocCTA() {
   const isCommercial = pathname?.startsWith("/authzed/");
 
   return isCommercial ? (
-    <div className="mt-8 border-t pt-8 dark:border-neutral-800 contrast-more:border-neutral-400">
-      <div className="text-xs mb-2 font-semibold text-gray-500 dark:text-gray-400">
-        Talk to us
+    <div className="pt-4 pb-8">
+      <div className="text-sm mb-4 font-semibold">
+        Explore your use case
       </div>
-      <Link href="https://authzed.com/call?utm_source=docs" className="cursor-pointer">
+      <Link href="https://authzed.com/schedule-demo" className="cursor-pointer">
         <Button variant="default" size="sm" className="w-full cursor-pointer">
           Book a demo
         </Button>

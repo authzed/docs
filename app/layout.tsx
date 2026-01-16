@@ -7,7 +7,7 @@ import Logo from "@/components/icons/logo.svg";
 import LogoIcon from "@/components/icons/logo-icon.svg";
 import BannerContents from "@/components/banner";
 import Providers from "@/components/providers";
-import { TocCTA } from "@/components/cta";
+import { TocExtraContent } from "@/components/toc-extra-content";
 import Scripts from "@/components/scripts";
 import type { Metadata, ResolvingMetadata } from "next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -89,15 +89,10 @@ export default async function RootLayout({ children }) {
           }}
           pageMap={pageMap}
           feedback={{
-            content: (
-              <span>
-                Something unclear?
-                <br />
-                Create an issue →
-              </span>
-            ),
+            content: null,
           }}
-          toc={{ backToTop: true, extraContent: <TocCTA /> }}
+          editLink={null}
+          toc={{ backToTop: true, extraContent: <TocExtraContent /> }}
         >
           <OurLayout>
             <SpeedInsights />
