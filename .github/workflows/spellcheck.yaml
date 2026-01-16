@@ -1,6 +1,6 @@
 ---
 name: "Spellcheck"
-on:
+"on":
   push:
     branches:
       - "main"
@@ -24,7 +24,7 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - uses: "actions/checkout@v4"
-      - uses: "rojopolis/spellcheck-github-actions@dbd2f1da869c05ad874fffeb6fe1ed50cd1a6e98" # v0.36.0
+      - uses: "rojopolis/spellcheck-github-actions@dbd2f1da869c05ad874fffeb6fe1ed50cd1a6e98"  # v0.36.0
         name: "Spellcheck"
         with:
           config_path: "spellcheck.yaml"

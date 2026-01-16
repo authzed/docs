@@ -1,3 +1,4 @@
+---
 name: "Claude Code"
 # Note: only users with write permissions can invoke Claude jobs
 
@@ -59,7 +60,7 @@ jobs:
   suggestion:
     name: "Suggestion Handler"
     concurrency:
-      group: doc-suggestion-${{ github.event.issue.number || inputs.issue_number }}
+      group: "doc-suggestion-${{ github.event.issue.number || inputs.issue_number }}"
       cancel-in-progress: false
     if: |
       (github.event_name == 'issues' &&
@@ -135,7 +136,7 @@ jobs:
             --max-turns 50
 
       - name: "Notify on failure"
-        if: failure()
+        if: "failure()"
         continue-on-error: true
         env:
           GH_TOKEN: "${{ github.token }}"
@@ -155,7 +156,7 @@ jobs:
           *Automated notification from GitHub Actions*" || echo "::warning::Failed to post failure notification"
 
       - name: "Notify on timeout"
-        if: cancelled()
+        if: "cancelled()"
         continue-on-error: true
         env:
           GH_TOKEN: "${{ github.token }}"
