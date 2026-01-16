@@ -13,7 +13,7 @@ name: "Claude Code"
   workflow_dispatch:
     inputs:
       issue_number:
-        description: 'Issue number to process'
+        description: "Issue number to process"
         required: true
         type: "number"
 
