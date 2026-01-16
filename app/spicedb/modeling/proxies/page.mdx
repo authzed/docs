@@ -1,0 +1,198 @@
+import { Callout } from "nextra/components";
+
+# SpiceDB Proxies
+
+SpiceDB proxies enable secure, permission-aware access to existing services by integrating authorization checks before forwarding requests to downstream systems.
+These proxies act as middleware that enforces permissions using SpiceDB or Authzed before allowing operations to proceed.
+
+## Why Use a Proxy?
+
+Proxies provide several benefits when integrating SpiceDB into your infrastructure:
+
+- **Non-invasive integration**: Add authorization to existing services without modifying their code
+- **Multi-tenancy**: Enforce tenant isolation and permissions at the proxy layer
+- **Consistent authorization**: Centralize permission checks across multiple services
+- **Security**: Add an authorization layer to systems that may not have granular access control
+
+## Existing SpiceDB Proxies
+
+### prom-authzed-proxy
+
+[prom-authzed-proxy](https://github.com/authzed/prom-authzed-proxy) is a proxy for [Prometheus](https://prometheus.io) that authorizes requests using Bearer Tokens and enforces labels in PromQL queries.
+
+**Key Features:**
+
+- Authorizes HTTP requests by checking Bearer Tokens against SpiceDB/Authzed permissions
+- Automatically enforces label filters in PromQL queries for multi-tenant metric isolation
+- Returns HTTP 403 for unauthorized requests
+- Built on top of [prom-label-proxy](https://github.com/prometheus-community/prom-label-proxy)
+
+**How It Works:**
+
+1. Client sends a request with a Bearer Token to query Prometheus metrics
+2. Proxy checks if the token has the required permission (e.g., `view`) for the specified resource
+3. If authorized, the proxy enforces a label filter in the PromQL query based on the resource
+4. Query is forwarded to upstream Prometheus with the label constraint applied
+
+**Installation:**
+
+Using Go:
+
+```sh
+go install github.com/authzed/prom-authzed-proxy/cmd/prom-authzed-proxy
+```
+
+Using Docker:
+
+```sh
+docker pull authzed/prom-authzed-proxy:latest
+```
+
+**Example Usage:**
+
+```sh
+prom-authzed-proxy \
+    --proxy-upstream-prometheus-addr http://localhost:9090 \
+    --proxy-spicedb-token tc_client_token_1234deadbeef \
+    --proxy-check-resource-type metric \
+    --proxy-check-resource-id-query-param install \
+    --proxy-check-permission view \
+    --proxy-check-subject-type token
+```
+
+This configuration checks that the Bearer Token has the `view` permission for the metric resource specified by the `install` PromQL label.
+
+**Use Cases:**
+
+- Multi-tenant Prometheus deployments where different teams should only see their metrics
+- SaaS platforms offering metrics to customers based on their subscription
+- Enterprise environments requiring fine-grained metric access control
+
+### spicedb-kubeapi-proxy
+
+[spicedb-kubeapi-proxy](https://authzed.com/oss/spicedb-kubeapi-proxy) is a proxy for the Kubernetes API server that adds SpiceDB-based authorization to Kubernetes clusters.
+
+**Key Features:**
+
+- Integrates SpiceDB authorization with Kubernetes RBAC
+- Enables fine-grained access control for Kubernetes resources
+- Supports multi-tenant Kubernetes clusters
+- Transparent to existing kubectl and Kubernetes clients
+
+**How It Works:**
+
+1. Client makes a Kubernetes API request (e.g., via kubectl)
+2. Proxy intercepts the request and performs a SpiceDB permission check
+3. If authorized, the request is forwarded to the upstream Kubernetes API server
+4. Response is returned to the client
+
+**Use Cases:**
+
+- Multi-tenant Kubernetes platforms requiring namespace and resource isolation
+- Platform teams providing Kubernetes-as-a-Service to internal teams
+- Compliance requirements for detailed audit trails of resource access
+
+## Building Your Own SpiceDB Proxy
+
+When building a proxy that integrates with SpiceDB, consider the following patterns:
+
+### 1. Authentication vs Authorization
+
+**Authentication** identifies who the user is, while **authorization** determines what they can do.
+Your proxy should:
+
+- Extract authentication credentials (Bearer tokens, API keys, certificates, etc.)
+- Map credentials to SpiceDB subjects (users, service accounts, teams)
+- Perform SpiceDB permission checks before forwarding requests
+
+### 2. Permission Check Patterns
+
+**Resource-based checks:**
+
+```
+CheckPermission(subject=user:alice, permission=view, resource=document:123)
+```
+
+Use when the request clearly identifies a specific resource.
+
+**Query parameter filtering:**
+
+```
+LookupResources(subject=user:alice, permission=view, resource_type=document)
+```
+
+Use when listing or filtering resources the user can access.
+
+### 3. Request Transformation
+
+Some proxies need to transform requests based on permission checks:
+
+- **Label injection**: Add query constraints (like prom-authzed-proxy)
+- **Field filtering**: Remove fields from responses the user shouldn't see
+- **Resource filtering**: Filter list results to only authorized items
+
+### 4. Common Implementation Steps
+
+1. **Parse incoming request**: Extract authentication credentials and request details
+2. **Map to SpiceDB concepts**: Convert credentials to subjects, request targets to resources
+3. **Check permissions**: Call SpiceDB's CheckPermission or LookupResources API
+4. **Transform if needed**: Modify query/request based on authorization context
+5. **Forward or reject**: Send to upstream service or return 403/401
+6. **Handle response**: Optionally filter response data based on permissions
+
+### 5. Performance Considerations
+
+- **Cache permission checks**: Use SpiceDB's ZedTokens for consistent caching
+- **Batch requests**: Use CheckBulkPermissions for multiple resource checks
+- **Connection pooling**: Maintain persistent gRPC connections to SpiceDB
+- **Timeouts**: Set appropriate timeouts for permission checks to avoid blocking requests
+
+### 6. Error Handling
+
+- **Permission denied**: Return HTTP 403 with clear error messages
+- **Authentication failure**: Return HTTP 401 with authentication requirements
+- **SpiceDB unavailable**: Consider fail-open vs fail-closed based on security requirements
+- **Invalid requests**: Return appropriate 4xx errors
+
+<Callout type="info">
+When designing your proxy, consider whether to fail-open (allow requests when SpiceDB is unavailable) or fail-closed (reject requests when SpiceDB is unavailable).
+For most security-critical applications, fail-closed is recommended.
+</Callout>
+
+## Example: Simple HTTP Proxy
+
+Here's a conceptual example of a simple HTTP proxy that checks permissions:
+
+```python
+from spicedb import Client
+
+async def handle_request(request):
+    # 1. Extract authentication
+    token = request.headers.get('Authorization')
+    user_id = authenticate_token(token)
+
+    # 2. Parse request target
+    resource_type, resource_id = parse_resource_from_path(request.path)
+
+    # 3. Check permission
+    client = Client("grpc.authzed.com:443", token="your_spicedb_token")
+    result = await client.check_permission(
+        resource=f"{resource_type}:{resource_id}",
+        permission=request.method.lower(),
+        subject=f"user:{user_id}"
+    )
+
+    # 4. Forward or reject
+    if result.permitted:
+        return await forward_to_upstream(request)
+    else:
+        return Response(status=403, body="Permission denied")
+```
+
+## Related Resources
+
+- [SpiceDB API Reference](https://buf.build/authzed/api/docs/main:authzed.api.v1)
+- [prom-authzed-proxy GitHub Repository](https://github.com/authzed/prom-authzed-proxy)
+- [spicedb-kubeapi-proxy](https://authzed.com/oss/spicedb-kubeapi-proxy)
+- [Protecting a List Endpoint](/spicedb/modeling/protecting-a-list-endpoint)
+- [Access Control Management](/spicedb/modeling/access-control-management)

@@ -9,6 +9,7 @@ export default {
   "access-control-management": "Access Control Management",
   "access-control-audit": "Access Control Audit",
   attributes: "Incorporating Attributes",
+  proxies: "SpiceDB Proxies",
   "dev-mcp-server": {
     title: "SpiceDB Dev MCP Server",
     href: "/mcp/authzed/spicedb-dev-mcp-server",
