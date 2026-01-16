@@ -6,7 +6,7 @@ on:
   pull_request_review_comment:
     types: [created]
   issues:
-    types: [opened, assigned, labeled, unlabeled]
+    types: [labeled]
   pull_request_review:
     types: [submitted]
   workflow_dispatch:
@@ -94,7 +94,7 @@ jobs:
           ISSUE_NUMBER: ${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || github.event.issue.number }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          show_full_output: true
+          show_full_output: false
           prompt: |
             Read the repository documentation structure and the issue description for issue #${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || github.event.issue.number }}.
 
