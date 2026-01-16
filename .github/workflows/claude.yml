@@ -78,8 +78,8 @@ jobs:
       - name: "Validate issue label for manual trigger"
         if: "github.event_name == 'workflow_dispatch'"
         env:
-          GH_TOKEN: ${{ github.token }}
-          ISSUE_NUMBER: ${{ inputs.issue_number }}
+          GH_TOKEN: "${{ github.token }}"
+          ISSUE_NUMBER: "${{ inputs.issue_number }}"
         run: |
           labels=$(gh issue view $ISSUE_NUMBER --json labels --jq '.labels[].name' || echo "")
           if ! echo "$labels" | grep -q "suggestion/accepted"; then
@@ -94,9 +94,9 @@ jobs:
         id: "claude-suggestion"
         uses: "anthropics/claude-code-action@v1"
         env:
-          ISSUE_NUMBER: ${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || github.event.issue.number }}
+          ISSUE_NUMBER: "${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || github.event.issue.number }}"
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          anthropic_api_key: "${{ secrets.ANTHROPIC_API_KEY }}"
           # Enabling this may expose secrets. Do not set to true on public repos
           # https://github.com/anthropics/claude-code-action/blob/main/docs/security.md#%EF%B8%8F-full-output-security-warning
           show_full_output: false
@@ -125,4 +125,3 @@ jobs:
           claude_args: |
             --allowedTools "Read,Write,Edit,Bash(git:*),Bash(gh:*),WebFetch(domain:authzed.com)"
             --max-turns 50
-
