@@ -42,3 +42,38 @@ Run linters:
 ```sh
 pnpm run lint
 ```
+
+## Automated Documentation Suggestions
+
+This repository uses GitHub Actions with Claude Code to automatically implement accepted documentation suggestions.
+
+### How It Works
+
+1. **Create an issue** describing the documentation change, addition, or improvement you'd like to see
+2. To approve a suggestion issue, **add the `suggestion/accepted` label** to the issue
+3. **Claude automatically**:
+   - Reads the issue description and existing documentation
+   - Creates a new branch (`claude/issue-N-description`)
+   - Implements the requested documentation changes
+   - Commits with "Fixes #N" to auto-close the issue when merged
+   - Pushes the branch and comments on the issue with a PR link
+   - A repo admin then clicks the PR link to create a PR, reviews it, and merges when ready
+
+### Manual Trigger
+
+You can also manually trigger the suggestion handler:
+
+1. Go to the **Actions** tab
+2. Select **Claude Code** workflow
+3. Click **Run workflow**
+4. Enter the issue number
+5. The issue must have the `suggestion/accepted` label
+
+### Review Process
+
+After Claude creates the branch:
+
+1. Create the PR using the link in the issue comment
+2. Review the changes in the generated PR link
+3. Make any changes and update the PR. Merge when satisfied
+4. The original issue will automatically close
