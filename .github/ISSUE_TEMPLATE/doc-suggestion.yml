@@ -1,0 +1,64 @@
+name: Documentation Suggestion
+description: Suggest new documentation or improvements to existing docs
+labels: ["Docs"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve our documentation! Please fill out this form to help us understand what you need.
+
+        Once reviewed and labeled `approved`, an AI agent will draft the documentation and create a PR for your review.
+
+        **Note:** If you're an AuthZed team member, the agent will start automatically when you submit this issue.
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Request Type
+      description: What kind of documentation change is this?
+      options:
+        - New page
+        - Update existing page
+        - Fix or clarification
+        - Add examples
+    validations:
+      required: true
+
+  - type: input
+    id: page
+    attributes:
+      label: Page or Topic
+      description: Which page should be created/updated, or what topic should be covered?
+      placeholder: "e.g., /spicedb/concepts/caveats or 'How to use wildcards'"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What's missing or unclear?
+      description: Describe the gap in our current documentation
+      placeholder: "Users often ask about X but we don't explain it anywhere..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Key points to cover
+      description: What information should the documentation include? Be as specific as possible - this helps the AI generate better content.
+      placeholder: |
+        - Explain what X is and when to use it
+        - Show example schema with X
+        - Common gotchas...
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context (optional)
+      description: Links to related docs, code examples, Slack threads, or anything else that would help
+      placeholder: "See also: https://... or internal discussion at..."
+    validations:
+      required: false
