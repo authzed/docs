@@ -87,6 +87,8 @@ jobs:
           fi
           echo "Issue #$ISSUE_NUMBER has the required 'suggestion/accepted' label"
 
+        # Runs claude code implement the suggestion.
+        # Configured to give 50 turns to claude based on observations. This can be increased if we observe sessions failing to complete
       - name: Run Claude Code for Suggestion
         id: claude-suggestion
         uses: anthropics/claude-code-action@v1
@@ -119,4 +121,5 @@ jobs:
             Otherwise, do not modify application code, configuration files, or CI/CD workflows.
           claude_args: |
             --allowedTools "Read,Write,Edit,Bash(git:*),Bash(gh:*),WebFetch(domain:authzed.com)"
+            --max-turns 50
 
