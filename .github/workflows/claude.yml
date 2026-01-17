@@ -122,6 +122,7 @@ jobs:
             7. Push your branch to origin using: git push -u origin <branch-name>
             8. Post a comment to issue #${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || github.event.issue.number }} with:
                - Summary of changes made
+               - Highlight any actions attempted but did not have access to complete
                - Link to create a PR using: https://github.com/${{ github.repository }}/compare/<branch-name>?expand=1
                Use the gh CLI: gh issue comment ${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || github.event.issue.number }} --body "<your comment>"
 
