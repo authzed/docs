@@ -1,9 +1,9 @@
 ---
 name: "Link Checker with External Links"
 
-on:
+"on":
   schedule:
-    - cron: "0 18 * * *" # Daily at 18:00 UTC
+    - cron: "0 18 * * *"  # Daily at 18:00 UTC
   workflow_dispatch:
 
 jobs:
