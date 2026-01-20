@@ -1,0 +1,508 @@
+import { Callout, Tabs } from "nextra/components";
+
+# Client Best Practices
+
+This guide covers best practices for building robust, performant SpiceDB client applications.
+
+## Using Jitter to Improve Performance
+
+### What is Jitter?
+
+Jitter is the practice of adding random delay to client requests to prevent synchronized traffic patterns. When multiple clients make requests at the same time intervals (e.g., every 5 seconds), they can create traffic spikes that overwhelm the system. By adding random variance to request timing, jitter helps distribute load more evenly over time.
+
+### Why Jitter Matters
+
+Without jitter, several problematic scenarios can occur:
+
+1. **Thundering Herd**: Many clients reconnecting or retrying simultaneously after a failure
+2. **Request Queueing**: Synchronized polling creates periodic traffic spikes that exceed capacity
+3. **Cache Stampedes**: Multiple requests for the same data arriving simultaneously, defeating cache benefits
+4. **Reduced Throughput**: Periodic overload followed by idle periods wastes available capacity
+
+Adding jitter helps avoid these issues, leading to:
+
+- More consistent latency
+- Better resource utilization
+- Reduced queue depth and wait times
+- Improved overall system stability
+
+### Which API Endpoints Benefit from Jitter
+
+Jitter is particularly beneficial for:
+
+1. **Polling Operations**
+   - Repeated `CheckPermission` or `CheckBulkPermissions` calls
+   - Periodic `LookupResources` or `LookupSubjects` queries
+   - Regular `ReadRelationships` reads
+
+2. **Retry Logic**
+   - Retrying failed `WriteRelationships` operations
+   - Reconnection attempts after connection loss
+   - Retrying any failed API call
+
+3. **Background Tasks**
+   - Periodic permission cache refreshes
+   - Scheduled relationship synchronization
+   - Regular permission audits
+
+### How to Implement Jitter
+
+#### Exponential Backoff with Jitter
+
+For retry logic, use exponential backoff with jitter:
+
+<Tabs items={["Go", "Node", "Python", "Java", "Ruby", ".NET"]}>
+<Tabs.Tab>
+```go
+package main
+
+import (
+	"context"
+	"math/rand"
+	"time"
+
+    pb "github.com/authzed/authzed-go/proto/authzed/api/v1"
+    "github.com/authzed/authzed-go/v1"
+
+)
+
+// ExponentialBackoffWithJitter implements retry with exponential backoff
+func ExponentialBackoffWithJitter(
+baseDelay time.Duration,
+maxDelay time.Duration,
+attempt int,
+) time.Duration {
+// Calculate exponential delay: baseDelay _ 2^attempt
+delay := baseDelay _ time.Duration(1<<uint(attempt))
+// Cap at maxDelay
+if delay > maxDelay {
+delay = maxDelay
+}
+// Add jitter: random value between 0 and delay
+jitter := time.Duration(rand.Int63n(int64(delay)))
+return jitter
+}
+
+// CheckPermissionWithRetry demonstrates retry logic with jitter
+func CheckPermissionWithRetry(
+client *authzed.Client,
+ctx context.Context,
+req *pb.CheckPermissionRequest,
+maxRetries int,
+) (*pb.CheckPermissionResponse, error) {
+var resp *pb.CheckPermissionResponse
+var err error
+for attempt := 0; attempt <= maxRetries; attempt++ {
+resp, err = client.CheckPermission(ctx, req)
+if err == nil {
+return resp, nil
+}
+if attempt < maxRetries {
+delay := ExponentialBackoffWithJitter(
+100*time.Millisecond,
+10*time.Second,
+attempt,
+)
+time.Sleep(delay)
+}
+}
+return nil, err
+}
+
+````
+</Tabs.Tab>
+
+<Tabs.Tab>
+```typescript
+import { v1 } from '@authzed/authzed-node';
+
+/**
+ * Calculate exponential backoff with jitter
+ */
+function exponentialBackoffWithJitter(
+  baseDelayMs: number,
+  maxDelayMs: number,
+  attempt: number
+): number {
+  // Calculate exponential delay: baseDelay * 2^attempt
+  const delay = Math.min(baseDelayMs * Math.pow(2, attempt), maxDelayMs);
+
+  // Add jitter: random value between 0 and delay
+  return Math.random() * delay;
+}
+
+/**
+ * Sleep for specified milliseconds
+ */
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Check permission with retry and jitter
+ */
+async function checkPermissionWithRetry(
+  client: v1.ZedClient,
+  request: v1.CheckPermissionRequest,
+  maxRetries: number = 3
+): Promise<v1.CheckPermissionResponse> {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await client.checkPermission(request);
+    } catch (error) {
+      if (attempt < maxRetries) {
+        const delayMs = exponentialBackoffWithJitter(100, 10000, attempt);
+        await sleep(delayMs);
+      } else {
+        throw error;
+      }
+    }
+  }
+  throw new Error('Max retries exceeded');
+}
+````
+
+</Tabs.Tab>
+
+<Tabs.Tab>
+```python
+import random
+import time
+from typing import Optional
+from authzed.api.v1 import (
+    Client,
+    CheckPermissionRequest,
+    CheckPermissionResponse,
+)
+
+def exponential*backoff_with_jitter(
+base_delay_ms: float,
+max_delay_ms: float,
+attempt: int
+) -> float:
+"""Calculate exponential backoff with jitter.""" # Calculate exponential delay: base_delay * 2^attempt
+delay = min(base*delay_ms * (2 \*\* attempt), max_delay_ms)
+
+    # Add jitter: random value between 0 and delay
+    return random.uniform(0, delay)
+
+def check_permission_with_retry(
+client: Client,
+request: CheckPermissionRequest,
+max_retries: int = 3
+) -> CheckPermissionResponse:
+"""Check permission with retry and jitter."""
+for attempt in range(max_retries + 1):
+try:
+return client.CheckPermission(request)
+except Exception as e:
+if attempt < max_retries:
+delay_ms = exponential_backoff_with_jitter(100, 10000, attempt)
+time.sleep(delay_ms / 1000.0)
+else:
+raise e
+
+````
+</Tabs.Tab>
+
+<Tabs.Tab>
+```java
+import com.authzed.api.v1.PermissionsServiceGrpc;
+import com.authzed.api.v1.CheckPermissionRequest;
+import com.authzed.api.v1.CheckPermissionResponse;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+
+public class JitterExample {
+    private static final Random random = new Random();
+
+    /**
+     * Calculate exponential backoff with jitter
+     */
+    public static long exponentialBackoffWithJitter(
+        long baseDelayMs,
+        long maxDelayMs,
+        int attempt
+    ) {
+        // Calculate exponential delay: baseDelay * 2^attempt
+        long delay = Math.min(baseDelayMs * (1L << attempt), maxDelayMs);
+
+        // Add jitter: random value between 0 and delay
+        return (long) (random.nextDouble() * delay);
+    }
+
+    /**
+     * Check permission with retry and jitter
+     */
+    public static CheckPermissionResponse checkPermissionWithRetry(
+        PermissionsServiceGrpc.PermissionsServiceBlockingStub client,
+        CheckPermissionRequest request,
+        int maxRetries
+    ) throws Exception {
+        Exception lastException = null;
+
+        for (int attempt = 0; attempt <= maxRetries; attempt++) {
+            try {
+                return client.checkPermission(request);
+            } catch (Exception e) {
+                lastException = e;
+                if (attempt < maxRetries) {
+                    long delayMs = exponentialBackoffWithJitter(100, 10000, attempt);
+                    TimeUnit.MILLISECONDS.sleep(delayMs);
+                }
+            }
+        }
+
+        throw lastException;
+    }
+}
+````
+
+</Tabs.Tab>
+
+<Tabs.Tab>
+```ruby
+require 'authzed'
+
+# Calculate exponential backoff with jitter
+
+def exponential_backoff_with_jitter(base_delay_ms, max_delay_ms, attempt)
+
+# Calculate exponential delay: base_delay \* 2^attempt
+
+delay = [base_delay_ms * (2 ** attempt), max_delay_ms].min
+
+# Add jitter: random value between 0 and delay
+
+rand(0.0..delay)
+end
+
+# Check permission with retry and jitter
+
+def check_permission_with_retry(client, request, max_retries = 3)
+(0..max_retries).each do |attempt|
+begin
+return client.check_permission(request)
+rescue => e
+raise e if attempt >= max_retries
+
+      delay_ms = exponential_backoff_with_jitter(100, 10000, attempt)
+      sleep(delay_ms / 1000.0)
+    end
+
+end
+end
+
+````
+</Tabs.Tab>
+
+<Tabs.Tab>
+```csharp
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Authzed.Api.V1;
+
+public class JitterExample
+{
+    private static readonly Random random = new Random();
+
+    /// <summary>
+    /// Calculate exponential backoff with jitter
+    /// </summary>
+    public static TimeSpan ExponentialBackoffWithJitter(
+        TimeSpan baseDelay,
+        TimeSpan maxDelay,
+        int attempt)
+    {
+        // Calculate exponential delay: baseDelay * 2^attempt
+        var delayMs = Math.Min(
+            baseDelay.TotalMilliseconds * Math.Pow(2, attempt),
+            maxDelay.TotalMilliseconds
+        );
+
+        // Add jitter: random value between 0 and delay
+        return TimeSpan.FromMilliseconds(random.NextDouble() * delayMs);
+    }
+
+    /// <summary>
+    /// Check permission with retry and jitter
+    /// </summary>
+    public static async Task<CheckPermissionResponse> CheckPermissionWithRetry(
+        PermissionsService.PermissionsServiceClient client,
+        CheckPermissionRequest request,
+        int maxRetries = 3)
+    {
+        Exception lastException = null;
+
+        for (int attempt = 0; attempt <= maxRetries; attempt++)
+        {
+            try
+            {
+                return await client.CheckPermissionAsync(request);
+            }
+            catch (Exception e)
+            {
+                lastException = e;
+                if (attempt < maxRetries)
+                {
+                    var delay = ExponentialBackoffWithJitter(
+                        TimeSpan.FromMilliseconds(100),
+                        TimeSpan.FromSeconds(10),
+                        attempt
+                    );
+                    await Task.Delay(delay);
+                }
+            }
+        }
+
+        throw lastException;
+    }
+}
+````
+
+</Tabs.Tab>
+</Tabs>
+
+#### Polling with Jitter
+
+For periodic polling, add jitter to the interval:
+
+<Tabs items={["Go", "Node", "Python"]}>
+<Tabs.Tab>
+```go
+package main
+
+import (
+	"context"
+	"math/rand"
+	"time"
+)
+
+// PollWithJitter polls a function with jitter
+func PollWithJitter(
+ctx context.Context,
+baseInterval time.Duration,
+jitterPercent float64, // e.g., 0.2 for ±20%
+fn func(context.Context) error,
+) {
+ticker := time.NewTicker(baseInterval)
+defer ticker.Stop()
+for {
+select {
+case <-ctx.Done():
+return
+case <-ticker.C:
+// Execute the function
+\_ = fn(ctx)
+// Calculate next interval with jitter
+jitterRange := float64(baseInterval) * jitterPercent
+jitter := time.Duration(rand.Float64()*jitterRange\*2 - jitterRange)
+nextInterval := baseInterval + jitter
+ticker.Reset(nextInterval)
+}
+}
+}
+
+````
+</Tabs.Tab>
+
+<Tabs.Tab>
+```typescript
+/**
+ * Poll a function with jitter
+ */
+async function pollWithJitter(
+  baseIntervalMs: number,
+  jitterPercent: number, // e.g., 0.2 for ±20%
+  fn: () => Promise<void>,
+  signal?: AbortSignal
+): Promise<void> {
+  while (!signal?.aborted) {
+    try {
+      await fn();
+    } catch (error) {
+      console.error('Poll error:', error);
+    }
+
+    // Calculate next interval with jitter
+    const jitterRange = baseIntervalMs * jitterPercent;
+    const jitter = (Math.random() * 2 - 1) * jitterRange;
+    const nextInterval = baseIntervalMs + jitter;
+
+    await new Promise((resolve, reject) => {
+      const timeout = setTimeout(resolve, nextInterval);
+      signal?.addEventListener('abort', () => {
+        clearTimeout(timeout);
+        reject(new Error('Aborted'));
+      });
+    });
+  }
+}
+````
+
+</Tabs.Tab>
+
+<Tabs.Tab>
+```python
+import asyncio
+import random
+from typing import Callable, Awaitable
+
+async def poll_with_jitter(
+base_interval_ms: float,
+jitter_percent: float, # e.g., 0.2 for ±20%
+fn: Callable[[], Awaitable[None]]
+) -> None:
+"""Poll a function with jitter."""
+while True:
+try:
+await fn()
+except Exception as e:
+print(f"Poll error: {e}")
+
+        # Calculate next interval with jitter
+        jitter_range = base_interval_ms * jitter_percent
+        jitter = random.uniform(-jitter_range, jitter_range)
+        next_interval = base_interval_ms + jitter
+
+        await asyncio.sleep(next_interval / 1000.0)
+
+```
+</Tabs.Tab>
+</Tabs>
+
+### Jitter Recommendations
+
+1. **For Retries**: Use exponential backoff with full jitter
+   - Start with 100-500ms base delay
+   - Cap maximum delay at 10-30 seconds
+   - Add full jitter (random value from 0 to calculated delay)
+
+2. **For Polling**: Use fixed interval with bounded jitter
+   - Add ±10-20% jitter to prevent synchronization
+   - Example: 5s ± 1s (4-6 seconds)
+
+3. **For Reconnections**: Use exponential backoff with decorrelated jitter
+   - Prevents reconnection storms during outages
+   - Each retry uses: `random(base_delay, previous_delay * 3)`
+
+<Callout type="info">
+  The examples above demonstrate client-side jitter. This is independent of SpiceDB's built-in connection pool jitter (configured via `--datastore-conn-pool-*-max-lifetime-jitter` flags), which helps prevent database connection storms.
+</Callout>
+
+## Connection Pooling Best Practices
+
+When using SpiceDB client libraries, consider connection pooling:
+
+1. **Reuse Client Instances**: Create one client instance and reuse it across requests
+2. **Configure Keepalives**: Use gRPC keepalive settings to detect broken connections
+3. **Set Reasonable Timeouts**: Configure per-request timeouts to prevent indefinite blocking
+
+## Additional Resources
+
+- [SpiceDB Client Libraries](/spicedb/getting-started/client-libraries)
+- [Best Practices](/best-practices)
+- [Performance Guide](/spicedb/ops/performance)
+- [Load Testing Guide](/spicedb/ops/load-testing)
+```

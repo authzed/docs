@@ -91,3 +91,11 @@ To configure the schema cache, use the following flags:
 # When false: always uses JIT caching
 --enable-experimental-watchable-schema-cache=false
 ```
+
+## By implementing client-side jitter
+
+Client-side request timing patterns can significantly impact SpiceDB performance. When many clients make requests at synchronized intervals, traffic spikes can cause request queueing and reduced throughput.
+
+Adding jitter (randomized delays) to client retry logic and polling intervals helps distribute load more evenly, reducing queue depth and improving overall system stability.
+
+For detailed guidance on implementing jitter in your SpiceDB clients, see the [Client Best Practices](/spicedb/ops/client-best-practices) guide.

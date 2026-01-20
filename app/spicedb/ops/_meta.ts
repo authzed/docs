@@ -4,6 +4,7 @@ export default {
   eks: "Deploying to AWS EKS",
   data: "Writing data to SpiceDB",
   performance: "Improving Performance",
+  "client-best-practices": "Client Best Practices",
   resilience: "Improving Resilience",
   observability: "Observability Tooling",
   "load-testing": "Load Testing",

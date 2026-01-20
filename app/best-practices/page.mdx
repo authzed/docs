@@ -161,7 +161,19 @@ Tags: **application**
 
 SpiceDB can be configured to expose both an [HTTP API](https://authzed.com/docs/spicedb/getting-started/client-libraries#http-clients) and associated Swagger documentation.
 While this can be helpful for initial exploration, we strongly recommend using one of our gRPC-based official client libraries if your networking and calling language support it.
-gRPC is significantly more performant and lower-latency than HTTP, and client-streaming services like ImportBulk can’t be used with the HTTP API.
+gRPC is significantly more performant and lower-latency than HTTP, and client-streaming services like ImportBulk can't be used with the HTTP API.
+
+### Add Jitter to Client Requests
+
+Tags: **application**
+
+When implementing retry logic or polling, add jitter (random delays) to prevent synchronized traffic patterns.
+Without jitter, multiple clients retrying or polling at the same intervals can create traffic spikes that cause request queueing and reduced throughput.
+
+Use exponential backoff with full jitter for retries, and add ±10-20% jitter to polling intervals.
+This distributes load more evenly over time, reduces queue depth, and improves overall system stability.
+
+For implementation details and code examples, see the [Client Best Practices](https://authzed.com/docs/spicedb/ops/client-best-practices) guide.
 
 ### Keep Permission Logic in SpiceDB
 
