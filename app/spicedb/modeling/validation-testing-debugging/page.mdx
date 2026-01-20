@@ -25,7 +25,9 @@ You can run the integration test server by executing `spicedb serve-testing` or 
 
 While it is recommended that SpiceDB schema be validated and tested before production deployment, there are many scenarios where being able to see the actual paths taken against production data is incredibly important.
 
-To support this, SpiceDB's v1 CheckPermission API supports a debug header that will cause SpiceDB to trace the full set of relations and permission traversed while computing the check.
+**This method is deprecated.** As of v1.30.0+, use the [Check Tracing](#check-tracing) method with `withTracing: true` instead, which returns trace data directly in the response body.
+
+In versions prior to v1.30.0, this method uses gRPC metadata headers to request debug trace information, with the trace data returned in the response trailer.
 
 <Callout type="warning">
   **Warning:**
@@ -38,9 +40,24 @@ Instead, we recommend using [zed's explain flag] for this purpose.
 
 </Callout>
 
-Configuring this header is done by setting the header `io.spicedb.requestdebuginfo` to the string `true`.
+To request debug information, set the header `io.spicedb.requestdebuginfo` to `1`.
 
-The response will include a trailer, `io.spicedb.respmeta.debuginfo`, with a JSON-encoded tree.
+<Callout type="info">
+  **Note:** In SpiceDB v1.30.0+, this header still works but the trace data is
+  returned in the response body (`debugTrace` field) rather than the trailer.
+  The trailer `io.spicedb.respmeta.debuginfo` will contain a message indicating
+  to check the response body instead.
+</Callout>
+
+#### Example
+
+Using the `zed` CLI with the `--explain` flag (recommended):
+
+```sh
+zed permission check --explain document:firstdoc view user:fred
+```
+
+This will print a visual tree of the permission check trace.
 
 ## Playground
 
@@ -150,14 +167,104 @@ project:docs#admin:
 
 ## Check Tracing
 
+**This is the modern, recommended method for collecting trace information** (available in SpiceDB v1.30.0+). Unlike the legacy [CheckPermission Tracing Header](#checkpermission-tracing-header) approach (which returned trace data in a response trailer in versions prior to v1.30.0), this method returns the trace as a structured field directly in the response message body.
+
 SpiceDB supports tracing of check requests to view the path(s) taken to compute the result, as well as timing information.
 
-Request tracing information by setting `with_tracing: true` in the request message and the information will be found in the response message.
+To request tracing information, set `withTracing: true` in the request message. The trace data will be returned in the response message.
+
+**Key differences from the header-based approach:**
+
+- More structured and easier to parse programmatically
+- Preferred for modern integrations
 
 <Callout type="warning">
-  **Warning:** In versions older than v1.31.0, request tracing information via a
-  header and the information will be found in the response footer as JSON.
+  **Warning:** In versions older than v1.30.0, you must request tracing
+  information via a header, and the trace data will be returned in the response
+  trailer as JSON.
 </Callout>
+
+#### Example Request/Response
+
+**Request** (using grpcurl):
+
+```sh
+grpcurl \
+  -H "Authorization: Bearer your-token-here" \
+  -d '{
+    "resource": {"objectType": "document", "objectId": "firstdoc"},
+    "permission": "view",
+    "subject": {"object": {"objectType": "user", "objectId": "fred"}},
+    "withTracing": true
+  }' \
+  your-spicedb-instance:443 \
+  authzed.api.v1.PermissionsService/CheckPermission
+```
+
+**Response**:
+
+```json
+{
+  "permissionship": "PERMISSIONSHIP_HAS_PERMISSION",
+  "checkedAt": {
+    "token": "GhUKEzE3MDYxMTIwMDAwMDAwMDAwMDA="
+  },
+  "debugTrace": {
+    "check": {
+      "resource": {
+        "objectType": "document",
+        "objectId": "firstdoc"
+      },
+      "permission": "view",
+      "permissionType": "PERMISSION_TYPE_PERMISSION",
+      "subject": {
+        "object": {
+          "objectType": "user",
+          "objectId": "fred"
+        }
+      },
+      "result": "PERMISSIONSHIP_HAS_PERMISSION",
+      "duration": "0.000125s",
+      "subProblems": {
+        "traces": [
+          {
+            "resource": {
+              "objectType": "document",
+              "objectId": "firstdoc"
+            },
+            "permission": "reader",
+            "permissionType": "PERMISSION_TYPE_RELATION",
+            "subject": {
+              "object": {
+                "objectType": "user",
+                "objectId": "fred"
+              }
+            },
+            "result": "PERMISSIONSHIP_HAS_PERMISSION",
+            "duration": "0.000045s"
+          }
+        ]
+      }
+    },
+    "schemaUsed": "definition document {\n  relation reader: user\n  permission view = reader\n}\n\ndefinition user {}"
+  }
+}
+```
+
+The `debugTrace` field contains a `DebugInformation` object with:
+
+- `check`: A `CheckDebugTrace` object containing the trace tree
+- `schemaUsed`: The schema that was used for the check
+
+Each `CheckDebugTrace` includes:
+
+- `resource`: The resource being checked
+- `permission`: The permission or relation name
+- `permissionType`: Whether it's a `PERMISSION_TYPE_PERMISSION` or `PERMISSION_TYPE_RELATION`
+- `subject`: The subject of the check
+- `result`: The permissionship result
+- `duration`: Time spent on this check (as a Duration string, e.g., "0.000125s")
+- `subProblems`: Contains `traces` array with nested `CheckDebugTrace` objects, or `wasCachedResult: true` if cached
 
 ## Zed
 

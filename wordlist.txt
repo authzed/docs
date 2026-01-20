@@ -1,4 +1,4 @@
-personal_ws-1.1 en 654
+personal_ws-1.1 en 655
 ABAC
 ACKing
 ACL
@@ -440,6 +440,7 @@ goroutines
 governance
 gpg
 grpc
+grpcurl
 grpcutil
 hashlib
 heredoc
