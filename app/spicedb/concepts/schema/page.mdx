@@ -417,6 +417,36 @@ In the above example, the user must be in the `member` relation for _all_ groups
   results for the arrow.
 </Callout>
 
+### The `self` Keyword
+
+*Available in SpiceDB v1.49.0*
+
+A common piece of authorization logic is that a `user` should always be able to view themselves.
+Using the `self` keyword provides a simple way to express this:
+
+```zed
+use self
+
+definition user {
+  relation viewer: user
+  permission view = viewer + self
+}
+```
+
+With the `self` keyword, any check for that permission that has the same subject and object (e.g. `user:alice#view@user:alice`) will evaluate to true.
+
+This can be expressed without the `self` keyword as well:
+
+```zed
+definition user {
+  relation viewer: user
+  permission view = viewer
+}
+```
+
+But in order to express that a user should be able to view themselves, you'll need to write a corresponding relationship (e.g. `user:alice#viewer@user:alice`)
+for the check to evaluate to true. The `self` keyword requires less DB space and computation to achieve the same result.
+
 ### Naming Permissions
 
 Permissions define a set of objects that can perform an action or have some attribute, and thus **permissions should be named as verbs or nouns**, read as `(is/can) {permission name} (the object)`.
