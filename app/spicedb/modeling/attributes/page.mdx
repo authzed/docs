@@ -22,15 +22,11 @@ Feature flag authorization can be enabled with boolean attributes.
 
 Loop relationships are one way to implement boolean attributes.
 
-Loop relationships relate an object to itself.
-A loop relationship is walked with an [arrow](/spicedb/concepts/schema#--arrow) back to an object's self.
-In practice, relating something to itself toggles something on.
-
 In the example below, there is a schema that enforces the following authorization logic: a user can
 only view a document if the user is related to the document as viewer and editing is enabled for the
-document (this is the same authorization logic used in the wildcard example above).
+document (this is the same authorization logic used in the wildcard example below).
 
-In the example below, to enable editing for a document, a self relationship using the `edit_enabled` relation must be written.
+In the example below, to enable editing for a document, a loop relationship using the `edit_enabled` relation must be written.
 When a `document` is related to itself with the `edit_enabled` relation, that relation can be walked to itself
 (with the arrow) to determine who relates to the document as an `editor`.
 
@@ -41,10 +37,10 @@ and that document is related to itself with `edit_enabled`.
 
 <Callout type="warning">
   There is no mechanism in the SpiceDB schema language that enforces that a
-  relation be used as a self relation. In order to avoid accidentally misusing a
-  self relation (e.g. relating an object to a different instance of the same
+  relation be used as a loop relation. In order to avoid accidentally misusing a
+  loop relation (e.g. relating an object to a different instance of the same
   type) it is recommended to implement client side logic that enforces only
-  using the self relation for it's intended purpose.
+  using the loop relation for its intended purpose.
 </Callout>
 
 ### Wildcards
@@ -62,7 +58,7 @@ To enable document editing, you need to establish a relationship that connects a
   Wildcards are adequate for most binary attribute scenarios; however, wildcards
   are not currently supported by [Authzed
   Materialize](/authzed/concepts/authzed-materialize). Those who plan to use
-  Materialize should use self relationships for binary attributes.
+  Materialize should use loop relationships for binary attributes.
 </Callout>
 
 ## Attribute Matching
