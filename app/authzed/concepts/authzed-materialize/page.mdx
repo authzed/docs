@@ -3,9 +3,9 @@ import { Callout } from "nextra/components";
 # AuthZed Materialize
 
 <Callout type="info">
-  AuthZed Materialize is available to users of AuthZed [Dedicated] as part of an
-  early access program. Don't hesitate to get in touch with your AuthZed account
-  team if you would like to participate.
+  AuthZed Materialize is available to users of AuthZed [Dedicated] as part of an early access
+  program. Don't hesitate to get in touch with your AuthZed account team if you would like to
+  participate.
 </Callout>
 
 AuthZed Materialize takes inspiration from the Leopard index component described in the [Zanzibar paper](https://zanzibar.tech/2IoYDUFMAE:0:T).
@@ -74,8 +74,8 @@ In situations like these, one may want to store the events in batches, and in su
 If a failure happened in between those batches, the consumer will be able to restart processing from the start of the revision and idempotently overwrite whatever events were already in place.
 
 <Callout type="info">
-  Change events are stored up to 24h to make sure Materialize storage does not
-  grow unbounded and affect its performance.
+  Change events are stored up to 24h to make sure Materialize storage does not grow unbounded and
+  affect its performance.
 </Callout>
 
 ## Configuration
@@ -90,9 +90,8 @@ resource#edit@user
 ```
 
 <Callout type="info">
-  During early access provisioning, Materialize instances are not self-service,
-  so you’ll need to provide the permissions to be computed by Materialize
-  directly to your AuthZed account team.
+  During early access provisioning, Materialize instances are not self-service, so you’ll need to
+  provide the permissions to be computed by Materialize directly to your AuthZed account team.
 </Callout>
 
 ### Relational Database
@@ -427,8 +426,8 @@ The AuthZed team has optimized Materialize to reduce the number of instances whe
 To determine if a schema change is breaking, we provide the `materialize-cli` tool.
 
 <Callout type="info">
-  `materialize-cli` is still in early development, please reach out to us if you
-  want to try it as part of AuthZed Materialize early access.
+  `materialize-cli` is still in early development, please reach out to us if you want to try it as
+  part of AuthZed Materialize early access.
 </Callout>
 
 #### Errors
@@ -458,10 +457,9 @@ This is useful when the client has been notified a [breaking schema change] occu
 If both `optional_at_revision` and `optional_starting_after` are provided, the latter always takes precedence.
 
 <Callout type="warning">
-  Client **must** provide the revision token after a [breaking schema change]
-  through `optional_starting_after`, otherwise Materialize will start streaming
-  permission sets for whatever snapshot revision is available at the moment, and
-  won't reflect the schema changes.
+  Client **must** provide the revision token after a [breaking schema change] through
+  `optional_starting_after`, otherwise Materialize will start streaming permission sets for whatever
+  snapshot revision is available at the moment, and won't reflect the schema changes.
 </Callout>
 
 The current cursor is provided with each event in the stream, so if the consumer client crashes it knows where to restart from, alongside the revision at which the data is computed.
@@ -478,10 +476,10 @@ In the event of the customer consumer being restarted, it should:
 - Resume ingestion as usual
 
 <Callout type="info">
-  While AuthZed treats correctness very seriously, bugs may be identified that
-  affect the correctness of the denormalized permissions computed by
-  Materialize. Those incidents should be rare, but consumers must have all the
-  machinery in place to re-index via [LookupPermissionSets] at any given time.
+  While AuthZed treats correctness very seriously, bugs may be identified that affect the
+  correctness of the denormalized permissions computed by Materialize. Those incidents should be
+  rare, but consumers must have all the machinery in place to re-index via [LookupPermissionSets] at
+  any given time.
 </Callout>
 
 #### Reindexing After A Breaking Schema Change
@@ -519,8 +517,8 @@ Once your index is ingested and is updated with [WatchPermissionSets], your appl
 This strategy requires more steps and careful planning, but in exchange completely avoids any lag.
 
 <Callout type="info">
-  For the time being, Materialize instances are not self-serve, so you'll need
-  to work with your Account Team to execute the off-band ingestion strategy.
+  For the time being, Materialize instances are not self-serve, so you'll need to work with your
+  Account Team to execute the off-band ingestion strategy.
 </Callout>
 
 #### Request

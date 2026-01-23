@@ -5,16 +5,14 @@ import { Callout } from "nextra/components";
 This page walks through the main ways to query data in SpiceDB. The options are listed roughly in the order of how often you should be calling them, and roughly in order of their expected performance. Choose the one that makes sense for your use case, but consider whether your use case actually requires the call you're looking at.
 
 <Callout type="info">
-  In most of the APIs below, if you want to be able to read your write, you can
-  pass a `consistency` parameter to the queries. Use either `fully_consistent`
-  or `at_least_as_fresh(revision)` depending on how strict you need to be. See
-  [Consistency](consistency) for more details.
+  In most of the APIs below, if you want to be able to read your write, you can pass a `consistency`
+  parameter to the queries. Use either `fully_consistent` or `at_least_as_fresh(revision)` depending
+  on how strict you need to be. See [Consistency](consistency) for more details.
 </Callout>
 
 <Callout type="important">
-  When invoking any of our APIs, you can send a header `X-Request-ID=somevalue`
-  and it will be echoed back in the response, which makes correlating logs or
-  tracing requests easy.
+  When invoking any of our APIs, you can send a header `X-Request-ID=somevalue` and it will be
+  echoed back in the response, which makes correlating logs or tracing requests easy.
 </Callout>
 
 ## Check Permission

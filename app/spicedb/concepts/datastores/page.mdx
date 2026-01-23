@@ -325,8 +325,8 @@ If you run into this issue, the fix is [documented here](https://authzed.com/doc
 ### Read Replicas
 
 <Callout type="warning">
-  Do not use a load balancer between SpiceDB and MySQL replicas because SpiceDB
-  will not be able to maintain consistency guarantees.
+  Do not use a load balancer between SpiceDB and MySQL replicas because SpiceDB will not be able to
+  maintain consistency guarantees.
 </Callout>
 
 SpiceDB supports MySQL read replicas and does it while retaining consistency guarantees.
@@ -360,8 +360,7 @@ Read replicas are configured with the `--datastore-read-replica-*` family of fla
 | `datastore-conn-uri` | connection string used to connect to MySQL | `--datastore-conn-uri="user:password@(localhost:3306)/spicedb?parseTime=True"` |
 
 <Callout type="warning">
-  SpiceDB requires `--datastore-conn-uri` to contain the query parameter
-  `parseTime=True`.
+  SpiceDB requires `--datastore-conn-uri` to contain the query parameter `parseTime=True`.
 </Callout>
 
 #### Optional Parameters
@@ -402,8 +401,8 @@ Read replicas are configured with the `--datastore-read-replica-*` family of fla
 - Cannot be ran highly-available as multiple instances will not share the same in-memory data
 
 <Callout type="info">
-  If you need an ephemeral datastore designed for validation or testing, see the
-  test server system in [Validating and Testing]
+  If you need an ephemeral datastore designed for validation or testing, see the test server system
+  in [Validating and Testing]
 </Callout>
 
 [validating and testing]: /spicedb/modeling/validation-testing-debugging

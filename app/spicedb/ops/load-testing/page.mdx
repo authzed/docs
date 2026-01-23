@@ -79,8 +79,8 @@ Here are some helpful tips (these tips assume you already have a schema finalize
   Now that you’ve completed the thought exercise, you’ll need to codify this information in relationship generating code.
 
 <Callout type="info">
-  **Info:** If you're struggling or want help, [reach out to the Authzed
-  team][reach out] or [the community in Discord][discord].
+  **Info:** If you're struggling or want help, [reach out to the Authzed team][reach out] or [the
+  community in Discord][discord].
 </Callout>
 
 We highly recommend that you pre-seed your relationships data before a load test.
@@ -282,6 +282,7 @@ steps:
     resource: "{{ .Prefix }}resource:firstdoc"
     subject: "{{ .Prefix }}user:tom"
     permission: "view"
+
 
 # Triple-dash means this is a separate yaml document within the same file
 ---

@@ -1,7 +1,4 @@
-export function InlinePlayground(props: {
-  reference: string;
-  children: any[];
-}) {
+export function InlinePlayground(props: { reference: string; children: any[] }) {
   let playgroundUrl = "https://play.authzed.com";
   return (
     <div className="my-6">
