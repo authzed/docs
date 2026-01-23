@@ -2,6 +2,12 @@ import { Callout } from "nextra/components";
 
 # Improving Performance
 
+<Callout type="info">
+  SpiceDB's server-side configuration defaults favor correctness over raw speed.
+  API requests, however, default to `minimize_latency` consistency for read operations, favoring cache utilization over strict freshness.
+  The flags documented on this page allow you to further tune SpiceDB for your specific workload.
+</Callout>
+
 ## By enabling cross-node communication
 
 SpiceDB can be deployed in a clustered configuration where multiple nodes work together to serve API requests. In such a configuration, and for the CheckPermissions API, enabling a feature called **dispatch** allows nodes to break down one API request into smaller "questions" and forward those to other nodes within the cluster. This helps reduce latency and improve overall performance.
@@ -60,6 +66,21 @@ spicedb serve ...
 
 The `upstream-addr` should be the DNS address of the load balancer at which _all_ SpiceDB nodes are accessible at the default dispatch port of `:50053`.
 
+### Dispatch Chunk Size
+
+The `--dispatch-chunk-size` flag controls the maximum number of object IDs included in a single dispatched request.
+This is particularly impactful for lookup operations (such as LookupResources and LookupSubjects) that need to process many objects.
+
+```sh
+spicedb serve \
+  --dispatch-chunk-size=100
+```
+
+<Callout type="info">
+  Larger chunk sizes reduce dispatch overhead but increase memory usage per request.
+  Start with the default (100) and increase if you observe high dispatch latency with large lookup operations.
+</Callout>
+
 ## By enabling Materialize
 
 [Materialize] is a separate service that allows for the precomputation of permission query results.
@@ -91,3 +112,24 @@ To configure the schema cache, use the following flags:
 # When false: always uses JIT caching
 --enable-experimental-watchable-schema-cache=false
 ```
+
+## By tuning revision quantization
+
+The `--datastore-revision-quantization-interval` and `--datastore-revision-quantization-max-staleness-percent` flags control how SpiceDB groups revisions for caching.
+Increasing these values improves cache hit rates at the cost of data freshness.
+
+See the [load testing guide](/spicedb/ops/load-testing#spicedb-quantization-performance) for details on how quantization affects performance, and the [hotspot caching blog post](https://authzed.com/blog/hotspot-caching-in-google-zanzibar-and-spicedb) for a deeper explanation.
+
+## By tuning connection pools
+
+For PostgreSQL, CockroachDB, and MySQL datastores, connection pool sizing significantly impacts performance under load.
+Key flags include `--datastore-conn-pool-read-max-open`, `--datastore-conn-pool-write-max-open`, and the corresponding min and jitter settings.
+
+See the [datastores reference](/spicedb/concepts/datastores) for the full list of connection pool flags and defaults, and the [best practices guide](/best-practices#tune-connections-to-datastores) for sizing recommendations.
+
+## By tuning the transaction overlap strategy (CockroachDB only)
+
+The `--datastore-tx-overlap-strategy` flag controls how SpiceDB handles concurrent write transactions.
+CockroachDB users can trade consistency guarantees for write throughput by selecting from strategies: `static` (default), `prefix`, `request`, or `insecure`.
+
+See the [CockroachDB datastore documentation](/spicedb/concepts/datastores#overlap-strategy) for detailed strategy descriptions and trade-offs.
