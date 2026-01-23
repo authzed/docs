@@ -9,13 +9,39 @@ SpiceDB is a Relationship Based Access control system.
 This gives SpiceDB the flexibility to evaluate attributes for access control alongside more complicated access control logic like roles and/or relationships.
 
 The sections below will provide practical examples for implementing various kinds of attributes in the SpiceDB schema language.
-Before reading this guide, it's recommended that you have some familiarity with the SpiceDB schema language. [These documents](/spicedb/modeling/developing-a-schema) are a good place to start.
+Before reading this guide, it's recommended that you have some familiarity with the SpiceDB schema language.
+[This guide](/spicedb/modeling/developing-a-schema) is a good place to start.
 
 ## Boolean Attributes
 
 A boolean attribute is an attribute on an object that affects authorization by enabling or disabling an authorization setting.
 Boolean attributes can often be thought of as a toggle.
 Feature flag authorization can be enabled with boolean attributes.
+
+### Loop Relationships
+
+Loop relationships are one way to implement boolean attributes.
+
+In the example below, there is a schema that enforces the following authorization logic: a user can
+only view a document if the user is related to the document as viewer and editing is enabled for the
+document (this is the same authorization logic used in the wildcard example below).
+
+In the example below, to enable editing for a document, a loop relationship using the `edit_enabled` relation must be written.
+When a `document` is related to itself with the `edit_enabled` relation, that relation can be walked to itself
+(with the arrow) to determine who relates to the document as an `editor`.
+
+In summary, a `user` has permission to edit a `document` if they are related to that document as an `editor`
+and that document is related to itself with `edit_enabled`.
+
+<InlinePlayground reference="ifgMyLGN-Hjw" />
+
+<Callout type="warning">
+  There is no mechanism in the SpiceDB schema language that enforces that a
+  relation be used as a loop relation. In order to avoid accidentally misusing a
+  loop relation (e.g. relating an object to a different instance of the same
+  type) it is recommended to implement client side logic that enforces only
+  using the loop relation for its intended purpose.
+</Callout>
 
 ### Wildcards
 
@@ -32,31 +58,7 @@ To enable document editing, you need to establish a relationship that connects a
   Wildcards are adequate for most binary attribute scenarios; however, wildcards
   are not currently supported by [Authzed
   Materialize](/authzed/concepts/authzed-materialize). Those who plan to use
-  Materialize should use self relationships for binary attributes.
-</Callout>
-
-### Self Relationships
-
-Self relationships are another way to implement boolean attributes.
-Self relationships relate an object to itself.
-A self relationship is walked with an [arrow](/spicedb/concepts/schema#--arrow) back to an object's self.
-In practice, relating something to itself toggles something on.
-
-In the example below, there is a schema that enforces the following authorization logic: a user can only view a document if the user is related to the document as viewer and editing is enabled for the document (this is the same authorization logic used in the wildcard example above).
-
-In the example below, to enable editing for a document, a self relationship using the `edit_enabled` relation must be written.
-When a `document` is related to itself with the `edit_enabled` relation, that relation can be walked to itself (with the arrow) to determine who relates to the document as an `editor`.
-
-In summary, a `user` has permission to edit a `document` if they are related to that document as an `editor` and that document is related to itself with `edit_enabled`.
-
-<InlinePlayground reference="ifgMyLGN-Hjw" />
-
-<Callout type="warning">
-  There is no mechanism in the SpiceDB schema language that enforces that a
-  relation be used as a self relation. In order to avoid accidentally misusing a
-  self relation (e.g. relating an object to a different instance of the same
-  type) it is recommended to implement client side logic that enforces only
-  using the self relation for it's intended purpose.
+  Materialize should use loop relationships for binary attributes.
 </Callout>
 
 ## Attribute Matching
