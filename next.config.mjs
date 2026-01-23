@@ -44,9 +44,7 @@ export default withNextra({
   // It adds `cross-origin="anonymous"` to script tags
   crossOrigin: "anonymous",
   assetPrefix:
-    process.env.VERCEL_ENV === "production"
-      ? "https://docs-authzed.vercel.app/docs"
-      : undefined,
+    process.env.VERCEL_ENV === "production" ? "https://docs-authzed.vercel.app/docs" : undefined,
   // NOTE: we still use webpack instead of turbopack for dev
   // because turbopack doesn't support non-serializable nextjs options.
   // The rehypePrettyCodeOptions in the block above include a function,

@@ -21,13 +21,12 @@ The time must be specified in [RFC 3339 format].
 [RFC 3339 format]: https://datatracker.ietf.org/doc/html/rfc3339#section-5.8
 
 <Callout type="info">
-  The clock used to determine if a relationship is expired is that of the
-  underlying SpiceDB datastore. This gets trickier when using distributed
-  databases like CockroachDB or Spanner, where clocks have an uncertainty range.
-  When operating your own database, it's key to keep node clocks in sync - we
-  recommend services like [Amazon Time Sync
-  Service](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/set-time.html).
-  You should evaluate the impact of clock drift in your application.
+  The clock used to determine if a relationship is expired is that of the underlying SpiceDB
+  datastore. This gets trickier when using distributed databases like CockroachDB or Spanner, where
+  clocks have an uncertainty range. When operating your own database, it's key to keep node clocks
+  in sync - we recommend services like [Amazon Time Sync
+  Service](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/set-time.html). You should evaluate
+  the impact of clock drift in your application.
 </Callout>
 
 ## Schema
@@ -72,10 +71,9 @@ WriteRelationshipsRequest {
 ```
 
 <Callout type="warning">
-  When using the WriteRelationships API, it is recommended to always use the
-  TOUCH operation to create and update expiring relationships. If a relationship
-  has expired but has not yet been garbage collected, using the CREATE operation
-  will return an error for that relationship.
+  When using the WriteRelationships API, it is recommended to always use the TOUCH operation to
+  create and update expiring relationships. If a relationship has expired but has not yet been
+  garbage collected, using the CREATE operation will return an error for that relationship.
 </Callout>
 
 ## Playground
@@ -115,11 +113,11 @@ the datastore chosen.
   Relationships will be reclaimed after 24 hours by default.
 
 <Callout type="info">
-  The GC Window should be adjusted according to the application's needs. How far
-  back in time does your application need to go? If this is a common use case,
-  we recommend drastically reducing the GC window (e.g., 1 hour or 30 minutes).
-  This means SpiceDB will have to evaluate less data when serving authorization
-  checks, which can improve performance drastically in large-scale deployments.
+  The GC Window should be adjusted according to the application's needs. How far back in time does
+  your application need to go? If this is a common use case, we recommend drastically reducing the
+  GC window (e.g., 1 hour or 30 minutes). This means SpiceDB will have to evaluate less data when
+  serving authorization checks, which can improve performance drastically in large-scale
+  deployments.
 </Callout>
 
 ## Migrating Off Of Expiration With Caveats

@@ -145,8 +145,8 @@ document:public#viewer@user:*
 Now _any_ user (present or future) that exists in SpiceDB is a `viewer` of object `document:public`.
 
 <Callout type="warning">
-  Be **very careful** with wildcard support in your schema! **Only** grant it to
-  read permissions, unless you intend to allow for universal writing.
+  Be **very careful** with wildcard support in your schema! **Only** grant it to read permissions,
+  unless you intend to allow for universal writing.
 </Callout>
 
 ### Naming Relations
@@ -189,9 +189,9 @@ definition document {
 ```
 
 <Callout type="info">
-  When writing relationships in SpiceDB, you cannot write a relationship that
-  references a *permission*, only a relationship that references a *relation*.
-  This means that it's easy to change a permission, but not a relation.
+  When writing relationships in SpiceDB, you cannot write a relationship that references a
+  *permission*, only a relationship that references a *relation*. This means that it's easy to
+  change a permission, but not a relation.
 </Callout>
 
 ### Operations
@@ -323,9 +323,8 @@ definition document {
 ```
 
 <Callout type="info">
-  It is _recommended_ that the right side of all arrows refer to
-  **permissions**, instead of relations, as this allows for easy nested
-  computation, and is more readable.
+  It is _recommended_ that the right side of all arrows refer to **permissions**, instead of
+  relations, as this allows for easy nested computation, and is more readable.
 </Callout>
 
 ##### Subject relations and Arrows
@@ -344,12 +343,10 @@ definition resource {
 The arrow `parent->something` refers to the `something` permission on the **group**, and `#member` will be ignored.
 
 <Callout type="warn">
-  It is recommended to not use arrows over relations that allow for subject
-  relations without noting that fact via a comment. Why? In one word:
-  performance. If arrows operated over the subject's relation or permission, a
-  full LookupSubjects call would be necessary for the arrow to correctly "walk",
-  which would make these CheckPermission requests potentially *incredibly*
-  expensive.
+  It is recommended to not use arrows over relations that allow for subject relations without noting
+  that fact via a comment. Why? In one word: performance. If arrows operated over the subject's
+  relation or permission, a full LookupSubjects call would be necessary for the arrow to correctly
+  "walk", which would make these CheckPermission requests potentially *incredibly* expensive.
 </Callout>
 
 #### .any (Arrow)
@@ -413,8 +410,8 @@ definition document {
 In the above example, the user must be in the `member` relation for _all_ groups defined on the `group` relation of a document in order to have the `view` permission.
 
 <Callout type="warning">
-  Intersection arrows can impact performance since they require loading **all**
-  results for the arrow.
+  Intersection arrows can impact performance since they require loading **all** results for the
+  arrow.
 </Callout>
 
 ### The `self` Keyword
@@ -461,10 +458,9 @@ Examples:
 | `member` | is member of the object |
 
 <Callout type="info">
-  You'll note that we also used `member` above in the relation example. Defining
-  `member` as a **permission** might be found when you have multiple "ways" a
-  subject can be a member of a resource, thus changing it from a simple relation
-  to a _computed_ set of subjects.
+  You'll note that we also used `member` above in the relation example. Defining `member` as a
+  **permission** might be found when you have multiple "ways" a subject can be a member of a
+  resource, thus changing it from a simple relation to a _computed_ set of subjects.
 </Callout>
 
 ### Private/Internal Identifiers
@@ -501,8 +497,7 @@ This convention is useful for:
 ### Documentation Comments
 
 <Callout type="info">
-  It is **highly** recommended to put doc comments on all definitions, relations
-  and permissions.
+  It is **highly** recommended to put doc comments on all definitions, relations and permissions.
 </Callout>
 
 ```zed

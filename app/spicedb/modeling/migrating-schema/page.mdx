@@ -3,11 +3,10 @@ import { Callout } from "nextra/components";
 # Migrating a Schema in SpiceDB
 
 <Callout type="info">
-  This page explains how to migrate a SpiceDB schema. If you need information
-  about migrating the schema of a datastore underlying SpiceDB, like Postgres or
-  CockroachDB, go [here](/spicedb/concepts/datastore-migrations). If you need
-  information about migrating between SpiceDB instances, go
-  [here](/spicedb/ops/data/migrations).
+  This page explains how to migrate a SpiceDB schema. If you need information about migrating the
+  schema of a datastore underlying SpiceDB, like Postgres or CockroachDB, go
+  [here](/spicedb/concepts/datastore-migrations). If you need information about migrating between
+  SpiceDB instances, go [here](/spicedb/ops/data/migrations).
 </Callout>
 
 A [Schema] in SpiceDB is the file that represents the structural definitions of which relationships are allowed
@@ -67,10 +66,9 @@ Removing a permission is always allowed, so long as it is not referenced by anot
 permission or relation.
 
 <Callout type="warning">
-  While this cannot break the schema, it *can* break API callers if they are
-  making checks or other API requests against the permission. It is up to your
-  own CI system to verify that removed permissions are no longer referenced
-  externally.
+  While this cannot break the schema, it *can* break API callers if they are making checks or other
+  API requests against the permission. It is up to your own CI system to verify that removed
+  permissions are no longer referenced externally.
 </Callout>
 
 ## Contingent Migrations

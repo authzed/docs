@@ -141,8 +141,7 @@ EOF
 ```
 
 <Callout type="info">
-  If, later on, you wish to make updates to this schema, please read the
-  [migration guide].
+  If, later on, you wish to make updates to this schema, please read the [migration guide].
 </Callout>
 
 </Tabs.Tab>
@@ -322,8 +321,8 @@ Because the relationships stored in the system can change at runtime, this is a 
 When applications modify or create rows in their database, they will also typically create or update relationships.
 
 <Callout type="info">
-  Writing relationships returns a [ZedToken] which is critical to ensuring
-  performance and [consistency].
+  Writing relationships returns a [ZedToken] which is critical to ensuring performance and
+  [consistency].
 </Callout>
 
 [ZedToken]: /spicedb/concepts/consistency#zedtokens
@@ -648,9 +647,8 @@ For example, in our example schema, writers have both write and read permissions
 Let's perform some permission checks:
 
 <Callout type="info">
-  If developing locally against SpiceDB, see
-  [this](./client-libraries#local-development) for full details on how to setup
-  credentials. Always switch to secure credentials before launching to
+  If developing locally against SpiceDB, see [this](./client-libraries#local-development) for full
+  details on how to setup credentials. Always switch to secure credentials before launching to
   production.
 </Callout>
 
@@ -702,8 +700,7 @@ const emiliaCanRead = await client.checkPermission(
   }),
 );
 console.log(
-  emiliaCanRead.permissionship ===
-    v1.CheckPermissionResponse_Permissionship.HAS_PERMISSION,
+  emiliaCanRead.permissionship === v1.CheckPermissionResponse_Permissionship.HAS_PERMISSION,
 );
 
 const emiliaCanWrite = await client.checkPermission(
@@ -716,8 +713,7 @@ const emiliaCanWrite = await client.checkPermission(
   }),
 );
 console.log(
-  emiliaCanWrite.permissionship ===
-    v1.CheckPermissionResponse_Permissionship.HAS_PERMISSION,
+  emiliaCanWrite.permissionship === v1.CheckPermissionResponse_Permissionship.HAS_PERMISSION,
 );
 
 const beatriceCanRead = await client.checkPermission(
@@ -730,8 +726,7 @@ const beatriceCanRead = await client.checkPermission(
   }),
 );
 console.log(
-  beatriceCanRead.permissionship ===
-    v1.CheckPermissionResponse_Permissionship.HAS_PERMISSION,
+  beatriceCanRead.permissionship === v1.CheckPermissionResponse_Permissionship.HAS_PERMISSION,
 );
 
 const beatriceCanWrite = await client.checkPermission(
@@ -744,8 +739,7 @@ const beatriceCanWrite = await client.checkPermission(
   }),
 );
 console.log(
-  beatriceCanWrite.permissionship ===
-    v1.CheckPermissionResponse_Permissionship.HAS_PERMISSION,
+  beatriceCanWrite.permissionship === v1.CheckPermissionResponse_Permissionship.HAS_PERMISSION,
 );
 ```
 

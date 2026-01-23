@@ -59,18 +59,17 @@ If you wanted to understand how the access grants to the `kubernetes` repository
 ## Auditing Permissions: How Have Permissions Changed?
 
 <Callout type="info">
-  Auditing permission changes is a very complex problem to solve at scale:
-  that's why we built [Authzed Materialize].
+  Auditing permission changes is a very complex problem to solve at scale: that's why we built
+  [Authzed Materialize].
 </Callout>
 
 SpiceDB does not offer an API to stream permission changes, but you could use a combination of APIs to compute a limited audit trail of permission changes.
 This strategy could also be used to build a materialized index of permissions to [Protect a List Endpoint] in your application's database.
 
 <Callout type="warning">
-  Please note this strategy is **very computationally intensive**, and it would
-  very likely require scaling out a SpiceDB cluster. It's only likely to work
-  under very narrow use cases that can exploit domain awareness to reduce how
-  many computations need to be run.
+  Please note this strategy is **very computationally intensive**, and it would very likely require
+  scaling out a SpiceDB cluster. It's only likely to work under very narrow use cases that can
+  exploit domain awareness to reduce how many computations need to be run.
 </Callout>
 
 1. Use the [Watch] API to stream all relationship changes in the system
