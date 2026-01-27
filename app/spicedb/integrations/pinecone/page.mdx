@@ -1,0 +1,203 @@
+import { Callout } from "nextra/components";
+
+# SpiceDB with Pinecone for Secure RAG
+
+Retrieval-Augmented Generation (RAG) systems combine the power of vector search with large language models to answer questions using your organization's data.
+However, without proper authorization controls, these systems can leak sensitive information across organizational boundaries.
+
+This guide shows how to implement fine-grained, relationship-based authorization in RAG pipelines using SpiceDB and [Pinecone](https://www.pinecone.io/) - a fully managed, cloud-native vector database designed for fast, similarity searches at scale. By integrating SpiceDB's permission checks directly into your retrieval workflow, you ensure that users only receive answers based on documents they're authorized to access.
+
+## Why Authorization Matters in RAG
+
+Standard RAG pipelines retrieve documents based purely on semantic similarity, without considering user permissions.
+This creates critical security vulnerabilities that the OWASP Foundation identifies as [Top 10 risks for LLM applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/).
+
+**The risks include:**
+
+- **Sensitive Information Disclosure**: Users may receive answers containing data from unauthorized documents
+- **Excessive Agency**: Actions to be performed in response to unexpected, ambiguous or manipulated outputs from an LLM
+- **Vector embedding weaknesses**: Embeddings themselves can encode sensitive information
+
+Consider a common scenario: your company stores both public marketing documents and confidential financial reports in the same vector database.
+Without authorization, an entry-level employee asking "What was our Q4 revenue?" might receive an answer derived from executive-only financial documents—even if the employee never had direct access to those files.
+
+Authorization isn't just about blocking document access after retrieval.
+It must be enforced throughout the entire RAG pipeline to prevent information leakage through embeddings, metadata, and generated responses and that's where SpiceDB comes in. Read more about ReBAC, Google Zanzibar, and SpiceDB [here](https://authzed.com/docs/spicedb/getting-started/discovering-spicedb).
+
+## SpiceDB for RAG Pipelines
+
+SpiceDB stores access relationships as a graph, where nodes represent entities (users, groups, documents) and edges represent relationships (like “viewer,” “editor,” or “owner”). Fundamentally, authorization logic can be reduced to asking a single question:
+
+*Is this actor allowed to perform this action on this resource?*
+
+In SpiceDB parlance, this actor and this resource are both Objects and this action is a Permission or Relation. Here’s a Google Docs style example where a user can be either a reader or a writer of a document. A reader can only read the document, whereas a writer can read and write the document.
+
+You can represent this use case using a schema like this:
+
+```zed
+definition user {}
+
+definition article {
+    relation viewer: user
+    relation editor: user
+
+    permission view = viewer + editor
+    permission edit = editor
+}
+```
+
+In this model, articles have two relations: `viewer` (users who can read) and `editor` (users who can modify).
+The `view` permission is granted to anyone in either relation, while `edit` requires the `editor` relation.
+
+<Callout type="info">
+  Relations define direct relationships between objects, while permissions
+  compute who has access based on those relations. You cannot write
+  relationships directly to permissions—only to relations.
+</Callout>
+
+## Authorization Strategies: Pre-Filter vs Post-Filter
+
+There are two primary approaches to enforcing authorization in RAG pipelines.
+Each has distinct trade-offs based on your document corpus size, user access patterns, and performance requirements.
+
+### Pre-Filter Authorization
+
+Pre-filter authorization queries SpiceDB **before** searching the vector database.
+You first ask SpiceDB "which documents can this user access?" and then retrieve only those authorized documents.
+
+**How it works:**
+
+1. Call SpiceDB's `LookupResources` API to get all document IDs the user can access
+2. Use those IDs to filter the Pinecone query (via metadata filtering)
+3. Only authorized documents are retrieved and embedded in the LLM context
+
+![rag-pre-filter](/images/rag-pre-filter.png)
+
+**Code example:**
+
+```python
+from authzed.api.v1 import Client, LookupResourcesRequest, SubjectReference, ObjectReference
+
+# Query SpiceDB for authorized document IDs
+client = Client("spicedb.example.com:443", bearer_token)
+
+subject = SubjectReference(
+    object=ObjectReference(object_type="user", object_id="alice")
+)
+
+response = client.LookupResources(
+    LookupResourcesRequest(
+        resource_object_type="article",
+        permission="view",
+        subject=subject
+    )
+)
+
+authorized_article_ids = [r.resource_object_id async for r in response]
+# Result: ['123', '456', '789']
+
+# Use authorized IDs to filter Pinecone query
+from pinecone import Pinecone
+pc = Pinecone(api_key="your-api-key")
+index = pc.Index("documents")
+
+results = index.query(
+    vector=query_embedding,
+    filter={"article_id": {"$in": authorized_article_ids}},
+    top_k=10,
+    include_metadata=True
+)
+```
+
+**When to use pre-filter:**
+
+- Large document corpus with hundreds of thousands or millions of documents
+- Users typically have access to a small percentage of total documents
+- Low retrieval hit-rate (most searches return few relevant documents)
+- You want predictable authorization overhead independent of search results
+
+**Trade-offs:**
+
+- More computationally expensive per authorization check (must enumerate all accessible documents)
+- Authorization latency scales with the number of documents a user can access
+- Highly efficient when users have narrow access (e.g., team-specific documents)
+
+### Post-Filter Authorization
+
+Post-filter authorization retrieves documents from Pinecone **first**, then filters results through SpiceDB permission checks.
+
+**How it works:**
+
+1. Query Pinecone normally to retrieve semantically relevant documents
+2. Extract document IDs from the results
+3. Call SpiceDB's `CheckBulkPermissions` API to verify which documents the user can access
+4. Filter out unauthorized documents before passing to the LLM
+
+![rag-post-filter](/images/rag-post-filter.png)
+
+**Code example:**
+
+```python
+from authzed.api.v1 import Client, CheckBulkPermissionsRequest, CheckBulkPermissionsItem
+from authzed.api.v1 import SubjectReference, ObjectReference, Relationship
+
+# First: Retrieve documents from Pinecone
+from pinecone import Pinecone
+pc = Pinecone(api_key="your-api-key")
+index = pc.Index("documents")
+
+results = index.query(
+    vector=query_embedding,
+    top_k=20,  # Fetch more than needed to account for filtering
+    include_metadata=True
+)
+
+# Second: Check permissions for each retrieved document
+client = Client("spicedb.example.com:443", bearer_token)
+
+check_items = [
+    CheckBulkPermissionsItem(
+        resource=ObjectReference(
+            object_type="article",
+            object_id=match["metadata"]["article_id"]
+        ),
+        permission="view",
+        subject=SubjectReference(
+            object=ObjectReference(object_type="user", object_id="alice")
+        )
+    )
+    for match in results["matches"]
+]
+
+permission_response = await client.CheckBulkPermissions(
+    CheckBulkPermissionsRequest(items=check_items)
+)
+
+# Third: Filter to only authorized documents
+authorized_documents = [
+    match for match, pair in zip(results["matches"], permission_response.pairs)
+    if pair.item.permissionship == CheckBulkPermissionsResponseItem.PERMISSIONSHIP_HAS_PERMISSION
+]
+```
+
+**When to use post-filter:**
+
+- Smaller document corpus
+- High search hit-rate (most retrieved documents are relevant)
+- Users typically have broad access to documents
+- You want to maintain optimal vector search quality
+
+**Trade-offs:**
+
+- Requires over-fetching documents to ensure you have enough after filtering
+- Authorization latency scales with number of search results (not total corpus)
+- More efficient when users have broad access patterns
+
+## Related Resources
+
+For deeper exploration of SpiceDB and RAG authorization:
+
+- [LangChain-SpiceDB Official Library](https://pypi.org/project/langchain-spicedb/): Post-filter authorization library for LangChain and LangGraph
+- [Secure RAG Pipelines Repo & Workshop ](https://github.com/authzed/workshops/tree/main/secure-rag-pipelines): A hands-on self-guided workshop covering both pre-filter and post-filter techniques using Pinecone and Langchain
+- [Pinecone Documentation](https://docs.pinecone.io/): Official Pinecone vector database documentation
+- Get help on our [Discord Community](https://discord.gg/spicedb)
