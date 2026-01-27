@@ -28,7 +28,7 @@ It must be enforced throughout the entire RAG pipeline to prevent information le
 
 SpiceDB stores access relationships as a graph, where nodes represent entities (users, groups, documents) and edges represent relationships (like “viewer,” “editor,” or “owner”). Fundamentally, authorization logic can be reduced to asking a single question:
 
-*Is this actor allowed to perform this action on this resource?*
+_Is this actor allowed to perform this action on this resource?_
 
 In SpiceDB parlance, this actor and this resource are both Objects and this action is a Permission or Relation. Here’s a Google Docs style example where a user can be either a reader or a writer of a document. A reader can only read the document, whereas a writer can read and write the document.
 
