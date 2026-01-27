@@ -5,7 +5,7 @@ import { Callout } from "nextra/components";
 End-to-end testing of permission-aware RAG (Retrieval-Augmented Generation) systems requires validating that authorization logic works correctly before production.
 Testing with real SpiceDB instances ensures your permission checks behave exactly as they will in production, catching authorization bugs early in development.
 
-This guide demonstrates how to use [Testcontainers](https://testcontainers.com/) with SpiceDB to create isolated, reproducible integration tests for RAG pipelines. 
+This guide demonstrates how to use [Testcontainers](https://testcontainers.com/) with SpiceDB to create isolated, reproducible integration tests for RAG pipelines.
 Testcontainers is Testcontainers is an open source library for providing throwaway, lightweight instances of databases, message brokers, web browsers, or just about anything that can run in a Docker container.
 
 You'll learn how to verify that users only receive answers based on documents they're authorized to access, preventing data leakage through comprehensive automated testing.
@@ -142,7 +142,6 @@ pytest test_rag_permissions.py -v
 ```
 
 ## Related Resources
-
 
 - [Full example](https://github.com/sohanmaheshwar/testcontainers-spicedb-py/blob/main/examples/full-example.py): Complete example using the SpiceDB Testcontainer
 - [Using SpiceDB Go Testcontainer](https://www.docker.com/blog/rag-permission-testing-testcontainers-spicedb/) - Use a community-created Go Testcontainer module for SpiceDB
