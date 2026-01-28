@@ -7,7 +7,7 @@ export default {
   resilience: "Improving Resilience",
   observability: "Observability Tooling",
   "load-testing": "Load Testing",
-  "spicedb-langchain-langgraph-rag": "Secure your RAG Pipelines using LangChain & LangGraph",
-  "ai-agent-authorization": "Tutorial: Authorization for AI Agents using SpiceDB",
+  "ai-agent-authorization":
+    "Tutorial: Authorization for AI Agents using SpiceDB",
   "secure-rag-pipelines": "Tutorial: Securing RAG Pipelines with SpiceDB",
 };

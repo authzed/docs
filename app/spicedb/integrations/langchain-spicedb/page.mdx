@@ -1,28 +1,13 @@
 import { Callout } from "nextra/components";
 
-# LangChain-SpiceDB Integration
+# Use SpiceDB with LangChain & LangGraph for RAG & AI Agent Authorization
+
+This guide explains how to enforce fine-grained, per-document authorization in Retrieval-Augmented Generation (RAG) pipelines or with AI Agents, using the official `langchain-spicedb` library
 
 Retrieval-Augmented Generation (RAG) systems combine vector search with large language models to answer questions using your organization's knowledge base.
 However, without proper authorization controls, these systems can inadvertently leak sensitive information to unauthorized users.
 
-The LangChain-SpiceDB library integrates SpiceDB's fine-grained authorization directly into LangChain and LangGraph pipelines, ensuring that language models only access documents users are permitted to view.
-This prevents information leakage while maintaining the semantic quality of your RAG system.
-
-## Why Authorization Matters in RAG
-
-Standard RAG pipelines retrieve documents based purely on semantic similarity.
-When a user asks "What were our Q4 results?", the system searches for relevant documents without considering whether that user should have access to financial data.
-
-This creates several security risks:
-
-- **Information leakage**: LLM responses may include information from documents the user cannot access directly
-- **Cross-boundary exposure**: Sensitive data leaks across teams, departments, or security classifications
-- **Compliance violations**: Regulated data (HIPAA, GDPR, SOC 2) exposed to unauthorized users
-- **Audit gaps**: No record of what information was accessed and by whom
-
-The LangChain-SpiceDB library solves this by implementing **post-retrieval authorization filtering**.
-Documents are first retrieved based on semantic similarity, then filtered through SpiceDB permission checks before being passed to your LLM.
-This maintains the quality of vector search while ensuring strict authorization controls.
+The Langchain-SpiceDB library integrates SpiceDB's fine-grained authorization directly into LangChain / LangGraph pipelines by implementing **post-filter authorization**. Documents are first retrieved based on semantic similarity, then filtered through SpiceDB permission checks before being passed to your LLM. This maintains the quality of vector search while ensuring strict authorization controls.
 
 ## Installation
 
@@ -32,108 +17,43 @@ Install the base library using pip:
 pip install langchain-spicedb
 ```
 
-For LangChain support, install the langchain extras:
-
-```bash
-pip install "langchain-spicedb[langchain]"
-```
-
-For LangGraph support, install the langgraph extras:
-
-```bash
-pip install "langchain-spicedb[langgraph]"
-```
-
-To install all optional dependencies:
-
-```bash
-pip install "langchain-spicedb[all]"
-```
-
-## Prerequisites
-
-Before using this library, you need:
-
-- **A running SpiceDB instance** - See the [installation guide] for setup instructions
-- **A SpiceDB schema** - Define your document permissions model (see below)
-- **A vector store** - Any LangChain-compatible store (Pinecone, FAISS, Weaviate, Chroma, etc.)
-- **Python 3.9 or higher**
-
-[installation guide]: ../../getting-started/install/macos
-
-### SpiceDB Schema Setup
-
-Your SpiceDB schema defines how documents relate to users and what permissions exist.
-Here's a basic schema for document access control:
-
-```zed
-definition user {}
-
-definition document {
-    relation viewer: user
-    relation owner: user
-
-    permission view = viewer + owner
-}
-```
-
-This schema allows you to grant `viewer` or `owner` relations on documents, both of which provide the `view` permission.
-
-Write this schema to SpiceDB using the [zed CLI]:
-
-```bash
-zed schema write schema.zed
-```
-
-For more complex permission models involving teams, folders, and inheritance, see [Developing a Schema].
-
-[zed CLI]: ../../getting-started/installing-zed
-[Developing a Schema]: ../../modeling/developing-a-schema
-
 ## Choosing the Right Component
 
-The library provides four main components, each designed for different use cases:
+The library provides four main components, each designed for different use cases.
+Full examples can be found in the repository linked at the bottom of this page.
 
-| Component             | Best For                                       | User Context           |
-| --------------------- | ---------------------------------------------- | ---------------------- |
-| **SpiceDBRetriever**  | Simple RAG chains with a fixed user            | Configured at creation |
-| **SpiceDBAuthFilter** | Reusable chains serving multiple users         | Provided at runtime    |
-| **LangGraph Node**    | Complex stateful workflows with multiple steps | Part of graph state    |
-| **Permission Tools**  | Agentic workflows where AI checks permissions  | Agent-driven           |
+| Component             | Use Case                         | Best For                                                                                     |
+| --------------------- | -------------------------------- | -------------------------------------------------------------------------------------------- |
+| **SpiceDBRetriever**  | Simple RAG pipelines             | Drop-in replacement for any retriever. Wraps your existing retriever with authorization.     |
+| **SpiceDBAuthFilter** | LangChain chains with middleware | Filtering documents in the middle of a chain. Reusable across different users via `config`.  |
+| **LangGraph Node**    | LangGraph workflows              | Complex multi-step workflows with state management. Provides authorization metrics in state. |
+| **Permission Tools**  | Agentic workflows                | Give agents the ability to check permissions before taking actions.                          |
 
 Let's explore each component in detail.
 
-## SpiceDBRetriever
+## 1. SpiceDBRetriever
 
 `SpiceDBRetriever` wraps any existing LangChain retriever and adds authorization filtering.
 This is the simplest approach when building RAG chains for a single user context.
 
 ```python
 from langchain_spicedb import SpiceDBRetriever
-from langchain_community.vectorstores import FAISS
-from langchain_openai import OpenAIEmbeddings
 
-# Create your base retriever
-embeddings = OpenAIEmbeddings()
-vectorstore = FAISS.from_documents(docs, embeddings)
-base_retriever = vectorstore.as_retriever()
-
-# Wrap with authorization
-authorized_retriever = SpiceDBRetriever(
-    retriever=base_retriever,
+retriever = SpiceDBRetriever(
+    base_retriever=vector_store.as_retriever(), # works with any vector DB
+    subject_id="alice",
     spicedb_endpoint="localhost:50051",
-    spicedb_token="your-preshared-key",
-    resource_type="document",
-    resource_id_key="doc_id",
-    subject_id="user:alice"
+    spicedb_token="sometoken",
+    resource_type="article",
+    resource_id_key="article_id",
+    permission="view",
 )
 
-# Use in your chain
-docs = await authorized_retriever.ainvoke("What is SpiceDB?")
+docs = await retriever.ainvoke("query")
 ```
 
 The retriever fetches documents using your vector store's semantic search, then checks SpiceDB permissions for each document.
-Only documents that `user:alice` has the `view` permission for are returned.
+Only documents that `alice` has the `view` permission for are returned.
 
 <Callout type="info">
   Each document's metadata must include a field (specified by `resource_id_key`)
@@ -147,7 +67,7 @@ Only documents that `user:alice` has the `view` permission for are returned.
 - The user doesn't change between invocations
 - You want the simplest possible integration
 
-## SpiceDBAuthFilter
+## 2. SpiceDBAuthFilter
 
 `SpiceDBAuthFilter` provides a reusable filter component that accepts the user context at runtime.
 This allows you to build a single chain that serves multiple users, each receiving answers based only on documents they can access.
@@ -155,14 +75,12 @@ This allows you to build a single chain that serves multiple users, each receivi
 ```python
 from langchain_spicedb import SpiceDBAuthFilter
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough
-from langchain_openai import ChatOpenAI
-from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 
 # Create the authorization filter (no user specified yet)
 auth_filter = SpiceDBAuthFilter(
     spicedb_endpoint="localhost:50051",
-    spicedb_token="your-preshared-key",
+    spicedb_token="sometoken",
     resource_type="document",
     resource_id_key="doc_id",
 )
@@ -179,7 +97,7 @@ chain = (
         "question": RunnablePassthrough(),
     })
     | prompt
-    | ChatOpenAI(model="gpt-4")
+    | llm # needs to be defined
     | StrOutputParser()
 )
 
@@ -204,7 +122,7 @@ The same chain handles both requests, with authorization determined by the `subj
 - The same chain needs to serve many different users
 - You want to reuse chains across requests while maintaining per-user authorization
 
-## LangGraph Authorization Node
+## 3. LangGraph Authorization Node
 
 For complex, multi-step RAG workflows, LangGraph provides explicit control over each stage of your pipeline.
 The LangChain-SpiceDB library includes a state definition and authorization node factory designed specifically for LangGraph integration.
@@ -249,9 +167,9 @@ def generate_node(state):
 graph.add_node("retrieve", retrieve_node)
 graph.add_node("authorize", create_auth_node(
     spicedb_endpoint="localhost:50051",
-    spicedb_token="your-preshared-key",
-    resource_type="document",
-    resource_id_key="doc_id",
+    spicedb_token="sometoken",
+    resource_type="article",
+    resource_id_key="article_id",
 ))
 graph.add_node("generate", generate_node)
 
@@ -290,7 +208,7 @@ Authorization metrics are automatically included in `state["auth_results"]`.
 ### Extending RAGAuthState
 
 The base `RAGAuthState` includes fields for questions, documents, and authorization results.
-You can extend it to add custom fields for your application:
+You can extend it to add custom fields to track additional state like conversation history, user preferences, or metadata.
 
 ```python
 from langchain_spicedb import RAGAuthState
@@ -315,59 +233,104 @@ def personalized_generate(state):
 ```
 
 This pattern allows you to combine authorization with other application-specific state management needs.
+For more details on what the LangGraph library does, check out [the docs](https://github.com/authzed/langchain-spicedb/blob/main/docs/langgraph-guide.md) in the repository
 
-## Permission Check Tools
+## 4. Permission Check Tools
 
-For agentic workflows where an AI agent makes decisions based on permissions, the library provides tools that agents can use to check authorization as part of their reasoning process.
+For agentic workflows where an AI agent makes decisions based on permissions, the library provides permission-checking tools that can be used directly by agents or invoked programmatically as part of application logic.
+
+These tools allow agents to reason about who can do what before responding or taking action.
+
+#### SpiceDBPermissionTool
+
+Use this tool to check whether a subject has a specific permission on a single resource.
 
 ```python
-from langchain_spicedb import SpiceDBPermissionTool, SpiceDBBulkPermissionTool
-from langchain_openai import ChatOpenAI
-from langchain.agents import create_openai_functions_agent, AgentExecutor
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_spicedb import SpiceDBPermissionTool
 
-# Create permission check tools
-permission_tool = SpiceDBPermissionTool(
+tool = SpiceDBPermissionTool(
     spicedb_endpoint="localhost:50051",
-    spicedb_token="your-preshared-key",
+    spicedb_token="sometoken",
+    subject_type="user",
+    resource_type="article",
 )
 
-bulk_permission_tool = SpiceDBBulkPermissionTool(
-    spicedb_endpoint="localhost:50051",
-    spicedb_token="your-preshared-key",
-)
-
-# Create agent with tools
-tools = [permission_tool, bulk_permission_tool]
-llm = ChatOpenAI(model="gpt-4", temperature=0)
-
-prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a helpful assistant that respects user permissions. "
-               "Always check if a user has permission before sharing information."),
-    ("human", "{input}"),
-    ("placeholder", "{agent_scratchpad}"),
-])
-
-agent = create_openai_functions_agent(llm, tools, prompt)
-agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
-
-# Run the agent
-result = agent_executor.invoke({
-    "input": "Can user:alice view document:secret-plans?"
+result = await tool.ainvoke({
+    "subject_id": "alice",
+    "resource_id": "123",
+    "permission": "view"
 })
+# Returns: "true" or "false"
 ```
 
-The agent uses these tools to check permissions before providing information, enabling permission-aware reasoning in complex workflows.
+#### SpiceDBBulkPermissionTool
 
-**When to use this approach:**
+Same as `SpiceDBPermissionTool` but check permissions for multiple resources at once:
 
-- You're building autonomous agents that need to check permissions dynamically
-- Permission checks are part of the agent's decision-making process
-- You want the agent to explain authorization decisions to users
+```python
+from langchain_spicedb import SpiceDBBulkPermissionTool
+
+tool = SpiceDBBulkPermissionTool(
+    spicedb_endpoint="localhost:50051",
+    spicedb_token="sometoken",
+    subject_type="user",
+    resource_type="article",
+)
+
+result = await tool.ainvoke({
+    "subject_id": "tim",
+    "resource_ids": "123,456,789",
+    "permission": "view"
+})
+# Returns: "tim can access: 123, 456" or "tim cannot access any..."
+```
+
+When used with LangChain agents, these tools allow the agent to dynamically check permissions as part of its reasoning process, enabling authorization-aware responses and workflows.
+Typical use cases include:
+
+Building autonomous agents that must check permissions at runtime
+
+- Making permission checks part of decision-making or tool selection
+- Explaining why access is allowed or denied in user-facing responses
+- This approach ensures that authorization logic remains centralized in SpiceDB while still being accessible to AI-driven workflows.
+
+In agentic workflows, permission tools can be registered as agent tools, allowing the agent to dynamically check authorization before responding or taking action.
+
+```python
+from langchain.agents import create_react_agent, AgentExecutor
+from langchain_openai import ChatOpenAI
+from langchain_spicedb import SpiceDBPermissionTool
+
+llm = ChatOpenAI(model="gpt-4o-mini")
+
+permission_tool = SpiceDBPermissionTool(
+    spicedb_endpoint="localhost:50051",
+    spicedb_token="sometoken",
+    subject_type="user",
+    resource_type="article",
+)
+
+tools = [permission_tool]
+
+agent = create_agent(
+    llm=llm,
+    tools=tools,
+    system_prompt=(
+        "You are a helpful assistant. "
+        "Before providing information about a resource, "
+        "check whether the user has the required permission."
+    ),
+)
+
+result = await agent.ainvoke(
+        {"messages": [{"role": "user", "content": "Can user tim view article 123?"}]}
+    )
+    print(f"\nAgent Response:\n{result['messages'][-1].content}")
+```
 
 ## Document Metadata Requirements
 
-Authorization requires each document in your vector store to include a resource identifier in its metadata.
+This technique of post=filter authorization requires each document in your vector store to include a resource identifier in its metadata.
 This identifier maps the document to its corresponding resource in SpiceDB.
 
 ```python
@@ -377,9 +340,9 @@ from langchain_core.documents import Document
 doc = Document(
     page_content="SpiceDB is an open-source permissions database...",
     metadata={
-        "doc_id": "spicedb-intro",  # Resource identifier
+        "doc_id": "123",  # Resource identifier
         "title": "SpiceDB Introduction",
-        "author": "AuthZed Team"
+        "author": "alice"
     }
 )
 ```
@@ -389,13 +352,13 @@ When configuring SpiceDB components, the `resource_id_key` parameter specifies w
 ```python
 auth_filter = SpiceDBAuthFilter(
     spicedb_endpoint="localhost:50051",
-    spicedb_token="your-preshared-key",
+    spicedb_token="sometoken",
     resource_type="document",
-    resource_id_key="doc_id",  # Matches metadata key
+    resource_id_key="123",  # Matches metadata key
 )
 ```
 
-The library checks permissions for `document:spicedb-intro` when evaluating this document.
+The library checks permissions for `document:123` when evaluating this document.
 If `resource_id_key` doesn't match a field in the document's metadata, that document will be filtered out.
 
 <Callout type="warning">
@@ -418,7 +381,7 @@ from langchain_spicedb import SpiceDBAuthFilter
 
 auth_filter = SpiceDBAuthFilter(
     spicedb_endpoint="localhost:50051",
-    spicedb_token="your-preshared-key",
+    spicedb_token="sometoken",
     resource_type="document",
     resource_id_key="doc_id",
     subject_id="user:alice",
@@ -463,110 +426,6 @@ print(f"Latency: {auth_metrics['check_latency_ms']}ms")
 
 Monitor these metrics to optimize your retrieval strategy and ensure authorization performance meets your requirements.
 
-## Vector Store Compatibility
-
-The library works with any vector store that implements the LangChain retriever interface.
-Authorization is applied after retrieval, making your choice of vector store independent of authorization behavior.
-
-**Compatible vector stores include:**
-
-- [Pinecone](https://python.langchain.com/docs/integrations/vectorstores/pinecone)
-- [FAISS](https://python.langchain.com/docs/integrations/vectorstores/faiss)
-- [Weaviate](https://python.langchain.com/docs/integrations/vectorstores/weaviate)
-- [Chroma](https://python.langchain.com/docs/integrations/vectorstores/chroma)
-- [Qdrant](https://python.langchain.com/docs/integrations/vectorstores/qdrant)
-- Any other LangChain-compatible vector store
-
-This flexibility allows you to choose the best vector store for your use case without compromising authorization capabilities.
-
-## Performance Considerations
-
-### Authorization Latency
-
-Authorization adds latency to your RAG pipeline, but the library minimizes this overhead through several optimizations:
-
-- **Bulk permission checking**: All documents are checked in a single SpiceDB request
-- **Async operations**: Authorization runs asynchronously throughout the pipeline
-- **Efficient serialization**: Uses protobuf for minimal network overhead
-
-Typical authorization latency for 10 documents: **5-20ms**, depending on your SpiceDB deployment and network conditions.
-
-### Retrieval Over-Fetching
-
-Post-retrieval authorization filters some documents, reducing the number of documents available for context.
-To ensure you have enough authorized documents, fetch more initially than you need:
-
-```python
-# If you need 5 authorized documents, fetch more initially
-retriever = vectorstore.as_retriever(
-    search_kwargs={"k": 15}  # Fetch 3x the target amount
-)
-
-auth_filter = SpiceDBAuthFilter(
-    spicedb_endpoint="localhost:50051",
-    spicedb_token="your-preshared-key",
-    resource_type="document",
-    resource_id_key="doc_id",
-)
-
-# After authorization, you'll likely have 5+ documents
-authorized_docs = await (retriever | auth_filter).ainvoke(query)
-```
-
-The optimal over-fetch ratio depends on your authorization rate.
-Monitor the `authorization_rate` metric to tune this parameter for your use case.
-
-### Connection Reuse
-
-Create SpiceDB client connections once at application startup and reuse them across requests:
-
-```python
-from authzed.api.v1 import Client
-
-# Create client once at startup
-spicedb_client = Client(
-    "localhost:50051",
-    "your-preshared-key",
-)
-
-# Pass client to components instead of connection details
-auth_filter = SpiceDBAuthFilter(
-    client=spicedb_client,  # Reuse existing client
-    resource_type="document",
-    resource_id_key="doc_id",
-)
-```
-
-Connection reuse reduces overhead and improves performance, especially for high-throughput applications.
-
-### Caching Strategies
-
-For frequently accessed permissions, consider implementing application-level caching:
-
-```python
-from functools import lru_cache
-from typing import Set
-
-@lru_cache(maxsize=1000)
-def get_authorized_docs(user_id: str, doc_ids: tuple) -> Set[str]:
-    """Cache authorized document IDs for a user"""
-    results = check_bulk_permissions(
-        client=spicedb_client,
-        subject_id=user_id,
-        resource_type="document",
-        resource_ids=list(doc_ids),
-        permission="view"
-    )
-    return {doc_id for doc_id, allowed in results.items() if allowed}
-```
-
-<Callout type="warning">
-  Be mindful of cache TTL when caching authorization results. SpiceDB ensures
-  permission changes take effect immediately, but application caching delays
-  these changes. For security-critical applications, prefer shorter cache TTLs
-  or implement cache invalidation on permission changes.
-</Callout>
-
 ## Production Deployment
 
 When deploying to production, configure your SpiceDB client for security and reliability:
@@ -583,13 +442,21 @@ spicedb_client = Client(
 )
 ```
 
-**Production checklist:**
+### Vector Store Compatibility
 
-1. **Use TLS** for all SpiceDB connections
-2. **Configure timeouts** appropriate for your latency requirements
-3. **Monitor metrics** to detect authorization issues early
-4. **Implement error handling** that fails closed (see below)
-5. **Use connection pooling** for high-throughput applications
+The library works with any vector store that implements the LangChain retriever interface.
+Authorization is applied after retrieval, making your choice of vector store independent of authorization behavior.
+
+**Compatible vector stores include:**
+
+- [Pinecone](https://python.langchain.com/docs/integrations/vectorstores/pinecone)
+- [FAISS](https://python.langchain.com/docs/integrations/vectorstores/faiss)
+- [Weaviate](https://python.langchain.com/docs/integrations/vectorstores/weaviate)
+- [Chroma](https://python.langchain.com/docs/integrations/vectorstores/chroma)
+- [Qdrant](https://python.langchain.com/docs/integrations/vectorstores/qdrant)
+- Any other LangChain-compatible vector store
+
+This flexibility allows you to choose the best vector store for your use case without compromising authorization capabilities.
 
 ### Error Handling
 
@@ -615,32 +482,6 @@ except AuthzedError as e:
   to the user or empty results with an explanation.
 </Callout>
 
-## Comparison with Other Approaches
-
-The LangChain-SpiceDB library implements **post-retrieval authorization**.
-Understanding how this compares to other approaches helps you choose the right strategy for your system.
-
-### Post-Filter vs Pre-Filter Authorization
-
-**Pre-filter authorization** (implemented by our [Pinecone integration](../pinecone)):
-
-- Query SpiceDB for authorized document IDs first
-- Use those IDs to filter vector search
-- Guarantees only authorized documents are retrieved
-- Best for scenarios where most documents will be filtered out
-- Requires vector store support for ID-based filtering
-
-**Post-filter authorization** (this library):
-
-- Retrieve semantically relevant documents first
-- Filter by authorization second
-- Maintains optimal vector search quality
-- Best when most retrieved documents will be authorized
-- Works with any vector store
-
-Choose pre-filter when authorization rate is expected to be low (many documents will be denied).
-Choose post-filter when authorization rate is high (most documents will be authorized).
-
 ### Post-Filter vs Metadata Filtering
 
 Some vector stores support metadata filtering (e.g., adding a `user_id` field to each document).
@@ -653,155 +494,6 @@ This approach has significant limitations:
 - Difficult to maintain with complex permission models
 - No audit trail of authorization decisions
 - Requires re-indexing when permissions change
-
-**SpiceDB integration benefits:**
-
-- Centralized authorization logic in SpiceDB
-- Full support for relationship-based permissions
-- Complete audit trail via SpiceDB's watch API
-- Clear separation of concerns (vector search vs authorization)
-- Dynamic permission updates without re-indexing
-
-For simple single-tenant scenarios, metadata filtering may suffice.
-For multi-tenant systems with complex permissions, SpiceDB integration is the more maintainable approach.
-
-## Testing
-
-The library includes comprehensive test utilities for validating authorization in your RAG pipelines.
-
-### Unit Testing
-
-Mock SpiceDB responses for fast, isolated unit tests:
-
-```python
-from unittest.mock import Mock, AsyncMock
-from langchain_spicedb import SpiceDBAuthFilter
-from langchain_core.documents import Document
-
-async def test_auth_filter():
-    # Create mock client
-    mock_client = Mock()
-    mock_client.check_bulk_permissions = AsyncMock(
-        return_value={"doc1": True, "doc2": False, "doc3": True}
-    )
-
-    # Test authorization filter
-    auth_filter = SpiceDBAuthFilter(
-        client=mock_client,
-        resource_type="document",
-        resource_id_key="doc_id",
-        subject_id="user:alice",
-    )
-
-    documents = [
-        Document(page_content="Content 1", metadata={"doc_id": "doc1"}),
-        Document(page_content="Content 2", metadata={"doc_id": "doc2"}),
-        Document(page_content="Content 3", metadata={"doc_id": "doc3"}),
-    ]
-
-    result = await auth_filter.ainvoke(documents)
-
-    # Verify only authorized documents are returned
-    assert len(result) == 2
-    assert result[0].metadata["doc_id"] == "doc1"
-    assert result[1].metadata["doc_id"] == "doc3"
-```
-
-### Integration Testing
-
-Use [SpiceDB Testcontainers](../testcontainers) to run integration tests against a real SpiceDB instance:
-
-```python
-import pytest
-from testcontainers.spicedb import SpiceDBContainer
-from langchain_spicedb import SpiceDBAuthFilter
-
-@pytest.fixture
-def spicedb_container():
-    with SpiceDBContainer() as container:
-        yield container
-
-async def test_auth_filter_integration(spicedb_container):
-    # Write test schema and relationships
-    client = spicedb_container.get_client()
-    # ... write schema and test data
-
-    # Test actual authorization
-    auth_filter = SpiceDBAuthFilter(
-        spicedb_endpoint=spicedb_container.get_endpoint(),
-        spicedb_token=spicedb_container.get_token(),
-        resource_type="document",
-        resource_id_key="doc_id",
-        subject_id="user:alice",
-    )
-
-    # Run integration test
-    result = await auth_filter.ainvoke(test_documents)
-    assert len(result) > 0
-```
-
-Integration tests ensure your authorization logic works correctly with real SpiceDB behavior, catching issues that unit tests might miss.
-
-## Troubleshooting
-
-### No Documents Returned After Authorization
-
-If authorization filters out all documents, check:
-
-1. **Document metadata includes resource IDs**: Verify each document has the field specified by `resource_id_key`
-2. **Resource type matches schema**: The `resource_type` parameter must match a definition in your SpiceDB schema
-3. **Relationships exist**: Verify relationships are written to SpiceDB for your test user
-4. **Permission name is correct**: The permission being checked must exist in your schema
-
-Verify relationships exist in SpiceDB:
-
-```bash
-zed relationship read document:doc1 --insecure
-```
-
-### Authorization Check Errors
-
-If you encounter errors during authorization checks, verify SpiceDB connectivity:
-
-```python
-from authzed.api.v1 import Client
-
-client = Client("localhost:50051", "your-token")
-
-# Test connection
-try:
-    result = client.check_permission(
-        resource="document:test",
-        permission="view",
-        subject="user:test"
-    )
-    print("Connection successful")
-except Exception as e:
-    print(f"Connection failed: {e}")
-```
-
-Common connectivity issues include:
-
-- Incorrect endpoint or port
-- Invalid preshared key
-- Network firewall blocking connections
-- SpiceDB not running
-
-### Slow Authorization Performance
-
-Monitor authorization latency using metrics:
-
-```python
-result = await auth_filter.ainvoke(docs, return_metrics=True)
-print(f"Authorization latency: {result.check_latency_ms}ms")
-```
-
-If latency is high:
-
-- **Check network latency**: Ensure low-latency connection to SpiceDB
-- **Verify SpiceDB scaling**: Ensure adequate SpiceDB resources for your load
-- **Implement caching**: Cache frequently checked permissions
-- **Reduce document counts**: Fetch fewer documents before authorization
 
 ### Debug Logging
 
@@ -822,187 +514,9 @@ Debug logs include:
 - Performance metrics
 - Detailed error information
 
-## Example Applications
-
-### Basic RAG with Authorization
-
-A simple question-answering system with user-specific access control:
-
-```python
-from langchain_spicedb import SpiceDBAuthFilter
-from langchain_community.vectorstores import FAISS
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.runnables import RunnableParallel, RunnablePassthrough
-from langchain_core.output_parsers import StrOutputParser
-
-# Setup vector store
-embeddings = OpenAIEmbeddings()
-vectorstore = FAISS.from_documents(documents, embeddings)
-retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
-
-# Setup authorization
-auth_filter = SpiceDBAuthFilter(
-    spicedb_endpoint="localhost:50051",
-    spicedb_token="your-token",
-    resource_type="document",
-    resource_id_key="doc_id",
-)
-
-# Build chain
-prompt = ChatPromptTemplate.from_messages([
-    ("system", "Answer the question based only on the provided context."),
-    ("human", "Context: {context}\n\nQuestion: {question}")
-])
-
-chain = (
-    RunnableParallel({
-        "context": retriever | auth_filter,
-        "question": RunnablePassthrough(),
-    })
-    | prompt
-    | ChatOpenAI(model="gpt-4")
-    | StrOutputParser()
-)
-
-# Use with different users
-answer = await chain.ainvoke(
-    "What are the security guidelines?",
-    config={"configurable": {"subject_id": "user:engineer1"}}
-)
-```
-
-### Multi-Step RAG with LangGraph
-
-A complex workflow with retrieval, authorization, reranking, and generation:
-
-```python
-from langgraph.graph import StateGraph, END
-from langchain_spicedb import create_auth_node, RAGAuthState
-from langchain_openai import ChatOpenAI
-from langchain_core.prompts import ChatPromptTemplate
-
-graph = StateGraph(RAGAuthState)
-
-def retrieve_node(state):
-    """Initial retrieval from vector store"""
-    docs = retriever.invoke(state["question"])
-    return {"retrieved_documents": docs}
-
-def rerank_node(state):
-    """Rerank authorized documents by relevance"""
-    docs = state["authorized_documents"]
-    # Apply reranking logic (e.g., using Cohere, cross-encoders)
-    reranked_docs = reranking_model.rerank(docs, state["question"])
-    return {"authorized_documents": reranked_docs}
-
-def generate_node(state):
-    """Generate final answer"""
-    context = "\n\n".join([d.page_content for d in state["authorized_documents"]])
-
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", "Provide a comprehensive answer based on the context."),
-        ("human", "Question: {question}\n\nContext: {context}")
-    ])
-
-    llm = ChatOpenAI(model="gpt-4")
-    messages = prompt.format_messages(
-        question=state["question"],
-        context=context
-    )
-    answer = llm.invoke(messages)
-
-    return {"answer": answer.content}
-
-# Build graph
-graph.add_node("retrieve", retrieve_node)
-graph.add_node("authorize", create_auth_node(
-    spicedb_endpoint="localhost:50051",
-    spicedb_token="your-token",
-    resource_type="document",
-    resource_id_key="doc_id",
-))
-graph.add_node("rerank", rerank_node)
-graph.add_node("generate", generate_node)
-
-# Define flow
-graph.set_entry_point("retrieve")
-graph.add_edge("retrieve", "authorize")
-graph.add_edge("authorize", "rerank")
-graph.add_edge("rerank", "generate")
-graph.add_edge("generate", END)
-
-# Run
-app = graph.compile()
-result = await app.ainvoke({
-    "question": "What is our data retention policy?",
-    "subject_id": "user:compliance_officer",
-})
-```
-
-### Permission-Aware Agent
-
-An agent that checks permissions before providing information:
-
-```python
-from langchain_spicedb import SpiceDBPermissionTool, SpiceDBBulkPermissionTool
-from langchain_openai import ChatOpenAI
-from langchain.agents import create_openai_functions_agent, AgentExecutor
-from langchain_core.prompts import ChatPromptTemplate
-
-# Create tools
-permission_tool = SpiceDBPermissionTool(
-    spicedb_endpoint="localhost:50051",
-    spicedb_token="your-token",
-)
-
-bulk_tool = SpiceDBBulkPermissionTool(
-    spicedb_endpoint="localhost:50051",
-    spicedb_token="your-token",
-)
-
-# Setup agent
-tools = [permission_tool, bulk_tool]
-llm = ChatOpenAI(model="gpt-4", temperature=0)
-
-prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a security-conscious assistant. Before sharing any "
-               "information about documents, ALWAYS check if the user has "
-               "permission to view that document using the permission tools."),
-    ("human", "{input}"),
-    ("placeholder", "{agent_scratchpad}"),
-])
-
-agent = create_openai_functions_agent(llm, tools, prompt)
-agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
-
-# Run agent
-result = agent_executor.invoke({
-    "input": "Tell me about document:financial-report-2024"
-})
-```
-
-## Related Documentation
-
-- [SpiceDB Python Client](https://github.com/authzed/authzed-py) - The underlying SpiceDB client library
-- [Developing a Schema](../../modeling/developing-a-schema) - Guide to creating SpiceDB schemas
-- [SpiceDB Concepts](../../concepts/schema) - Core SpiceDB concepts and terminology
-- [Pinecone Integration](../pinecone) - Pre-filter authorization approach for RAG
-- [Testcontainers](../testcontainers) - Testing SpiceDB integrations
-- [LangChain Documentation](https://python.langchain.com/) - Official LangChain docs
-- [LangGraph Documentation](https://langchain-ai.github.io/langgraph/) - Official LangGraph docs
-
 ## Next Steps
 
-- Explore the [Secure RAG Pipelines guide](../../ops/secure-rag-pipelines) for a hands-on workshop
-- Read about [AI Agent Authorization](../../ops/ai-agent-authorization) for advanced patterns
+- [LangChain Documentation](https://python.langchain.com/) - Official LangChain docs
 - Check out the [library repository](https://github.com/authzed/langchain-spicedb) for examples and source code
+- [PyPi page](https://pypi.org/project/langchain-spicedb/) for `langchain-spicedb` library
 - Join the [Discord community](https://discord.gg/spicedb) to discuss RAG authorization strategies
-
-## Support
-
-For issues or questions:
-
-- **GitHub Issues**: [Report bugs or request features](https://github.com/authzed/langchain-spicedb/issues)
-- **Discord Community**: [Get help from the community](https://discord.gg/spicedb)
-- **Documentation**: [Browse the full SpiceDB documentation](https://authzed.com/docs)
