@@ -36,9 +36,8 @@ If SpiceDB is started without TLS, use insecure plaintext credentials:
   <Tabs.Tab>`credentials: :this_channel_is_insecure`</Tabs.Tab>
   <Tabs.Tab>`.usePlaintext()`</Tabs.Tab>
   <Tabs.Tab>
-    `ChannelCredentials.Insecure` with `UnsafeUseInsecureChannelCallCredentials
-    = true` (also requires
-    `AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport",
+    `ChannelCredentials.Insecure` with `UnsafeUseInsecureChannelCallCredentials = true` (also
+    requires `AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport",
     true)`)
   </Tabs.Tab>
 </Tabs>
