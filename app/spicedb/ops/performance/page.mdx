@@ -4,8 +4,10 @@ import { Callout } from "nextra/components";
 
 <Callout type="info">
   SpiceDB's server-side configuration defaults favor correctness over raw speed.
-  API requests, however, default to `minimize_latency` consistency for read operations, favoring cache utilization over strict freshness.
-  The flags documented on this page allow you to further tune SpiceDB for your specific workload.
+  API requests, however, default to `minimize_latency` consistency for read
+  operations, favoring cache utilization over strict freshness. The flags
+  documented on this page allow you to further tune SpiceDB for your specific
+  workload.
 </Callout>
 
 ## By enabling cross-node communication
@@ -77,8 +79,9 @@ spicedb serve \
 ```
 
 <Callout type="info">
-  Larger chunk sizes reduce dispatch overhead but increase memory usage per request.
-  Start with the default (100) and increase if you observe high dispatch latency with large lookup operations.
+  Larger chunk sizes reduce dispatch overhead but increase memory usage per
+  request. Start with the default (100) and increase if you observe high
+  dispatch latency with large lookup operations.
 </Callout>
 
 ## By enabling Materialize
