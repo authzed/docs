@@ -1,0 +1,609 @@
+import { Callout, Steps } from "nextra/components";
+
+# Using Postgres FDW with SpiceDB
+
+This guide shows you how to query your SpiceDB instance using standard SQL through the SpiceDB Postgres Foreign Data Wrapper (FDW).
+
+The Postgres FDW acts as a translation layer that implements the PostgreSQL wire protocol and converts SQL queries into SpiceDB API calls.
+This allows you to query permissions, relationships, and schema using familiar SQL syntax.
+
+<Callout type="warning">
+  The Postgres FDW is an **experimental feature** that has been tested but may have issues in
+  certain scenarios. It is subject to change and should be used with caution in production
+  environments. Please report any issues you encounter on the [SpiceDB GitHub
+  repository](https://github.com/authzed/spicedb/issues).
+</Callout>
+
+## Prerequisites
+
+- A running SpiceDB instance (local or remote)
+- Access to the SpiceDB gRPC endpoint
+- A SpiceDB preshared key or token
+- PostgreSQL installed (for connecting to the FDW server)
+- Docker or the SpiceDB binary with FDW support
+
+## Overview
+
+The setup process involves:
+
+1. Starting a SpiceDB instance (if not already running)
+2. Starting the FDW proxy server
+3. Configuring PostgreSQL to connect to the FDW server
+4. Querying your permissions data with SQL
+
+<Steps>
+
+### Start Your SpiceDB Instance
+
+If you don't already have SpiceDB running, start it with your preferred datastore.
+
+#### Using Docker with in-memory storage (development)
+
+```bash
+docker run -d \
+  --name spicedb \
+  -p 50051:50051 \
+  authzed/spicedb serve \
+  --grpc-preshared-key "somerandomkeyhere" \
+  --datastore-engine memory
+```
+
+#### Using Docker with PostgreSQL (production-ready)
+
+```bash
+docker run -d \
+  --name spicedb \
+  -p 50051:50051 \
+  authzed/spicedb serve \
+  --grpc-preshared-key "somerandomkeyhere" \
+  --datastore-engine postgres \
+  --datastore-conn-uri "postgres://user:password@localhost:5432/spicedb?sslmode=disable"
+```
+
+<Callout type="info">
+  For production deployments, see the [Deploying SpiceDB
+  Operator](/spicedb/ops/deploying-spicedb-operator) guide. Make note of your preshared key - you'll
+  need it to configure the FDW.
+</Callout>
+
+### Start the FDW Proxy Server
+
+The FDW proxy server acts as a bridge between PostgreSQL and your SpiceDB instance.
+
+#### Using Docker (Recommended)
+
+```bash
+docker run --rm -p 5432:5432 \
+  authzed/spicedb \
+  postgres-fdw \
+  --spicedb-api-endpoint localhost:50051 \
+  --spicedb-access-token-secret "somerandomkeyhere" \
+  --spicedb-insecure \
+  --postgres-endpoint ":5432" \
+  --postgres-username "postgres" \
+  --postgres-access-token-secret "fdw-password"
+```
+
+#### Using the SpiceDB Binary
+
+```bash
+spicedb postgres-fdw \
+  --spicedb-api-endpoint localhost:50051 \
+  --spicedb-access-token-secret "somerandomkeyhere" \
+  --spicedb-insecure \
+  --postgres-endpoint ":5432" \
+  --postgres-username "postgres" \
+  --postgres-access-token-secret "fdw-password"
+```
+
+#### Using Environment Variables
+
+```bash
+export SPICEDB_SPICEDB_API_ENDPOINT="localhost:50051"
+export SPICEDB_SPICEDB_ACCESS_TOKEN_SECRET="somerandomkeyhere"
+export SPICEDB_SPICEDB_INSECURE="true"
+export SPICEDB_POSTGRES_ENDPOINT=":5432"
+export SPICEDB_POSTGRES_USERNAME="postgres"
+export SPICEDB_POSTGRES_ACCESS_TOKEN_SECRET="fdw-password"
+
+spicedb postgres-fdw
+```
+
+<Callout type="warning">
+  The `--spicedb-insecure` flag disables TLS verification. Only use this for local development. For
+  production deployments with TLS, omit this flag and ensure your SpiceDB endpoint uses proper TLS
+  certificates.
+</Callout>
+
+#### Configuration Options
+
+| Flag                             | Description                                     | Default           |
+| -------------------------------- | ----------------------------------------------- | ----------------- |
+| `--spicedb-api-endpoint`         | SpiceDB gRPC endpoint                           | `localhost:50051` |
+| `--spicedb-access-token-secret`  | SpiceDB preshared key or token (required)       | -                 |
+| `--spicedb-insecure`             | Disable TLS verification (development only)     | `false`           |
+| `--postgres-endpoint`            | FDW server listen address                       | `:5432`           |
+| `--postgres-username`            | Username for Postgres authentication            | `postgres`        |
+| `--postgres-access-token-secret` | Password for Postgres authentication (required) | -                 |
+| `--shutdown-grace-period`        | Graceful shutdown timeout                       | `0s`              |
+
+### Configure PostgreSQL Foreign Data Wrapper
+
+Connect to your PostgreSQL database and run the following SQL commands:
+
+```sql
+-- Install the postgres_fdw extension
+CREATE EXTENSION IF NOT EXISTS postgres_fdw;
+
+-- Create a foreign server pointing to the FDW proxy
+CREATE SERVER spicedb_server
+  FOREIGN DATA WRAPPER postgres_fdw
+  OPTIONS (
+    host 'localhost',
+    port '5432',
+    dbname 'ignored'
+  );
+
+-- Create user mapping with authentication credentials
+CREATE USER MAPPING FOR CURRENT_USER
+  SERVER spicedb_server
+  OPTIONS (
+    user 'postgres',
+    password 'fdw-password'
+  );
+
+-- Import foreign tables
+IMPORT FOREIGN SCHEMA public
+  LIMIT TO (permissions, relationships, schema)
+  FROM SERVER spicedb_server
+  INTO public;
+```
+
+<Callout type="info">
+  Replace `fdw-password` with the password you set when starting the FDW proxy server. If your FDW
+  proxy is running on a different host, update the `host` parameter accordingly.
+</Callout>
+
+### Load a Schema and Data
+
+Before querying, you'll need a schema and some relationships in SpiceDB.
+
+#### Example Schema
+
+Create a file `schema.zed`:
+
+```zed
+definition user {}
+
+definition document {
+    relation viewer: user
+    relation editor: user
+
+    permission view = viewer + editor
+    permission edit = editor
+}
+```
+
+#### Load Schema Using zed
+
+```bash
+zed schema write schema.zed \
+  --endpoint localhost:50051 \
+  --insecure \
+  --token "somerandomkeyhere"
+```
+
+#### Add Relationships
+
+```bash
+# Alice is a viewer of document:readme
+zed relationship create document:readme viewer user:alice \
+  --endpoint localhost:50051 \
+  --insecure \
+  --token "somerandomkeyhere"
+
+# Bob is an editor of document:readme
+zed relationship create document:readme editor user:bob \
+  --endpoint localhost:50051 \
+  --insecure \
+  --token "somerandomkeyhere"
+```
+
+### Query Your Permissions
+
+You can now query your SpiceDB instance using SQL!
+
+#### Check Permissions
+
+```sql
+-- Check if user:alice has permission to view document:readme
+SELECT has_permission
+FROM permissions
+WHERE resource_type = 'document'
+  AND resource_id = 'readme'
+  AND permission = 'view'
+  AND subject_type = 'user'
+  AND subject_id = 'alice';
+```
+
+#### Lookup Resources
+
+```sql
+-- Find all documents that user:alice can view
+SELECT resource_id
+FROM permissions
+WHERE resource_type = 'document'
+  AND permission = 'view'
+  AND subject_type = 'user'
+  AND subject_id = 'alice';
+```
+
+#### Lookup Subjects
+
+```sql
+-- Find all users who can view document:readme
+SELECT subject_id
+FROM permissions
+WHERE resource_type = 'document'
+  AND resource_id = 'readme'
+  AND permission = 'view'
+  AND subject_type = 'user';
+```
+
+#### Query Relationships
+
+```sql
+-- Read relationships for a specific resource
+SELECT resource_type, resource_id, relation, subject_type, subject_id
+FROM relationships
+WHERE resource_type = 'document'
+  AND resource_id = 'readme';
+```
+
+#### Read Schema
+
+```sql
+-- Get all schema definitions
+SELECT definition FROM schema;
+```
+
+</Steps>
+
+## Available Tables
+
+The FDW provides three virtual tables:
+
+### `permissions` Table
+
+Used for checking permissions and looking up resources or subjects.
+
+| Column                      | Type    | Description                      |
+| --------------------------- | ------- | -------------------------------- |
+| `resource_type`             | text    | Resource type (e.g., 'document') |
+| `resource_id`               | text    | Resource ID                      |
+| `permission`                | text    | Permission name                  |
+| `subject_type`              | text    | Subject type (e.g., 'user')      |
+| `subject_id`                | text    | Subject ID                       |
+| `optional_subject_relation` | text    | Optional subject relation        |
+| `has_permission`            | boolean | Whether permission is granted    |
+| `consistency`               | text    | Consistency token (ZedToken)     |
+
+**Supported Operations:** SELECT only
+
+The FDW automatically routes queries to the appropriate SpiceDB API:
+
+- **CheckPermission**: When all fields are specified
+- **LookupResources**: When `resource_id` is not specified
+- **LookupSubjects**: When `subject_id` is not specified
+
+### `relationships` Table
+
+Used for reading, writing, and deleting relationships.
+
+| Column                      | Type  | Description                  |
+| --------------------------- | ----- | ---------------------------- |
+| `resource_type`             | text  | Resource type                |
+| `resource_id`               | text  | Resource ID                  |
+| `relation`                  | text  | Relation name                |
+| `subject_type`              | text  | Subject type                 |
+| `subject_id`                | text  | Subject ID                   |
+| `optional_subject_relation` | text  | Optional subject relation    |
+| `optional_caveat_name`      | text  | Optional caveat name         |
+| `optional_caveat_context`   | jsonb | Optional caveat context      |
+| `consistency`               | text  | Consistency token (ZedToken) |
+
+**Supported Operations:** SELECT, INSERT, DELETE
+
+### `schema` Table
+
+Used for reading your schema definition.
+
+| Column       | Type | Description                     |
+| ------------ | ---- | ------------------------------- |
+| `definition` | text | Schema definition in Zed format |
+
+**Supported Operations:** SELECT only
+
+## Advanced Features
+
+### Consistency Control
+
+Control read consistency using the `consistency` column:
+
+```sql
+-- Get a consistent view
+SELECT resource_id, consistency
+FROM permissions
+WHERE resource_type = 'document'
+  AND permission = 'view'
+  AND subject_type = 'user'
+  AND subject_id = 'alice'
+  AND consistency = 'fully_consistent';
+```
+
+Available consistency modes:
+
+- `minimize_latency`: Default, uses the newest available snapshot
+- `fully_consistent`: Waits for a fully consistent view
+- `<zedtoken>`: Uses a specific consistency token
+- `@<zedtoken>`: Uses exact snapshot matching
+
+Learn more about [SpiceDB consistency](/spicedb/concepts/consistency).
+
+### Writing Relationships
+
+You can insert and delete relationships directly via SQL:
+
+#### Insert Relationships
+
+```sql
+-- Add a new relationship
+INSERT INTO relationships (resource_type, resource_id, relation, subject_type, subject_id)
+VALUES ('document', 'readme', 'viewer', 'user', 'alice');
+```
+
+#### Delete Relationships
+
+```sql
+-- Remove a relationship
+DELETE FROM relationships
+WHERE resource_type = 'document'
+  AND resource_id = 'readme'
+  AND relation = 'viewer'
+  AND subject_type = 'user'
+  AND subject_id = 'alice';
+```
+
+### Joining with Local Tables
+
+One powerful feature of the FDW is the ability to join FDW tables with local PostgreSQL tables.
+This allows you to enrich permission data with local application data.
+
+```sql
+-- First, create a local table with document metadata
+CREATE TABLE document (
+  id text PRIMARY KEY,
+  title text NOT NULL,
+  contents text NOT NULL
+);
+
+-- Insert some documents
+INSERT INTO document (id, title, contents) VALUES
+  ('firstdoc', 'Document 1', 'Contents of document 1'),
+  ('seconddoc', 'Document 2', 'Contents of document 2'),
+  ('thirddoc', 'Document 3', 'Contents of document 3');
+
+-- Join local documents with permissions to find which documents a user can access
+SELECT document.id, document.title
+FROM document
+JOIN permissions ON permissions.resource_id = document.id
+WHERE permissions.resource_type = 'document'
+  AND permissions.permission = 'view'
+  AND permissions.subject_type = 'user'
+  AND permissions.subject_id = 'alice'
+ORDER BY document.title DESC;
+```
+
+This pattern is useful for:
+
+- Building filtered lists based on permissions
+- Enriching permission checks with application metadata
+- Creating permission-aware reports and dashboards
+
+### Using Cursors for Large Result Sets
+
+For queries that return many results, use cursors to paginate:
+
+```sql
+BEGIN;
+
+DECLARE my_cursor CURSOR FOR
+  SELECT resource_id FROM permissions
+  WHERE resource_type = 'document'
+    AND permission = 'view'
+    AND subject_type = 'user'
+    AND subject_id = 'alice';
+
+FETCH 100 FROM my_cursor;
+FETCH 100 FROM my_cursor;
+
+CLOSE my_cursor;
+COMMIT;
+```
+
+## Docker Compose Example
+
+Here's a complete example using Docker Compose:
+
+```yaml
+version: "3"
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: spicedb
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  spicedb:
+    image: authzed/spicedb
+    command: serve
+    environment:
+      SPICEDB_GRPC_PRESHARED_KEY: "somerandomkeyhere"
+      SPICEDB_DATASTORE_ENGINE: "postgres"
+      SPICEDB_DATASTORE_CONN_URI: "postgres://postgres:password@postgres:5432/spicedb?sslmode=disable"
+    ports:
+      - "50051:50051"
+    depends_on:
+      - postgres
+
+  spicedb-fdw:
+    image: authzed/spicedb
+    command: postgres-fdw
+    environment:
+      SPICEDB_SPICEDB_API_ENDPOINT: "spicedb:50051"
+      SPICEDB_SPICEDB_ACCESS_TOKEN_SECRET: "somerandomkeyhere"
+      SPICEDB_SPICEDB_INSECURE: "true"
+      SPICEDB_POSTGRES_ENDPOINT: ":5432"
+      SPICEDB_POSTGRES_USERNAME: "postgres"
+      SPICEDB_POSTGRES_ACCESS_TOKEN_SECRET: "fdw-password"
+    ports:
+      - "5432:5432"
+    depends_on:
+      - spicedb
+
+volumes:
+  postgres-data:
+```
+
+Start the stack:
+
+```bash
+docker-compose up -d
+```
+
+Connect to the FDW:
+
+```bash
+psql -h localhost -p 5432 -U postgres -d ignored
+# Password: fdw-password
+```
+
+## Limitations
+
+The FDW has some limitations to be aware of:
+
+- **Joins between FDW tables**: Joins between FDW tables (e.g., `permissions` JOIN `relationships`) are not supported. However, joins between FDW tables and local PostgreSQL tables work as expected.
+- **Aggregations**: SUM, COUNT, etc. are performed client-side by PostgreSQL
+- **Ordering**: ORDER BY clauses are performed client-side by PostgreSQL
+- **Subqueries**: Not supported
+- **Complex WHERE clauses**: Only simple equality predicates and AND conditions are pushed down to SpiceDB
+
+<Callout type="info">
+  For complex analytics queries, consider exporting data using [bulk
+  operations](/spicedb/ops/data/bulk-operations) or using the [Watch API](/spicedb/concepts/watch)
+  to stream changes to a data warehouse.
+</Callout>
+
+## Performance Considerations
+
+### Query Planning
+
+The FDW provides basic statistics to PostgreSQL's query planner, but these are estimates.
+Use `EXPLAIN` to understand how your queries are executed:
+
+```sql
+EXPLAIN SELECT resource_id
+FROM permissions
+WHERE resource_type = 'document'
+  AND permission = 'view'
+  AND subject_type = 'user'
+  AND subject_id = 'alice';
+```
+
+### Large Datasets
+
+For super-fast joins or checks on large datasets, consider [AuthZed Materialize](/authzed/concepts/authzed-materialize).
+Once set up, Materialize works seamlessly with the FDW with no SQL changes required to your queries.
+
+## Troubleshooting
+
+### Connection Refused
+
+If you get a connection error, verify:
+
+1. The FDW proxy server is running and accessible
+2. The port is not blocked by a firewall
+3. The host and port in your PostgreSQL configuration match the FDW server
+
+```bash
+# Test FDW proxy connectivity
+psql -h localhost -p 5432 -U postgres -d ignored
+```
+
+### SpiceDB Connection Errors
+
+If the FDW proxy cannot connect to SpiceDB:
+
+1. Verify SpiceDB is running and accessible
+2. Check that the endpoint and port are correct
+3. Verify the preshared key matches
+4. For remote connections, ensure TLS is configured correctly (omit `--spicedb-insecure`)
+
+```bash
+# Test SpiceDB connectivity using zed
+zed context set local localhost:50051 "somerandomkeyhere" --insecure
+zed schema read
+```
+
+### Empty Results
+
+If queries return no results:
+
+1. Verify your schema is loaded: `SELECT definition FROM schema;`
+2. Check relationships exist: `SELECT * FROM relationships;`
+3. Ensure resource types and permission names match your schema
+
+### Performance Issues
+
+If queries are slow:
+
+1. Check SpiceDB performance using the [observability tools](/spicedb/ops/observability)
+2. Review your datastore performance (especially important for large datasets)
+3. Consider if your queries can be optimized (e.g., using specific resource IDs instead of lookups)
+4. Use cursors for large result sets instead of fetching all rows at once
+5. For super-fast performance on large datasets, consider [AuthZed Materialize](/authzed/concepts/authzed-materialize), which works seamlessly with the FDW
+
+## Security Considerations
+
+### Network Security
+
+- **Local Development**: Use `--spicedb-insecure` for convenience
+- **Production**: Always use TLS for both SpiceDB and FDW connections
+- **Firewall Rules**: Restrict access to the FDW proxy port to trusted clients only
+
+### Authentication
+
+- Store preshared keys securely (use environment variables or secrets management)
+- Rotate preshared keys periodically
+- Use different keys for different environments (dev, staging, prod)
+
+### Access Control
+
+For granular access control to SpiceDB APIs, consider:
+
+- Using [Restricted API Access](/authzed/concepts/restricted-api-access) with AuthZed products
+- Implementing application-level access controls
+- Using PostgreSQL roles and permissions to control FDW access
+
+## Next Steps
+
+- Learn about [SpiceDB datastores](/spicedb/concepts/datastores) for production deployments
+- Explore [bulk operations](/spicedb/ops/data/bulk-operations) for managing large datasets
+- Review [performance tuning](/spicedb/ops/performance) recommendations
+- Set up [observability](/spicedb/ops/observability) for monitoring
+- Deploy SpiceDB with the [Kubernetes Operator](/spicedb/ops/deploying-spicedb-operator)
