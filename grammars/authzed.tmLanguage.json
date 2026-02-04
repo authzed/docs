@@ -107,10 +107,7 @@
       }
     },
     "comment": {
-      "patterns": [
-        { "include": "#lineComment" },
-        { "include": "#blockComment" }
-      ],
+      "patterns": [{ "include": "#lineComment" }, { "include": "#blockComment" }],
       "repository": {
         "lineComment": {
           "patterns": [

@@ -2,6 +2,10 @@
   "name": "authzed-docs",
   "version": "0.0.1",
   "description": "Authzed & SpiceDB docs powered by Nextra",
+  "homepage": "https://github.com/authzed/docs#readme",
+  "bugs": {
+    "url": "https://github.com/authzed/docs/issues"
+  },
   "scripts": {
     "dev": "next dev --webpack",
     "build": "next build --webpack",
@@ -9,13 +13,9 @@
     "start": "next start",
     "lint:markdown": "markdownlint-cli2",
     "gen:pagefind": "node --experimental-strip-types scripts/buildSearchIndex.mts",
-    "format:check": "prettier -c .",
-    "format": "prettier -w ."
+    "format:check": "oxfmt --check",
+    "format": "oxfmt"
   },
-  "bugs": {
-    "url": "https://github.com/authzed/docs/issues"
-  },
-  "homepage": "https://github.com/authzed/docs#readme",
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.5.2",
     "@fortawesome/free-brands-svg-icons": "^6.5.2",
@@ -50,12 +50,12 @@
     "@types/react": "^19.1.6",
     "markdownlint-cli2": "^0.13.0",
     "markdownlint-rule-max-one-sentence-per-line": "^0.0.2",
+    "oxfmt": "^0.26.0",
     "pagefind": "^1.4.0",
     "postcss": "^8.5.6",
-    "prettier": "^3.6.2",
     "shiki": "^3.15.0",
     "typescript": "^5.9.3",
     "yaml-loader": "^0.8.1"
   },
-  "packageManager": "pnpm@10.24.0"
+  "packageManager": "pnpm@10.28.1"
 }

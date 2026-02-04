@@ -8,13 +8,12 @@ export default function Banner() {
 
   return isCommercial ? (
     <a href="https://authzed.com/zanzibar?utm_source=docs">
-      📄 Have you read Google's Zanzibar paper? We annotated it with additional
-      context and comparisons with SpiceDB ↗
+      📄 Have you read Google's Zanzibar paper? We annotated it with additional context and
+      comparisons with SpiceDB ↗
     </a>
   ) : (
     <a href="https://github.com/authzed/spicedb">
-      SpiceDB is 100% open source. Please help us by starring our GitHub repo.
-      ↗
+      SpiceDB is 100% open source. Please help us by starring our GitHub repo. ↗
     </a>
   );
 }
