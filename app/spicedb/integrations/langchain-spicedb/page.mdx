@@ -2,7 +2,7 @@ import { Callout } from "nextra/components";
 
 # Use SpiceDB with LangChain & LangGraph for RAG & AI Agent Authorization
 
-This guide explains how to enforce fine-grained, per-document authorization in Retrieval-Augmented Generation (RAG) pipelines or with AI Agents, using the official `langchain-spicedb` library
+This guide explains how to enforce fine-grained, per-document authorization in Retrieval-Augmented Generation (RAG) pipelines or with AI Agents, using the official [LangChain SpiceDB](https://pypi.org/project/langchain-spicedb/) library
 
 Retrieval-Augmented Generation (RAG) systems combine vector search with large language models to answer questions using your organization's knowledge base.
 However, without proper authorization controls, these systems can inadvertently leak sensitive information to unauthorized users.
@@ -22,12 +22,12 @@ pip install langchain-spicedb
 The library provides four main components, each designed for different use cases.
 Full examples can be found in the repository linked at the bottom of this page.
 
-| Component             | Use Case                         | Best For                                                                                     |
-| --------------------- | -------------------------------- | -------------------------------------------------------------------------------------------- |
-| **SpiceDBRetriever**  | Simple RAG pipelines             | Drop-in replacement for any retriever. Wraps your existing retriever with authorization.     |
-| **SpiceDBAuthFilter** | LangChain chains with middleware | Filtering documents in the middle of a chain. Reusable across different users via `config`.  |
-| **LangGraph Node**    | LangGraph workflows              | Complex multi-step workflows with state management. Provides authorization metrics in state. |
-| **Permission Tools**  | Agentic workflows                | Give agents the ability to check permissions before taking actions.                          |
+| Component                                                                                                                                                   | Use Case                         | Best For                                                                                     |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | -------------------------------------------------------------------------------------------- |
+| [**SpiceDBRetriever**](https://github.com/authzed/langchain-spicedb/blob/main/docs/langchain-integration/langchain-spicedb-retriever.mdx)                   | Simple RAG pipelines             | Drop-in replacement for any retriever. Wraps your existing retriever with authorization.     |
+| [**SpiceDBAuthFilter**](https://github.com/authzed/langchain-spicedb/blob/main/langchain_spicedb/langchain_runnable.py)                                     | LangChain chains with middleware | Filtering documents in the middle of a chain. Reusable across different users via `config`.  |
+| [**LangGraph Node**](https://github.com/authzed/langchain-spicedb/blob/main/docs/langgraph-guide.md)                                                        | LangGraph workflows              | Complex multi-step workflows with state management. Provides authorization metrics in state. |
+| [**Permission Tools**](https://github.com/authzed/langchain-spicedb/blob/main/docs/langchain-integration/langchain-spicedb-tools.mdx#spicedbpermissiontool) | Agentic workflows                | Give agents the ability to check permissions before taking actions.                          |
 
 Let's explore each component in detail.
 
@@ -42,6 +42,7 @@ from langchain_spicedb import SpiceDBRetriever
 retriever = SpiceDBRetriever(
     base_retriever=vector_store.as_retriever(), # works with any vector DB
     subject_id="alice",
+    subject_type="user",
     spicedb_endpoint="localhost:50051",
     spicedb_token="sometoken",
     resource_type="article",
@@ -460,8 +461,11 @@ This flexibility allows you to choose the best vector store for your use case wi
 
 ### Error Handling
 
-Always fail closed when authorization checks encounter errors.
-Returning documents without successful authorization creates a security vulnerability.
+<Callout type="warning">
+  Never fall back to unfiltered results when authorization fails. This creates a
+  path for information leakage during system outages. Instead, return an error
+  to the user or empty results with an explanation.
+</Callout>
 
 ```python
 from langchain_spicedb import SpiceDBAuthFilter
@@ -475,12 +479,6 @@ except AuthzedError as e:
     # Fail closed: don't return unauthorized documents
     result = []
 ```
-
-<Callout type="warning">
-  Never fall back to unfiltered results when authorization fails. This creates a
-  path for information leakage during system outages. Instead, return an error
-  to the user or empty results with an explanation.
-</Callout>
 
 ### Post-Filter vs Metadata Filtering
 
@@ -519,4 +517,3 @@ Debug logs include:
 - [LangChain Documentation](https://python.langchain.com/) - Official LangChain docs
 - Check out the [library repository](https://github.com/authzed/langchain-spicedb) for examples and source code
 - [PyPi page](https://pypi.org/project/langchain-spicedb/) for `langchain-spicedb` library
-- Join the [Discord community](https://discord.gg/spicedb) to discuss RAG authorization strategies
