@@ -4,6 +4,7 @@ export default {
   modeling: "Modeling",
   ops: "Operations",
   integrations: "Integrations",
+  tutorials: "Tutorials",
   api: "API Reference",
   links: "Links",
 };

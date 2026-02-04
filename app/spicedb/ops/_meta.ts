@@ -7,7 +7,4 @@ export default {
   resilience: "Improving Resilience",
   observability: "Observability Tooling",
   "load-testing": "Load Testing",
-  "ai-agent-authorization":
-    "Tutorial: Authorization for AI Agents using SpiceDB",
-  "secure-rag-pipelines": "Tutorial: Securing RAG Pipelines with SpiceDB",
 };
