@@ -8,11 +8,10 @@ import { Callout } from "nextra/components";
 # Rate Limiting
 
 <Callout type="warning">
-  **Tech Preview**: This feature is currently in Tech Preview and is subject to change. It is
-  available exclusively in AuthZed Dedicated and SpiceDB Enterprise.
+  **Tech Preview**: This feature is currently in Tech Preview and is subject to change.
 </Callout>
 
-AuthZed Dedicated and SpiceDB Enterprise include a distributed rate limiting feature that allows you to control API request rates using flexible matching and bucketing rules. Rate limits are configured via YAML and can be applied globally, per-endpoint, per-service-account, or using custom CEL expressions.
+AuthZed Dedicated, AuthZed Cloud and SpiceDB Enterprise include a distributed rate limiting feature that allows you to control API request rates using flexible matching and bucketing rules. Rate limits are configured via YAML and can be applied globally, per-endpoint, per-service-account, or using custom CEL expressions.
 
 This feature works seamlessly with [Restricted API Access](/authzed/concepts/restricted-api-access) to provide comprehensive control over how your services interact with AuthZed.
 
@@ -31,7 +30,7 @@ The process for configuring rate limiting varies depending on the AuthZed produc
 
 ### Dedicated & Cloud
 
-For AuthZed Dedicated, rate limits are configured using the same FGAM configuration file used for [Restricted API Access](/authzed/concepts/restricted-api-access).
+Rate limits are configured using the same FGAM configuration file used for [Restricted API Access](/authzed/concepts/restricted-api-access).
 
 Upload your FGAM configuration file (which can include both Restricted API Access and rate limiting rules) through the web dashboard in the Permission System's "Access" tab.
 
@@ -98,13 +97,13 @@ rate_limits:
   There is no separate UI or API for rate limiting configuration at this time.
 </Callout>
 
-## Rate Limit Configuration Reference
+#### Rate Limit Configuration Reference
 
-### Matching Criteria
+#### Matching Criteria
 
 Every rate limit **must** specify at least one match criterion. All fields within a match use AND logic (all conditions must be true).
 
-#### Available Match Fields
+##### Available Match Fields
 
 - **`all`**: Matches all requests (must be the only field in match)
 - **`endpoint`**: Array of API method names (OR logic within array)
@@ -113,7 +112,7 @@ Every rate limit **must** specify at least one match criterion. All fields withi
 - **`header`**: Array of header match objects (OR logic within array)
 - **`request`**: CEL expression for complex matching logic
 
-#### Match Examples
+##### Match Examples
 
 ```yaml /dev/null/match-examples.yaml#L1-60
 rate_limits:
@@ -176,7 +175,7 @@ rate_limits:
       requests_per_unit: 1000
 ```
 
-### CEL Expressions
+#### CEL Expressions
 
 Use CEL expressions for advanced matching and bucketing logic. CEL expressions have access to:
 
@@ -185,7 +184,7 @@ Use CEL expressions for advanced matching and bucketing logic. CEL expressions h
 - **`headers`** or **`meta`**: gRPC metadata headers as `map[string]string`
 - **Request fields**: Access request proto fields (e.g., `CheckPermissionRequest.resource.object_type`)
 
-#### CEL Match Examples
+##### CEL Match Examples
 
 ```yaml /dev/null/cel-match-examples.yaml#L1-40
 rate_limits:
@@ -227,18 +226,18 @@ rate_limits:
       requests_per_unit: 100
 ```
 
-### Bucketing
+#### Bucketing
 
 Bucketing determines how requests are grouped into separate rate limit counters.
 
-#### Bucketing Options
+##### Bucketing Options
 
 - **`service_account: true`**: Separate bucket per service account
 - **`token: true`**: Separate bucket per API token
 - **`header: "<header-name>"`**: Separate bucket per header value
 - **`request: "<CEL-expression>"`**: Custom bucketing logic via CEL
 
-#### Bucketing Examples
+##### Bucketing Examples
 
 ```yaml /dev/null/bucketing-examples.yaml#L1-55
 rate_limits:
@@ -289,7 +288,7 @@ rate_limits:
       requests_per_unit: 1000
 ```
 
-### Rate Limit Units
+#### Rate Limit Units
 
 The `unit` field supports:
 
@@ -300,46 +299,11 @@ The `unit` field supports:
 
 You can also specify custom durations using Go duration syntax (e.g., `"30s"`, `"15m"`, `"2h"`, `"90s"`).
 
-## Error Responses
-
-When a rate limit is exceeded, the API returns:
-
-- **gRPC Status Code**: `RESOURCE_EXHAUSTED`
-- **Response Trailers**:
-  - `x-ratelimit-id`: The rate limit ID that was exceeded
-  - `x-ratelimit-key`: The bucket key
-  - `retry-after`: Seconds until the client can retry
-
-Example error handling in Go:
-
-```go /dev/null/error-handling.go#L1-20
-import (
-    "google.golang.org/grpc/codes"
-    "google.golang.org/grpc/status"
-)
-
-resp, err := client.CheckPermission(ctx, req)
-if err != nil {
-    if st, ok := status.FromError(err); ok {
-        if st.Code() == codes.ResourceExhausted {
-            // Rate limit exceeded
-            trailer := // extract trailer metadata
-            rateLimitID := trailer.Get("x-ratelimit-id")
-            retryAfter := trailer.Get("retry-after")
-
-            // Implement backoff logic
-            log.Printf("Rate limit %s exceeded, retry after %s seconds",
-                rateLimitID, retryAfter)
-        }
-    }
-}
-```
-
-## Self-Hosted Configuration
+### Self-Hosted Configuration
 
 The following sections apply only to self-hosted SpiceDB Enterprise deployments.
 
-### Basic Setup
+#### Basic Setup
 
 For self-hosted SpiceDB Enterprise deployments, use the following command-line flag:
 
@@ -355,7 +319,7 @@ spicedb serve \
 
 The YAML file follows the same format as shown in the configuration examples above.
 
-### Distributed Rate Limiting
+#### Distributed Rate Limiting
 
 <Callout type="info">
   Distributed rate limiting with gossip coordination is only configurable for self-hosted SpiceDB
@@ -364,7 +328,7 @@ The YAML file follows the same format as shown in the configuration examples abo
 
 For self-hosted deployments, you can enable distributed coordination across replicas using gossip for accurate global rate limits.
 
-#### Enabling Gossip
+##### Enabling Gossip
 
 ```bash /dev/null/gossip-flags.sh#L1-10
 spicedb serve \
@@ -393,7 +357,7 @@ spicedb serve \
 | `--rate-limit-gossip-tls-ca`           | `""`      | TLS CA for mutual TLS                       |
 | `--rate-limit-gossip-tls-server-name`  | `""`      | Server name for TLS verification            |
 
-### Monitoring
+#### Monitoring
 
 For self-hosted SpiceDB Enterprise deployments, rate limiting exposes Prometheus metrics for monitoring:
 
@@ -407,7 +371,42 @@ For self-hosted SpiceDB Enterprise deployments, rate limiting exposes Prometheus
 
 Monitor the `spicedb_ratelimit_gossip_peers_active` metric to ensure gossip coordination is healthy.
 
-### Troubleshooting
+## Error Responses
+
+When a rate limit is exceeded, the API returns:
+
+- **gRPC Status Code**: `RESOURCE_EXHAUSTED`
+- **Response Trailers**:
+- `x-ratelimit-id`: The rate limit ID that was exceeded
+- `x-ratelimit-key`: The bucket key
+- `retry-after`: Seconds until the client can retry
+
+Example error handling in Go:
+
+```go /dev/null/error-handling.go#L1-20
+import (
+    "google.golang.org/grpc/codes"
+    "google.golang.org/grpc/status"
+)
+
+resp, err := client.CheckPermission(ctx, req)
+if err != nil {
+    if st, ok := status.FromError(err); ok {
+        if st.Code() == codes.ResourceExhausted {
+            // Rate limit exceeded
+            trailer := // extract trailer metadata
+            rateLimitID := trailer.Get("x-ratelimit-id")
+            retryAfter := trailer.Get("retry-after")
+
+            // Implement backoff logic
+            log.Printf("Rate limit %s exceeded, retry after %s seconds",
+                rateLimitID, retryAfter)
+        }
+    }
+}
+```
+
+## Troubleshooting
 
 #### Rate Limits Not Applied
 
