@@ -8,9 +8,8 @@ import { Callout } from "nextra/components";
 # Rate Limiting
 
 <Callout type="warning">
-  **Tech Preview**: This feature is currently in Tech Preview and is subject to
-  change. It is available exclusively in AuthZed Dedicated and SpiceDB
-  Enterprise.
+  **Tech Preview**: This feature is currently in Tech Preview and is subject to change. It is
+  available exclusively in AuthZed Dedicated and SpiceDB Enterprise.
 </Callout>
 
 AuthZed Dedicated and SpiceDB Enterprise include a distributed rate limiting feature that allows you to control API request rates using flexible matching and bucketing rules. Rate limits are configured via YAML and can be applied globally, per-endpoint, per-service-account, or using custom CEL expressions.
@@ -95,9 +94,8 @@ rate_limits:
 ```
 
 <Callout type="info">
-  For Dedicated & Cloud, the rate limiting configuration is applied through the
-  FGAM file upload. There is no separate UI or API for rate limiting
-  configuration at this time.
+  For Dedicated & Cloud, the rate limiting configuration is applied through the FGAM file upload.
+  There is no separate UI or API for rate limiting configuration at this time.
 </Callout>
 
 ## Rate Limit Configuration Reference
@@ -360,9 +358,8 @@ The YAML file follows the same format as shown in the configuration examples abo
 ### Distributed Rate Limiting
 
 <Callout type="info">
-  Distributed rate limiting with gossip coordination is only configurable for
-  self-hosted SpiceDB Enterprise deployments. AuthZed Dedicated handles this
-  automatically.
+  Distributed rate limiting with gossip coordination is only configurable for self-hosted SpiceDB
+  Enterprise deployments. AuthZed Dedicated handles this automatically.
 </Callout>
 
 For self-hosted deployments, you can enable distributed coordination across replicas using gossip for accurate global rate limits.
