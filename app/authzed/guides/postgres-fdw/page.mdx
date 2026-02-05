@@ -1,0 +1,480 @@
+import { Callout, Steps } from "nextra/components";
+
+# Using Postgres FDW with AuthZed Cloud/Dedicated
+
+This guide shows you how to query your AuthZed permissions system using standard SQL through the SpiceDB Postgres Foreign Data Wrapper (FDW).
+
+The Postgres FDW acts as a translation layer that implements the PostgreSQL wire protocol and converts SQL queries into SpiceDB API calls.
+This allows you to query permissions, relationships, and schema using familiar SQL syntax.
+
+<Callout type="warning">
+  The Postgres FDW is an **experimental feature** that has been tested but may have issues in
+  certain scenarios. It is subject to change and should be used with caution in production
+  environments. Please report any issues you encounter on the [SpiceDB GitHub
+  repository](https://github.com/authzed/spicedb/issues).
+</Callout>
+
+## Prerequisites
+
+- An AuthZed Dedicated or Cloud account with a Permissions System created
+- A SpiceDB endpoint (provided by AuthZed)
+- PostgreSQL installed (for connecting to the FDW server)
+- Docker or the SpiceDB binary
+
+## Overview
+
+The setup process involves:
+
+1. Creating a permissions system on AuthZed
+2. Generating an API token with appropriate permissions
+3. Starting the FDW proxy server
+4. Configuring PostgreSQL to connect to the FDW server
+
+<Steps>
+
+### Create a Permissions System on AuthZed
+
+If you don't already have a Permissions System, create one by following the [Getting Started with AuthZed Cloud](/authzed/guides/cloud) guide.
+
+Make note of your **SpiceDB endpoint**, which will look like:
+
+```
+grpc.authzed.com:443
+```
+
+Or for Dedicated clusters:
+
+```
+your-cluster-name.authzed.com:443
+```
+
+### Generate an API Token using Restricted API Access
+
+You'll need to create a token for the FDW to access your SpiceDB API.
+AuthZed provides [Restricted API Access](/authzed/concepts/restricted-api-access) to apply least-privilege access control.
+
+#### Create a Service Account
+
+Navigate to your Permissions System in the AuthZed dashboard and go to the **Access** tab.
+
+Create a **Service Account**:
+
+- **Name**: `postgres-fdw`
+- **Description**: Service account for Postgres FDW access
+
+#### Create a Role
+
+Create a **Role** that defines what permissions the FDW will have.
+
+**For full access** (all operations):
+
+Create a role named `fdw-full-access` with these permissions:
+
+```
+authzed.api/ReadSchema
+authzed.api/WriteSchema
+authzed.api/ReadRelationships
+authzed.api/WriteRelationships
+authzed.api/DeleteRelationships
+authzed.api/CheckPermission
+authzed.api/LookupResources
+authzed.api/LookupSubjects
+authzed.api/ExpandPermissionTree
+authzed.api/Watch
+authzed.api/ExportBulkRelationships
+authzed.api/BulkExportRelationships
+authzed.api/ImportBulkRelationships
+authzed.api/BulkImportRelationships
+```
+
+**For read-only access** (recommended for analytics/reporting):
+
+Create a role named `fdw-read-only` with these permissions:
+
+```
+authzed.api/ReadSchema
+authzed.api/ReadRelationships
+authzed.api/CheckPermission
+authzed.api/LookupResources
+authzed.api/LookupSubjects
+authzed.api/ExpandPermissionTree
+```
+
+<Callout type="info">
+  The FDW will return an error if it attempts an operation not granted by the token. Start with
+  read-only access and expand permissions as needed.
+</Callout>
+
+#### Create a Policy
+
+Create a **Policy** to bind the role to your service account:
+
+- **Name**: `fdw-policy`
+- **Principal**: Select the `postgres-fdw` service account
+- **Roles**: Select the role you created (`fdw-full-access` or `fdw-read-only`)
+
+#### Generate a Token
+
+Navigate to the `postgres-fdw` service account and create a **Token**:
+
+- **Name**: `fdw-token-1`
+- **Description**: Token for FDW access
+
+<Callout type="warning">
+  Save the token immediately after creation. It will look like: `sdbst_h256_yoursecrettoken`. You
+  won't be able to view it again.
+</Callout>
+
+### Start the FDW Proxy Server
+
+The FDW proxy server acts as a bridge between PostgreSQL and your AuthZed SpiceDB API.
+
+#### Using Docker (Recommended)
+
+```bash
+docker run --rm -p 5432:5432 \
+  authzed/spicedb \
+  postgres-fdw \
+  --spicedb-api-endpoint grpc.authzed.com:443 \
+  --spicedb-access-token-secret "sdbst_h256_yoursecrettoken" \
+  --postgres-endpoint ":5432" \
+  --postgres-username "postgres" \
+  --postgres-access-token-secret "your-fdw-password"
+```
+
+#### Using the SpiceDB Binary
+
+```bash
+spicedb postgres-fdw \
+  --spicedb-api-endpoint grpc.authzed.com:443 \
+  --spicedb-access-token-secret "sdbst_h256_yoursecrettoken" \
+  --postgres-endpoint ":5432" \
+  --postgres-username "postgres" \
+  --postgres-access-token-secret "your-fdw-password"
+```
+
+#### Using Environment Variables
+
+```bash
+export SPICEDB_SPICEDB_API_ENDPOINT="grpc.authzed.com:443"
+export SPICEDB_SPICEDB_ACCESS_TOKEN_SECRET="sdbst_h256_yoursecrettoken"
+export SPICEDB_POSTGRES_ENDPOINT=":5432"
+export SPICEDB_POSTGRES_USERNAME="postgres"
+export SPICEDB_POSTGRES_ACCESS_TOKEN_SECRET="your-fdw-password"
+
+spicedb postgres-fdw
+```
+
+<Callout type="info">
+  Replace `grpc.authzed.com:443` with your specific SpiceDB endpoint and
+  `sdbst_h256_yoursecrettoken` with your actual token from the previous step.
+</Callout>
+
+#### Configuration Options
+
+| Flag                             | Description                                     | Default           |
+| -------------------------------- | ----------------------------------------------- | ----------------- |
+| `--spicedb-api-endpoint`         | Your AuthZed SpiceDB endpoint                   | `localhost:50051` |
+| `--spicedb-access-token-secret`  | Your AuthZed API token (required)               | -                 |
+| `--postgres-endpoint`            | FDW server listen address                       | `:5432`           |
+| `--postgres-username`            | Username for Postgres authentication            | `postgres`        |
+| `--postgres-access-token-secret` | Password for Postgres authentication (required) | -                 |
+
+### Configure PostgreSQL Foreign Data Wrapper
+
+Connect to your PostgreSQL database and run the following SQL commands:
+
+```sql
+-- Install the postgres_fdw extension
+CREATE EXTENSION IF NOT EXISTS postgres_fdw;
+
+-- Create a foreign server pointing to the FDW proxy
+CREATE SERVER spicedb_server
+  FOREIGN DATA WRAPPER postgres_fdw
+  OPTIONS (
+    host 'localhost',
+    port '5432',
+    dbname 'ignored'
+  );
+
+-- Create user mapping with authentication credentials
+CREATE USER MAPPING FOR CURRENT_USER
+  SERVER spicedb_server
+  OPTIONS (
+    user 'postgres',
+    password 'your-fdw-password'
+  );
+
+-- Import foreign tables
+IMPORT FOREIGN SCHEMA public
+  LIMIT TO (permissions, relationships, schema)
+  FROM SERVER spicedb_server
+  INTO public;
+```
+
+<Callout type="info">
+  Replace `your-fdw-password` with the password you set when starting the FDW proxy server. If your
+  FDW proxy is running on a different host, update the `host` parameter accordingly.
+</Callout>
+
+### Query Your Permissions
+
+You can now query your AuthZed permissions system using SQL!
+
+#### Check Permissions
+
+```sql
+-- Check if user:alice has permission to view document:readme
+SELECT has_permission
+FROM permissions
+WHERE resource_type = 'document'
+  AND resource_id = 'readme'
+  AND permission = 'view'
+  AND subject_type = 'user'
+  AND subject_id = 'alice';
+```
+
+#### Lookup Resources
+
+```sql
+-- Find all documents that user:alice can view
+SELECT resource_id
+FROM permissions
+WHERE resource_type = 'document'
+  AND permission = 'view'
+  AND subject_type = 'user'
+  AND subject_id = 'alice';
+```
+
+#### Lookup Subjects
+
+```sql
+-- Find all users who can view document:readme
+SELECT subject_id
+FROM permissions
+WHERE resource_type = 'document'
+  AND resource_id = 'readme'
+  AND permission = 'view'
+  AND subject_type = 'user';
+```
+
+#### Query Relationships
+
+```sql
+-- Read relationships for a specific resource
+SELECT resource_type, resource_id, relation, subject_type, subject_id
+FROM relationships
+WHERE resource_type = 'document'
+  AND resource_id = 'readme';
+```
+
+#### Read Schema
+
+```sql
+-- Get all schema definitions
+SELECT definition FROM schema;
+```
+
+</Steps>
+
+## Available Tables
+
+The FDW provides three virtual tables:
+
+### `permissions` Table
+
+Used for checking permissions and looking up resources or subjects.
+
+| Column                      | Type    | Description                      |
+| --------------------------- | ------- | -------------------------------- |
+| `resource_type`             | text    | Resource type (e.g., 'document') |
+| `resource_id`               | text    | Resource ID                      |
+| `permission`                | text    | Permission name                  |
+| `subject_type`              | text    | Subject type (e.g., 'user')      |
+| `subject_id`                | text    | Subject ID                       |
+| `optional_subject_relation` | text    | Optional subject relation        |
+| `has_permission`            | boolean | Whether permission is granted    |
+| `consistency`               | text    | Consistency token (ZedToken)     |
+
+**Supported Operations:** SELECT only
+
+### `relationships` Table
+
+Used for reading, writing, and deleting relationships.
+
+| Column                      | Type  | Description                  |
+| --------------------------- | ----- | ---------------------------- |
+| `resource_type`             | text  | Resource type                |
+| `resource_id`               | text  | Resource ID                  |
+| `relation`                  | text  | Relation name                |
+| `subject_type`              | text  | Subject type                 |
+| `subject_id`                | text  | Subject ID                   |
+| `optional_subject_relation` | text  | Optional subject relation    |
+| `optional_caveat_name`      | text  | Optional caveat name         |
+| `optional_caveat_context`   | jsonb | Optional caveat context      |
+| `consistency`               | text  | Consistency token (ZedToken) |
+
+**Supported Operations:** SELECT, INSERT, DELETE
+
+### `schema` Table
+
+Used for reading your schema definition.
+
+| Column       | Type | Description                     |
+| ------------ | ---- | ------------------------------- |
+| `definition` | text | Schema definition in Zed format |
+
+**Supported Operations:** SELECT only
+
+## Advanced Features
+
+### Consistency Control
+
+Control read consistency using the `consistency` column:
+
+```sql
+-- Get a consistent view
+SELECT resource_id, consistency
+FROM permissions
+WHERE resource_type = 'document'
+  AND permission = 'view'
+  AND subject_type = 'user'
+  AND subject_id = 'alice'
+  AND consistency = 'fully_consistent';
+```
+
+Available consistency modes:
+
+- `minimize_latency`: Default, uses the newest available snapshot
+- `fully_consistent`: Waits for a fully consistent view
+- `<zedtoken>`: Uses a specific consistency token
+- `@<zedtoken>`: Uses exact snapshot matching
+
+### Writing Relationships
+
+If you created a token with write access, you can insert and delete relationships:
+
+#### Insert Relationships
+
+```sql
+-- Add a new relationship
+INSERT INTO relationships (resource_type, resource_id, relation, subject_type, subject_id)
+VALUES ('document', 'readme', 'viewer', 'user', 'alice');
+```
+
+#### Delete Relationships
+
+```sql
+-- Remove a relationship
+DELETE FROM relationships
+WHERE resource_type = 'document'
+  AND resource_id = 'readme'
+  AND relation = 'viewer'
+  AND subject_type = 'user'
+  AND subject_id = 'alice';
+```
+
+### Joining with Local Tables
+
+One powerful feature of the FDW is the ability to join FDW tables with local PostgreSQL tables.
+This allows you to enrich permission data with local application data.
+
+```sql
+-- First, create a local table with document metadata
+CREATE TABLE document (
+  id text PRIMARY KEY,
+  title text NOT NULL,
+  contents text NOT NULL
+);
+
+-- Insert some documents
+INSERT INTO document (id, title, contents) VALUES
+  ('firstdoc', 'Document 1', 'Contents of document 1'),
+  ('seconddoc', 'Document 2', 'Contents of document 2'),
+  ('thirddoc', 'Document 3', 'Contents of document 3');
+
+-- Join local documents with permissions to find which documents a user can access
+SELECT document.id, document.title
+FROM document
+JOIN permissions ON permissions.resource_id = document.id
+WHERE permissions.resource_type = 'document'
+  AND permissions.permission = 'view'
+  AND permissions.subject_type = 'user'
+  AND permissions.subject_id = 'alice'
+ORDER BY document.title DESC;
+```
+
+This pattern is useful for:
+
+- Building filtered lists based on permissions
+- Enriching permission checks with application metadata
+- Creating permission-aware reports and dashboards
+
+### Using Cursors for Large Result Sets
+
+For queries that return many results, use cursors to paginate:
+
+```sql
+BEGIN;
+
+DECLARE my_cursor CURSOR FOR
+  SELECT resource_id FROM permissions
+  WHERE resource_type = 'document'
+    AND permission = 'view'
+    AND subject_type = 'user'
+    AND subject_id = 'alice';
+
+FETCH 100 FROM my_cursor;
+FETCH 100 FROM my_cursor;
+
+CLOSE my_cursor;
+COMMIT;
+```
+
+## Limitations
+
+The FDW has some limitations to be aware of:
+
+- **Joins between FDW tables**: Joins between FDW tables (e.g., `permissions` JOIN `relationships`) are not supported. However, joins between FDW tables and local PostgreSQL tables work as expected.
+- **Aggregations**: SUM, COUNT, etc. are performed client-side by PostgreSQL
+- **Ordering**: ORDER BY clauses are performed client-side by PostgreSQL
+- **Subqueries**: Not supported
+- **Complex WHERE clauses**: Only simple equality predicates and AND conditions are pushed down to SpiceDB
+
+<Callout type="info">
+  For super-fast joins or checks on large datasets, consider [AuthZed
+  Materialize](/authzed/concepts/authzed-materialize). Once set up, Materialize works seamlessly
+  with the FDW with no SQL changes required to your queries.
+</Callout>
+
+## Troubleshooting
+
+### Connection Refused
+
+If you get a connection error, verify:
+
+1. The FDW proxy server is running
+2. The port is accessible (not blocked by firewall)
+3. The host and port in your PostgreSQL configuration match the FDW server
+
+### Permission Denied Errors
+
+If you get permission denied errors:
+
+1. Verify your API token is correct
+2. Check that your role includes the necessary permissions
+3. Ensure your policy binds the role to your service account
+
+### Empty Results
+
+If queries return no results:
+
+1. Verify your schema and relationships exist in AuthZed
+2. Check that you're using the correct resource types and permission names
+3. Try querying the `schema` table to see your current schema
+
+## Next Steps
+
+- Learn more about [Restricted API Access](/authzed/concepts/restricted-api-access)
+- Explore [SpiceDB concepts](/spicedb/concepts/schema) to better understand your data
+- Review [best practices](/best-practices) for production deployments
