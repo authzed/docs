@@ -57,9 +57,9 @@ The retriever fetches documents using your vector store's semantic search, then 
 Only documents that `alice` has the `view` permission for are returned.
 
 <Callout type="info">
-  Each document's metadata must include a field (specified by `resource_id_key`)
-  that contains the resource identifier used in SpiceDB. This is how the library
-  knows which SpiceDB resource to check permissions against.
+  Each document's metadata must include a field (specified by `resource_id_key`) that contains the
+  resource identifier used in SpiceDB. This is how the library knows which SpiceDB resource to check
+  permissions against.
 </Callout>
 
 **When to use this approach:**
@@ -194,9 +194,9 @@ The authorization node reads documents from `state["retrieved_documents"]`, chec
 Authorization metrics are automatically included in `state["auth_results"]`.
 
 <Callout type="info">
-  LangGraph is ideal when you need explicit control over each pipeline step,
-  want to maintain state across multiple conversation turns, or need complex
-  branching logic based on authorization results.
+  LangGraph is ideal when you need explicit control over each pipeline step, want to maintain state
+  across multiple conversation turns, or need complex branching logic based on authorization
+  results.
 </Callout>
 
 **When to use this approach:**
@@ -363,9 +363,9 @@ The library checks permissions for `document:123` when evaluating this document.
 If `resource_id_key` doesn't match a field in the document's metadata, that document will be filtered out.
 
 <Callout type="warning">
-  Ensure all documents in your vector store include the resource ID field.
-  Documents missing this field will be silently excluded from results, which can
-  lead to incomplete answers without explicit errors.
+  Ensure all documents in your vector store include the resource ID field. Documents missing this
+  field will be silently excluded from results, which can lead to incomplete answers without
+  explicit errors.
 </Callout>
 
 ## Authorization Metrics
@@ -462,9 +462,9 @@ This flexibility allows you to choose the best vector store for your use case wi
 ### Error Handling
 
 <Callout type="warning">
-  Never fall back to unfiltered results when authorization fails. This creates a
-  path for information leakage during system outages. Instead, return an error
-  to the user or empty results with an explanation.
+  Never fall back to unfiltered results when authorization fails. This creates a path for
+  information leakage during system outages. Instead, return an error to the user or empty results
+  with an explanation.
 </Callout>
 
 ```python
