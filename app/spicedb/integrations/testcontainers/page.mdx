@@ -1,0 +1,147 @@
+import { Callout } from "nextra/components";
+
+# Testing RAG Pipelines with Testcontainers and SpiceDB
+
+End-to-end testing of permission-aware RAG (Retrieval-Augmented Generation) systems requires validating that authorization logic works correctly before production.
+Testing with real SpiceDB instances ensures your permission checks behave exactly as they will in production, catching authorization bugs early in development.
+
+This guide demonstrates how to use [Testcontainers](https://testcontainers.com/) with SpiceDB to create isolated, reproducible integration tests for RAG pipelines.
+Testcontainers is an open source library for providing throwaway, lightweight instances of databases, message brokers, web browsers, or just about anything that can run in a Docker container.
+
+You'll learn how to verify that users only receive answers based on documents they're authorized to access, preventing data leakage through comprehensive automated testing.
+
+## Why Test Permissions in RAG Pipelines
+
+RAG systems retrieve documents from vector databases to augment LLM responses with your organization's data.
+Without proper authorization testing, these systems risk exposing sensitive information to unauthorized users.
+
+### The Testing Gap
+
+Many RAG implementations test retrieval quality but skip authorization testing entirely:
+
+```python
+# What most tests verify
+def test_retrieval_quality():
+    results = rag_pipeline.query("quarterly revenue")
+    assert "Q4 revenue" in results  # Tests semantic relevance
+
+# What tests should also verify
+def test_retrieval_authorization():
+    results = rag_pipeline.query("quarterly revenue", user="intern")
+    assert "Q4 revenue" not in results  # Tests permission boundaries
+    assert "public FAQ" in results  # Tests authorized access
+```
+
+Without authorization testing, you won't discover if users can access information from unauthorized documents until in production.
+
+## Understanding Testcontainers
+
+Testcontainers is a testing library that provides lightweight, throwaway containers for integration tests.
+Instead of mocking authorization logic or maintaining shared test infrastructure, you spin up real SpiceDB instances during tests.
+
+### How Testcontainers Works
+
+Each test gets a fresh, isolated SpiceDB container:
+
+1. **Automatic startup**: Test framework pulls the SpiceDB image and starts a container
+2. **Port mapping**: Container ports are dynamically mapped to avoid conflicts
+3. **Health checks**: Framework waits for SpiceDB to be ready before running tests
+4. **Automatic cleanup**: Container is destroyed after tests complete
+
+This approach eliminates flaky tests caused by shared state, manual setup, or mock inconsistencies.
+
+<Callout type="info">
+  Testcontainers requires Docker to be running on your system. Install Docker Desktop or Docker
+  Engine before running tests. The framework automatically handles all container lifecycle
+  management.
+</Callout>
+
+## Setting Up Tests with Testcontainers
+
+The SpiceDB Testcontainer is available in [Python](https://testcontainers.com/modules/spicedb/?language=python) and [Go](https://testcontainers.com/modules/spicedb/?language=go). This guide shows how you can use the Python module.  
+Python RAG systems built with LangChain, LlamaIndex, or custom implementations can use this for testing.
+
+### Installing the Python Module
+
+Install the SpiceDB Testcontainer for Python:
+
+```bash
+pip install testcontainers-spicedb
+```
+
+You'll also need the SpiceDB Python client:
+
+```bash
+pip install authzed
+```
+
+```python
+from testcontainers_spicedb import SpiceDBContainer
+from authzed.api.v1 import (
+    InsecureClient,
+    WriteSchemaRequest,
+    CheckPermissionRequest,
+    CheckPermissionResponse,
+    ObjectReference,
+    SubjectReference,
+)
+
+# Start a disposable SpiceDB instance
+with SpiceDBContainer(image="authzed/spicedb:v1.47.1") as spicedb:
+    # Connect using the Authzed Python client (no TLS for local containers)
+    client = InsecureClient(
+        spicedb.get_endpoint(),
+        spicedb.get_secret_key(),
+    )
+
+    # Write a minimal schema
+    client.WriteSchema(
+        WriteSchemaRequest(
+            schema="""
+            definition user {}
+
+            definition document {
+              relation owner: user
+              permission read = owner
+            }
+            """
+        )
+    )
+
+    # Check a permission (e.g. for a RAG authorization gate)
+    response = client.CheckPermission(
+        CheckPermissionRequest(
+            resource=ObjectReference(
+                object_type="document",
+                object_id="doc1",
+            ),
+            permission="read",
+            subject=SubjectReference(
+                object=ObjectReference(
+                    object_type="user",
+                    object_id="alice",
+                )
+            ),
+        )
+    )
+
+    assert (
+        response.permissionship
+        == CheckPermissionResponse.PERMISSIONSHIP_NO_PERMISSION
+    )
+```
+
+For full test examples (relationships, consistency tokens, and post-retrieval filtering in RAG pipelines), see the complete example linked at the end.
+
+### Running Python Tests
+
+Execute tests with pytest:
+
+```bash
+pytest test_rag_permissions.py -v
+```
+
+## Related Resources
+
+- [Full example](https://github.com/sohanmaheshwar/testcontainers-spicedb-py/blob/main/examples/full-example.py): Complete example using the SpiceDB Testcontainer
+- [Using SpiceDB Go Testcontainer](https://www.docker.com/blog/rag-permission-testing-testcontainers-spicedb/) - Use a community-created Go Testcontainer module for SpiceDB
