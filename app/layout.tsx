@@ -21,7 +21,7 @@ export const generateMetadata = async (
 ): Promise<Metadata> => {
   const { description } = await parentPromise;
   return {
-    metadataBase: new URL("https://authzed.com"),
+    metadataBase: new URL("https://authzed.com/docs"),
     title: {
       default: "Authzed Docs",
       template: "%s - Authzed Docs",
@@ -44,8 +44,7 @@ export const generateMetadata = async (
 
 export default async function RootLayout({ children }) {
   const pageMap = await getPageMap();
-  const enableSearch =
-    process.env.NEXT_PUBLIC_ENABLE_SEARCH_BLOG_INTEGRATION === "true";
+  const enableSearch = process.env.NEXT_PUBLIC_ENABLE_SEARCH_BLOG_INTEGRATION === "true";
 
   const navbar = (
     <Navbar

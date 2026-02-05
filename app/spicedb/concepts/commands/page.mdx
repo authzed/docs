@@ -27,12 +27,14 @@ A database that stores and computes permissions
 
 ### Children commands
 
-- [spicedb datastore](#reference-spicedb-datastore) - datastore operations
-- [spicedb lsp](#reference-spicedb-lsp) - serve language server protocol
-- [spicedb man](#reference-spicedb-man) - Generate man page
-- [spicedb serve](#reference-spicedb-serve) - serve the permissions database
-- [spicedb serve-testing](#reference-spicedb-serve-testing) - test server with an in-memory datastore
-- [spicedb version](#reference-spicedb-version) - displays the version of SpiceDB
+- [spicedb datastore](#reference-spicedb-datastore)	 - datastore operations
+- [spicedb lsp](#reference-spicedb-lsp)	 - serve language server protocol
+- [spicedb man](#reference-spicedb-man)	 - Generate man page
+- [spicedb postgres-fdw](#reference-spicedb-postgres-fdw)	 - serve a Postgres Foreign Data Wrapper for SpiceDB (EXPERIMENTAL)
+- [spicedb serve](#reference-spicedb-serve)	 - serve the permissions database
+- [spicedb serve-testing](#reference-spicedb-serve-testing)	 - test server with an in-memory datastore
+- [spicedb version](#reference-spicedb-version)	 - displays the version of SpiceDB
+
 
 ## Reference: `spicedb datastore`
 
@@ -48,10 +50,11 @@ Operations against the configured datastore
 
 ### Children commands
 
-- [spicedb datastore gc](#reference-spicedb-datastore-gc) - executes garbage collection
-- [spicedb datastore head](#reference-spicedb-datastore-head) - compute the head (latest) database migration revision available
-- [spicedb datastore migrate](#reference-spicedb-datastore-migrate) - execute datastore schema migrations
-- [spicedb datastore repair](#reference-spicedb-datastore-repair) - executes datastore repair
+- [spicedb datastore gc](#reference-spicedb-datastore-gc)	 - executes garbage collection
+- [spicedb datastore head](#reference-spicedb-datastore-head)	 - compute the head (latest) database migration revision available
+- [spicedb datastore migrate](#reference-spicedb-datastore-migrate)	 - execute datastore schema migrations
+- [spicedb datastore repair](#reference-spicedb-datastore-repair)	 - executes datastore repair
+
 
 ## Reference: `spicedb datastore gc`
 
@@ -110,10 +113,6 @@ spicedb datastore gc [flags]
       --datastore-relationship-integrity-current-key-id string                current key id for relationship integrity checks
       --datastore-relationship-integrity-enabled                              enables relationship integrity checks. (CockroachDB driver only)
       --datastore-relationship-integrity-expired-keys stringArray             config for expired keys for relationship integrity checks
-      --datastore-request-hedging                                             enable request hedging
-      --datastore-request-hedging-initial-slow-value duration                 initial value to use for slow datastore requests, before statistics have been collected (default 10ms)
-      --datastore-request-hedging-max-requests uint                           maximum number of historical requests to consider (default 1000000)
-      --datastore-request-hedging-quantile float                              quantile of historical datastore request time over which a request will be considered slow (default 0.95)
       --datastore-revision-quantization-interval duration                     boundary interval to which to round the quantized revision (default 5s)
       --datastore-revision-quantization-max-staleness-percent float           float percentage (where 1 = 100%) of the revision quantization interval where we may opt to select a stale revision for performance reasons. Defaults to 0.1 (representing 10%) (default 0.1)
       --datastore-spanner-credentials string                                  path to service account key credentials file with access to the cloud spanner instance (omit to use application default credentials)
@@ -125,7 +124,8 @@ spicedb datastore gc [flags]
       --datastore-tx-overlap-strategy string                                  strategy to generate transaction overlap keys ("request", "prefix", "static", "insecure") (CockroachDB driver only - see https://spicedb.dev/d/crdb-overlap for details) (default "static")
       --datastore-watch-buffer-length uint16                                  how large the watch buffer should be before blocking (default 1024)
       --datastore-watch-buffer-write-timeout duration                         how long the watch buffer should queue before forcefully disconnecting the reader (default 1s)
-      --datastore-watch-connect-timeout duration                              how long the watch connection should wait before timing out (CockroachDB driver only) (default 1s)
+      --datastore-watch-change-buffer-maximum-size string                     how much memory to reserve for the watch change buffer, either as a quantity of bytes (e.g. 5Gi) or a percentage of available memory (e.g. 50%). if this value is exceeded, the watch will error and must be restarted. (default "15%")
+      --datastore-watch-connect-timeout duration                              how long the watch connection to the underlying datastore should wait before timing out (CockroachDB driver only) (default 1s)
       --otel-endpoint string                                                  OpenTelemetry collector endpoint - the endpoint can also be set by using enviroment variables
       --otel-insecure                                                         connect to the OpenTelemetry collector in plaintext
       --otel-provider string                                                  OpenTelemetry provider for tracing ("none", "otlphttp", "otlpgrpc") (default "none")
@@ -145,6 +145,8 @@ spicedb datastore gc [flags]
       --log-level string     verbosity of logging ("trace", "debug", "info", "warn", "error") (default "info")
       --skip-release-check   if true, skips checking for new SpiceDB releases
 ```
+
+
 
 ## Reference: `spicedb datastore head`
 
@@ -176,6 +178,8 @@ spicedb datastore head [flags]
       --log-level string     verbosity of logging ("trace", "debug", "info", "warn", "error") (default "info")
       --skip-release-check   if true, skips checking for new SpiceDB releases
 ```
+
+
 
 ## Reference: `spicedb datastore migrate`
 
@@ -215,6 +219,8 @@ spicedb datastore migrate [revision] [flags]
       --log-level string     verbosity of logging ("trace", "debug", "info", "warn", "error") (default "info")
       --skip-release-check   if true, skips checking for new SpiceDB releases
 ```
+
+
 
 ## Reference: `spicedb datastore repair`
 
@@ -273,10 +279,6 @@ spicedb datastore repair [flags]
       --datastore-relationship-integrity-current-key-id string                current key id for relationship integrity checks
       --datastore-relationship-integrity-enabled                              enables relationship integrity checks. (CockroachDB driver only)
       --datastore-relationship-integrity-expired-keys stringArray             config for expired keys for relationship integrity checks
-      --datastore-request-hedging                                             enable request hedging
-      --datastore-request-hedging-initial-slow-value duration                 initial value to use for slow datastore requests, before statistics have been collected (default 10ms)
-      --datastore-request-hedging-max-requests uint                           maximum number of historical requests to consider (default 1000000)
-      --datastore-request-hedging-quantile float                              quantile of historical datastore request time over which a request will be considered slow (default 0.95)
       --datastore-revision-quantization-interval duration                     boundary interval to which to round the quantized revision (default 5s)
       --datastore-revision-quantization-max-staleness-percent float           float percentage (where 1 = 100%) of the revision quantization interval where we may opt to select a stale revision for performance reasons. Defaults to 0.1 (representing 10%) (default 0.1)
       --datastore-spanner-credentials string                                  path to service account key credentials file with access to the cloud spanner instance (omit to use application default credentials)
@@ -288,7 +290,8 @@ spicedb datastore repair [flags]
       --datastore-tx-overlap-strategy string                                  strategy to generate transaction overlap keys ("request", "prefix", "static", "insecure") (CockroachDB driver only - see https://spicedb.dev/d/crdb-overlap for details) (default "static")
       --datastore-watch-buffer-length uint16                                  how large the watch buffer should be before blocking (default 1024)
       --datastore-watch-buffer-write-timeout duration                         how long the watch buffer should queue before forcefully disconnecting the reader (default 1s)
-      --datastore-watch-connect-timeout duration                              how long the watch connection should wait before timing out (CockroachDB driver only) (default 1s)
+      --datastore-watch-change-buffer-maximum-size string                     how much memory to reserve for the watch change buffer, either as a quantity of bytes (e.g. 5Gi) or a percentage of available memory (e.g. 50%). if this value is exceeded, the watch will error and must be restarted. (default "15%")
+      --datastore-watch-connect-timeout duration                              how long the watch connection to the underlying datastore should wait before timing out (CockroachDB driver only) (default 1s)
       --otel-endpoint string                                                  OpenTelemetry collector endpoint - the endpoint can also be set by using enviroment variables
       --otel-insecure                                                         connect to the OpenTelemetry collector in plaintext
       --otel-provider string                                                  OpenTelemetry provider for tracing ("none", "otlphttp", "otlpgrpc") (default "none")
@@ -308,6 +311,8 @@ spicedb datastore repair [flags]
       --log-level string     verbosity of logging ("trace", "debug", "info", "warn", "error") (default "info")
       --skip-release-check   if true, skips checking for new SpiceDB releases
 ```
+
+
 
 ## Reference: `spicedb lsp`
 
@@ -332,16 +337,19 @@ spicedb lsp [flags]
       --skip-release-check   if true, skips checking for new SpiceDB releases
 ```
 
+
+
 ## Reference: `spicedb man`
 
 Generate a man page for SpiceDB.
-The output can be redirected to a file and installed to the system:
+ The output can be redirected to a file and installed to the system:
 
 ```
   spicedb man > spicedb.1
   sudo mv spicedb.1 /usr/share/man/man1/
   sudo mandb  # Update man page database
 ```
+
 
 ```
 spicedb man
@@ -354,6 +362,38 @@ spicedb man
       --log-level string     verbosity of logging ("trace", "debug", "info", "warn", "error") (default "info")
       --skip-release-check   if true, skips checking for new SpiceDB releases
 ```
+
+
+
+## Reference: `spicedb postgres-fdw`
+
+EXPERIMENTAL: Serves a Postgres-compatible interface for querying SpiceDB data using foreign data wrappers. This feature is experimental and subject to change.
+
+```
+spicedb postgres-fdw [flags]
+```
+
+### Options
+
+```
+      --postgres-access-token-secret string   (required) The password that Postgres will use to authenticate to the FDW proxy (configured in the Postgres FDW extension's OPTIONS)
+      --postgres-endpoint string              The endpoint at which to serve the Postgres protocol (default ":5432")
+      --postgres-username string              The username that Postgres will use to connect to the FDW proxy (default "postgres")
+      --shutdown-grace-period duration        The duration to wait for the server to shutdown gracefully
+      --spicedb-access-token-secret string    (required) Access token for calling the SpiceDB API
+      --spicedb-api-endpoint string           SpiceDB API endpoint (default "localhost:50051")
+      --spicedb-insecure                      Use insecure connection to SpiceDB API
+```
+
+### Options Inherited From Parent Flags
+
+```
+      --log-format string    format of logs ("auto", "console", "json") (default "auto")
+      --log-level string     verbosity of logging ("trace", "debug", "info", "warn", "error") (default "info")
+      --skip-release-check   if true, skips checking for new SpiceDB releases
+```
+
+
 
 ## Reference: `spicedb serve`
 
@@ -427,10 +467,6 @@ spicedb serve [flags]
       --datastore-relationship-integrity-current-key-id string                          current key id for relationship integrity checks
       --datastore-relationship-integrity-enabled                                        enables relationship integrity checks. (CockroachDB driver only)
       --datastore-relationship-integrity-expired-keys stringArray                       config for expired keys for relationship integrity checks
-      --datastore-request-hedging                                                       enable request hedging
-      --datastore-request-hedging-initial-slow-value duration                           initial value to use for slow datastore requests, before statistics have been collected (default 10ms)
-      --datastore-request-hedging-max-requests uint                                     maximum number of historical requests to consider (default 1000000)
-      --datastore-request-hedging-quantile float                                        quantile of historical datastore request time over which a request will be considered slow (default 0.95)
       --datastore-revision-quantization-interval duration                               boundary interval to which to round the quantized revision (default 5s)
       --datastore-revision-quantization-max-staleness-percent float                     float percentage (where 1 = 100%) of the revision quantization interval where we may opt to select a stale revision for performance reasons. Defaults to 0.1 (representing 10%) (default 0.1)
       --datastore-schema-watch-heartbeat duration                                       heartbeat time on the schema watch in the datastore (if supported). 0 means to default to the datastore's minimum. (default 1s)
@@ -443,7 +479,8 @@ spicedb serve [flags]
       --datastore-tx-overlap-strategy string                                            strategy to generate transaction overlap keys ("request", "prefix", "static", "insecure") (CockroachDB driver only - see https://spicedb.dev/d/crdb-overlap for details) (default "static")
       --datastore-watch-buffer-length uint16                                            how large the watch buffer should be before blocking (default 1024)
       --datastore-watch-buffer-write-timeout duration                                   how long the watch buffer should queue before forcefully disconnecting the reader (default 1s)
-      --datastore-watch-connect-timeout duration                                        how long the watch connection should wait before timing out (CockroachDB driver only) (default 1s)
+      --datastore-watch-change-buffer-maximum-size string                               how much memory to reserve for the watch change buffer, either as a quantity of bytes (e.g. 5Gi) or a percentage of available memory (e.g. 50%). if this value is exceeded, the watch will error and must be restarted. (default "15%")
+      --datastore-watch-connect-timeout duration                                        how long the watch connection to the underlying datastore should wait before timing out (CockroachDB driver only) (default 1s)
       --disable-version-response                                                        disables version response support in the API
       --dispatch-cache-enabled                                                          enable caching of dispatch calls this server makes to other servers (default true)
       --dispatch-cache-max-cost string                                                  upper bound (in bytes or as a percent of available memory) of the cache for dispatch calls this server makes to other servers (default "30%")
@@ -480,6 +517,7 @@ spicedb serve [flags]
       --experimental-dispatch-secondary-upstream-addrs stringToString                   secondary upstream addresses for dispatches, each with a name (default [])
       --experimental-dispatch-secondary-upstream-exprs stringToString                   map from request type to its associated CEL expression, which returns the secondary upstream(s) to be used for the request (default [])
       --experimental-lookup-resources-version lr3                                       if non-empty, the version of the experimental lookup resources API to use: lr3 or empty
+      --experimental-query-plan check                                                   if non-empty, the version of the experimental query plan to use: check or empty
       --grpc-addr string                                                                address to listen on to serve gRPC (default ":50051")
       --grpc-enabled                                                                    enable gRPC gRPC server (default true)
       --grpc-log-requests-enabled                                                       enable logging of API request payloads
@@ -543,6 +581,8 @@ spicedb serve [flags]
       --skip-release-check   if true, skips checking for new SpiceDB releases
 ```
 
+
+
 ## Reference: `spicedb serve-testing`
 
 An in-memory spicedb server which serves completely isolated datastores per client-supplied auth token used.
@@ -604,6 +644,8 @@ spicedb serve-testing [flags]
       --skip-release-check   if true, skips checking for new SpiceDB releases
 ```
 
+
+
 ## Reference: `spicedb version`
 
 displays the version of SpiceDB
@@ -625,3 +667,5 @@ spicedb version [flags]
       --log-level string     verbosity of logging ("trace", "debug", "info", "warn", "error") (default "info")
       --skip-release-check   if true, skips checking for new SpiceDB releases
 ```
+
+
