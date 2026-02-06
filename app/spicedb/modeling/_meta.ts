@@ -3,7 +3,7 @@ export default {
   "composable-schemas": "Composable Schemas (Preview)",
   "representing-users": "Representing Users",
   "validation-testing-debugging": "Validation, Testing, Debugging",
-  "recursion-and-max-depth": "Recursion & Max Depth",
+  "recursion-and-max-depth": "Cyclical Relationships",
   "protecting-a-list-endpoint": "Protecting a List Endpoint",
   "migrating-schema": "Migrating a Schema",
   "access-control-management": "Access Control Management",
