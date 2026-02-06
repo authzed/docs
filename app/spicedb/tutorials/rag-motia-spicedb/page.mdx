@@ -8,14 +8,14 @@ Learn how to build a complete retrieval-augmented generation pipeline with multi
 
 In this tutorial, you'll create a harvest logbook for a farm, which is a complete RAG system with authorization that:
 
-* Stores harvest data and automatically generates embeddings for semantic search
-* Splits text into optimized chunks with overlap for better retrieval accuracy
-* Implements fine-grained authorization using SpiceDB's relationship-based access control
-* Queries harvest history using natural language with AI-powered responses
-* Returns contextually relevant answers with source citations from vector search
-* Supports multi-tenant access where **users only see data they have permission to access**
-* Logs all queries and responses for audit trails in CSV or Google Sheets
-* Runs as an event-driven workflow orchestrated through Motia's framework
+- Stores harvest data and automatically generates embeddings for semantic search
+- Splits text into optimized chunks with overlap for better retrieval accuracy
+- Implements fine-grained authorization using SpiceDB's relationship-based access control
+- Queries harvest history using natural language with AI-powered responses
+- Returns contextually relevant answers with source citations from vector search
+- Supports multi-tenant access where **users only see data they have permission to access**
+- Logs all queries and responses for audit trails in CSV or Google Sheets
+- Runs as an event-driven workflow orchestrated through Motia's framework
 
 By the end of the tutorial, you'll have a complete system that combines semantic search with multi-tenant authorization.
 
@@ -23,9 +23,9 @@ By the end of the tutorial, you'll have a complete system that combines semantic
 
 Before starting the tutorial, ensure you have:
 
-* [OpenAI API key](https://platform.openai.com/api-keys) for embeddings and chat
-* [Pinecone account](https://app.pinecone.io/) with an index created (1536 dimensions, cosine metric)
-* [Docker](https://docs.docker.com/get-docker/) installed for running SpiceDB locally
+- [OpenAI API key](https://platform.openai.com/api-keys) for embeddings and chat
+- [Pinecone account](https://app.pinecone.io/) with an index created (1536 dimensions, cosine metric)
+- [Docker](https://docs.docker.com/get-docker/) installed for running SpiceDB locally
 
 ## Getting Started
 
@@ -87,10 +87,10 @@ Pinecone will store the vector embeddings for semantic search.
 
 1. Click **Create Index**
 2. Configure:
+   - **Name:** `harvest-logbook` (or your preference)
+   - **Dimensions:** `1536` (for OpenAI embeddings)
+   - **Metric:** `cosine`
 
-   * **Name:** `harvest-logbook` (or your preference)
-   * **Dimensions:** `1536` (for OpenAI embeddings)
-   * **Metric:** `cosine`
 3. Click **Create Index**
 
 #### Get Your Credentials
@@ -166,7 +166,7 @@ SpiceDB needs a schema that defines the authorization model for organizations, f
 
 #### Create the Schema File
 
-Create `src/services/harvest-logbook/spicedb.schema` with the authorization model. [A SpiceDB schema](https://authzed.com/docs/spicedb/concepts/schema) defines the types of objects found your application, how those objects can relate to one another, and the permissions that can be computed off of those relations. 
+Create `src/services/harvest-logbook/spicedb.schema` with the authorization model. [A SpiceDB schema](https://authzed.com/docs/spicedb/concepts/schema) defines the types of objects found your application, how those objects can relate to one another, and the permissions that can be computed off of those relations.
 
 Here's a snippet of the schema that defines `user`, `organization` and `farm` and the relations and permissions between them.
 
@@ -176,7 +176,7 @@ definition user {}
 definition organization {
     relation admin: user
     relation member: user
-    
+
     permission view = admin + member
     permission edit = admin + member
     permission query = admin + member
@@ -188,7 +188,7 @@ definition farm {
     relation owner: user
     relation editor: user
     relation viewer: user
-    
+
     permission view = viewer + editor + owner + organization->view
     permission edit = editor + owner + organization->edit
     permission query = viewer + editor + owner + organization->query
@@ -200,10 +200,10 @@ definition farm {
 
 The schema establishes:
 
-* Organizations with admins and members
-* Farms with owners, editors, and viewers  
-* Harvest entries linked to farms
-* Permission inheritance (org members can access farms in their org)
+- Organizations with admins and members
+- Farms with owners, editors, and viewers
+- Harvest entries linked to farms
+- Permission inheritance (org members can access farms in their org)
 
 #### Create Setup Scripts
 
@@ -255,11 +255,11 @@ This displays the complete authorization schema showing all definitions and perm
 
 The output shows:
 
-* **farm** definition with owner/editor/viewer roles
-* **harvest_entry** definition linked to farms
-* **organization** definition with admin/member roles
-* **query_session** definition for RAG queries
-* Permission rules for each resource type
+- **farm** definition with owner/editor/viewer roles
+- **harvest_entry** definition linked to farms
+- **organization** definition with admin/member roles
+- **query_session** definition for RAG queries
+- Permission rules for each resource type
 
 **Create sample user (user_alice as owner of farm_1):**
 
@@ -289,10 +289,10 @@ You'll see the default pet store example. We'll replace this with our harvest lo
 
 Your development environment is now ready. All services are connected:
 
-* Motia running on `localhost:3000`
-* Pinecone index created and connected
-* SpiceDB running with schema loaded
-* Sample permissions created (`user_alice` owns `farm_1`)
+- Motia running on `localhost:3000`
+- Pinecone index created and connected
+- SpiceDB running with schema loaded
+- Sample permissions created (`user_alice` owns `farm_1`)
 
 ## Exploring the Project
 
@@ -342,18 +342,18 @@ Our system processes harvest data through these stages:
 
 The system uses Motia's event-driven model:
 
-* **API Steps** handle HTTP requests
-* **Event Steps** process background tasks
-* Steps communicate by emitting and subscribing to events
-* Each step is independent and can be tested separately
+- **API Steps** handle HTTP requests
+- **Event Steps** process background tasks
+- Steps communicate by emitting and subscribing to events
+- Each step is independent and can be tested separately
 
 ### Authorization Layer
 
 Every API request passes through SpiceDB authorization:
 
-* Users have relationships with resources (owner, editor, viewer)
-* Permissions are checked before processing requests
-* Multi-tenant by design (users only access their farms)
+- Users have relationships with resources (owner, editor, viewer)
+- Permissions are checked before processing requests
+- Multi-tenant by design (users only access their farms)
 
 ### What We'll Build
 
@@ -393,10 +393,10 @@ Now let's understand the key parts you'll be implementing:
 
 ```typescript
 const bodySchema = z.object({
-  content: z.string().min(1, 'Content cannot be empty'),
-  farmId: z.string().min(1, 'Farm ID is required for authorization'),
+  content: z.string().min(1, "Content cannot be empty"),
+  farmId: z.string().min(1, "Farm ID is required for authorization"),
   metadata: z.record(z.any()).optional(),
-  query: z.string().optional()
+  query: z.string().optional(),
 });
 ```
 
@@ -406,25 +406,25 @@ Zod validates that requests include the harvest content and farm ID. The `query`
 
 ```typescript
 export const config: ApiRouteConfig = {
-  type: 'api',
-  name: 'ReceiveHarvestData',
-  path: '/harvest_logbook',
-  method: 'POST',
+  type: "api",
+  name: "ReceiveHarvestData",
+  path: "/harvest_logbook",
+  method: "POST",
   middleware: [errorHandlerMiddleware, harvestEntryEditMiddleware],
-  emits: ['process-embeddings', 'query-agent'],
-  bodySchema
+  emits: ["process-embeddings", "query-agent"],
+  bodySchema,
 };
 ```
 
-* `type: 'api'` makes this an HTTP endpoint
-* `middleware` runs authorization checks before the handler
-* `emits` declares this step triggers embedding processing and optional query events
-* Motia handles all the routing automatically
+- `type: 'api'` makes this an HTTP endpoint
+- `middleware` runs authorization checks before the handler
+- `emits` declares this step triggers embedding processing and optional query events
+- Motia handles all the routing automatically
 
 ### Authorization Check
 
 ```typescript
-middleware: [errorHandlerMiddleware, harvestEntryEditMiddleware]
+middleware: [errorHandlerMiddleware, harvestEntryEditMiddleware];
 ```
 
 The `harvestEntryEditMiddleware` checks SpiceDB to ensure the user has `edit` permission on the specified farm. If authorization fails, the request is rejected before reaching the handler. Authorization info is added to the request for use in the handler.
@@ -434,19 +434,22 @@ The `harvestEntryEditMiddleware` checks SpiceDB to ensure the user has `edit` pe
 ### Handler Logic
 
 ```typescript
-export const handler: Handlers['ReceiveHarvestData'] = async (req, { emit, logger, state }) => {
+export const handler: Handlers["ReceiveHarvestData"] = async (req, { emit, logger, state }) => {
   const { content, farmId, metadata, query } = bodySchema.parse(req.body);
   const entryId = `harvest-${Date.now()}`;
-  
+
   // Store entry data in state
-  await state.set('harvest-entries', entryId, {
-    content, farmId, metadata, timestamp: new Date().toISOString()
+  await state.set("harvest-entries", entryId, {
+    content,
+    farmId,
+    metadata,
+    timestamp: new Date().toISOString(),
   });
-  
+
   // Emit event to process embeddings
   await emit({
-    topic: 'process-embeddings',
-    data: { entryId, content, metadata }
+    topic: "process-embeddings",
+    data: { entryId, content, metadata },
   });
 };
 ```
@@ -457,14 +460,14 @@ The handler generates a unique entry ID, stores the data in Motia's state manage
 
 ```typescript
 await emit({
-  topic: 'process-embeddings',
-  data: { entryId, content, metadata: { ...metadata, farmId, userId } }
+  topic: "process-embeddings",
+  data: { entryId, content, metadata: { ...metadata, farmId, userId } },
 });
 
 if (query) {
   await emit({
-    topic: 'query-agent',
-    data: { entryId, query }
+    topic: "query-agent",
+    data: { entryId, query },
   });
 }
 ```
@@ -483,22 +486,22 @@ Open the Motia Workbench and test this endpoint:
 4. Switch to the **Headers** tab and add:
 
 ```json
-   {
-     "x-user-id": "user_alice"
-   }
+{
+  "x-user-id": "user_alice"
+}
 ```
 
 5. Switch to the **Body** tab and add:
 
 ```json
-   {
-     "content": "Harvested 500kg of tomatoes from field A. Weather was sunny.",
-     "farmId": "farm_1",
-     "metadata": {
-       "field": "A",
-       "crop": "tomatoes"
-     }
-   }
+{
+  "content": "Harvested 500kg of tomatoes from field A. Weather was sunny.",
+  "farmId": "farm_1",
+  "metadata": {
+    "field": "A",
+    "crop": "tomatoes"
+  }
+}
 ```
 
 6. Click **Send** button.
@@ -533,7 +536,7 @@ Now let's understand the key parts you'll be implementing:
 const inputSchema = z.object({
   entryId: z.string(),
   content: z.string(),
-  metadata: z.record(z.any()).optional()
+  metadata: z.record(z.any()).optional(),
 });
 ```
 
@@ -543,17 +546,17 @@ This step receives the entry ID, content, and metadata from the previous step's 
 
 ```typescript
 export const config: EventConfig = {
-  type: 'event',
-  name: 'ProcessEmbeddings',
-  subscribes: ['process-embeddings'],
+  type: "event",
+  name: "ProcessEmbeddings",
+  subscribes: ["process-embeddings"],
   emits: [],
-  input: inputSchema
+  input: inputSchema,
 };
 ```
 
-* `type: 'event'` makes this a background event handler
-* `subscribes: ['process-embeddings']` listens for events from Step 1
-* No emits - this is the end of the embedding pipeline
+- `type: 'event'` makes this a background event handler
+- `subscribes: ['process-embeddings']` listens for events from Step 1
+- No emits - this is the end of the embedding pipeline
 
 ### Text Chunking
 
@@ -562,7 +565,7 @@ const vectorIds = await HarvestLogbookService.storeEntry({
   id: entryId,
   content,
   metadata,
-  timestamp: new Date().toISOString()
+  timestamp: new Date().toISOString(),
 });
 ```
 
@@ -579,10 +582,10 @@ The OpenAI service generates 1536-dimension embeddings for each text chunk using
 ### Vector Storage
 
 ```typescript
-await state.set('harvest-vectors', entryId, {
+await state.set("harvest-vectors", entryId, {
   vectorIds,
   processedAt: new Date().toISOString(),
-  chunkCount: vectorIds.length
+  chunkCount: vectorIds.length,
 });
 ```
 
@@ -600,10 +603,9 @@ Step 2 runs automatically when Step 1 emits the `process-embeddings` event. To t
 2. In the Workbench, watch the workflow visualization
 3. You'll see the `ProcessEmbeddings` step activate automatically
 4. Check the **Logs** tab at the bottom to see:
-
-   * Text chunking progress
-   * Embedding generation
-   * Vector storage confirmation
+   - Text chunking progress
+   - Embedding generation
+   - Vector storage confirmation
 
 The step completes when you see "Successfully stored embeddings" in the logs. The vectors are now in Pinecone and ready for semantic search.
 
@@ -635,10 +637,14 @@ Now let's understand the key parts you'll be implementing:
 const inputSchema = z.object({
   entryId: z.string(),
   query: z.string(),
-  conversationHistory: z.array(z.object({
-    role: z.enum(['user', 'assistant', 'system']),
-    content: z.string()
-  })).optional()
+  conversationHistory: z
+    .array(
+      z.object({
+        role: z.enum(["user", "assistant", "system"]),
+        content: z.string(),
+      }),
+    )
+    .optional(),
 });
 ```
 
@@ -648,23 +654,23 @@ The step receives the query text and optional conversation history for multi-tur
 
 ```typescript
 export const config: EventConfig = {
-  type: 'event',
-  name: 'QueryAgent',
-  subscribes: ['query-agent'],
-  emits: ['log-to-sheets'],
-  input: inputSchema
+  type: "event",
+  name: "QueryAgent",
+  subscribes: ["query-agent"],
+  emits: ["log-to-sheets"],
+  input: inputSchema,
 };
 ```
 
-* `subscribes: ['query-agent']` listens for query events from Step 1
-* `emits: ['log-to-sheets']` triggers logging after generating response
+- `subscribes: ['query-agent']` listens for query events from Step 1
+- `emits: ['log-to-sheets']` triggers logging after generating response
 
 ### RAG Query Process
 
 ```typescript
 const agentResponse = await HarvestLogbookService.queryWithAgent({
   query,
-  conversationHistory
+  conversationHistory,
 });
 ```
 
@@ -681,11 +687,11 @@ The query is embedded using OpenAI and searched against Pinecone to find the top
 ### LLM Response Generation
 
 ```typescript
-await state.set('agent-responses', entryId, {
+await state.set("agent-responses", entryId, {
   query,
   response: agentResponse.response,
   sources: agentResponse.sources,
-  timestamp: agentResponse.timestamp
+  timestamp: agentResponse.timestamp,
 });
 ```
 
@@ -698,13 +704,13 @@ The LLM generates a response using the retrieved context. The system supports bo
 
 ```typescript
 await emit({
-  topic: 'log-to-sheets',
+  topic: "log-to-sheets",
   data: {
     entryId,
     query,
     response: agentResponse.response,
-    sources: agentResponse.sources
-  }
+    sources: agentResponse.sources,
+  },
 });
 ```
 
@@ -717,20 +723,19 @@ Step 3 runs automatically when you include a `query` field in the Step 1 request
 1. Send a request to `POST /harvest_logbook` with a query:
 
 ```json
-   {
-     "content": "Harvested 500kg of tomatoes from field A. Weather was sunny.",
-     "farmId": "farm_1",
-     "query": "What crops did we harvest?"
-   }
+{
+  "content": "Harvested 500kg of tomatoes from field A. Weather was sunny.",
+  "farmId": "farm_1",
+  "query": "What crops did we harvest?"
+}
 ```
 
 2. In the Workbench, watch the `QueryAgent` step activate
 3. Check the **Logs** tab to see:
-
-   * Query embedding generation
-   * Vector search in Pinecone
-   * LLM response generation
-   * Source citations
+   - Query embedding generation
+   - Vector search in Pinecone
+   - LLM response generation
+   - Source citations
 
 The step completes when you see the AI-generated response in the logs. The query and response are automatically logged by Step 5.
 
@@ -760,12 +765,16 @@ Now let's understand the key parts you'll be implementing:
 
 ```typescript
 const bodySchema = z.object({
-  query: z.string().min(1, 'Query cannot be empty'),
-  farmId: z.string().min(1, 'Farm ID is required for authorization'),
-  conversationHistory: z.array(z.object({
-    role: z.enum(['user', 'assistant', 'system']),
-    content: z.string()
-  })).optional()
+  query: z.string().min(1, "Query cannot be empty"),
+  farmId: z.string().min(1, "Farm ID is required for authorization"),
+  conversationHistory: z
+    .array(
+      z.object({
+        role: z.enum(["user", "assistant", "system"]),
+        content: z.string(),
+      }),
+    )
+    .optional(),
 });
 ```
 
@@ -775,23 +784,23 @@ The request requires a query and farm ID. Conversation history is optional for m
 
 ```typescript
 export const config: ApiRouteConfig = {
-  type: 'api',
-  name: 'QueryHarvestLogbook',
-  path: '/harvest_logbook/query',
-  method: 'POST',
+  type: "api",
+  name: "QueryHarvestLogbook",
+  path: "/harvest_logbook/query",
+  method: "POST",
   middleware: [errorHandlerMiddleware, harvestQueryMiddleware],
-  emits: ['query-agent']
+  emits: ["query-agent"],
 };
 ```
 
-* `path: '/harvest_logbook/query'` creates a dedicated query endpoint
-* `harvestQueryMiddleware` checks for `query` permission (not `edit`)
-* `emits: ['query-agent']` triggers the same RAG query handler as Step 3
+- `path: '/harvest_logbook/query'` creates a dedicated query endpoint
+- `harvestQueryMiddleware` checks for `query` permission (not `edit`)
+- `emits: ['query-agent']` triggers the same RAG query handler as Step 3
 
 ### Authorization Middleware
 
 ```typescript
-middleware: [errorHandlerMiddleware, harvestQueryMiddleware]
+middleware: [errorHandlerMiddleware, harvestQueryMiddleware];
 ```
 
 The `harvestQueryMiddleware` checks SpiceDB for `query` permission. This is less restrictive than `edit` - viewers can query but cannot modify data.
@@ -801,18 +810,18 @@ The `harvestQueryMiddleware` checks SpiceDB for `query` permission. This is less
 ### Handler Logic
 
 ```typescript
-export const handler: Handlers['QueryHarvestLogbook'] = async (req, { emit, logger }) => {
+export const handler: Handlers["QueryHarvestLogbook"] = async (req, { emit, logger }) => {
   const { query, farmId } = bodySchema.parse(req.body);
   const queryId = `query-${Date.now()}`;
-  
+
   await emit({
-    topic: 'query-agent',
-    data: { entryId: queryId, query }
+    topic: "query-agent",
+    data: { entryId: queryId, query },
   });
-  
+
   return {
     status: 200,
-    body: { success: true, queryId }
+    body: { success: true, queryId },
   };
 };
 ```
@@ -829,27 +838,27 @@ This is the dedicated query endpoint. Test it directly:
 2. Add the header:
 
 ```json
-   {
-     "x-user-id": "user_alice"
-   }
+{
+  "x-user-id": "user_alice"
+}
 ```
 
 3. Add the body:
 
 ```json
-   {
-     "query": "What crops did we harvest?",
-     "farmId": "farm_1"
-   }
+{
+  "query": "What crops did we harvest?",
+  "farmId": "farm_1"
+}
 ```
 
 4. Click **Send**
 
 You'll see a `200 OK` response with the query ID. In the **Logs** tab, watch for:
 
-* `QueryHarvestLogbook` - Authorization and query received
-* `QueryAgent` - Querying AI agent
-* `QueryAgent` - Agent query completed
+- `QueryHarvestLogbook` - Authorization and query received
+- `QueryAgent` - Querying AI agent
+- `QueryAgent` - Agent query completed
 
 The query runs in the background and results are logged by Step 5. This endpoint is perfect for read-only query operations without storing new data.
 
@@ -882,7 +891,7 @@ const inputSchema = z.object({
   entryId: z.string(),
   query: z.string(),
   response: z.string(),
-  sources: z.array(z.string()).optional()
+  sources: z.array(z.string()).optional(),
 });
 ```
 
@@ -892,21 +901,21 @@ The step receives the query, AI response, and optional source citations from Ste
 
 ```typescript
 export const config: EventConfig = {
-  type: 'event',
-  name: 'LogToSheets',
-  subscribes: ['log-to-sheets'],
+  type: "event",
+  name: "LogToSheets",
+  subscribes: ["log-to-sheets"],
   emits: [],
-  input: inputSchema
+  input: inputSchema,
 };
 ```
 
-* `subscribes: ['log-to-sheets']` listens for logging events from Step 3
-* No emits - this is the end of the workflow
+- `subscribes: ['log-to-sheets']` listens for logging events from Step 3
+- No emits - this is the end of the workflow
 
 ### Logging Service Selection
 
 ```typescript
-const useCSV = process.env.USE_CSV_LOGGER === 'true' || !process.env.GOOGLE_SHEETS_ID;
+const useCSV = process.env.USE_CSV_LOGGER === "true" || !process.env.GOOGLE_SHEETS_ID;
 
 await HarvestLogbookService.logToSheets(query, response, sources);
 ```
@@ -923,7 +932,7 @@ try {
   await HarvestLogbookService.logToSheets(query, response, sources);
   logger.info(`Successfully logged to ${destination}`);
 } catch (error) {
-  logger.error('Failed to log query response');
+  logger.error("Failed to log query response");
   // Don't throw - logging failures shouldn't break the main flow
 }
 ```
@@ -934,10 +943,10 @@ The step catches logging errors without throwing. This ensures that even if logg
 
 The CSV logger saves entries to `logs/harvest_logbook.csv` with these columns:
 
-* Timestamp
-* Query
-* Response
-* Sources (comma-separated)
+- Timestamp
+- Query
+- Response
+- Sources (comma-separated)
 
 Each entry is automatically escaped to handle quotes and commas in the content.
 
@@ -979,33 +988,33 @@ Open `http://localhost:3000` in your browser to access the Workbench.
 4. Add the authorization header:
 
 ```json
-   {
-     "x-user-id": "user_alice"
-   }
+{
+  "x-user-id": "user_alice"
+}
 ```
 
 5. Set the request body:
 
 ```json
-   {
-     "content": "Harvested 500kg of tomatoes from field A. Weather was sunny, no pest damage observed.",
-     "farmId": "farm_1",
-     "metadata": {
-       "field": "A",
-       "crop": "tomatoes",
-       "weight_kg": 500
-     }
-   }
+{
+  "content": "Harvested 500kg of tomatoes from field A. Weather was sunny, no pest damage observed.",
+  "farmId": "farm_1",
+  "metadata": {
+    "field": "A",
+    "crop": "tomatoes",
+    "weight_kg": 500
+  }
+}
 ```
 
 6. Click **Play** Button
 
 Watch the workflow execute in real-time. You'll see:
 
-* Authorization check passes (user_alice has edit permission)
-* Text chunked into embeddings
-* Vectors stored in Pinecone
-* Success response returned
+- Authorization check passes (user_alice has edit permission)
+- Text chunked into embeddings
+- Vectors stored in Pinecone
+- Success response returned
 
 ### Test 2: Query the Data
 
@@ -1013,28 +1022,28 @@ Watch the workflow execute in real-time. You'll see:
 2. Add the authorization header:
 
 ```json
-   {
-     "x-user-id": "user_alice"
-   }
+{
+  "x-user-id": "user_alice"
+}
 ```
 
 3. Set the request body:
 
 ```json
-   {
-     "farmId": "farm_1",
-     "query": "What crops did we harvest recently?"
-   }
+{
+  "farmId": "farm_1",
+  "query": "What crops did we harvest recently?"
+}
 ```
 
 4. Click **Send**
 
 Watch the RAG pipeline execute:
 
-* Query embedded via OpenAI
-* Similar vectors retrieved from Pinecone
-* AI generates response with context
-* Query and response logged to CSV
+- Query embedded via OpenAI
+- Similar vectors retrieved from Pinecone
+- AI generates response with context
+- Query and response logged to CSV
 
 ### Test 3: Verify Authorization
 
@@ -1044,9 +1053,9 @@ Try querying as a user without permission:
 2. Change the header:
 
 ```json
-   {
-     "x-user-id": "user_unauthorized"
-   }
+{
+  "x-user-id": "user_unauthorized"
+}
 ```
 
 3. Click **Send**
