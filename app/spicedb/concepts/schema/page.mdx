@@ -444,6 +444,98 @@ definition user {
 But in order to express that a user should be able to view themselves, you'll need to write a corresponding relationship (e.g. `user:alice#viewer@user:alice`)
 for the check to evaluate to true. The `self` keyword requires less DB space and computation to achieve the same result.
 
+### Typechecking
+
+The `use typechecking` feature allows you to explicitly declare and validate the types that permissions can resolve to, providing compile-time type safety for your authorization schemas.
+
+Benefits:
+
+- Catch type mismatches during schema compilation
+- Self-documenting permissions with explicit type information
+- Prevent bugs when refactoring relation types
+
+Enable type checking by adding `use typechecking` at the top of your schema:
+
+```zed
+use typechecking
+
+definition user {}
+
+definition document {
+    relation viewer: user
+    permission view: user = viewer
+}
+```
+
+The syntax for type annotations is:
+
+```zed
+permission <name>: <type1> | <type2> | ... = <expression>
+```
+
+Note that type annotations must be complete: they must include **all** types reachable through the permission expression.
+
+You can also slowly transition into a type-annotated schema by mixing annotated and non-annotated permissions:
+
+```zed
+use typechecking
+
+definition user {}
+
+definition document {
+    relation viewer: user
+    permission view: user = viewer      // Validated
+    permission edit = viewer            // Not validated (no annotation)
+}
+```
+
+#### Examples
+
+- Single Type
+
+```zed
+use typechecking
+
+definition user {}
+
+definition document {
+    relation viewer: user
+    permission view: user = viewer
+}
+```
+
+- Multiple Types
+
+```zed
+use typechecking
+
+definition user {}
+definition team {}
+
+definition document {
+    relation viewer: user | team
+    permission view: user | team = viewer
+}
+```
+
+- With Arrow Operations: the annotations must be for the types on the right-hand side of the arrow:
+
+```zed
+use typechecking
+
+definition user {}
+definition team {}
+
+definition organization {
+    relation member: user | team
+}
+
+definition document {
+    relation org: organization
+    permission view: user | team = org->member
+}
+```
+
 ### Naming Permissions
 
 Permissions define a set of objects that can perform an action or have some attribute, and thus **permissions should be named as verbs or nouns**, read as `(is/can) {permission name} (the object)`.

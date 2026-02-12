@@ -170,6 +170,42 @@ One of the big benefits to using a centralized authorization system like SpiceDB
 It can be tempting to define the authorization logic for an endpoint as being the `AND` or `OR` of the checks of other permissions, especially when the alternative is writing a new schema.
 However, this increases the likelihood of drift across your system, hides the authorization logic for a system in that system's codebase, and increases the load on SpiceDB.
 
+### Use Typechecking
+
+Tags: **schema**
+
+Consider this schema:
+
+```zed
+definition user {}
+definition serviceaccount {}
+
+definition document {
+	relation viewer: user
+	relation admin: serviceaccount
+	permission edit = viewer & admin
+}
+```
+
+This schema compiles successfully, but a call to `CheckPermission` for `document#edit` will _always_ return false at runtime because the intersection of `user` and `serviceaccount` is empty. This is a bug that can go unnoticed for a long period of time, because the API call doesn't return an error.
+
+Adding [type-checking](http://localhost:3000/spicedb/concepts/schema#typechecking) will turn these silent bugs into compile-time failures:
+
+```zed
+use typechecking
+
+definition user {}
+definition serviceaccount {}
+
+definition document {
+	relation viewer: user
+	relation admin: serviceaccount
+	permission edit: user = viewer & admin
+}
+```
+
+This will fail at `WriteSchema` time because the type annotation provided is incomplete; it should be `permission edit: user | serviceaccount = viewer & admin`.
+
 ### Avoid Cycles in your Schema
 
 Tags: **schema**
