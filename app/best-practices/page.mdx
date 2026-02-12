@@ -170,6 +170,12 @@ One of the big benefits to using a centralized authorization system like SpiceDB
 It can be tempting to define the authorization logic for an endpoint as being the `AND` or `OR` of the checks of other permissions, especially when the alternative is writing a new schema.
 However, this increases the likelihood of drift across your system, hides the authorization logic for a system in that system's codebase, and increases the load on SpiceDB.
 
+### Use Typechecking
+
+Tags: **schema**
+
+Adding [type-checking](https://authzed.com/docs/spicedb/concepts/schema#typechecking) to your schema can turn some silent bugs into failures at `WriteSchema` time.
+
 ### Avoid Cycles in your Schema
 
 Tags: **schema**
