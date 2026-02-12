@@ -95,6 +95,8 @@ definition document {
 
 ### Subject Relations
 
+_You can express similar logic with [Arrows](#--arrow); see [Arrows vs Subject Relations](#arrows-vs-subject-relations)._
+
 In the example below, the `owner` relation allows you to grant "roles" to specific subjects and also _sets_ of subjects.
 
 ```zed
@@ -260,6 +262,8 @@ permission can_only_read = reader - writer
 ```
 
 #### `->` (Arrow)
+
+_You can express similar logic with [Subject Relations](#subject-relations); see [Arrows vs Subject Relations](#arrows-vs-subject-relations)._
 
 Imagine a schema where a document is found under a folder:
 
@@ -491,6 +495,72 @@ This convention is useful for:
 - Identifiers must be 3-64 characters long and end with an alphanumeric character
 - Valid: `_ab`, `_private`, `_internal_relation`, `_helper123`
 - Invalid: `_` (too short), `_a` (too short), `_trailing_` (cannot end with underscore)
+
+## Notes on syntax
+
+### Arrows vs Subject Relations
+
+[Arrows](#--arrow) and [Subject Relations](#somethingelse) are very similar constructs: they
+both let you walk across a relation to indicate that one definition should be connected to
+another via a relationship.
+
+For the most part, they are functionally equivalent: most ideas that can be expressed with a
+subject relation can be expressed with an arrow and vice versa. For example, from the perspective
+of asking whether `user:alice` can `edit` the resource `document:doc1`, these two schemas are
+equivalent:
+
+```zed
+// Subject Relations
+definition user {}
+
+definition group {
+  relation member: user
+}
+
+definition document {
+  relation editor: group#member
+  permission edit = editor
+}
+
+// With test tuples:
+// group:eng#member@user:alice
+// document:doc1#editor@group:eng#member
+```
+
+and:
+
+```zed
+// Arrows
+definition user {}
+
+definition group {
+  relation member: user
+}
+
+definition document {
+  relation editor: group
+  permission edit = editor->member
+}
+
+// With test tuples:
+// group:eng#member@user:alice
+// document:doc1#editor@group:eng
+```
+
+There's two meaningful ways that they differ:
+
+- In the Subject Relation variant,
+  you can directly check the `document:doc1#editor@group:eng#member` relationship, which
+  tells you directly that all members of the `eng` group have `editor` on the document.
+- When writing relationships in the Subject Relation variant, you need to specify
+  the `optional_subject_relation` field in the [`SubjectReference`] on the `WriteRelationships`
+  request. This is one additional piece of bookkeeping.
+
+#### Should I use Arrows or Subject Relations?
+
+Because they're mostly equivalent, we recommend choosing whichever pattern makes sense to you
+at the beginning and then sticking with that convention. They do not differ in terms of Check and
+Lookup behavior or performance.
 
 ## Comments
 
