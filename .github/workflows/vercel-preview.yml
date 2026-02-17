@@ -1,0 +1,185 @@
+name: Vercel Preview (GitHub Actions)
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  deploy-preview:
+    name: Deploy Preview
+    runs-on: depot-ubuntu-latest
+    timeout-minutes: 15
+    concurrency:
+      group: vercel-preview-ga-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    permissions:
+      contents: read
+      deployments: write
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Check collaborator write access
+        id: permission
+        uses: actions/github-script@v7
+        with:
+          result-encoding: string
+          script: |
+            const author = context.payload.pull_request.user.login;
+            try {
+              const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                username: author,
+              });
+              const hasWrite = ['write', 'maintain', 'admin'].includes(data.permission);
+              core.info(`${author} has permission '${data.permission}' — hasWrite: ${hasWrite}`);
+              return String(hasWrite);
+            } catch (e) {
+              if (e.status === 404) {
+                core.info(`${author} is not a collaborator — hasWrite: false`);
+                return 'false';
+              }
+              throw e;
+            }
+
+      - name: Find existing comment
+        uses: peter-evans/find-comment@v3
+        id: find-comment
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: '<!-- vercel-preview-deployment -->'
+
+      - name: Post no-permission comment
+        if: steps.permission.outputs.result == 'false'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            <!-- vercel-preview-deployment -->
+            Preview deployment skipped — **@${{ github.event.pull_request.user.login }}** does not have write access to this repository.
+
+            A maintainer can trigger a preview deployment by [re-running this workflow](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+
+      - name: Setup Node.js
+        if: steps.permission.outputs.result == 'true'
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Generate timestamp
+        if: steps.permission.outputs.result == 'true'
+        id: timestamp-building
+        run: echo "time=$(date -u '+%b %d, %Y %I:%M%P')" >> $GITHUB_OUTPUT
+
+      - name: Post initial building comment
+        if: steps.permission.outputs.result == 'true'
+        uses: peter-evans/create-or-update-comment@v4
+        id: building-comment
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            <!-- vercel-preview-deployment -->
+            Preview deployment status for this pull request.
+
+            | Name | Status | Preview | Updated (UTC) |
+            | :--- | :----- | :------ | :------------ |
+            | **docs** | 🟡 [Building](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) | [View Workflow](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) | ${{ steps.timestamp-building.outputs.time }} |
+
+      - name: Deploy to Vercel
+        if: steps.permission.outputs.result == 'true'
+        id: deploy
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          npm install --global vercel@latest
+
+          DEPLOY_URL=$(vercel deploy --token "$VERCEL_TOKEN" --yes | tail -1)
+          echo "preview-url=$DEPLOY_URL" >> $GITHUB_OUTPUT
+
+          # Sanitize branch name for DNS: lowercase, non-alphanumeric to hyphens, collapse runs
+          BRANCH=$(echo "${{ github.head_ref }}" \
+            | tr '[:upper:]' '[:lower:]' \
+            | sed 's/[^a-z0-9]/-/g' \
+            | sed 's/-\+/-/g' \
+            | sed 's/^-//; s/-$//')
+
+          vercel alias set "$DEPLOY_URL" "docs-git-${BRANCH}-authzed.vercel.app" \
+            --token "$VERCEL_TOKEN"
+
+      - name: Create GitHub Deployment
+        if: steps.permission.outputs.result == 'true'
+        uses: chrnorm/deployment-action@v2
+        id: deployment
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          environment: Preview (GitHub Actions)
+          environment-url: ${{ steps.deploy.outputs.preview-url }}
+          transient-environment: true
+          auto-inactive: true
+
+      - name: Update deployment status to success
+        if: steps.permission.outputs.result == 'true' && success()
+        uses: chrnorm/deployment-status@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          deployment-id: ${{ steps.deployment.outputs.deployment_id }}
+          state: success
+          environment-url: ${{ steps.deploy.outputs.preview-url }}
+
+      - name: Update deployment status to failure
+        if: steps.permission.outputs.result == 'true' && failure()
+        uses: chrnorm/deployment-status@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          deployment-id: ${{ steps.deployment.outputs.deployment_id }}
+          state: failure
+
+      - name: Generate timestamp for success
+        if: steps.permission.outputs.result == 'true' && success()
+        id: timestamp-success
+        run: echo "time=$(date -u '+%b %d, %Y %I:%M%P')" >> $GITHUB_OUTPUT
+
+      - name: Update comment with success
+        if: steps.permission.outputs.result == 'true' && success()
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.building-comment.outputs.comment-id }}
+          edit-mode: replace
+          body: |
+            <!-- vercel-preview-deployment -->
+            Preview deployment status for this pull request.
+
+            | Name | Status | Preview | Updated (UTC) |
+            | :--- | :----- | :------ | :------------ |
+            | **docs** | 🟢 [Ready](${{ steps.deploy.outputs.preview-url }}) | [Visit Preview](${{ steps.deploy.outputs.preview-url }}) | ${{ steps.timestamp-success.outputs.time }} |
+
+      - name: Generate timestamp for failure
+        if: steps.permission.outputs.result == 'true' && failure()
+        id: timestamp-failure
+        run: echo "time=$(date -u '+%b %d, %Y %I:%M%P')" >> $GITHUB_OUTPUT
+
+      - name: Update comment with failure
+        if: steps.permission.outputs.result == 'true' && failure()
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.building-comment.outputs.comment-id }}
+          edit-mode: replace
+          body: |
+            <!-- vercel-preview-deployment -->
+            Preview deployment status for this pull request.
+
+            | Name | Status | Preview | Updated (UTC) |
+            | :--- | :----- | :------ | :------------ |
+            | **docs** | 🔴 [Failed](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) | [View Logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) | ${{ steps.timestamp-failure.outputs.time }} |
