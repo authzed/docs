@@ -446,15 +446,11 @@ export const handler: Handlers["ReceiveHarvestData"] = async (req, { emit, logge
     timestamp: new Date().toISOString(),
   });
 
-  // Emit event to process embeddings
-  await emit({
-    topic: "process-embeddings",
-    data: { entryId, content, metadata },
-  });
+  // Emit events
 };
-```
 
-The handler generates a unique entry ID, stores the data in Motia's state management, and emits an event to trigger embedding processing. If a query was provided, it also emits a `query-agent` event.
+
+The handler generates a unique entry ID, stores the data in Motia's state management, and emits events as described below.
 
 ### Event Emission
 
