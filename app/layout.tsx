@@ -80,6 +80,11 @@ export default async function RootLayout({ children }) {
             </Footer>
           }
           darkMode
+          nextThemes={{
+            value: {
+              dark: "dark dark-mode",
+            }
+          }}
           docsRepositoryBase="https://github.com/authzed/docs/tree/main"
           search={enableSearch && <Search />}
           sidebar={{
