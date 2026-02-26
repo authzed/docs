@@ -1,74 +1,75 @@
-name: Vercel Production Deployment
+---
+name: "Vercel Production Deployment"
 
-on:
+"on":
   push:
-    branches: [main]
+    branches: ["main"]
   workflow_dispatch:
 
 jobs:
   deploy-production:
-    name: Deploy to Production
-    runs-on: depot-ubuntu-latest
+    name: "Deploy to Production"
+    runs-on: "depot-ubuntu-latest"
     timeout-minutes: 15
     permissions:
-      contents: read
-      deployments: write
+      contents: "read"
+      deployments: "write"
     steps:
-      - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: "Checkout code"
+        uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd"  # v6
 
-      - name: Setup Node.js
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+      - name: "Setup Node.js"
+        uses: "actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238"  # v6
         with:
           node-version: 22
 
-      - name: Start deployment
+      - name: "Start deployment"
         run: |
           echo "🚀 Starting production deployment to authzed.com/docs"
           echo "📦 Commit: ${{ github.sha }}"
           echo "👤 Triggered by: ${{ github.actor }}"
           echo "⏰ Timestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
 
-      - name: Deploy to Vercel Production
-        id: deploy
+      - name: "Deploy to Vercel Production"
+        id: "deploy"
         env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_TOKEN: "${{ secrets.VERCEL_TOKEN }}"
+          VERCEL_ORG_ID: "${{ secrets.VERCEL_ORG_ID }}"
+          VERCEL_PROJECT_ID: "${{ secrets.VERCEL_PROJECT_ID }}"
         run: |
           npm install --global vercel@latest
 
           DEPLOY_URL=$(vercel deploy --token "$VERCEL_TOKEN" --prod --yes | tail -1)
           echo "preview-url=$DEPLOY_URL" >> $GITHUB_OUTPUT
 
-      - name: Create GitHub Deployment
-        uses: chrnorm/deployment-action@55729fcebec3d284f60f5bcabbd8376437d696b1 # v2
-        id: github-deployment
+      - name: "Create GitHub Deployment"
+        uses: "chrnorm/deployment-action@55729fcebec3d284f60f5bcabbd8376437d696b1"  # v2
+        id: "github-deployment"
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          environment: Production
-          environment-url: https://authzed.com/docs
+          token: "${{ secrets.GITHUB_TOKEN }}"
+          environment: "Production"
+          environment-url: "https://authzed.com/docs"
           auto-inactive: false
 
-      - name: Update deployment status to success
-        if: success()
-        uses: chrnorm/deployment-status@9a72af4586197112e0491ea843682b5dc280d806 # v2
+      - name: "Update deployment status to success"
+        if: "success()"
+        uses: "chrnorm/deployment-status@9a72af4586197112e0491ea843682b5dc280d806"  # v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          deployment-id: ${{ steps.github-deployment.outputs.deployment_id }}
-          state: success
-          environment-url: https://authzed.com/docs
+          token: "${{ secrets.GITHUB_TOKEN }}"
+          deployment-id: "${{ steps.github-deployment.outputs.deployment_id }}"
+          state: "success"
+          environment-url: "https://authzed.com/docs"
 
-      - name: Update deployment status to failure
-        if: failure()
-        uses: chrnorm/deployment-status@9a72af4586197112e0491ea843682b5dc280d806 # v2
+      - name: "Update deployment status to failure"
+        if: "failure()"
+        uses: "chrnorm/deployment-status@9a72af4586197112e0491ea843682b5dc280d806"  # v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          deployment-id: ${{ steps.github-deployment.outputs.deployment_id }}
-          state: failure
+          token: "${{ secrets.GITHUB_TOKEN }}"
+          deployment-id: "${{ steps.github-deployment.outputs.deployment_id }}"
+          state: "failure"
 
-      - name: Generate deployment summary
-        if: success()
+      - name: "Generate deployment summary"
+        if: "success()"
         run: |
           echo "## ✅ Production Deployment Successful" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -80,8 +81,8 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "🎉 Production docs site is now live at https://authzed.com/docs" >> $GITHUB_STEP_SUMMARY
 
-      - name: Generate failure summary
-        if: failure()
+      - name: "Generate failure summary"
+        if: "failure()"
         run: |
           echo "## ❌ Production Deployment Failed" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
