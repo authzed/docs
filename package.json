@@ -12,6 +12,7 @@
     "postbuild": "./scripts/postbuild.sh",
     "start": "next start",
     "lint:markdown": "markdownlint-cli2",
+    "lint:yaml": "yamllint .",
     "gen:pagefind": "node --experimental-strip-types scripts/buildSearchIndex.mts",
     "format:check": "oxfmt --check",
     "format": "oxfmt"
