@@ -1,6 +1,6 @@
 ---
 name: "Spellcheck"
-on:
+"on":
   push:
     branches:
       - "main"
