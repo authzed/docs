@@ -15,10 +15,10 @@ jobs:
       deployments: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
         with:
           node-version: 22
 
@@ -38,21 +38,21 @@ jobs:
         run: |
           npm install --global vercel@latest
 
-          DEPLOY_URL=$(vercel deploy --prod --token "$VERCEL_TOKEN" --yes | tail -1)
+          DEPLOY_URL=$(vercel deploy --token "$VERCEL_TOKEN" --prod --yes | tail -1)
           echo "preview-url=$DEPLOY_URL" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Deployment
-        uses: chrnorm/deployment-action@v2
+        uses: chrnorm/deployment-action@55729fcebec3d284f60f5bcabbd8376437d696b1 # v2
         id: github-deployment
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           environment: Production
           environment-url: https://authzed.com/docs
-          auto-inactive: true
+          auto-inactive: false
 
       - name: Update deployment status to success
         if: success()
-        uses: chrnorm/deployment-status@v2
+        uses: chrnorm/deployment-status@9a72af4586197112e0491ea843682b5dc280d806 # v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           deployment-id: ${{ steps.github-deployment.outputs.deployment_id }}
@@ -61,7 +61,7 @@ jobs:
 
       - name: Update deployment status to failure
         if: failure()
-        uses: chrnorm/deployment-status@v2
+        uses: chrnorm/deployment-status@9a72af4586197112e0491ea843682b5dc280d806 # v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           deployment-id: ${{ steps.github-deployment.outputs.deployment_id }}
