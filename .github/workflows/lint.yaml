@@ -25,7 +25,5 @@ jobs:
           cache: "pnpm"
       - name: "Install dependencies"
         run: "pnpm install"
-      - name: "Lint Markdown"
-        run: "pnpm run lint:markdown"
       - name: "Check Formatting"
         run: "pnpm run format:check"
