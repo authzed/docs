@@ -210,13 +210,13 @@ The schema establishes:
 Create a `scripts/` folder and add three files:
 
 **`scripts/setup-spicedb-schema.ts`** - Reads the schema file and writes it to SpiceDB\
-[View on GitHub](https://github.com/MotiaDev/motia-examples/blob/main/examples/harvest-logbook-rag/scripts/setup-spicedb-schema.ts)
+[View on GitHub](https://github.com/MotiaDev/motia-examples/blob/main/examples/rag-and-search/rag-applications/harvest-logbook-rag/scripts/setup-spicedb-schema.ts)
 
 **`scripts/verify-spicedb-schema.ts`** - Verifies the schema was written correctly\
-[View on GitHub](https://github.com/MotiaDev/motia-examples/blob/main/examples/harvest-logbook-rag/scripts/verify-spicedb-schema.ts)
+[View on GitHub](https://github.com/MotiaDev/motia-examples/blob/main/examples/rag-and-search/rag-applications/harvest-logbook-rag/scripts/verify-spicedb-schema.ts)
 
 **`scripts/create-sample-permissions.ts`** - Creates sample users and permissions for testing\
-[View on GitHub](https://github.com/Taofiqq/motia-examples/blob/main/examples/harvest-logbook-rag/scripts/create-sample-permissions.ts)
+[View on GitHub](https://github.com/MotiaDev/motia-examples/blob/main/examples/rag-and-search/rag-applications/harvest-logbook-rag/scripts/create-sample-permissions.ts)
 
 #### Install Script Runner
 
@@ -383,7 +383,7 @@ Create a new file at `steps/harvest-logbook/receive-harvest-data.step.ts`.
 
 > The complete source code for all steps is available on GitHub. You can reference the working implementation at any time.
 
-[View the complete Step 1 code on GitHub →](https://github.com/MotiaDev/motia-examples/blob/main/examples/harvest-logbook-rag/steps/harvest-logbook/receive-harvest-data.step.ts)
+[View the complete Step 1 code on GitHub →](https://github.com/MotiaDev/motia-examples/blob/main/examples/rag-and-search/rag-applications/harvest-logbook-rag/steps/harvest-logbook/receive-harvest-data.step.ts)
 
 ![image](https://hackmd.io/_uploads/B1e_5Dr11Ze.png)
 
@@ -429,11 +429,11 @@ middleware: [errorHandlerMiddleware, harvestEntryEditMiddleware];
 
 The `harvestEntryEditMiddleware` checks SpiceDB to ensure the user has `edit` permission on the specified farm. If authorization fails, the request is rejected before reaching the handler. Authorization info is added to the request for use in the handler.
 
-[View authorization middleware →](https://github.com/MotiaDev/motia-examples/blob/main/examples/harvest-logbook-rag/middlewares/authz.middleware.ts)
+[View authorization middleware →](https://github.com/MotiaDev/motia-examples/blob/main/examples/rag-and-search/rag-applications/harvest-logbook-rag/middlewares/authz.middleware.ts)
 
 ### Handler Logic
 
-```typescript
+````typescript
 export const handler: Handlers["ReceiveHarvestData"] = async (req, { emit, logger, state }) => {
   const { content, farmId, metadata, query } = bodySchema.parse(req.body);
   const entryId = `harvest-${Date.now()}`;
@@ -466,7 +466,7 @@ if (query) {
     data: { entryId, query },
   });
 }
-```
+````
 
 Events are how Motia steps communicate. The `process-embeddings` event triggers the next step to chunk the text and generate embeddings. If a query was provided, the `query-agent` event runs in parallel to answer the question using RAG.
 
@@ -522,7 +522,7 @@ This step runs in the background after the API returns, keeping the user experie
 
 Create a new file at `steps/harvest-logbook/process-embeddings.step.ts`.
 
-[View the complete Step 2 code on GitHub →](https://github.com/MotiaDev/motia-examples/blob/main/examples/harvest-logbook-rag/steps/harvest-logbook/process-embeddings.step.ts)
+[View the complete Step 2 code on GitHub →](https://github.com/MotiaDev/motia-examples/blob/main/examples/rag-and-search/rag-applications/harvest-logbook-rag/steps/harvest-logbook/process-embeddings.step.ts)
 
 Now let's understand the key parts you'll be implementing:
 
@@ -567,13 +567,13 @@ const vectorIds = await HarvestLogbookService.storeEntry({
 
 The service handles text splitting (400 character chunks with 40 character overlap), embedding generation via OpenAI, and storage in Pinecone. This chunking strategy ensures semantic continuity across chunks.
 
-[View text splitter service →](https://github.com/MotiaDev/motia-examples/blob/main/examples/harvest-logbook-rag/src/services/harvest-logbook/text-splitter.ts)
+[View text splitter service →](https://github.com/MotiaDev/motia-examples/blob/main/examples/rag-and-search/rag-applications/harvest-logbook-rag/src/services/harvest-logbook/text-splitter.ts
 
 ### Embedding Generation
 
 The OpenAI service generates 1536-dimension embeddings for each text chunk using the `text-embedding-ada-002` model.
 
-[View OpenAI service →](https://github.com/MotiaDev/motia-examples/blob/main/examples/harvest-logbook-rag/src/services/harvest-logbook/openai-service.ts)
+[View OpenAI service →](https://github.com/MotiaDev/motia-examples/blob/main/examples/rag-and-search/rag-applications/harvest-logbook-rag/src/services/harvest-logbook/openai-service.ts)
 
 ### Vector Storage
 
@@ -587,7 +587,7 @@ await state.set("harvest-vectors", entryId, {
 
 After storing vectors in Pinecone, the step updates Motia's state with the vector IDs for tracking. Each chunk gets a unique ID like `harvest-123-chunk-0`, `harvest-123-chunk-1`, etc.
 
-[View Pinecone service →](https://github.com/MotiaDev/motia-examples/blob/main/examples/harvest-logbook-rag/src/services/harvest-logbook/pinecone-service.ts)
+[View Pinecone service →](https://github.com/MotiaDev/motia-examples/blob/main/examples/rag-and-search/rag-applications/harvest-logbook-rag/src/services/harvest-logbook/pinecone-service.ts)
 
 The embeddings are now stored and ready for semantic search when users query the system.
 
@@ -623,7 +623,7 @@ The step supports both OpenAI and HuggingFace LLMs, giving you flexibility in ch
 
 Create a new file at `steps/harvest-logbook/query-agent.step.ts`.
 
-[View the complete Step 3 code on GitHub →](https://github.com/MotiaDev/motia-examples/blob/main/examples/harvest-logbook-rag/steps/harvest-logbook/query-agent.step.ts)
+[View the complete Step 3 code on GitHub →](https://github.com/MotiaDev/motia-examples/blob/main/examples/rag-and-search/rag-applications/harvest-logbook-rag/steps/harvest-logbook/query-agent.step.ts)
 
 Now let's understand the key parts you'll be implementing:
 
@@ -672,13 +672,13 @@ const agentResponse = await HarvestLogbookService.queryWithAgent({
 
 The service orchestrates the RAG pipeline: embedding the query, searching Pinecone for similar vectors, extracting context from top matches, and generating a response using the LLM.
 
-[View RAG orchestration service →](https://github.com/MotiaDev/motia-examples/blob/main/examples/harvest-logbook-rag/src/services/harvest-logbook/index.ts)
+[View RAG orchestration service →](https://github.com/MotiaDev/motia-examples/blob/main/examples/rag-and-search/rag-applications/harvest-logbook-rag/src/services/harvest-logbook/index.ts)
 
 ### Vector Search
 
 The query is embedded using OpenAI and searched against Pinecone to find the top 5 most similar chunks. Each result includes a similarity score and the original text.
 
-[View Pinecone query implementation →](https://github.com/MotiaDev/motia-examples/blob/main/examples/harvest-logbook-rag/src/services/harvest-logbook/pinecone-service.ts)
+[View Pinecone query implementation →](https://github.com/MotiaDev/motia-examples/blob/main/examples/rag-and-search/rag-applications/harvest-logbook-rag/src/services/harvest-logbook/pinecone-service.ts)
 
 ### LLM Response Generation
 
@@ -693,8 +693,8 @@ await state.set("agent-responses", entryId, {
 
 The LLM generates a response using the retrieved context. The system supports both OpenAI (default) and HuggingFace, controlled by the `USE_OPENAI_CHAT` environment variable. The response includes source citations showing which harvest entries informed the answer.
 
-[View OpenAI chat service →](https://github.com/MotiaDev/motia-examples/blob/main/examples/harvest-logbook-rag/src/services/harvest-logbook/openai-chat-service.ts)\
-[View HuggingFace service →](https://github.com/MotiaDev/motia-examples/blob/main/examples/harvest-logbook-rag/src/services/harvest-logbook/huggingface-service.ts)
+[View OpenAI chat service →](https://github.com/MotiaDev/motia-examples/blob/main/examples/rag-and-search/rag-applications/harvest-logbook-rag/src/services/harvest-logbook/openai-service.ts)\
+[View HuggingFace service →](https://github.com/MotiaDev/motia-examples/blob/main/examples/rag-and-search/rag-applications/harvest-logbook-rag/src/services/harvest-logbook/huggingface-service.ts)
 
 ### Event Emission
 
@@ -753,7 +753,7 @@ This separation also makes it easier to apply different rate limits or permissio
 
 Create a new file at `steps/harvest-logbook/query-only.step.ts`.
 
-[View the complete Step 4 code on GitHub →](https://github.com/MotiaDev/motia-examples/blob/main/examples/harvest-logbook-rag/steps/harvest-logbook/query-only.step.ts)
+[View the complete Step 4 code on GitHub →](https://github.com/MotiaDev/motia-examples/blob/main/examples/rag-and-search/rag-applications/harvest-logbook-rag/steps/harvest-logbook/query-only.step.ts)
 
 Now let's understand the key parts you'll be implementing:
 
@@ -801,7 +801,7 @@ middleware: [errorHandlerMiddleware, harvestQueryMiddleware];
 
 The `harvestQueryMiddleware` checks SpiceDB for `query` permission. This is less restrictive than `edit` - viewers can query but cannot modify data.
 
-[View authorization middleware →](https://github.com/MotiaDev/motia-examples/blob/main/examples/harvest-logbook-rag/middlewares/authz.middleware.ts)
+[View authorization middleware →](https://github.com/MotiaDev/motia-examples/blob/main/examples/rag-and-search/rag-applications/harvest-logbook-rag/middlewares/authz.middleware.ts)
 
 ### Handler Logic
 
@@ -876,7 +876,7 @@ The dual logging strategy (CSV/Google Sheets) gives you flexibility, use CSV loc
 
 Create a new file at `steps/harvest-logbook/log-to-sheets.step.ts`.
 
-[View the complete Step 5 code on GitHub →](https://github.com/MotiaDev/motia-examples/blob/main/examples/harvest-logbook-rag/steps/harvest-logbook/log-to-sheets.step.ts)
+[View the complete Step 5 code on GitHub →](https://github.com/MotiaDev/motia-examples/blob/main/examples/rag-and-search/rag-applications/harvest-logbook-rag/steps/harvest-logbook/log-to-sheets.step.ts)
 
 Now let's understand the key parts you'll be implementing:
 
@@ -918,8 +918,8 @@ await HarvestLogbookService.logToSheets(query, response, sources);
 
 The service automatically chooses between CSV and Google Sheets based on environment variables. This keeps the step code simple while supporting different deployment scenarios.
 
-[View CSV logger →](https://github.com/MotiaDev/motia-examples/blob/main/examples/harvest-logbook-rag/src/services/harvest-logbook/csv-logger.ts)\
-[View Google Sheets service →](https://github.com/MotiaDev/motia-examples/blob/main/examples/harvest-logbook-rag/src/services/harvest-logbook/sheets-service.ts)
+[View CSV logger →](https://github.com/MotiaDev/motia-examples/blob/main/examples/rag-and-search/rag-applications/harvest-logbook-rag/src/services/harvest-logbook/csv-logger.ts)\
+[View Google Sheets service →](https://github.com/MotiaDev/motia-examples/blob/main/examples/rag-and-search/rag-applications/harvest-logbook-rag/src/services/harvest-logbook/sheets-service.ts)
 
 ### Error Handling
 
@@ -1081,7 +1081,7 @@ You've built a complete RAG system with multi-tenant authorization using Motia's
 4. Handle async operations with event emission
 5. Integrate multiple services (OpenAI, Pinecone, SpiceDB)
 
-The repository can be [found on the Motia GitHub](https://github.com/MotiaDev/motia-examples/tree/main/examples/harvest-logbook-rag/src/services/harvest-logbook).
+The repository can be [found on the Motia GitHub](https://github.com/MotiaDev/motia-examples/tree/main/examples/rag-and-search/rag-applications/harvest-logbook-rag).
 
 ## See Also
 
