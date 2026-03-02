@@ -40,7 +40,7 @@ Now you should be able to see the docs rendered at http://localhost:3000
 Run linters:
 
 ```sh
-pnpm run lint
+ pnpm run lint:markdown
 ```
 
 ## Automated Documentation Suggestions
