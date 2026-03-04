@@ -12,12 +12,15 @@ export function Feedback() {
   const [showThankYou, setShowThankYou] = useState(false);
   const [isHelpful, setIsHelpful] = useState<boolean | null>(null);
   const [formData, setFormData] = useState({
-    hadRightInfo: false,
+    accurateInfo: false,
+    solvedMyProblem: false,
     easyToUnderstand: false,
     somethingElse: false,
-    missingInfo: false,
+    inaccurate: false,
+    couldntFind: false,
     difficultToUnderstand: false,
-    containsErrors: false,
+    codeSampleError: false,
+    other: false,
     comments: "",
     email: "",
   });
@@ -61,9 +64,11 @@ export function Feedback() {
 
       // Build issue body
       const issues: string[] = [];
-      if (formData.missingInfo) issues.push("Missing info");
+      if (formData.inaccurate) issues.push("Inaccurate");
+      if (formData.couldntFind) issues.push("Couldn't find what I was looking for");
       if (formData.difficultToUnderstand) issues.push("Difficult to understand");
-      if (formData.containsErrors) issues.push("Contains errors");
+      if (formData.codeSampleError) issues.push("Code sample error");
+      if (formData.other) issues.push("Other");
 
       const issueBody = `**Page:** ${pageUrl}
 
@@ -96,7 +101,9 @@ ${formData.comments || "No additional comments provided"}`;
 
   if (showThankYou) {
     return (
-      <div className={`border-t border-neutral-200 dark:border-neutral-800 py-8 transition-opacity duration-700 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+      <div
+        className={`border-t border-neutral-200 dark:border-neutral-800 py-8 transition-opacity duration-700 ${isVisible ? "opacity-100" : "opacity-0"}`}
+      >
         <div className="text-sm font-medium text-gray-900 dark:text-gray-200">
           Thank you for your feedback!
         </div>
@@ -106,7 +113,9 @@ ${formData.comments || "No additional comments provided"}`;
 
   if (showForm) {
     return (
-      <div className={`border-t border-neutral-200 dark:border-neutral-800 py-8 transition-opacity duration-700 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+      <div
+        className={`border-t border-neutral-200 dark:border-neutral-800 py-8 transition-opacity duration-700 ${isVisible ? "opacity-100" : "opacity-0"}`}
+      >
         <form onSubmit={handleFormSubmit} className="space-y-4">
           <div>
             <div className="text-sm mb-3 font-semibold text-gray-900 dark:text-gray-100">
@@ -118,17 +127,30 @@ ${formData.comments || "No additional comments provided"}`;
                   <label className="flex items-center gap-2 text-sm text-gray-900 dark:text-gray-100 cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={formData.hadRightInfo}
-                      onChange={(e) => setFormData({ ...formData, hadRightInfo: e.target.checked })}
+                      checked={formData.accurateInfo}
+                      onChange={(e) => setFormData({ ...formData, accurateInfo: e.target.checked })}
                       className="cursor-pointer"
                     />
-                    Had the right info
+                    Accurate info
+                  </label>
+                  <label className="flex items-center gap-2 text-sm text-gray-900 dark:text-gray-100 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.solvedMyProblem}
+                      onChange={(e) =>
+                        setFormData({ ...formData, solvedMyProblem: e.target.checked })
+                      }
+                      className="cursor-pointer"
+                    />
+                    Solved my problem
                   </label>
                   <label className="flex items-center gap-2 text-sm text-gray-900 dark:text-gray-100 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={formData.easyToUnderstand}
-                      onChange={(e) => setFormData({ ...formData, easyToUnderstand: e.target.checked })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, easyToUnderstand: e.target.checked })
+                      }
                       className="cursor-pointer"
                     />
                     Easy to understand
@@ -137,7 +159,9 @@ ${formData.comments || "No additional comments provided"}`;
                     <input
                       type="checkbox"
                       checked={formData.somethingElse}
-                      onChange={(e) => setFormData({ ...formData, somethingElse: e.target.checked })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, somethingElse: e.target.checked })
+                      }
                       className="cursor-pointer"
                     />
                     Something else
@@ -148,17 +172,28 @@ ${formData.comments || "No additional comments provided"}`;
                   <label className="flex items-center gap-2 text-sm text-gray-900 dark:text-gray-100 cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={formData.missingInfo}
-                      onChange={(e) => setFormData({ ...formData, missingInfo: e.target.checked })}
+                      checked={formData.inaccurate}
+                      onChange={(e) => setFormData({ ...formData, inaccurate: e.target.checked })}
                       className="cursor-pointer"
                     />
-                    Missing info
+                    Inaccurate
+                  </label>
+                  <label className="flex items-center gap-2 text-sm text-gray-900 dark:text-gray-100 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.couldntFind}
+                      onChange={(e) => setFormData({ ...formData, couldntFind: e.target.checked })}
+                      className="cursor-pointer"
+                    />
+                    Couldn&apos;t find what I was looking for
                   </label>
                   <label className="flex items-center gap-2 text-sm text-gray-900 dark:text-gray-100 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={formData.difficultToUnderstand}
-                      onChange={(e) => setFormData({ ...formData, difficultToUnderstand: e.target.checked })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, difficultToUnderstand: e.target.checked })
+                      }
                       className="cursor-pointer"
                     />
                     Difficult to understand
@@ -166,11 +201,22 @@ ${formData.comments || "No additional comments provided"}`;
                   <label className="flex items-center gap-2 text-sm text-gray-900 dark:text-gray-100 cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={formData.containsErrors}
-                      onChange={(e) => setFormData({ ...formData, containsErrors: e.target.checked })}
+                      checked={formData.codeSampleError}
+                      onChange={(e) =>
+                        setFormData({ ...formData, codeSampleError: e.target.checked })
+                      }
                       className="cursor-pointer"
                     />
-                    Contains errors
+                    Code sample error
+                  </label>
+                  <label className="flex items-center gap-2 text-sm text-gray-900 dark:text-gray-100 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.other}
+                      onChange={(e) => setFormData({ ...formData, other: e.target.checked })}
+                      className="cursor-pointer"
+                    />
+                    Other
                   </label>
                 </>
               )}
@@ -184,19 +230,23 @@ ${formData.comments || "No additional comments provided"}`;
             <textarea
               value={formData.comments}
               onChange={(e) => setFormData({ ...formData, comments: e.target.value })}
-              placeholder="Share your suggestions..."
+              placeholder={isHelpful ? "Tell us more about your experience" : "Share your suggestions..."}
               className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 resize-none focus:outline-none focus:border-gray-400 dark:focus:border-gray-500"
               rows={3}
             />
           </div>
 
           <div>
-            <label className="text-sm font-semibold block mb-2 text-gray-900 dark:text-gray-100">
-              Email
+            <label className="text-sm font-semibold block mb-1 text-gray-900 dark:text-gray-100">
+              Email <span className="font-normal text-gray-400 dark:text-gray-500">(optional)</span>
             </label>
+            {!isHelpful && (
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                We&apos;ll notify you when changes are made in response to your feedback.
+              </p>
+            )}
             <input
               type="email"
-              required
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               placeholder="your.email@example.com"
@@ -226,7 +276,9 @@ ${formData.comments || "No additional comments provided"}`;
   }
 
   return (
-    <div className={`border-t border-neutral-200 dark:border-neutral-800 py-8 transition-opacity duration-700 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+    <div
+      className={`border-t border-neutral-200 dark:border-neutral-800 py-8 transition-opacity duration-700 ${isVisible ? "opacity-100" : "opacity-0"}`}
+    >
       <div className="text-sm mb-4 font-semibold text-gray-900 dark:text-gray-100">
         Was this page helpful?
       </div>
