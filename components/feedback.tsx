@@ -230,7 +230,9 @@ ${formData.comments || "No additional comments provided"}`;
             <textarea
               value={formData.comments}
               onChange={(e) => setFormData({ ...formData, comments: e.target.value })}
-              placeholder={isHelpful ? "Tell us more about your experience" : "Share your suggestions..."}
+              placeholder={
+                isHelpful ? "Tell us more about your experience" : "Share your suggestions..."
+              }
               className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 resize-none focus:outline-none focus:border-gray-400 dark:focus:border-gray-500"
               rows={3}
             />
