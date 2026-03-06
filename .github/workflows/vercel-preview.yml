@@ -108,7 +108,7 @@ jobs:
           npm install --global vercel@latest
 
           DEPLOY_URL=$(vercel deploy --token "$VERCEL_TOKEN" --yes | tail -1)
-          echo "preview-url=$DEPLOY_URL" >> $GITHUB_OUTPUT
+          echo "deploy-url=$DEPLOY_URL" >> $GITHUB_OUTPUT
 
           # Sanitize branch name for DNS: lowercase, non-alphanumeric to hyphens, collapse runs
           # Truncate to 46 chars so the full alias (docs-git-<branch>-authzed) stays within the 63-char DNS label limit
@@ -122,6 +122,7 @@ jobs:
 
           vercel alias set "$DEPLOY_URL" "docs-git-${BRANCH}-authzed.vercel.app" \
             --token "$VERCEL_TOKEN"
+          echo "alias-url=https://docs-git-${BRANCH}-authzed.vercel.app" >> $GITHUB_OUTPUT
 
       - name: "Create GitHub Deployment"
         if: "steps.permission.outputs.result == 'true'"
@@ -130,7 +131,7 @@ jobs:
         with:
           token: "${{ secrets.GITHUB_TOKEN }}"
           environment: "Preview (GitHub Actions)"
-          environment-url: "${{ steps.deploy.outputs.preview-url }}"
+          environment-url: "${{ steps.deploy.outputs.alias-url }}"
           transient-environment: true
           auto-inactive: true
 
@@ -141,7 +142,7 @@ jobs:
           token: "${{ secrets.GITHUB_TOKEN }}"
           deployment-id: "${{ steps.deployment.outputs.deployment_id }}"
           state: "success"
-          environment-url: "${{ steps.deploy.outputs.preview-url }}"
+          environment-url: "${{ steps.deploy.outputs.alias-url }}"
 
       - name: "Update deployment status to failure"
         if: "steps.permission.outputs.result == 'true' && failure()"
@@ -169,7 +170,7 @@ jobs:
 
             | Name | Status | Preview | Updated (UTC) |
             | :--- | :----- | :------ | :------------ |
-            | **docs** | 🟢 [Ready](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) | [Visit Preview](${{ steps.deploy.outputs.preview-url }}) | ${{ steps.timestamp-success.outputs.time }} |
+            | **docs** | 🟢 [Ready](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) | [Visit Preview](${{ steps.deploy.outputs.alias-url }}) | ${{ steps.timestamp-success.outputs.time }} |
 
       - name: "Generate timestamp for failure"
         if: "steps.permission.outputs.result == 'true' && failure()"
