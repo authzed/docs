@@ -156,7 +156,7 @@ jobs:
           ---
           *Automated notification from GitHub Actions*" || echo "::warning::Failed to post failure notification"
 
-      - name: "Notify on timeout"
+      - name: "Notify on timeout/cancel"
         if: "cancelled()"
         continue-on-error: true
         env:
@@ -164,7 +164,7 @@ jobs:
           ISSUE_NUMBER: "${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || github.event.issue.number }}"
           RUN_URL: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         run: |
-          gh issue comment "$ISSUE_NUMBER" --body "## Documentation Workflow Timed Out
+          gh issue comment "$ISSUE_NUMBER" --body "## Documentation Workflow Cancelled/Timed Out
 
           The workflow was cancelled or timed out after 30 minutes.
 
