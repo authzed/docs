@@ -34,13 +34,13 @@ export function Feedback() {
   }, []);
 
   const handleYes = () => {
-    posthog.capture("docs-feedback", { helpful: true });
+    posthog.capture("docs-feedback-vote", { helpful: true });
     setIsHelpful(true);
     setShowForm(true);
   };
 
   const handleNo = () => {
-    posthog.capture("docs-feedback", { helpful: false });
+    posthog.capture("docs-feedback-vote", { helpful: false });
     setIsHelpful(false);
     setShowForm(true);
   };
@@ -52,7 +52,7 @@ export function Feedback() {
       posthog.identify(formData.email);
     }
 
-    posthog.capture("docs-feedback", {
+    posthog.capture("docs-feedback-detail", {
       helpful: isHelpful,
       details: formData,
     });
@@ -102,7 +102,7 @@ ${formData.comments || "No additional comments provided"}`;
   if (showThankYou) {
     return (
       <div
-        className={`border-t border-neutral-200 dark:border-neutral-800 py-8 transition-opacity duration-700 ${isVisible ? "opacity-100" : "opacity-0"}`}
+        className={`border-t border-neutral-200 dark:border-neutral-800 pt-4 pb-8 transition-opacity duration-700 ${isVisible ? "opacity-100" : "opacity-0"}`}
       >
         <div className="text-sm font-medium text-gray-900 dark:text-gray-200">
           Thank you for your feedback!
@@ -114,7 +114,7 @@ ${formData.comments || "No additional comments provided"}`;
   if (showForm) {
     return (
       <div
-        className={`border-t border-neutral-200 dark:border-neutral-800 py-8 transition-opacity duration-700 ${isVisible ? "opacity-100" : "opacity-0"}`}
+        className={`border-t border-neutral-200 dark:border-neutral-800 pt-4 pb-8 transition-opacity duration-700 ${isVisible ? "opacity-100" : "opacity-0"}`}
       >
         <form onSubmit={handleFormSubmit} className="space-y-4">
           <div>
@@ -279,7 +279,7 @@ ${formData.comments || "No additional comments provided"}`;
 
   return (
     <div
-      className={`border-t border-neutral-200 dark:border-neutral-800 py-8 transition-opacity duration-700 ${isVisible ? "opacity-100" : "opacity-0"}`}
+      className={`border-t border-neutral-200 dark:border-neutral-800 pt-4 pb-8 transition-opacity duration-700 ${isVisible ? "opacity-100" : "opacity-0"}`}
     >
       <div className="text-sm mb-4 font-semibold text-gray-900 dark:text-gray-100">
         Was this page helpful?

@@ -9,7 +9,7 @@ export function TocCTA() {
   const isCommercial = pathname?.startsWith("/authzed/");
 
   return isCommercial ? (
-    <div className="pt-4 pb-8">
+    <div className="mt-10 pt-4 pb-8">
       <div className="text-sm mb-4 font-semibold">Explore your use case</div>
       <Link href="https://authzed.com/schedule-demo" className="cursor-pointer">
         <Button variant="default" size="sm" className="w-full cursor-pointer">
@@ -18,11 +18,15 @@ export function TocCTA() {
       </Link>
     </div>
   ) : (
-    <div className="pt-4 pb-8">
+    <div className="mt-10 pt-4 pb-4">
       <div className="text-sm mb-1 font-semibold">AuthZed Cloud</div>
-      <div className="text-sm mb-4 font-normal text-stone-400">Hosted, self-service SpiceDB</div>
+      <div className="text-sm mb-4 font-normal text-gray-400">Hosted, self-service SpiceDB</div>
       <Link href="https://authzed.com/cloud/signup" className="cursor-pointer">
-        <Button variant="outline" size="sm" className="w-full cursor-pointer">
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+        >
           Get Started
         </Button>
       </Link>

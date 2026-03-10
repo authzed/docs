@@ -90,7 +90,6 @@ export default async function RootLayout({ children }) {
           feedback={{
             content: null,
           }}
-          editLink={null}
           toc={{ backToTop: true, extraContent: <TocExtraContent /> }}
         >
           <OurLayout>
