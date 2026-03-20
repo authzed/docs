@@ -1,0 +1,112 @@
+import { Callout } from "nextra/components";
+
+# Read-After-Write Consistency
+
+A common requirement when integrating SpiceDB is ensuring that a permission check reflects a relationship that was just written.
+For example, after granting a user access to a document, you want the next permission check to confirm that access.
+
+This page explains why read-after-write isn't automatic, what approaches are available, and how to choose the right one for your application.
+
+## Why reads might not reflect recent writes
+
+SpiceDB is designed to balance consistency and performance.
+To achieve low-latency permission checks, it uses multiple layers of caching and serves requests from recent snapshots of the datastore rather than always reading the absolute latest state.
+
+When you use the default `minimize_latency` consistency mode, SpiceDB selects a cached datastore snapshot.
+If a relationship was written after that snapshot was taken, the check won't see it until the cache catches up.
+The duration of this window is primarily controlled by the `--datastore-revision-quantization-interval` flag (default: 5 seconds), and can be further affected by `--datastore-revision-quantization-max-staleness-percent` and follower-read delay where configured.
+
+This is not a bug -- it is an intentional trade-off that dramatically improves performance for the vast majority of requests.
+But for workflows where a user has just made a change and expects to see the result, you need a strategy to handle it.
+
+## Approaches
+
+### Use ZedTokens with `at_least_as_fresh` (recommended)
+
+The most effective approach is to capture the [ZedToken] returned by a write operation and pass it in subsequent read requests using `at_least_as_fresh`.
+
+This tells SpiceDB: "give me a result that reflects at least this point in time."
+SpiceDB will use cached data when possible, but ensures the response is no older than the specified token.
+
+```proto
+// Step 1: Write a relationship and capture the ZedToken
+WriteRelationshipsResponse { written_at: ZedToken { token: "..." } }
+
+// Step 2: Use the token in the next check
+CheckPermissionRequest {
+  consistency: { at_least_as_fresh: ZedToken { token: "..." } }
+  resource: { ... }
+  permission: "view"
+  subject: { ... }
+}
+```
+
+This is the approach Google Zanzibar uses (via [Zookies][zookie]) and provides the best balance of correctness and performance.
+
+[zookie]: https://authzed.com/zanzibar/2Dv_Aat_2Q:0.Py6NWBPg8:2U
+
+#### Storing ZedTokens
+
+For web applications, you can pass the ZedToken back to the client (e.g. in a response header or body) and have the client include it in subsequent requests.
+
+For more durable guarantees, store the ZedToken alongside the resource in your application database.
+Update it whenever the resource or its permissions change.
+See [Storing ZedTokens][storing-zedtokens] for details.
+
+[storing-zedtokens]: /spicedb/concepts/consistency#storing-zedtokens
+
+### Use `fully_consistent`
+
+The simplest approach is to use `fully_consistent` for the specific requests that need to reflect recent writes.
+
+```proto
+CheckPermissionRequest {
+  consistency: { fully_consistent: true }
+  resource: { ... }
+  permission: "view"
+  subject: { ... }
+}
+```
+
+<Callout type="warning">
+  `fully_consistent` uses the head revision and greatly reduces cache hits, increasing latency and datastore load.
+  Use it sparingly -- only for the specific requests that require it, not as a default for all reads.
+
+</Callout>
+
+This is a good choice for getting started or for low-volume administrative operations where correctness matters more than latency.
+
+### Accept eventual consistency
+
+For many workloads, a brief delay before a permission change takes effect is acceptable.
+If your application can tolerate a few seconds of staleness, you can use `minimize_latency` for all requests and skip ZedToken management entirely.
+
+You can tune the staleness window with the `--datastore-revision-quantization-interval` flag.
+A shorter interval reduces the window but increases datastore load; a longer interval improves caching but increases the time before changes are visible.
+
+This works well for scenarios where:
+
+- Permission changes are infrequent relative to checks
+- The consequence of a briefly stale result is low (e.g. a dashboard that updates on the next page load)
+- You want the simplest possible integration
+
+## Choosing an approach
+
+| Approach                        | Correctness                 | Performance           | Complexity                |
+| ------------------------------- | --------------------------- | --------------------- | ------------------------- |
+| ZedTokens + `at_least_as_fresh` | Guaranteed read-after-write | High (uses caches)    | Moderate (token plumbing) |
+| `fully_consistent`              | Guaranteed read-after-write | Low (bypasses caches) | Low                       |
+| `minimize_latency`              | Eventual                    | Highest               | Lowest                    |
+
+For most production applications, we recommend using ZedTokens with `at_least_as_fresh`.
+Use `fully_consistent` only when you need a quick solution or when the request volume is low enough that the performance impact is acceptable.
+
+[ZedToken]: /spicedb/concepts/consistency#zedtokens
+
+## Further Reading
+
+- [Consistency in SpiceDB](/spicedb/concepts/consistency)
+- [Zed Tokens, Zookies, Consistency for Authorization](https://authzed.com/blog/zedtokens)
+- [Hotspot Caching in Google Zanzibar and SpiceDB](https://authzed.com/blog/hotspot-caching-in-google-zanzibar-and-spicedb)
+- [Best Practices: Understand your consistency needs](/best-practices#understand-your-consistency-needs)
+- [Best Practices: Use ZedTokens and "At Least As Fresh"](/best-practices#use-zedtokens-and-at-least-as-fresh-for-best-caching)
