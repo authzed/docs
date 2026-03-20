@@ -106,6 +106,26 @@ If you need read-after-write consistency, consider using a [ZedToken]
 
 </Callout>
 
+<Callout type="warning">
+  **CockroachDB users:** `fully_consistent` does not guarantee read-after-write consistency on CockroachDB.
+
+SpiceDB selects a revision using CockroachDB's `cluster_logical_timestamp()` at request time.
+Because CockroachDB is a distributed database, this timestamp can differ from other nodes by up to the cluster's configured [`max_offset`][max-offset] (default: 500ms).
+If the node handling the read picks a timestamp older than the one assigned to a recent write on a different node, the read will not see that write even though the data has been committed.
+
+This does not affect CockroachDB's normal read-after-write guarantees -- those are bypassed specifically because SpiceDB chooses its own evaluation revision rather than letting CockroachDB select one.
+
+The [overlap strategy][overlap-strategy] does not mitigate this.
+The overlap strategy prevents two concurrent writes from receiving commit timestamps in the reverse order, but it does not address clock skew between nodes during reads.
+
+If you need read-after-write consistency with CockroachDB, use a [ZedToken] with [`at_least_as_fresh`](#at-least-as-fresh) instead.
+
+[max-offset]: https://www.cockroachlabs.com/docs/stable/cockroach-start.html#flags-max-offset
+[overlap-strategy]: /spicedb/concepts/datastores#overlap-strategy
+[ZedToken]: #zedtokens
+
+</Callout>
+
 ```proto
 Consistency { fully_consistent: true }
 ```
