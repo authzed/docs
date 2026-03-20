@@ -1,6 +1,6 @@
 # Building Agentic RAG with SpiceDB, LangChain & Weaviate
 
-This guide shows how to add fine-grained authorization to a production-like RAG system using SpiceDB. Standard RAG pipelines follow a fixed `query -> retrieve -> generate` flow. This implementation adds a deterministic authorization step that agents cannot bypass. The example uses SpiceDB for authorization, [LangGraph](https://www.langchain.com/langgraph) to construct the workflow and [Weaviate](https://github.com/weaviate/weaviate) as the vector database.
+This guide shows how to add fine-grained authorization to a production-like RAG system using SpiceDB. Standard RAG pipelines follow a fixed `query -> retrieve -> generate` flow. This implementation adds a deterministic authorization step that agents cannot bypass. The example uses SpiceDB for authorization, [Weaviate](https://github.com/weaviate/weaviate) as the vector database, and the [LangChain-SpiceDB library](https://pypi.org/project/langchain-spicedb/).
 
 The full code repository can be [found here](https://github.com/authzed/examples/tree/main/agentic-rag-authorization)
 
