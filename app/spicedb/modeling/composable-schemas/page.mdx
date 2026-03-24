@@ -18,6 +18,9 @@ The command allows you to combine a schema that is spread across many files, for
 <Tabs.Tab>
 
 ```zed
+use import
+use partial
+
 import "./subjects.zed"
 
 partial view_partial {
@@ -64,6 +67,30 @@ There are three new pieces of syntax: [import statements](#import-statements), [
 
 ## Breaking Changes
 
+### `use import` and `use partial`
+
+_`zed` version v0.36.0_
+
+As of v0.36.0, if you want to use `import` and `partial` syntax, you need to enable the corresponding `use` flags, which tell the compiler
+that `import` and `partial` are valid syntax:
+
+```zed
+use import
+use partial
+
+import "foo.zed"
+partial something {}
+```
+
+Note that the `use` flags are only required in a file that uses those keywords - imported files that don't use their own
+`import` or `partial` syntax don't need the flags, though it is not an error for them to be present.
+
+### New Keywords
+
+_`zed` version v0.27.0 -> v0.35.0_
+
+<Callout>This is superseded by `use import` and `use partial` above.</Callout>
+
 The composable schema compiler has some breaking changes relative to the compiler used internally by SpiceDB on a `WriteSchema` call.
 A new version of SpiceDB should not cause your schema to break.
 However, the schema compiler introduces some new keywords (among other changes), which may result in a schema that can be
@@ -83,6 +110,8 @@ Import statements allow you to break down a schema along the lines of top-level 
 <Tabs.Tab>
 
 ```zed
+use import
+
 // An import keyword followed by a quoted relative filepath
 import "./one.zed"
 
@@ -135,6 +164,8 @@ It can contain relations, permissions, and partial references just like a `defin
 must be referenced by a [partial reference](#partial-references) to show up in the compiled schema.
 
 ```zed
+use partial
+
 partial view_partial {
     ...some_other_partial
 
@@ -157,6 +188,8 @@ or [python's dictionary unpacking](https://docs.python.org/3/reference/expressio
 This syntax:
 
 ```zed
+use partial
+
 partial view_partial {
     relation viewer: user
     permission view = viewer
