@@ -1,10 +1,6 @@
 import { Callout, Tabs } from "nextra/components";
 
-# Composable Schemas (Preview)
-
-<Callout type="info">
-  This preview feature's functionality may change before general release.
-</Callout>
+# Composable Schemas
 
 To make it easier to organize your schema and collaborate across teams, `zed` version v0.27.0 introduced a new schema compilation command that allows you to modularize your schema.
 
@@ -235,5 +231,5 @@ definition resource {
 
 Then on merge:
 
-1. CI runs `zed preview schema compile`
+1. CI runs `zed schema compile`
 1. CI calls SpiceDB's WriteSchema API with the compiled schema
