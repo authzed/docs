@@ -1,6 +1,6 @@
 export default {
   "developing-a-schema": "Developing a Schema",
-  "composable-schemas": "Composable Schemas (Preview)",
+  "composable-schemas": "Composable Schemas",
   "representing-users": "Representing Users",
   "validation-testing-debugging": "Validation, Testing, Debugging",
   "recursion-and-max-depth": "Recursion & Max Depth",
