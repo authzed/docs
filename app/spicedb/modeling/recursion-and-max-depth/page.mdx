@@ -128,13 +128,33 @@ This same error occurs whether the cause is a cycle or simply a very deep (but a
 SpiceDB intentionally avoids tracking visited objects for two reasons:
 
 1. **Semantic problems with self-referential sets**: When a group's members include itself, it creates logical paradoxes.
-   For example, if a user is a member through a cycle but also banned through the same cycle, is the user a member or not?
+
+   Consider this example:
+
+   ```zed
+   definition user {}
+
+   definition group {
+     relation direct_member: user | group#member
+     relation banned: user | group#member
+     permission member = direct_member - banned
+   }
+   ```
+
+   ```
+   group:firstgroup#direct_member@group:secondgroup#member
+   group:firstgroup#banned@group:bannedgroup#member
+   group:secondgroup#direct_member@user:tom
+   group:bannedgroup#direct_member@group:firstgroup#member
+   ```
+
+   `user:tom` is a `direct_member` of `secondgroup`, which makes him a member of `firstgroup` → which implies he's a member of `bannedgroup` → which implies he's _not_ a member of `firstgroup` → thus making him no longer `banned` → (logical inconsistency).
 
 2. **Performance overhead**: Tracking every visited object would require significant memory and network overhead, especially in distributed deployments.
 
 ## Common Questions
 
-### What do I do about a max depth error?
+### What do I do about a max depth error on CheckPermission?
 
 If you see an error like:
 
