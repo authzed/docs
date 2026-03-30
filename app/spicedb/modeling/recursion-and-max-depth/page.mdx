@@ -40,7 +40,7 @@ This tree has a **depth of 3** (three nodes visited).
 
 ## Traversal Depth Limit
 
-To prevent unbounded traversal, SpiceDB enforces a maximum depth limit.
+To prevent unbounded traversal, SpiceDB enforces a maximum depth limit on every path traversed during a `CheckPermission` request.
 By default, this limit is **50 hops**.
 If a traversal exceeds this limit, SpiceDB returns an error rather than continuing indefinitely.
 
