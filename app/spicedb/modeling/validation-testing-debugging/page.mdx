@@ -43,10 +43,10 @@ Instead, we recommend using [zed's explain flag] for this purpose.
 To request debug information, set the header `io.spicedb.requestdebuginfo` to `1`.
 
 <Callout type="info">
-  **Note:** In SpiceDB v1.30.0+, this header still works but the trace data is
-  returned in the response body (`debugTrace` field) rather than the trailer.
-  The trailer `io.spicedb.respmeta.debuginfo` will contain a message indicating
-  to check the response body instead.
+  **Note:** In SpiceDB v1.30.0+, this header still works but the trace data is returned in the
+  response body (`debugTrace` field) rather than the trailer. The trailer
+  `io.spicedb.respmeta.debuginfo` will contain a message indicating to check the response body
+  instead.
 </Callout>
 
 #### Example
@@ -179,9 +179,8 @@ To request tracing information, set `withTracing: true` in the request message. 
 - Preferred for modern integrations
 
 <Callout type="warning">
-  **Warning:** In versions older than v1.31.0, you must request tracing
-  information via a header, and the trace data will be returned in the response
-  trailer as JSON.
+  **Warning:** In versions older than v1.31.0, you must request tracing information via a header,
+  and the trace data will be returned in the response trailer as JSON.
 </Callout>
 
 #### Example Request/Response
