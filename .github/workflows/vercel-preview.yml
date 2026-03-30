@@ -125,6 +125,7 @@ jobs:
           VERCEL_TOKEN: "${{ secrets.VERCEL_TOKEN }}"
           VERCEL_ORG_ID: "${{ secrets.VERCEL_ORG_ID }}"
           VERCEL_PROJECT_ID: "${{ secrets.VERCEL_PROJECT_ID }}"
+          HEAD_REF: "${{ github.head_ref }}"
         run: |
           npm install --global vercel@latest
 
@@ -133,7 +134,7 @@ jobs:
 
           # Sanitize branch name for DNS: lowercase, non-alphanumeric to hyphens, collapse runs
           # Truncate to 46 chars so the full alias (docs-git-<branch>-authzed) stays within the 63-char DNS label limit
-          BRANCH=$(echo "${{ github.head_ref }}" \
+          BRANCH=$(echo "$HEAD_REF" \
             | tr '[:upper:]' '[:lower:]' \
             | sed 's/[^a-z0-9]/-/g' \
             | sed 's/-\+/-/g' \
