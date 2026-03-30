@@ -30,6 +30,26 @@ AuthZed has standardized our managed services on CockroachDB, but we give self-h
 - Query and data balanced across the CockroachDB
 - Setup and operational complexity of running CockroachDB
 
+### Consistency Considerations
+
+<Callout type="warning">
+  `fully_consistent` does not guarantee read-after-write consistency on CockroachDB.
+
+SpiceDB picks a revision using CockroachDB's `cluster_logical_timestamp()`, which can differ across nodes by up to the cluster's [`max_offset`][crdb-max-offset] (default: 500ms).
+A read may not see a recently committed write if the reading node's timestamp is behind the writing node's.
+
+This is specific to CockroachDB's distributed clock model and does not apply to single-node datastores like PostgreSQL.
+For read-after-write guarantees, use a [ZedToken] with [`at_least_as_fresh`][at-least-as-fresh].
+
+See [Consistency: Fully Consistent][fully-consistent] for details.
+
+[crdb-max-offset]: https://www.cockroachlabs.com/docs/stable/cockroach-start.html#flags-max-offset
+[ZedToken]: /spicedb/concepts/consistency#zedtokens
+[at-least-as-fresh]: /spicedb/concepts/consistency#at-least-as-fresh
+[fully-consistent]: /spicedb/concepts/consistency#fully-consistent
+
+</Callout>
+
 ### Developer Notes
 
 - Code can be found [here][crdb-code]
