@@ -99,15 +99,9 @@ Note that the snapshot used will be loaded at the beginning of the API call, and
 
 <Callout type="warning">
   This consistency mode explicitly bypasses caching, dramatically impacting latency.
+If you need read-after-write consistency, consider using a [ZedToken].
 
-If you need read-after-write consistency, consider using a [ZedToken]
-
-[ZedToken]: #zedtokens
-
-</Callout>
-
-<Callout type="warning">
-  **CockroachDB users:** `fully_consistent` does not guarantee read-after-write consistency on CockroachDB.
+**CockroachDB users:** `fully_consistent` does not guarantee read-after-write consistency on CockroachDB.
 
 At request time, SpiceDB directs the query towards one node in the CockroachDB cluster, and then runs [`cluster_logical_timestamp()`](https://www.cockroachlabs.com/docs/stable/functions-and-operators#system-info-functions).
 However, because CockroachDB is a distributed database, this timestamp can differ from other nodes by up to the cluster's configured [`max_offset`][max-offset] (default: 500ms).
