@@ -154,6 +154,7 @@ jobs:
           token: "${{ secrets.GITHUB_TOKEN }}"
           environment: "Preview (GitHub Actions)"
           environment-url: "${{ steps.deploy.outputs.alias-url }}"
+          ref: "${{ github.event.pull_request.head.sha }}"
           transient-environment: true
           auto-inactive: true
 
