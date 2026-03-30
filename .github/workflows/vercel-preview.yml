@@ -2,7 +2,7 @@
 name: "Vercel Preview"
 
 "on":
-  pull_request:
+  pull_request_target:
     types:
       - "opened"
       - "synchronize"
@@ -21,32 +21,47 @@ jobs:
       deployments: "write"
       pull-requests: "write"
     steps:
-      - name: "Checkout code"
-        uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6
-
       - name: "Check collaborator write access"
         id: "permission"
         uses: "actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b" # v7
         with:
           result-encoding: "string"
           script: |
-            const author = context.payload.pull_request.user.login;
-            try {
-              const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                username: author,
-              });
-              const hasWrite = ['write', 'maintain', 'admin'].includes(data.permission);
-              core.info(`${author} has permission '${data.permission}' — hasWrite: ${hasWrite}`);
-              return String(hasWrite);
-            } catch (e) {
-              if (e.status === 404) {
-                core.info(`${author} is not a collaborator — hasWrite: false`);
-                return 'false';
+            const writeLevels = ['write', 'maintain', 'admin'];
+
+            async function hasWrite(username) {
+              try {
+                const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  username,
+                });
+                const result = writeLevels.includes(data.permission);
+                core.info(`${username} has permission '${data.permission}' — hasWrite: ${result}`);
+                return result;
+              } catch (e) {
+                if (e.status === 404) {
+                  core.info(`${username} is not a collaborator — hasWrite: false`);
+                  return false;
+                }
+                throw e;
               }
-              throw e;
             }
+
+            const author = context.payload.pull_request.user.login;
+            const actor = context.actor;
+
+            if (await hasWrite(author)) {
+              return 'true';
+            }
+
+            // On re-runs, github.actor is the person who triggered the re-run
+            if (actor !== author && await hasWrite(actor)) {
+              core.info(`PR author ${author} lacks write access, but actor ${actor} (re-run) has it — allowing`);
+              return 'true';
+            }
+
+            return 'false';
 
       - name: "Find existing comment"
         uses: "peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e" # v3
@@ -55,6 +70,12 @@ jobs:
           issue-number: "${{ github.event.pull_request.number }}"
           comment-author: "github-actions[bot]"
           body-includes: "<!-- vercel-preview-deployment -->"
+
+      - name: "Checkout code"
+        if: "steps.permission.outputs.result == 'true'"
+        uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6
+        with:
+          ref: "${{ github.event.pull_request.head.sha }}"
 
       - name: "Post no-permission comment"
         if: "steps.permission.outputs.result == 'false'"
@@ -104,6 +125,7 @@ jobs:
           VERCEL_TOKEN: "${{ secrets.VERCEL_TOKEN }}"
           VERCEL_ORG_ID: "${{ secrets.VERCEL_ORG_ID }}"
           VERCEL_PROJECT_ID: "${{ secrets.VERCEL_PROJECT_ID }}"
+          HEAD_REF: "${{ github.head_ref }}"
         run: |
           npm install --global vercel@latest
 
@@ -112,7 +134,7 @@ jobs:
 
           # Sanitize branch name for DNS: lowercase, non-alphanumeric to hyphens, collapse runs
           # Truncate to 46 chars so the full alias (docs-git-<branch>-authzed) stays within the 63-char DNS label limit
-          BRANCH=$(echo "${{ github.head_ref }}" \
+          BRANCH=$(echo "$HEAD_REF" \
             | tr '[:upper:]' '[:lower:]' \
             | sed 's/[^a-z0-9]/-/g' \
             | sed 's/-\+/-/g' \
