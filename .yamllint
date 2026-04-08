@@ -12,3 +12,4 @@ extends: "default"
 rules:
   quoted-strings: "enable"
   line-length: "disable"
+  comments: "disable"

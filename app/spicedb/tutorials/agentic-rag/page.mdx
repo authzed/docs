@@ -1,0 +1,982 @@
+# Building Agentic RAG with SpiceDB, LangChain & Weaviate
+
+This guide shows how to add fine-grained authorization to a production-like RAG system using SpiceDB. Standard RAG pipelines follow a fixed `query -> retrieve -> generate` flow. This implementation adds a deterministic authorization step that agents cannot bypass. The example uses SpiceDB for authorization, [Weaviate](https://github.com/weaviate/weaviate) as the vector database, and the [LangChain-SpiceDB library](https://pypi.org/project/langchain-spicedb/).
+
+The full code repository can be [found here](https://github.com/authzed/examples/tree/main/agentic-rag-authorization)
+
+## Why Agentic RAG Needs Authorization
+
+Traditional RAG retrieves documents based on semantic similarity with no regard for who's asking. This causes two problems:
+
+1. **Security Risk**: Users might access documents they shouldn't see
+2. **Poor User Experience**: Systems fail silently when documents are denied, leaving users confused about why they didn't get an answer
+
+Agentic systems make this worse because agents make autonomous decisions across multiple steps, and each decision is a potential security boundary.
+
+### What "Agentic" Means Here
+
+This system uses the term "agentic RAG" but it's important to be accurate about what that means:
+
+- The pipeline is determinsitic: Retrieve → Authorize → Generate
+- The "agentic" part is the generation node using an LLM to create answers
+- The "agentic" part can be the Agent deciding it needs to query for data
+- The Agent should **not** reason if it needs to check for authorization. This has to be enforced in every step to prevent broken access control.
+
+> The agent can reason about whether it needs to look for data or the authorization results, but it cannot control or circumvent the authorization check itself.
+
+In addition this code repo has the option for an adaptive mode which includes:
+
+- Adds reasoning capabilities for retry logic
+- **Reason**: LLM analyzes authorization failures and decides whether to retry
+- **Adapt**: Can retry retrieval when authorization fails
+
+### RAG Approaches Comparison
+
+```
+Traditional RAG Pipeline:
+Query → Retrieve →  Generate
+         ↓
+    Vector DB
+---
+This System - Default Mode (max_attempts=1):
+Query → Retrieve → [Authorize] → Generate
+         ↓           ↓
+    BM25 search  Security
+                 boundary
+---
+This System - Adaptive Mode (max_attempts > 1):
+Query → Retrieve → [Authorize] → [Reason] → Generate/Retry
+         ↓           ↓            ↓
+    BM25 search  Security      LLM decides
+                 boundary      retry strategy
+```
+
+## Architecture Overview
+
+This implementation uses a 3-node default architecture (4 nodes in adaptive mode) built with LangGraph, Weaviate for vector storage, and SpiceDB for authorization.
+
+### The Default Three-Node Pipeline (max_attempts=1)
+
+1. **Retrieval Node** (Deterministic): Fetches documents from Weaviate using BM25 keyword search
+2. **Authorization Node** (Deterministic, Security Boundary): Filters documents through SpiceDB permissions
+3. **Generation Node** (LLM): Generates final answer with authorized context + explanations
+
+### The Adaptive Four-Node Pipeline (max_attempts > 1)
+
+1. **Retrieval Node** (Deterministic): Fetches documents from Weaviate
+2. **Authorization Node** (Deterministic, Security Boundary): Filters documents through SpiceDB permissions
+3. **Reasoning Node** (LLM, Conditional): Analyzes failures and decides whether to retry (only runs if authorization fails)
+4. **Generation Node** (LLM): Generates final answer with authorized context + explanations
+
+> The Authorization Node is hardcoded into the graph flow and always executes.
+> Nothing can skip, bypass, or modify this security boundary.
+
+### Why Authorization Must Be a Separate Node
+
+Authorization is a dedicated node rather than being embedded in retrieval or generation. The reasons are concrete:
+
+The authorization decision is completely isolated from the LLM. No prompt engineering or jailbreaking can affect it. If the node hits an error, the flow stops—no documents proceed to generation without explicit authorization. The graph structure makes the security boundary visible: you can see exactly where authorization runs on every request. And retrieval, authorization, and generation each do one thing, with no overlap in responsibility.
+
+### System Interfaces
+
+The system provides two interfaces:
+
+**1. Command-Line Interface (CLI)** — direct programmatic access via `examples/basic_example.py`, using `run_agentic_rag()` (sync) or `run_agentic_rag_async()` (async) from `agentic_rag/graph.py`.
+
+**2. Web UI** — a browser-based demo backed by a FastAPI server (`api/`) that serves the frontend from `ui/index.html`. Launch it with `python3 run_ui.py` or start the server directly with `uvicorn api.main:app`. The API exposes three endpoints:
+
+| Method | Path          | Description                            |
+| ------ | ------------- | -------------------------------------- |
+| `POST` | `/api/query`  | Execute a RAG query with authorization |
+| `GET`  | `/api/users`  | List available demo users              |
+| `GET`  | `/api/health` | Health check for backend services      |
+
+### State Management Across Nodes
+
+The system maintains state as it flows through the graph:
+
+```python
+class AgenticRAGState(TypedDict):
+    # Input
+    query: str                          # User's question
+    subject_id: str                     # User identifier for permissions
+
+    # Configuration
+    max_attempts: int                   # How many retrieval attempts allowed
+
+    # Agent messages (accumulated)
+    messages: Annotated[List[BaseMessage], operator.add]  # Agent conversation history
+
+    # Retrieval
+    retrieval_attempt: int              # Current attempt number
+    retrieved_documents: List[Document] # All retrieved documents
+
+    # Authorization (deterministic)
+    authorized_documents: List[Document] # Documents user can access
+    denied_count: int                    # How many documents were denied
+    authorization_passed: bool           # Whether any docs were authorized
+
+    # Final output
+    answer: str                         # Generated answer
+    reasoning: List[str]                # Agent's reasoning about failures
+```
+
+This state structure enables full observability: you can inspect exactly what happened at each step, which documents were denied, and why the agent made specific decisions.
+
+## Implementation Patterns
+
+### Pattern 1: Batch Permission Checking
+
+The most critical performance optimization for agentic RAG is efficient permission checking.
+When retrieval returns multiple documents, checking permissions sequentially using the `CheckPermission` API can create a bottleneck.
+
+Instead, use SpiceDB's `CheckBulkPermissions` API to check all permissions in a single request.
+The implementation lives in `agentic_rag/authorization_helpers.py`:
+
+```python
+def batch_check_permissions(
+    client: Client,
+    subject_id: str,
+    documents: List[Document],
+) -> Tuple[List[Document], List[str]]:
+    """
+    Check permissions for multiple documents in a single request.
+
+    """
+    if not documents:
+        return [], []
+
+    # Build bulk request items
+    items = []
+    for doc in documents:
+        doc_id = doc.metadata.get("doc_id")
+        items.append(
+            CheckBulkPermissionsRequestItem(
+                resource=ObjectReference(
+                    object_type="document",
+                    object_id=doc_id
+                ),
+                permission="view",
+                subject=SubjectReference(
+                    object=ObjectReference(
+                        object_type="user",
+                        object_id=subject_id
+                    )
+                ),
+            )
+        )
+
+    # Single bulk request to SpiceDB
+    request = CheckBulkPermissionsRequest(items=items)
+    response = client.CheckBulkPermissions(request)
+
+    # Process results
+    authorized_docs = []
+    denied_doc_ids = []
+
+    for i, pair in enumerate(response.pairs):
+        doc = documents[i]
+        doc_id = doc.metadata.get("doc_id")
+
+        # permissionship: 0=UNSPECIFIED, 1=NO_PERMISSION, 2=HAS_PERMISSION
+        if pair.item.permissionship == 2:
+            authorized_docs.append(doc)
+        else:
+            denied_doc_ids.append(doc_id)
+
+    return authorized_docs, denied_doc_ids
+```
+
+On error, the function **fails closed**: all documents are treated as denied and an empty authorized list is returned.
+
+### Pattern 2: The Authorization Security Boundary
+
+The authorization node in `agentic_rag/nodes/authorization_node.py` implements a non-bypassable security check.
+It uses the `log_node_execution` context manager for automatic timing and structured logging:
+
+```python
+def authorization_node(state: AgenticRAGState) -> dict:
+    """
+    Deterministic authorization node - ALWAYS runs, cannot be bypassed.
+
+    This node filters retrieved documents based on SpiceDB permissions.
+    This is a security boundary - the agent cannot bypass this check.
+    """
+    config = get_config()
+
+    with log_node_execution(
+        logger,
+        "authorization",
+        {
+            "subject_id": state["subject_id"],
+            "document_count": len(state["retrieved_documents"]),
+        }
+    ):
+        # Get or create SpiceDB client (thread-safe singleton)
+        client = get_spicedb_client(
+            config.spicedb_endpoint,
+            config.spicedb_token,
+        )
+
+        # Batch check permissions using SpiceDB's bulk API
+        authorized_docs, denied_doc_ids = batch_check_permissions(
+            client,
+            state["subject_id"],
+            state["retrieved_documents"],
+        )
+
+        denied_count = len(denied_doc_ids)
+
+        logger.info(
+            "Authorization results",
+            extra={
+                "authorized": len(authorized_docs),
+                "denied": denied_count,
+                "denied_doc_ids": denied_doc_ids,
+            },
+        )
+
+        return {
+            "authorized_documents": authorized_docs,
+            "denied_count": denied_count,
+            "authorization_passed": len(authorized_docs) > 0,
+            "messages": [
+                SystemMessage(
+                    content=f"Authorization: {len(authorized_docs)}/{len(state['retrieved_documents'])} documents authorized"
+                )
+            ],
+        }
+```
+
+Key security properties: it's hardcoded in the graph flow (cannot be skipped), fails closed on any error, logs every decision with full context through `log_node_execution`, and makes no LLM calls.
+
+### Pattern 3: Authorization-Aware Retry Logic (Optional)
+
+Traditional RAG systems fail when documents are unauthorized.
+This system can optionally adapt by reasoning about failures when max_attempts > 1.
+The routing functions live in `agentic_rag/graph.py`:
+
+```python
+def should_reason_or_generate(state: AgenticRAGState) -> str:
+    """
+    Decide whether to reason about failures or generate answer.
+
+    After authorization:
+    - If we have authorized documents: generate answer
+    - If no authorized documents AND max_attempts > 1 AND attempts left: reason
+    - Otherwise: generate answer (with explanation)
+    """
+    if state["authorization_passed"]:
+        return "generate"
+
+    # Only reason if adaptive mode is enabled and attempts remain
+    if (
+        state["max_attempts"] > 1
+        and state["retrieval_attempt"] < state["max_attempts"]
+    ):
+        return "reason"
+
+    return "generate"
+
+def should_retry_or_generate(state: AgenticRAGState) -> str:
+    """
+    Decide whether to retry retrieval or generate answer.
+
+    After reasoning about authorization failures:
+    - If attempts remain and no authorized docs: retry retrieval
+    - Otherwise: generate answer explaining access denial
+    """
+    if (
+        state["retrieval_attempt"] < state["max_attempts"]
+        and len(state["authorized_documents"]) == 0
+    ):
+        return "retrieve"  # Go back to retrieval
+    return "generate"
+```
+
+This creates an adaptive flow:
+
+```
+Authorize → Check Results
+    ↓           ↓
+    ↓      Has Docs?  →  Yes → Generate Answer
+    ↓           ↓
+    ↓           No
+    ↓           ↓
+    ↓      Reason About Failure
+    ↓           ↓
+    ↓      Attempts Left?  →  Yes → Retrieve Again
+    ↓           ↓
+    ↓           No
+    ↓           ↓
+    └───→  Generate Explanation
+```
+
+The agent can try different retrieval strategies (broader queries, different keywords, alternative sources) while always respecting the authorization boundary.
+
+> **Security Note**: The agent plans retrieval strategies and explains failures, but it never controls which documents are authorized.
+> Authorization remains deterministic and cannot be influenced by the agent's reasoning.
+
+### Pattern 4: Iterative Retrieval with Authorization (Adaptive Mode Only)
+
+When max_attempts > 1, the reasoning node (`agentic_rag/nodes/reasoning_node.py`) enables multi-attempt retrieval.
+It uses the shared `get_llm()` helper which returns a `gpt-4` instance at temperature 0:
+
+```python
+def reasoning_node(state: AgenticRAGState) -> dict:
+    """
+    LLM reasons about authorization results and decides next steps.
+
+    This node only runs when max_attempts > 1 AND authorization failed.
+    It analyzes why authorization failed and whether retry will help.
+    """
+    llm = get_llm()  # Returns ChatOpenAI(model="gpt-4", temperature=0)
+
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", REASONING_PROMPT),
+    ])
+
+    chain = prompt | llm
+
+    result = chain.invoke({
+        "query": state["query"],
+        "subject_id": state["subject_id"],
+        "retrieved_count": len(state["retrieved_documents"]),
+        "authorized_count": len(state["authorized_documents"]),
+        "denied_count": state["denied_count"],
+        "attempt": state["retrieval_attempt"],
+        "max_attempts": state["max_attempts"],
+        "reasoning": "\n".join(state.get("reasoning", [])),
+    })
+
+    reasoning = state.get("reasoning", [])
+    reasoning.append(result.content)
+
+    return {
+        "reasoning": reasoning,
+        "messages": [AIMessage(content=f"Reasoning: {result.content}")],
+    }
+```
+
+Note: This node never runs in default mode (max_attempts=1).
+
+Example reasoning trace from a real query:
+
+```
+User: bob (sales department)
+Query: "What are our system architecture best practices?"
+
+Attempt 1:
+- Retrieved: 3 engineering documents
+- Authorized: 0 documents
+- Reasoning: "The user lacks access to engineering documents.
+  However, there may be architecture documents shared with sales
+  for customer-facing architecture discussions. Let's try a more
+  specific query for shared architecture documentation."
+
+Attempt 2:
+- Retrieved: 2 documents (1 shared architecture doc, 1 engineering doc)
+- Authorized: 1 document (shared architecture doc)
+- Reasoning: "Success! Found one shared architecture document the
+  user can access. Generate answer from this authorized document."
+```
+
+The agent adapts its strategy while respecting authorization boundaries at every step.
+
+## SpiceDB Schema for Agentic RAG
+
+The authorization model uses this schema (`data/schema.zed`):
+
+```zed
+definition user {}
+
+definition department {
+    relation member: user
+}
+
+definition document {
+    relation owner: user
+    relation viewer: user | department#member
+    relation department_doc: department
+
+    permission view = viewer + owner
+    permission edit = owner
+}
+```
+
+This schema enables four authorization patterns:
+
+### Pattern 1: Department-Based Access (Primary)
+
+Most documents are accessible to all members of a department:
+
+```python
+# Document "eng-001" is viewable by engineering department members
+WriteRelationships([
+    Relationship(
+        resource=ObjectReference(object_type="document", object_id="eng-001"),
+        relation="viewer",
+        subject=SubjectReference(
+            object=ObjectReference(object_type="department", object_id="engineering"),
+            optional_relation="member"
+        )
+    )
+])
+
+# Alice is a member of engineering
+WriteRelationships([
+    Relationship(
+        resource=ObjectReference(object_type="department", object_id="engineering"),
+        relation="member",
+        subject=SubjectReference(
+            object=ObjectReference(object_type="user", object_id="alice")
+        )
+    )
+])
+
+# Result: alice can view eng-001
+```
+
+### Pattern 2: Cross-Department Collaboration
+
+Some documents are shared across multiple departments.
+The demo dataset includes three cross-department grants:
+
+| Document                       | Primary Department | Also Accessible To | Reason                                            |
+| ------------------------------ | ------------------ | ------------------ | ------------------------------------------------- |
+| `engineering-architecture-001` | engineering        | sales              | Technical sales teams need architecture knowledge |
+| `sales-guide-005`              | sales              | engineering        | Engineering needs product positioning info        |
+| `hr-policy-001`                | hr                 | finance            | Finance needs HR policies for budget planning     |
+
+```python
+# Architecture doc shared with both engineering and sales
+WriteRelationships([
+    # Engineering can view
+    Relationship(
+        resource=ObjectReference(object_type="document", object_id="engineering-architecture-001"),
+        relation="viewer",
+        subject=SubjectReference(
+            object=ObjectReference(object_type="department", object_id="engineering"),
+            optional_relation="member"
+        )
+    ),
+    # Sales can also view
+    Relationship(
+        resource=ObjectReference(object_type="document", object_id="engineering-architecture-001"),
+        relation="viewer",
+        subject=SubjectReference(
+            object=ObjectReference(object_type="department", object_id="sales"),
+            optional_relation="member"
+        )
+    )
+])
+
+# Result: Both alice (engineering) and bob (sales) can view engineering-architecture-001
+```
+
+### Pattern 3: Individual User Exceptions
+
+Specific users can be granted access regardless of department.
+The demo includes three individual exceptions:
+
+| User                | Additional Access       | Reason                                         |
+| ------------------- | ----------------------- | ---------------------------------------------- |
+| alice (engineering) | `sales-proposal-001`    | Technical input needed for sales proposal      |
+| finance_manager     | `hr-policy-002`         | Compensation policy access for budget planning |
+| bob (sales)         | `engineering-guide-006` | Technical documentation for sales enablement   |
+
+```python
+# Alice gets special access to a sales proposal
+WriteRelationships([
+    Relationship(
+        resource=ObjectReference(object_type="document", object_id="sales-proposal-001"),
+        relation="viewer",
+        subject=SubjectReference(
+            object=ObjectReference(object_type="user", object_id="alice")
+        )
+    )
+])
+
+# Result: alice (engineering) can view sales-proposal-001 despite being in a different department
+```
+
+### Pattern 4: Public Documents
+
+Five public documents are viewable by all four demo users.
+They are granted per-user `viewer` relationships for each of the four users (alice, bob, hr_manager, finance_manager):
+
+```
+public-handbook-001, public-handbook-002, public-handbook-003,
+public-policy-004, public-policy-005
+```
+
+> This schema is intentionally minimal. Production systems typically add hierarchical departments, role-based access, conditional permissions, and time-based access—SpiceDB's schema language supports all of these.
+
+### The Trust Model
+
+This architecture establishes clear trust boundaries:
+
+```
+Untrusted (LLM-Controlled):
+├─ Query interpretation
+├─ Retrieval strategy selection
+├─ Reasoning about failures
+└─ Answer generation
+
+Trusted (Deterministic):
+├─ Authorization checks (SpiceDB)
+├─ Graph flow (LangGraph state machine)
+├─ Permission evaluation (never touches LLM)
+└─ Security logging (tamper-evident)
+```
+
+When building agentic RAG systems, treat the LLM as useful but untrusted. It operates within guardrails it cannot modify.
+
+## Real-World Scenario Walkthrough
+
+Let's trace a complete query through the system to see how all the pieces work together.
+
+### Scenario: Cross-Department Access Discovery
+
+**User**: Bob (Sales Department)
+**Query**: "What are our microservices architecture patterns?"
+**Expected Behavior**: Bob shouldn't access engineering-only docs, but might access shared architecture documentation
+
+### Complete Trace
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+INITIAL STATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+query: "What are our microservices architecture patterns?"
+subject_id: bob
+max_attempts: 2
+retrieval_attempt: 0
+authorized_documents: []
+```
+
+**Step 1: Retrieval Node (Deterministic)**
+
+```
+[nodes.retrieval] Starting retrieval
+[nodes.retrieval] query: "microservices architecture patterns"
+[nodes.retrieval] Executing Weaviate BM25 search
+[nodes.retrieval] Retrieved 3 documents
+[nodes.retrieval] retrieval complete (duration_ms: 523)
+
+State Update:
+  retrieval_attempt: 1
+  retrieved_documents: [
+    {
+      doc_id: "engineering-architecture-003",
+      title: "Microservices Architecture Guide",
+      department: "engineering"
+    },
+    {
+      doc_id: "engineering-architecture-001",
+      title: "Customer-Facing Architecture Overview",
+      department: "engineering"  # Also shared with sales
+    },
+    {
+      doc_id: "engineering-architecture-002",
+      title: "Internal Service Communication Patterns",
+      department: "engineering"
+    }
+  ]
+```
+
+**Step 2: Authorization Node (Deterministic, Security Boundary)**
+
+```
+[nodes.authorization] Starting authorization
+[nodes.authorization] subject_id: bob
+[nodes.authorization] document_count: 3
+
+SpiceDB Evaluation:
+  engineering-architecture-003: bob -[view]-> engineering-architecture-003?
+    ├─ Check: bob is member of engineering?  NO
+    └─ Result: NO_PERMISSION
+
+  engineering-architecture-001: bob -[view]-> engineering-architecture-001?
+    ├─ Check: bob is member of engineering?  NO
+    ├─ Check: bob is member of sales?        YES (cross-dept grant)
+    └─ Result: HAS_PERMISSION
+
+  engineering-architecture-002: bob -[view]-> engineering-architecture-002?
+    ├─ Check: bob is member of engineering?  NO
+    └─ Result: NO_PERMISSION
+
+[nodes.authorization] Authorization results
+[nodes.authorization] authorized: 1
+[nodes.authorization] denied: 2
+[nodes.authorization] denied_doc_ids: ["engineering-architecture-003", "engineering-architecture-002"]
+[nodes.authorization] authorization complete (duration_ms: 42.3)
+
+State Update:
+  authorized_documents: [engineering-architecture-001]
+  denied_count: 2
+  authorization_passed: true
+  messages: ["Authorization: 1/3 documents authorized"]
+```
+
+**Step 3: Conditional Branch**
+
+```
+[graph] Evaluating should_reason_or_generate()
+[graph] authorization_passed: true
+[graph] Decision: generate (we have authorized documents)
+```
+
+Note: In default mode (max_attempts=1), this would skip reasoning even if authorization failed. With max_attempts > 1, reasoning would run if authorization_passed was false.
+
+**Step 4: Generation Node (LLM)**
+
+```
+[nodes.generation] Starting generation
+[nodes.generation] subject_id: bob
+[nodes.generation] authorized_count: 1
+[nodes.generation] denied_count: 2
+[nodes.generation] LLM generating answer from authorized context
+[nodes.generation] generation complete (duration_ms: 2834)
+
+State Update:
+  answer: "Based on the architecture documentation available to you,
+          our microservices architecture follows these key patterns:
+
+          1. Service Mesh Architecture: We use a service mesh for
+             inter-service communication, providing observability and
+             traffic management.
+
+          2. Event-Driven Communication: Services communicate
+             asynchronously using event streams for loose coupling.
+
+          3. API Gateway Pattern: External clients access services
+             through a unified API gateway that handles authentication
+             and routing.
+
+          Note: This information is from shared architecture
+          documentation. For detailed engineering implementation
+          specifics, you may need access to additional engineering
+          resources."
+```
+
+### Final Output to User
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUERY RESULTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Query: What are our microservices architecture patterns?
+User: bob
+
+Results:
+  - Retrieved: 3 documents
+  - Authorized: 1 document
+  - Denied: 2 documents
+  - Attempts: 1
+
+Authorized Documents:
+  - engineering-architecture-001: Customer-Facing Architecture Overview
+
+Answer:
+Based on the architecture documentation available to you, our
+microservices architecture follows these key patterns:
+
+1. Service Mesh Architecture: We use a service mesh for inter-service
+   communication...
+2. Event-Driven Communication: Services communicate asynchronously...
+3. API Gateway Pattern: External clients access services through a
+   unified gateway...
+
+Note: This information is from shared architecture documentation.
+For detailed engineering implementation specifics, you may need
+access to additional engineering resources.
+
+Total Duration: 3.4s
+  - Retrieval: 0.5s
+  - Authorization: 0.04s
+  - Generation: 2.8s
+```
+
+### What Happened?
+
+The system retrieved 3 documents, blocked 2 that Bob had no access to, and generated an answer from the one document he could see—a shared architecture doc that was explicitly granted to the sales department. Bob got a useful answer and a clear note about what he couldn't access.
+
+### Contrast: What If No Documents Were Authorized?
+
+If Bob had queried "What are our internal engineering standards?" and all retrieved documents were engineering-only:
+
+```
+Step 2: Authorization Node
+  authorized_documents: []
+  denied_count: 3
+  authorization_passed: false
+
+Step 3: Conditional Branch (with max_attempts > 1)
+  Decision: reason (no authorized documents, attempts remain)
+
+Step 4: Reasoning Node
+  Reasoning: "The user has no access to engineering documents. Since
+  this is about internal standards (not customer-facing architecture),
+  there are likely no shared documents available. We should explain
+  the access limitation clearly rather than retry."
+
+Step 5: Conditional Branch
+  Decision: generate (reasoning determined retry wouldn't help)
+
+Step 6: Generation Node
+  Answer: "I don't have access to engineering documents needed to
+  answer this question about internal engineering standards.
+
+  This information is restricted to members of the engineering
+  department. If you need this information for a specific project,
+  you may want to:
+
+  1. Request temporary access from the engineering team
+  2. Ask an engineering team member to share relevant excerpts
+  3. Check if there are customer-facing architecture docs that
+     cover high-level standards
+
+  Would you like help finding related information that's accessible
+  to the sales team?"
+```
+
+The user gets an explanation and a path forward, not a blank response.
+
+## Production Considerations
+
+### Performance Optimization
+
+**1. Batch Permission Checks**
+
+As covered earlier, `CheckBulkPermissions` is faster than sequential checks.
+
+**2. Structured Logging**
+
+The `log_node_execution` context manager in `agentic_rag/node_helpers.py` records timing for every node and outputs structured JSON:
+
+```python
+@contextmanager
+def log_node_execution(logger, node_name: str, extra: Dict[str, Any]):
+    """Context manager for timing and logging node execution."""
+    start_time = time.time()
+    logger.info(f"Starting {node_name}", extra=extra)
+
+    try:
+        yield
+    finally:
+        duration_ms = (time.time() - start_time) * 1000
+        logger.info(
+            f"{node_name} complete",
+            extra={**extra, "duration_ms": duration_ms}
+        )
+```
+
+Extract performance metrics from structured logs:
+
+```bash
+# Average authorization time
+python3 examples/basic_example.py 2>&1 | \
+  jq -r 'select(.message == "authorization complete") | .duration_ms' | \
+  awk '{sum+=$1; count++} END {print sum/count}'
+
+# Output: ~45ms average
+```
+
+### Security Best Practices
+
+**1. Fail-Closed Pattern**
+
+The `batch_check_permissions` function always defaults to denying access on errors:
+
+```python
+except Exception as e:
+    logger.error(
+        "Batch permission check failed",
+        extra={
+            "subject_id": subject_id,
+            "error": str(e),
+            "error_type": type(e).__name__,
+        },
+        exc_info=True,
+    )
+
+    # Fail closed - treat error as all denied (security-safe default)
+    denied_doc_ids = [doc.metadata.get("doc_id", "unknown") for doc in documents]
+    return [], denied_doc_ids
+```
+
+**2. Audit Logging**
+
+Every node logs authorization decisions with full context. The authorization node records:
+
+```python
+logger.info(
+    "Authorization results",
+    extra={
+        "authorized": len(authorized_docs),  # What was allowed
+        "denied": denied_count,              # What was denied
+        "denied_doc_ids": denied_doc_ids,    # Specific denials
+    },
+)
+```
+
+Combined with timing from `log_node_execution`, these logs cover security incident investigation, compliance auditing, access pattern analysis, and performance monitoring.
+
+**3. Input Validation**
+
+`agentic_rag/validation.py` validates all inputs before processing.
+Subject IDs accept only alphanumeric characters, underscores, and hyphens.
+Queries are stripped and capped at 1000 characters (truncated, not rejected):
+
+```python
+def validate_subject_id(subject_id: str, max_length: int = 100) -> str:
+    """Validate subject ID (alphanumeric + underscore/hyphen only)."""
+    if not subject_id or not subject_id.strip():
+        raise ValidationError("Subject ID cannot be empty")
+
+    subject_id = subject_id.strip()
+
+    if len(subject_id) > max_length:
+        raise ValidationError(f"Subject ID too long (max {max_length} characters)")
+
+    # Only allow alphanumeric, underscore, and hyphen
+    if not all(c.isalnum() or c in ["_", "-"] for c in subject_id):
+        raise ValidationError(
+            "Subject ID contains invalid characters (only alphanumeric, underscore, and hyphen allowed)"
+        )
+
+    return subject_id
+```
+
+**4. Rate Limiting**
+
+The `QueryRequest` Pydantic model enforces `max_attempts` between 1 and 5, preventing runaway retry loops. For DoS protection, deploy nginx, Caddy, or an API gateway with rate limiting in front of the FastAPI server.
+
+## Deploy The Application
+
+### Prerequisites
+
+- Docker and Docker Compose
+- Python 3.11+
+- OpenAI API key
+
+### Installation
+
+```bash
+# 1. Clone the reference implementation
+git clone https://github.com/authzed/agentic-rag-weaviate
+cd agentic-rag-weaviate
+
+# 2. Start services (Weaviate + SpiceDB)
+docker-compose up -d
+
+# 3. Install Python dependencies
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+# 4. Configure environment
+cp .env.example .env
+# Edit .env with your OpenAI API key
+
+# 5. Initialize data (loads schema, relationships, and documents)
+python3 examples/setup_environment.py
+
+# 6. Run example queries via CLI
+python3 examples/basic_example.py
+
+# 7. (Optional) Launch the web UI
+python3 run_ui.py
+# Opens http://localhost:8000 automatically
+```
+
+### Environment Variables
+
+Configure the system via `.env` (copy from `.env.example`):
+
+```bash
+# Required
+OPENAI_API_KEY=sk-...
+
+# Optional (defaults shown)
+WEAVIATE_URL=http://localhost:8080
+SPICEDB_ENDPOINT=localhost:50051
+SPICEDB_TOKEN=devtoken
+MAX_RETRIEVAL_ATTEMPTS=1
+LOG_LEVEL=INFO
+```
+
+### Web UI
+
+A browser-based demo is available for interactive exploration.
+Use the launcher script for automatic pre-flight checks:
+
+```bash
+python3 run_ui.py
+```
+
+The launcher verifies that Weaviate, SpiceDB, and OpenAI are configured and that documents are loaded, then starts the FastAPI server and opens your browser to `http://localhost:8000`.
+
+To start the server manually without the launcher:
+
+```bash
+uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+The web UI demonstrates all four authorization patterns with four pre-configured demo users: alice (engineering), bob (sales), hr_manager (HR), and finance_manager (Finance).
+
+### Expected CLI Output
+
+The `examples/basic_example.py` script runs 8 scenarios:
+
+```
+SCENARIO 1: Department Access - Engineering
+Query: What are our microservices architecture patterns?
+User: alice
+
+Results:
+  - Retrieved: 3 documents
+  - Authorized: 2 documents
+  - Denied: 1 document
+
+Answer: Based on the engineering documents...
+
+SCENARIO 7: Access Denial
+Query: What are all the sales playbooks?
+User: alice
+
+Results:
+  - Retrieved: 3 documents
+  - Authorized: 0 documents
+  - Denied: 3 documents
+
+Answer: I don't have access to the sales documents needed
+to answer this question. This information is restricted to the
+sales department. Would you like help finding...
+```
+
+### Next Steps
+
+1. **Explore the Code**: Review `agentic_rag/nodes/` to understand each node's implementation
+2. **Modify Permissions**: Edit `data/schema.zed` and experiment with different authorization patterns
+3. **Add Documents**: Place `.txt` files in `data/documents/` and re-run `examples/setup_environment.py`
+4. **Verify Permissions**: Run `python3 scripts/verify_permissions.py` to test authorization patterns
+5. **Deploy to Production**: Follow the production considerations section above
+
+## Related Resources
+
+### SpiceDB Documentation
+
+- [SpiceDB Concepts](https://authzed.com/docs/spicedb/concepts/schema) - Understanding the schema language
+- [CheckBulkPermissions API](https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.CheckBulkPermissions) - Efficient batch permission checking
+
+### LangGraph Documentation
+
+- [LangGraph Quickstart](https://langchain-ai.github.io/langgraph/tutorials/introduction/) - Building state machines for agents
+- [State Management](https://langchain-ai.github.io/langgraph/how-tos/state-model/) - Understanding state flow
+
+### Security Best Practices
+
+- [OWASP Top 10 for LLMs](https://owasp.org/www-project-top-10-for-large-language-model-applications/) - Security considerations for AI systems
+- [Google Zanzibar whitepaper](https://zanzibar.tech) - Annotated version of the Google Zanzibar paper.
