@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:www.pinecone.io)",
+      "Bash(pnpm lint:markdown:*)",
+      "Bash(pnpm format:*)",
+      "Bash(test:*)",
+      "Bash(ls:*)",
+      "Bash(wc:*)",
+      "Bash(du:*)",
+      "WebFetch(domain:testcontainers.com)"
+    ]
+  }
+}
