@@ -7,6 +7,7 @@ export default {
   "querying-data": "Querying Data",
   commands: "SpiceDB Commands & Parameters",
   consistency: "Consistency",
+  "read-after-write": "Read-After-Write Consistency",
   datastores: "Datastores",
   "datastore-migrations": "Datastore Migrations",
   "reflection-apis": "Reflection APIs",
