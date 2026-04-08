@@ -69,7 +69,9 @@ The `upstream-addr` should be the DNS address of the load balancer at which _all
 ### Dispatch Chunk Size
 
 The `--dispatch-chunk-size` flag controls the maximum number of object IDs included in a single dispatched request.
-This is particularly impactful for lookup operations (such as LookupResources and LookupSubjects) that need to process many objects.
+This is particularly impactful for lookup operations (such as LookupResources and LookupSubjects) that need to process many objects,
+or checks that need to consider a "wide arrow," where SpiceDB needs to walk a relation that has many entries in
+order to resolve a check.
 
 ```sh
 spicedb serve \
@@ -78,7 +80,8 @@ spicedb serve \
 
 <Callout type="info">
   Larger chunk sizes reduce dispatch overhead but increase memory usage per request. Start with the
-  default (100) and increase if you observe high dispatch latency with large lookup operations.
+  default (100) and increase if you observe high dispatch latency with large lookup or check
+  operations.
 </Callout>
 
 ## By enabling Materialize
