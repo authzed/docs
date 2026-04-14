@@ -196,6 +196,10 @@ Place the generated key contents (which must support an HMAC key) in `some.key`.
 
 [spanner-docs]: https://cloud.google.com/spanner
 
+#### Authentication
+
+To enable SpiceDB to communicate with your spanner instance, you should set up [Application Default Credentials](https://docs.cloud.google.com/docs/authentication/client-libraries#adc) for your SpiceDB pods.
+
 #### Required Parameters
 
 | Parameter            | Description                           | Example                                                                                  |
@@ -205,14 +209,14 @@ Place the generated key contents (which must support an HMAC key) in `some.key`.
 
 #### Optional Parameters
 
-| Parameter                                | Description                                                                                                                         | Example                                          |
-| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| `datastore-spanner-credentials`          | JSON service account token (omit to use [application default credentials](https://cloud.google.com/docs/authentication/production)) | `--datastore-spanner-credentials=./spanner.json` |
-| `datastore-gc-interval`                  | Amount of time to wait between garbage collection passes                                                                            | `--datastore-gc-interval=3m`                     |
-| `datastore-gc-window`                    | Sets the window outside of which overwritten relationships are no longer accessible                                                 | `--datastore-gc-window=1s`                       |
-| `datastore-revision-fuzzing-duration`    | Sets a fuzzing window on all zookies/zedtokens                                                                                      | `--datastore-revision-fuzzing-duration=50ms`     |
-| `datastore-readonly`                     | Places the datastore into readonly mode                                                                                             | `--datastore-readonly=true`                      |
-| `datastore-follower-read-delay-duration` | Amount of time to subtract from non-sync revision timestamps to ensure stale reads                                                  | `--datastore-follower-read-delay-duration=4.8s`  |
+| Parameter                                | Description                                                                         | Example                                          |
+| ---------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `datastore-spanner-credentials`          | JSON service account token                                                          | `--datastore-spanner-credentials=./spanner.json` |
+| `datastore-gc-interval`                  | Amount of time to wait between garbage collection passes                            | `--datastore-gc-interval=3m`                     |
+| `datastore-gc-window`                    | Sets the window outside of which overwritten relationships are no longer accessible | `--datastore-gc-window=1s`                       |
+| `datastore-revision-fuzzing-duration`    | Sets a fuzzing window on all zookies/zedtokens                                      | `--datastore-revision-fuzzing-duration=50ms`     |
+| `datastore-readonly`                     | Places the datastore into readonly mode                                             | `--datastore-readonly=true`                      |
+| `datastore-follower-read-delay-duration` | Amount of time to subtract from non-sync revision timestamps to ensure stale reads  | `--datastore-follower-read-delay-duration=4.8s`  |
 
 ## PostgreSQL
 
