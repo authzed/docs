@@ -154,7 +154,14 @@ Support for schema changes will likely come in a future version.
 
 ##### Setting up relationship integrity
 
-To run with relationship integrity, the following flags must be given to SpiceDB:
+First, generate an HMAC key and save it to a file.
+For example, using OpenSSL to generate a 256-bit key:
+
+```bash
+openssl rand 32 > some.key
+```
+
+Then run SpiceDB with the following flags:
 
 ```zed
 spicedb serve ...existing flags...
@@ -163,7 +170,8 @@ spicedb serve ...existing flags...
 --datastore-relationship-integrity-current-key-filename="some.key"
 ```
 
-Place the generated key contents (which must support an HMAC key) in `some.key`.
+The `--datastore-relationship-integrity-current-key-id` value is an arbitrary identifier you choose for this key, used to track which key signed each relationship.
+The `--datastore-relationship-integrity-current-key-filename` should point to the file containing the raw key bytes generated above.
 
 ##### Deployment Process
 
