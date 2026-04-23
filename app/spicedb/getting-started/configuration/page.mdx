@@ -1,0 +1,58 @@
+import { Tabs } from "nextra/components";
+
+# Configuring SpiceDB
+
+There are several ways to pass runtime flags to SpiceDB. We'll use the `--datastore-conn-pool-read-max-open` flag as an example,
+which is used to control the maximum size of the connection pool for CRDB, Postgres, and MySQL. All of the following configuration
+methods provide the same configuration to SpiceDB.
+
+## Command-Line Flags
+
+You can provide configuration by setting command-line flags on the binary invocation.
+These options are prefixed by `--` and are [kebab-cased](https://developer.mozilla.org/en-US/docs/Glossary/Kebab_case).
+
+The following are equivalent:
+
+```sh
+spicedb serve --datastore-conn-pool-read-max-open 50
+spicedb serve --datastore-conn-pool-read-max-open=50
+```
+
+## Environment Variables
+
+If an appropriately-named environment variable is available when SpiceDB is invoked, it will use configuration
+from that environment variable.
+These variables are prefixed with `SPICEDB_` and written in `SCREAMING_SNAKE_CASE`.
+
+```sh
+export SPICEDB_DATASTORE_CONN_POOL_READ_MAX_OPEN=50
+spicedb serve
+```
+
+## SpiceDB Operator Flags
+
+In the [SpiceDB operator](/spicedb/ops/operator), flags are written in [lowerCamelCase](https://developer.mozilla.org/en-US/docs/Glossary/Camel_case)
+and then are translated to environment variables by the operator. You provide them in the `config` block of the custom resource:
+
+```yaml
+spec:
+  config:
+    datastoreConnPoolReadMaxOpen: 50
+```
+
+## dotenv file
+
+If a file named `spicedb.env` is present in the working directory where the binary is invoked, SpiceDB will read the variable pairs in the file
+and include them as if they were environment variables, similar to [dotenv](https://github.com/motdotla/dotenv).
+
+<Tabs items={["spicedb.env"]}>
+  <Tabs.Tab>```dotenv SPICEDB_DATASTORE_CONN_POOL_READ_MAX_OPEN=50 ```</Tabs.Tab>
+</Tabs>
+
+## Precedence
+
+If multiple configuration methods are present and the values disagree, SpiceDB treats the methods with the following descending order of precedence:
+
+1. Command-line flags
+1. Environment variables
+1. `spicedb.env` file
