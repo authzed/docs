@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faThumbsUp, faThumbsDown } from "@fortawesome/free-solid-svg-icons";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import posthog from "posthog-js";
+import { consentedIdentify } from "@/lib/consent";
 
 export function Feedback() {
   const [isVisible, setIsVisible] = useState(false);
@@ -49,7 +50,7 @@ export function Feedback() {
     e.preventDefault();
 
     if (formData.email) {
-      posthog.identify(formData.email);
+      consentedIdentify(posthog, formData.email);
     }
 
     posthog.capture("docs-feedback-detail", {
