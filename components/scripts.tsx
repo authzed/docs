@@ -1,11 +1,9 @@
 "use client";
 
-import inEU from "@segment/in-eu";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Router } from "next/router";
 import Script from "next/script";
-import posthog from "posthog-js";
 import { Suspense, useEffect, useState } from "react";
+import { isEUVisitor, shouldOptOutCapturing } from "@/lib/consent";
 
 const isProd = process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
 const baseDir = process.env.NEXT_PUBLIC_BASE_DIR || "";
@@ -18,10 +16,8 @@ function HubSpot() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    if (window) {
-      setLoadHs(!inEU());
-    }
-  }, [loadHs]);
+    setLoadHs(!shouldOptOutCapturing(isEUVisitor()));
+  }, []);
 
   useEffect(() => {
     // @ts-ignore
