@@ -268,6 +268,8 @@ In this case, we can see in the output that `folder#view` is going back and fort
 
 #### Limitations
 
+##### Schema Structure
+
 If your schema has certain structures, calling `zed permission check --explain` may return "no permission" rather than showing you a cycle. For example, if we changed the folder definition in the schema above to the following:
 
 ```
@@ -280,6 +282,16 @@ definition folder {
 ```
 
 to indicate that the user must also be an editor in order to view, `folder:a#view@folder:a` can never be satisfied, because it can never satisfy the `& editor` clause of the permission. Intersection arrows and certain negations may result in similar behavior.
+
+One potential workaround is to make a check with the desired terminal subject (usually a `user`) on that object:
+
+```sh
+zed permission check folder:a view user:someuser --explain
+```
+
+This will work if the permission walk enters the cycle and then cannot exit, but will potentially terminate normally if there's a permission path that terminates after branching off of the cycle.
+
+##### Caveats
 
 If your schema has caveats and there are caveats along the LookupResources path, you'll also need to recover the original caveat context and submit it in the request.
 
