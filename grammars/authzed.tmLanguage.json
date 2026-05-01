@@ -6,10 +6,15 @@
   "foldingStopMarker": "^\\s*\\}",
   "patterns": [
     { "include": "#comment" },
+    { "include": "#useDirective" },
     { "include": "#importStatement" },
     { "include": "#objectDefinition" },
     { "include": "#objectRelation" },
     { "include": "#objectPermission" },
+    { "include": "#withExpiration" },
+    { "include": "#andExpiration" },
+    { "include": "#withCaveat" },
+    { "include": "#partialSpread" },
     { "include": "#operator" },
     { "include": "#prefix" }
   ],
@@ -202,8 +207,8 @@
           "name": "keyword.control.class.authzed"
         },
         "importPath": {
-          "comment": "a quote-delimited string",
-          "match": "[\"']\\w+[\"']",
+          "comment": "a quote-delimited path (allows ./ and . in path segments)",
+          "match": "[\"']([^\"'\\n]+?)[\"']",
           "name": "string.quoted"
         }
       }
@@ -246,6 +251,46 @@
           "match": "(?<=permission\\s)\\w+(?=\\s=)",
           "name": "variable.other.authzed"
         }
+      }
+    },
+    "useDirective": {
+      "comment": "use import | use partial | use expiration directive (composable schemas)",
+      "match": "^\\s*(use)\\s+(import|partial|expiration)\\b",
+      "captures": {
+        "1": { "name": "keyword.control.class.authzed" },
+        "2": { "name": "keyword.control.class.authzed" }
+      }
+    },
+    "withExpiration": {
+      "comment": "<type> with expiration (must be listed before withCaveat so 'expiration' matches as keyword, not as a caveat name)",
+      "match": "\\b(with)\\s+(expiration)\\b",
+      "captures": {
+        "1": { "name": "keyword.control.class.authzed" },
+        "2": { "name": "keyword.control.class.authzed" }
+      }
+    },
+    "andExpiration": {
+      "comment": "<type> with ttl and expiration (combined expiration syntax)",
+      "match": "\\b(and)\\s+(expiration)\\b",
+      "captures": {
+        "1": { "name": "keyword.control.class.authzed" },
+        "2": { "name": "keyword.control.class.authzed" }
+      }
+    },
+    "withCaveat": {
+      "comment": "<type> with caveat_name (supports namespaced names like org/caveat_name)",
+      "match": "\\b(with)\\s+([a-zA-Z_]\\w*(?:\\/[a-zA-Z_]\\w*)?)\\b",
+      "captures": {
+        "1": { "name": "keyword.control.class.authzed" },
+        "2": { "name": "entity.name.type.class.authzed" }
+      }
+    },
+    "partialSpread": {
+      "comment": "partial inclusion expression: ...partial_name (lookbehind prevents matching mid-token like foo...bar or after extra dots)",
+      "match": "(?<![\\w\\.])(\\.\\.\\.)([a-zA-Z_]\\w*)",
+      "captures": {
+        "1": { "name": "keyword.operator.authzed markup.bold.authzed string.regexp.authzed" },
+        "2": { "name": "entity.name.type.class.authzed" }
       }
     }
   }
