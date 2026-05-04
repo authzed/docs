@@ -23,6 +23,15 @@ const initPostHog = () => {
       if (process.env.NODE_ENV === "development") posthog.debug();
     },
   });
+
+  // cookieless_mode "on_reject" treats PENDING consent as opted-out and
+  // non-capturing. Move every visitor out of PENDING so that opted-out
+  // users get cookieless tracking and opted-in users get full tracking.
+  if (optOut) {
+    posthog.opt_out_capturing();
+  } else if (!posthog.has_opted_in_capturing()) {
+    posthog.opt_in_capturing();
+  }
 };
 
 initPostHog();
