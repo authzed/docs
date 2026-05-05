@@ -1,3 +1,5 @@
+import { Callout } from "nextra/components";
+
 # Cyclical Relationships and Traversal Limits
 
 SpiceDB answers permissions questions by traversing a **tree** constructed from your [schema] (structure) and [relationships] (data).
@@ -187,6 +189,111 @@ SpiceDB short-circuits `CheckPermission` when it finds the subject.
 If the subject is found before the traversal hits the cycle or exceeds the depth limit, the check succeeds.
 
 However, if the subject is **not** found, the traversal continues until it hits the depth limit and returns an error.
+
+### What do I do about a max depth error on LookupResources?
+
+_Note: the following debug behavior was added in SpiceDB 1.52.0_
+
+If you see an error like:
+
+```
+rpc error: code = FailedPrecondition desc = max depth exceeded: this usually indicates a recursive or too deep data dependency. See https://spicedb.dev/d/debug-max-depth
+```
+
+on a `LookupResources` request, this indicates that either a branch was too deep or a cycle was encountered
+as SpiceDB was walking the set of reachable resources. You can debug this using `zed`.
+
+Consider the following validation file:
+
+```yaml
+schema: |-
+  definition user {}
+
+  definition folder {
+    relation viewer: user
+    relation parent: folder
+    permission view = parent->view + viewer
+  }
+
+  definition resource {
+    relation folder: folder
+    permission view = folder->view
+  }
+relationships: |-
+  folder:a#viewer@user:someuser
+  folder:a#parent@folder:b
+  folder:b#parent@folder:a
+```
+
+Note that the `parent` relation on the `folder` definition is recursive, and that we've written a `parent` relationship from `folder:a` to `folder:b` and vice versa, creating a cycle.
+
+If you run `zed import` on this file, and then run `zed permission lookup-resources lookup-resources resource view user:someuser`, you'll get a `max depth exceeded` error.
+
+You can re-run the request with `--debug` to get a stack trace that shows the cycle:
+
+```sh
+zed permission lookup-resources resource view user:someuser --debug
+```
+
+You'll get output that looks like this:
+
+```
+The following resource/relation pairs were found in a cycle in LookupResources:
+
+	- folder:a#view
+
+To further debug this, issue a check from the resource to itself across the relation.
+For example, with the identified pair `resource:foo#view`, you would make the following call:
+
+	zed permission check resource:foo view resource:foo --explain
+
+For more information, see the LookupResources section under https://spicedb.dev/d/debug-max-depth
+```
+
+If you call `zed permission check folder:a view folder:a --explain`, you'll get output like the following:
+
+```
+! folder:a view (8.434693ms)
+└── ! folder:b view (8.143951ms)
+    └── ! folder:a view (cycle) (7.970042ms)
+```
+
+Some notes on reading the output:
+
+- The lines should be read as resources with the relation connecting them to the previous pair. For example, in the line marked by `(cycle)` can be read eas "there's a `view` relation between `folder:a` and `folder:b`."
+- The relation can a schema relation, a schema permission, or a schema subject relation. Notice that in the line marked by `cycle`, the relation is `view`, corresponding to the `view` permission on the `folder` definition in the schema. This means that you might need to do some translation to connect the relation in a line to a concrete relationship.
+- The `(cycle)` marks the endpoints where a resource that is a member of a cycle was seen for the second time. It does _not_ mean that the marked relation is the offending relation, just that everything between the marks is a member of the cycle. You'll need to think about which relationships are written where to understand what needs to change in your business logic to avoid the cycle.
+
+In this case, we can see in the output that `folder#view` is going back and forth between `folder:a` and `folder:b`, and from the permission definition we can see that `folder#view` is defined in terms of `viewer` and `parent`. `viewer` can't be a part of a cycle, because it points at a `user` and there's no outgoing relation from the `user definition.` This means that `parent` is the offending relation, and we can remove one of the `folder#parent` relationships to break the cycle.
+
+#### Limitations
+
+##### Schema Structure
+
+If your schema has certain structures, calling `zed permission check --explain` may return "no permission" rather than showing you a cycle. For example, if we changed the folder definition in the schema above to the following:
+
+```
+definition folder {
+  relation viewer: user
+  relation editor: user
+  relation folder: parent
+  permission view = (viewer + parent->view) & editor
+}
+```
+
+to indicate that the user must also be an editor in order to view, `folder:a#view@folder:a` can never be satisfied, because it can never satisfy the `& editor` clause of the permission. Intersection arrows and certain negations may result in similar behavior.
+
+One potential workaround is to make a check with the desired terminal subject (usually a `user`) on that object:
+
+```sh
+zed permission check folder:a view user:someuser --explain
+```
+
+This will work if the permission walk enters the cycle and then cannot exit, but will potentially terminate normally if there's a permission path that terminates after branching off of the cycle.
+
+##### Caveats
+
+If your schema has caveats and there are caveats along the LookupResources path, you'll also need to recover the original caveat context and submit it in the request.
 
 ### How do I prevent cycles when writing relationships?
 
