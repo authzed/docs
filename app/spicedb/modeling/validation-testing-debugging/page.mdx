@@ -23,9 +23,9 @@ You can run the integration test server by executing `spicedb serve-testing` or 
 
 ### Check Tracing
 
-SpiceDB supports tracing of check requests to view the path(s) taken to compute the result, as well as timing information.
 
-While it is recommended that SpiceDB schema be validated and tested before production deployment, there are many scenarios where being able to see the actual paths taken against production data is incredibly important.
+Sometimes you may need to see exactly which relationship paths led to a result in a CheckPermission query. To this end, the [CheckPermission](https://buf.build/authzed/api/docs/main%3Aauthzed.api.v1#authzed.api.v1.CheckPermissionRequest) API supports adding a boolean `withTracing` request parameter.
+
 
 To support this, SpiceDB's v1 CheckPermission API supports a debug flag that will cause SpiceDB to trace the full set of relations and permission traversed while computing the check.
 
