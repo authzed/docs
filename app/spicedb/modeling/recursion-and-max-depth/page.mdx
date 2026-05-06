@@ -194,15 +194,6 @@ However, if the subject is **not** found, the traversal continues until it hits 
 
 _Note: the following debug behavior was added in SpiceDB 1.52.0_
 
-If you see an error like:
-
-```
-rpc error: code = FailedPrecondition desc = max depth exceeded: this usually indicates a recursive or too deep data dependency. See https://spicedb.dev/d/debug-max-depth
-```
-
-on a `LookupResources` request, this indicates that either a branch was too deep or a cycle was encountered
-as SpiceDB was walking the set of reachable resources. You can debug this using `zed`.
-
 Consider the following validation file:
 
 ```yaml
@@ -227,9 +218,13 @@ relationships: |-
 
 Note that the `parent` relation on the `folder` definition is recursive, and that we've written a `parent` relationship from `folder:a` to `folder:b` and vice versa, creating a cycle.
 
-If you run `zed import` on this file, and then run `zed permission lookup-resources resource view user:someuser`, you'll get a `max depth exceeded` error.
+If you run `zed import` on this file, and then run `zed permission lookup-resources resource view user:someuser`, you'll get a `max depth exceeded` error:
 
-You can re-run the request with `--debug` to get a stack trace that shows the cycle:
+```
+rpc error: code = FailedPrecondition desc = max depth exceeded: this usually indicates a recursive or too deep data dependency.
+```
+
+This indicates that either a branch was too deep or a cycle was encountered as SpiceDB was walking the set of reachable resources. You can re-run the request with `--debug` to get a stack trace that shows the cycle:
 
 ```sh
 zed permission lookup-resources resource view user:someuser --debug
@@ -242,12 +237,12 @@ The following resource/relation pairs were found in a cycle in LookupResources:
 
 	- folder:a#view
 
-To further debug this, issue a check from the resource to itself across the relation.
-For example, with the identified pair `resource:foo#view`, you would make the following call:
+You will need to delete a relationship to break the cycle.
+To find the pairs involved in the cycle, issue a check from the resource to itself across the relation.
+For example:
 
-	zed permission check resource:foo view resource:foo --explain
+	zed permission check folder:a view folder:a --explain
 
-For more information, see the LookupResources section under https://spicedb.dev/d/debug-max-depth
 ```
 
 If you call `zed permission check folder:a view folder:a --explain`, you'll get output like the following:
@@ -260,8 +255,8 @@ If you call `zed permission check folder:a view folder:a --explain`, you'll get 
 
 Some notes on reading the output:
 
-- The lines should be read as resources with the relation connecting them to the previous pair. For example, in the line marked by `(cycle)` can be read eas "there's a `view` relation between `folder:a` and `folder:b`."
-- The relation can a schema relation, a schema permission, or a schema subject relation. Notice that in the line marked by `cycle`, the relation is `view`, corresponding to the `view` permission on the `folder` definition in the schema. This means that you might need to do some translation to connect the relation in a line to a concrete relationship.
+- The lines should be read as resources with the relation connecting them to the previous pair. For example, the line marked by `(cycle)` can be read as "there's a `view` relation between `folder:a` and `folder:b`."
+- The relation can be a schema relation, a schema permission, or a schema subject relation. Notice that in the line marked by `cycle`, the relation is `view`, corresponding to the `view` permission on the `folder` definition in the schema. This means that you might need to do some translation to connect the relation in a line to a concrete relationship.
 - The `(cycle)` marks the endpoints where a resource that is a member of a cycle was seen for the second time. It does _not_ mean that the marked relation is the offending relation, just that everything between the marks is a member of the cycle. You'll need to think about which relationships are written where to understand what needs to change in your business logic to avoid the cycle.
 
 In this case, we can see in the output that `folder#view` is going back and forth between `folder:a` and `folder:b`, and from the permission definition we can see that `folder#view` is defined in terms of `viewer` and `parent`. `viewer` can't be a part of a cycle, because it points at a `user` and there's no outgoing relation from the `user definition.` This means that `parent` is the offending relation, and we can remove one of the `folder#parent` relationships to break the cycle.

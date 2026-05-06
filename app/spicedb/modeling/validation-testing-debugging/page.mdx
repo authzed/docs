@@ -23,9 +23,7 @@ You can run the integration test server by executing `spicedb serve-testing` or 
 
 ### Check Tracing
 
-Sometimes you may need to see exactly which relationship paths led to a result in a CheckPermission query. To this end, the [CheckPermission](https://buf.build/authzed/api/docs/main%3Aauthzed.api.v1#authzed.api.v1.CheckPermissionRequest) API supports adding a boolean `withTracing` request parameter.
-
-To support this, SpiceDB's v1 CheckPermission API supports a debug flag that will cause SpiceDB to trace the full set of relations and permission traversed while computing the check.
+Sometimes you may need to see exactly which relationship paths led to a result in a CheckPermission query. To this end, the [CheckPermission](https://buf.build/authzed/api/docs/main%3Aauthzed.api.v1#authzed.api.v1.CheckPermissionRequest) API supports adding a boolean `withTracing` request parameter. This will cause SpiceDB to trace the full set of relations and permission traversed while computing the check.
 
 <Callout type="warning">
   **Warning:**
@@ -235,7 +233,6 @@ true
 This command will also highlight which parts of the traversal were cached and if a [cycle] is detected.
 
 [cycle]: ./recursion-and-max-depth#cyclical-relationships-cycles
-[tracing header]: #checkpermission-tracing-header
 
 ### Debug Flag
 
