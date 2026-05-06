@@ -227,7 +227,7 @@ relationships: |-
 
 Note that the `parent` relation on the `folder` definition is recursive, and that we've written a `parent` relationship from `folder:a` to `folder:b` and vice versa, creating a cycle.
 
-If you run `zed import` on this file, and then run `zed permission lookup-resources lookup-resources resource view user:someuser`, you'll get a `max depth exceeded` error.
+If you run `zed import` on this file, and then run `zed permission lookup-resources resource view user:someuser`, you'll get a `max depth exceeded` error.
 
 You can re-run the request with `--debug` to get a stack trace that shows the cycle:
 
