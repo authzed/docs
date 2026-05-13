@@ -16,14 +16,9 @@ jobs:
       - uses: "bewuethr/yamllint-action@v1.3.0"
         with:
           config-file: ".yamllint"
-      - uses: "pnpm/action-setup@v4"
+      - uses: "pnpm/action-setup@v6"
         with:
-          run_install: false
-      - name: "Install Node.js"
-        uses: "actions/setup-node@v6"
-        with:
-          cache: "pnpm"
-      - name: "Install dependencies"
-        run: "pnpm install"
+          run_install: true
+          cache: true
       - name: "Check Formatting"
         run: "pnpm run format:check"
