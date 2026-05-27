@@ -1,0 +1,13 @@
+allowBuilds:
+  '@fortawesome/fontawesome-common-types': true
+  '@fortawesome/fontawesome-svg-core': true
+  '@fortawesome/free-brands-svg-icons': true
+  '@fortawesome/free-solid-svg-icons': true
+  '@scarf/scarf': false
+  '@tree-sitter-grammars/tree-sitter-yaml': true
+  '@vercel/speed-insights': false
+  core-js: true
+  core-js-pure: true
+  sharp: true
+  tree-sitter: true
+  tree-sitter-json: true
