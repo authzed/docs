@@ -23,7 +23,7 @@ jobs:
     steps:
       - name: "Check collaborator write access"
         id: "permission"
-        uses: "actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b" # v7
+        uses: "actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3" # v9
         with:
           result-encoding: "string"
           script: |
@@ -64,7 +64,7 @@ jobs:
             return 'false';
 
       - name: "Find existing comment"
-        uses: "peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e" # v3
+        uses: "peter-evans/find-comment@b30e6a3c0ed37e7c023ccd3f1db5c6c0b0c23aad" # v4
         id: "find-comment"
         with:
           issue-number: "${{ github.event.pull_request.number }}"
@@ -79,7 +79,7 @@ jobs:
 
       - name: "Post no-permission comment"
         if: "steps.permission.outputs.result == 'false'"
-        uses: "peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043" # v4
+        uses: "peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9" # v5
         with:
           comment-id: "${{ steps.find-comment.outputs.comment-id }}"
           issue-number: "${{ github.event.pull_request.number }}"
@@ -104,7 +104,7 @@ jobs:
 
       - name: "Post initial building comment"
         if: "steps.permission.outputs.result == 'true'"
-        uses: "peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043" # v4
+        uses: "peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9" # v5
         id: "building-comment"
         with:
           comment-id: "${{ steps.find-comment.outputs.comment-id }}"
@@ -160,7 +160,7 @@ jobs:
 
       - name: "Update deployment status to success"
         if: "steps.permission.outputs.result == 'true' && success()"
-        uses: "chrnorm/deployment-status@9a72af4586197112e0491ea843682b5dc280d806" # v2
+        uses: "chrnorm/deployment-status@6df8d036fd2fee9eb82936733953da1f8382b41e" # v2.0.4
         with:
           token: "${{ secrets.GITHUB_TOKEN }}"
           deployment-id: "${{ steps.deployment.outputs.deployment_id }}"
@@ -169,7 +169,7 @@ jobs:
 
       - name: "Update deployment status to failure"
         if: "steps.permission.outputs.result == 'true' && failure()"
-        uses: "chrnorm/deployment-status@9a72af4586197112e0491ea843682b5dc280d806" # v2
+        uses: "chrnorm/deployment-status@6df8d036fd2fee9eb82936733953da1f8382b41e" # v2.0.4
         with:
           token: "${{ secrets.GITHUB_TOKEN }}"
           deployment-id: "${{ steps.deployment.outputs.deployment_id }}"
@@ -183,7 +183,7 @@ jobs:
 
       - name: "Update comment with success"
         if: "steps.permission.outputs.result == 'true' && success()"
-        uses: "peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043" # v4
+        uses: "peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9" # v5
         with:
           comment-id: "${{ steps.building-comment.outputs.comment-id }}"
           edit-mode: "replace"
@@ -203,7 +203,7 @@ jobs:
 
       - name: "Update comment with failure"
         if: "steps.permission.outputs.result == 'true' && failure()"
-        uses: "peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043" # v4
+        uses: "peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9" # v5
         with:
           comment-id: "${{ steps.building-comment.outputs.comment-id }}"
           edit-mode: "replace"
