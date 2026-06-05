@@ -2,7 +2,7 @@
 
 This guide shows how to add fine-grained authorization to a production-like RAG system using SpiceDB. Standard RAG pipelines follow a fixed `query -> retrieve -> generate` flow. This implementation adds a deterministic authorization step that agents cannot bypass. The example uses SpiceDB for authorization, [Weaviate](https://github.com/weaviate/weaviate) as the vector database, and the [LangChain-SpiceDB library](https://pypi.org/project/langchain-spicedb/).
 
-The full code repository can be [found here](https://github.com/authzed/examples/tree/main/agentic-rag-authorization)
+The full code repository can be [found here](https://github.com/authzed/examples/tree/weaviate/agentic-rag-authorization)
 
 ## Why Agentic RAG Needs Authorization
 
@@ -865,8 +865,8 @@ The `QueryRequest` Pydantic model enforces `max_attempts` between 1 and 5, preve
 
 ```bash
 # 1. Clone the reference implementation
-git clone https://github.com/authzed/agentic-rag-weaviate
-cd agentic-rag-weaviate
+git clone https://github.com/authzed/examples.git
+cd agentic-rag-authorization
 
 # 2. Start services (Weaviate + SpiceDB)
 docker-compose up -d
