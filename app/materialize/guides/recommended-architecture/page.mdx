@@ -1,0 +1,37 @@
+import { Callout } from "nextra/components";
+
+# Recommended Architecture
+
+## Consuming Client
+
+![authzed-materialize](/images/authzed-materialize.png)
+
+Customers will need to build a client to act as an "event processor" that consumes permission updates and writes those updates to a datastore like Postgres.
+The consumer should be designed with resumability in mind by keeping track of the last revision consumed, just as any other stream processor.
+
+## Durability
+
+Every SpiceDB permission update will come with a `ZedToken`.
+The consumer must keep track of that revision token to be able to resume the change stream from the last event consumed when a failure happens, like stream disconnection, consumer restart, or server-side restarts.
+
+When a consumer failure happens, the process should determine the last revision `ZedToken` consumed, and send that alongside your request.
+The consumer should be coded with idempotency in mind in the event of such failures, meaning it should be prepared to process stream messages that have already been processed.
+
+Storing the revision `ZedToken` in the same database where the computed permissions are being stored is a good practice as it enables storing those transactionally, which gives you the guarantee that whatever revision the consumer restarts from, won't cause events to be skipped, which would lead to an inconsistent state of the world.
+
+There may be scenarios where a revision has so many changes that storing transactionally can degrade the performance/availability of the target database.
+In situations like these, one may want to store the events in batches, and in such cases, the revision should only be stored when the consumer determines the last batch has been processed.
+If a failure happened in between those batches, the consumer will be able to restart processing from the start of the revision and idempotently overwrite whatever events were already in place.
+
+<Callout type="info">
+  Change events are stored up to 24h to make sure Materialize storage does not grow unbounded and
+  affect its performance.
+</Callout>
+
+[WatchPermissionSets]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.materialize.v0#authzed.api.materialize.v0.WatchPermissionSetsService.WatchPermissionSets
+[LookupPermissionSets]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.materialize.v0#authzed.api.materialize.v0.WatchPermissionSetsService.LookupPermissionSets
+[LookupResources]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.v1#authzed.api.v1.PermissionsService.LookupResources
+[LookupSubjects]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.v1#authzed.api.v1.PermissionsService.LookupSubjects
+[BreakingSchemaChange]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.materialize.v0#authzed.api.materialize.v0.BreakingSchemaChange
+[Breaking Schema Change]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.materialize.v0#authzed.api.materialize.v0.BreakingSchemaChange
+[breaking schema change]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.materialize.v0#authzed.api.materialize.v0.BreakingSchemaChange

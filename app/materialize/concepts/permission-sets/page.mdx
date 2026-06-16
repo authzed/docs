@@ -1,0 +1,32 @@
+import { Callout } from "nextra/components";
+
+# Permission Sets
+
+A **permission set** is the unit of precomputed authorization data that Materialize produces.
+Where SpiceDB answers a permission question on demand by walking the relationship graph, Materialize continuously **precomputes** the membership of the permissions you configure it to watch and exposes that denormalized data to your application.
+
+Conceptually, a permission set captures two kinds of edges:
+
+- **Member → set** — a subject (e.g. `user:evan`) is a member of a permission set (e.g. `document:123#view`).
+- **Set → set** — one set is nested inside another (e.g. `group:shared#member` grants `document:456#view`).
+
+Together these let your application reconstruct "which resources can this subject access" — and the inverse — without issuing a `LookupResources` or `CheckPermission` call per request.
+This is what makes authorization-aware search, sorting, and filtering over large result sets practical.
+
+## How you obtain permission sets
+
+Permission sets reach your application through two complementary APIs:
+
+- [LookupPermissionSets](../../api/lookup-permission-sets) — reads the **current** permission sets as an initial backfill. See [Hydration](./hydration).
+- [WatchPermissionSets](../../api/watch-permission-sets) — streams **changes** to permission sets as relationships and schema evolve. See [Snapshots](./snapshots) for how the two stay consistent.
+
+## Storing permission sets
+
+The shape of the data maps cleanly onto relational tables (a `member_to_set` and a `set_to_set` table is the most flexible model), or into a secondary index such as Elasticsearch for ACL-filtered search.
+See [Syncing to a Relational Database](../../guides/relational-database) for worked examples.
+
+<Callout type="info">
+  The fields returned by `LookupPermissionSets` and `WatchPermissionSets` are identical — you store
+  them the same way regardless of which API delivered them. That symmetry is what lets you hydrate
+  with one API and keep current with the other.
+</Callout>

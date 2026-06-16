@@ -1,0 +1,23 @@
+import { Callout } from "nextra/components";
+
+# What is Materialize?
+
+<Callout type="info">
+  AuthZed Materialize is available to users of AuthZed [Dedicated] as part of an early access
+  program. Don't hesitate to get in touch with your AuthZed account team if you would like to
+  participate.
+</Callout>
+
+AuthZed Materialize takes inspiration from the Leopard index component described in the [Zanzibar paper](https://zanzibar.tech/2IoYDUFMAE:0:T).
+Much like the concept of a materialized view in relational databases, AuthZed Materialize is a service that you configure with a list of permissions that you want it to precompute, and it will calculate how those permissions change after relationships
+are written (specifically, when those relationships affect a subject's membership in a permission set or a set's permission on a specific resource), or when a new schema is written.
+These precomputed permissions can then be used either to provide faster checks and lookups through Accelerated Queries, or streamed to your own application database to do operations like searching, sorting, and filtering much more efficiently.
+
+In summary, AuthZed Materialize allows you to:
+
+- Speed up `CheckPermission` and `CheckBulkPermissions`.
+- Speed up `LookupResources` and `LookupSubjects`, especially when there is a large number of resources.
+- Build authorization-aware UIs, e.g. by providing a filtered and/or sorted list of more than several thousand authorized objects.
+- Perform ACL filtering in other secondary indexes, like a search index (e.g. Elasticsearch).
+
+[Dedicated]: https://authzed.com/docs/authzed/guides/picking-a-product#dedicated

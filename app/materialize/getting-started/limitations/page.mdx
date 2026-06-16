@@ -1,0 +1,15 @@
+# Limitations
+
+- Your schema can contain any of the following, but they cannot be on the path of your configured Materialize permissions or it will throw an error:
+  - [Caveats]
+  - [Wildcard] subject types
+  - [.all intersections]
+
+- [Expiring relationships] aren't supported.
+- Materialize takes time to compute the denormalized relationship updates, so if you are streaming the changes to your database, your application must be able to tolerate some lag.
+
+[Caveats]: https://authzed.com/docs/spicedb/concepts/caveats
+[Wildcard]: https://authzed.com/docs/spicedb/concepts/schema#wildcards
+[.all intersections]: https://authzed.com/docs/spicedb/concepts/schema#all-intersection-arrow
+[expiring relationships]: https://authzed.com/docs/spicedb/concepts/expiring-relationships
+[Dedicated]: https://authzed.com/docs/authzed/guides/picking-a-product#dedicated

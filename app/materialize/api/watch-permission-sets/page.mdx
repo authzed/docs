@@ -1,0 +1,179 @@
+import { Callout } from "nextra/components";
+
+# WatchPermissionSets
+
+This is an update stream of all the permissions Materialize is configured to watch.
+You can use this to store all permissions tracked in the system closer to your application database to be used in database-native ACL filtering.
+Permissions can also be stored in secondary indexes like Elasticsearch.
+
+The API consists of various event types that capture deltas that occurred since a client started listening.
+It will also notify of events like a [breaking schema change] that necessitate rebuilding of the index.
+
+## Request
+
+```json
+{
+  "optional_starting_after": "the_zed_token"
+}
+```
+
+The `optional_starting_after` field in the request denotes the SpiceDB revision to start streaming changes.
+It will start streaming from the revision right after the indicated one.
+If no `optional_starting_after` is provided, Materialize will determine the latest revision at the moment of the request, and start streaming changes from there on.
+
+## Response
+
+### Revision Checkpoint Event
+
+Sent when changes happened in SpiceDB, but didn't affect Materialize.
+Customers should keep track of this revision in their internal database to know where to resume from in the event of stream disconnection or stream consumer restart/failure.
+
+```json
+{
+  "completed_revision": {
+    "token": "GiAKHjE3MTUzMzkzMTAzODQ2NDMxNzguMDAwMDAwMDAwMA=="
+  }
+}
+```
+
+### Member Added To Set Event
+
+```json
+{
+  "change": {
+    "at_revision": {
+      "token": "GiAKHjE3MTUzMzkzMDg0MTY2NzUxNzcuMDAwMDAwMDAwMA=="
+    },
+    "operation": "SET_OPERATION_ADDED",
+    "parent_set": {
+      "object_type": "thumper/resource",
+      "object_id": "seconddoc",
+      "permission_or_relation": "reader"
+    },
+    "child_member": {
+      "object_type": "thumper/user",
+      "object_id": "fred",
+      "optional_permission_or_relation": ""
+    }
+  }
+}
+```
+
+### Member Removed From Set Event
+
+```json
+{
+  "change": {
+    "at_revision": {
+      "token": "GiAKHjE3MTUzMzkzMTAzODQ2NDMxNzguMDAwMDAwMDAwMA=="
+    },
+    "operation": "SET_OPERATION_REMOVED",
+    "parent_set": {
+      "object_type": "thumper/resource",
+      "object_id": "seconddoc",
+      "permission_or_relation": "reader"
+    },
+    "child_member": {
+      "object_type": "thumper/user",
+      "object_id": "fred",
+      "optional_permission_or_relation": ""
+    }
+  }
+}
+```
+
+### Set Added To Set Event
+
+```json
+{
+  "change": {
+    "at_revision": {
+      "token": "GiAKHjE3MTUzMzkzMDg0MTY2NzUxNzcuMDAwMDAwMDAwMA=="
+    },
+    "operation": "SET_OPERATION_ADDED",
+    "parent_set": {
+      "object_type": "thumper/resource",
+      "object_id": "seconddoc",
+      "permission_or_relation": "reader"
+    },
+    "child_set": {
+      "object_type": "thumper/team",
+      "object_id": "engineering",
+      "permission_or_relation": "members"
+    }
+  }
+}
+```
+
+### Set Removed From Set Event
+
+```json
+{
+  "change": {
+    "at_revision": {
+      "token": "GiAKHjE3MTUzMzkzMTAzODQ2NDMxNzguMDAwMDAwMDAwMA=="
+    },
+    "operation": "SET_OPERATION_REMOVED",
+    "parent_set": {
+      "object_type": "thumper/resource",
+      "object_id": "seconddoc",
+      "permission_or_relation": "reader"
+    },
+    "child_set": {
+      "object_type": "thumper/team",
+      "object_id": "engineering",
+      "permission_or_relation": "members"
+    }
+  }
+}
+```
+
+### [Breaking Schema Change] Event
+
+When the origin SpiceDB instance introduces a schema change that invalidates all currently computed permission sets, Materialize will issue a special event indicating this happened:
+
+```json
+{
+  "breaking_schema_change": {
+    "change_at": {
+      "token": "GiAKHjE3MTUzMzkzMTAzODQ2NDMxNzguMDAwMDAwMDAwMA=="
+    }
+  }
+}
+```
+
+The event indicates the revision at which the schema change happened.
+
+When the client receives this event, all previously indexed permission sets are rendered stale, and the client must rebuild the index with a call to [LookupPermissionSets] at the revision the schema change was introduced.
+
+Not every change to the origin permission system schema is considered breaking.
+
+#### Detecting Breaking Schema Changes In Development Environment
+
+The AuthZed team has optimized Materialize to reduce the number of instances where a change is considered breaking and thus renders permission set stale.
+To determine if a schema change is breaking, we provide the `materialize-cli` tool.
+
+<Callout type="info">
+  `materialize-cli` is still in early development, please reach out to us if you want to try it as
+  part of AuthZed Materialize early access.
+</Callout>
+
+## Errors
+
+### FailedPrecondition: Revision Does Not Exist
+
+Whenever the client receives a `FailedPrecondition`, they should retry with a backoff.
+In this case, the client is asking for a revision that hasn't been yet processed by Materialize.
+You may receive this error when:
+
+- the Materialize instances are restarting and catching up with all changes that have happened since it took a snapshot of your SpiceDB instance.
+- A [BreakingSchemaChange] was emitted, and by happenstance, your client had to reconnect.
+  The Materialize server hasn't yet rebuilt a new snapshot of your SpiceDB instance with the new schema to serve new events.
+
+[WatchPermissionSets]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.materialize.v0#authzed.api.materialize.v0.WatchPermissionSetsService.WatchPermissionSets
+[LookupPermissionSets]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.materialize.v0#authzed.api.materialize.v0.WatchPermissionSetsService.LookupPermissionSets
+[LookupResources]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.v1#authzed.api.v1.PermissionsService.LookupResources
+[LookupSubjects]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.v1#authzed.api.v1.PermissionsService.LookupSubjects
+[BreakingSchemaChange]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.materialize.v0#authzed.api.materialize.v0.BreakingSchemaChange
+[Breaking Schema Change]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.materialize.v0#authzed.api.materialize.v0.BreakingSchemaChange
+[breaking schema change]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.materialize.v0#authzed.api.materialize.v0.BreakingSchemaChange

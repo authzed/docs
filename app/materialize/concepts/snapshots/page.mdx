@@ -1,0 +1,39 @@
+import { Callout } from "nextra/components";
+
+# Snapshots
+
+<Callout type="info">
+  **Draft — content review needed.** Promoted from prose previously scattered through the API
+  reference. Mechanics are accurate to the existing docs; framing is new and should be reviewed
+  before publishing.
+</Callout>
+
+A **snapshot** is a point-in-time, internally consistent view of every [Permission Set](./permission-sets) Materialize is tracking, computed at a specific SpiceDB revision.
+Every piece of permission data Materialize hands you is anchored to the revision (`ZedToken`) it was computed at — that revision _is_ the snapshot's identity.
+
+Snapshots are what make the two Materialize APIs compose safely:
+
+- [Hydration](./hydration) reads a snapshot in full via [LookupPermissionSets](../../api/lookup-permission-sets).
+- [WatchPermissionSets](../../api/watch-permission-sets) advances that snapshot forward, delivering the deltas that move it from one revision to the next.
+
+## Why the revision matters
+
+Because each event carries its revision, your consumer can always answer "as of when is my local data correct?" and resume from exactly the right place after a crash or disconnect.
+Storing the snapshot revision **in the same transaction** as the permission data it describes is the core durability guarantee: whatever revision you restart from, no events are skipped and no inconsistent state is observable.
+
+## Snapshot lifecycle events
+
+- **Revision checkpoint** — SpiceDB changed, but nothing Materialize watches was affected. Advance your stored revision so you know where to resume.
+- **Breaking schema change** — the current snapshot is invalidated; you must build a fresh snapshot by re-[hydrating](./hydration) at the new revision.
+- **Snapshot rotation** — Materialize periodically deploys a new internal snapshot of the origin SpiceDB system as part of routine maintenance. A request against a retired snapshot returns `Aborted: Requested Revision Is No Longer Available`, signalling the consumer to re-hydrate from scratch.
+
+<Callout type="warning">
+  After a breaking schema change you **must** pass the revision token through `optional_starting_after`
+  when re-hydrating, or Materialize will stream against whatever snapshot is current and your data
+  won't reflect the schema change.
+</Callout>
+
+<Callout type="info">
+  **TODO (Sam):** confirm the exact snapshot retention window and rotation cadence, and whether the
+  24h change-event retention is the same mechanism or distinct.
+</Callout>

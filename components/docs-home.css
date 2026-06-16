@@ -1,0 +1,472 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
+
+/* ===========================================================================
+   AuthZed Docs home ("Editorial Pro") — scoped styles + Sandworm tokens.
+   Everything is scoped under .docs-home so it cannot leak into the rest of
+   the docs site. Auto light/dark: LIGHT is the base, DARK overrides under
+   `html.dark` (the class next-themes sets — which also resolves "system", so
+   the page follows the OS / site toggle automatically). All color identity
+   flows through these tokens, so every rule below adapts without edits.
+   (Was dark-only; semantic light theme added 2026-06-16.)
+   ======================================================================== */
+
+.docs-home {
+  /* ---- Stone — LIGHT (purple-tinted: bg light, text dark, hairlines pale) ---- */
+  --stone-025: 280 25% 8%;
+  --stone-100: 279 18% 14%;
+  --stone-200: 279 14% 20%;
+  --stone-300: 280 10% 30%;
+  --stone-400: 280 8% 40%;
+  --stone-500: 275 7% 50%;
+  --stone-600: 280 7% 58%;
+  --stone-700: 280 10% 82%;
+  --stone-800: 285 14% 88%;
+  --stone-850: 290 22% 91%;
+  --stone-900: 300 24% 94%;
+  --stone-950: 300 30% 96%;
+  --stone-975: 300 40% 98%;
+  /* ---- Accents — LIGHT (darker shades so they read on a light ground) ---- */
+  --magenta-300: 316 50% 45%;
+  --magenta-400: 316 48% 47%;
+  --magenta-500: 316 50% 44%;
+  --magenta-600: 316 52% 40%;
+  --magenta-950: 315 33.3% 7.1%;
+  --red-400: 352 70% 48%;
+  --teal-300: 178 40% 32%;
+  --teal-400: 178 38% 35%;
+  --teal-500: 178 35% 33%;
+  --teal-700: 178 30% 26%;
+  --violet-400: 253 60% 52%;
+  --violet-500: 253 62% 50%;
+  --violet-700: 255 50% 46%;
+  --sand-300: 30 75% 42%;
+  --blue-500: 200 75% 40%;
+  /* ---- Shared structural tokens ---- */
+  --gradient-brand-warm: linear-gradient(to right, hsl(var(--sand-300)), hsl(var(--red-400)), hsl(var(--violet-500)));
+  --radius-pill: 9999px;
+  --radius-xl: 14px;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  background:
+    radial-gradient(120% 80% at 88% -10%, hsl(var(--magenta-500) / 0.08), transparent 60%),
+    hsl(var(--stone-975));
+  color: hsl(var(--stone-025));
+  font-family: var(--font-sans);
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-variant-numeric: tabular-nums lining-nums;
+  line-height: 1.6;
+  min-height: 100%;
+}
+
+/* ---- DARK (Sandworm's native register) — next-themes adds .dark on <html> ---- */
+html.dark .docs-home {
+  --stone-025: 300 6.7% 97.1%;
+  --stone-100: 270 3% 87.1%;
+  --stone-200: 270 5.4% 78%;
+  --stone-300: 283 4% 66.1%;
+  --stone-400: 280 3.9% 55.1%;
+  --stone-500: 275 5% 47.1%;
+  --stone-600: 280 6.1% 38.8%;
+  --stone-700: 279 8.9% 31%;
+  --stone-800: 279 11.5% 23.9%;
+  --stone-850: 276 18.5% 15.9%;
+  --stone-900: 278 28.6% 11%;
+  --stone-950: 280 36.6% 8%;
+  --stone-975: 282 50% 3.9%;
+  --magenta-300: 318 41.2% 70%;
+  --magenta-400: 317 40.2% 60%;
+  --magenta-500: 316 39.2% 51%;
+  --magenta-600: 316 42% 45%;
+  --magenta-950: 315 33.3% 7.1%;
+  --red-400: 355 91% 73.9%;
+  --teal-300: 175 27.5% 72.9%;
+  --teal-400: 176 28% 56%;
+  --teal-500: 177 28.2% 45.9%;
+  --teal-700: 178 30% 30%;
+  --violet-400: 253 76.5% 70%;
+  --violet-500: 253 73.4% 63.1%;
+  --violet-700: 255 58% 43.9%;
+  --sand-300: 28 100% 72%;
+  --blue-500: 195 73.4% 63.1%;
+
+  background:
+    radial-gradient(120% 80% at 88% -10%, hsl(var(--magenta-950) / 0.55), transparent 60%),
+    hsl(var(--stone-975));
+}
+
+/* Resets so Nextra's MDX typography doesn't bleed in */
+.docs-home :where(h1, h2, h3, p, ul) { margin: 0; }
+.docs-home a { color: inherit; text-decoration: none; }
+.docs-home *, .docs-home *::before, .docs-home *::after { box-sizing: border-box; }
+
+/* Content frame — matches the Nextra navbar exactly (max-width + 1.5rem
+   inline padding) so the masthead logo/nav share a left & right edge with
+   the hero, index, and colophon. --home-max is also applied to the navbar. */
+.docs-home { --home-max: 1180px; }
+/* Frame padding lives on a shared ancestor so the navbar override can read it
+   too — keeps the masthead logo/nav inset to the same line as the content. */
+body:has(.docs-home) { --home-frame-pad: clamp(32px, 5vw, 80px); }
+
+.docs-home .page {
+  position: relative;
+  max-width: var(--home-max);
+  margin: 0 auto;
+  padding: 0 var(--home-frame-pad);
+}
+/* Manuscript margin rules sit at the OUTER frame edge; content is padded
+   well inside them so text never touches the stroke. */
+.docs-home .page::before,
+.docs-home .page::after {
+  content: "";
+  position: absolute; top: 0; bottom: 0; width: 1px;
+  background: hsl(var(--stone-800) / 0.5);
+  pointer-events: none;
+}
+.docs-home .page::before { left: 0; }
+.docs-home .page::after { right: 0; }
+@media (max-width: 600px) {
+  .docs-home .page::before, .docs-home .page::after { display: none; }
+}
+
+/* ---------------- Hero ---------------- */
+.docs-home .hero {
+  display: grid; grid-template-columns: 1.08fr 0.92fr; gap: clamp(28px, 4vw, 60px);
+  align-items: center;
+  padding: clamp(30px, 5vh, 60px) 0 clamp(30px, 4.5vh, 56px); position: relative;
+}
+.docs-home .hero-text { min-width: 0; }
+
+/* The relationship graph as an ambient field — straight edges, a dense lattice
+   of objects with many connections, signals firing along relations, and a hard
+   radial fade at every border so the graph reads as continuing past the frame. */
+.docs-home .hero-graph {
+  position: relative; align-self: center;
+  width: 100%; max-width: 460px; margin-inline: auto;
+  -webkit-mask-image: radial-gradient(72% 72% at 50% 48%, #000 30%, transparent 78%);
+  mask-image: radial-gradient(72% 72% at 50% 48%, #000 30%, transparent 78%);
+}
+.docs-home .hero-graph svg { width: 100%; height: auto; display: block; overflow: visible; }
+
+/* relations — faint teal field. Each edge fades on its own clock (timing set
+   inline) so the visible web is always a different set of grey traces. */
+.docs-home .g-mesh line { stroke: hsl(var(--teal-500)); stroke-width: 1; opacity: 0.12; }
+
+/* idle objects — dim teal */
+.docs-home .g-obj { fill: hsl(var(--teal-500)); opacity: 0.3; }
+
+/* a check — accent colour set per group via --acc; layered glow + signal.
+   The coloured trace is revealed by the beam (drawn on in sync), not popped in
+   all at once; each check fades in only during its turn (sequenced below). */
+.docs-home .g-check { opacity: 0.5; }
+.docs-home .g-trace-halo { fill: none; stroke: hsl(var(--acc)); stroke-width: 4.5; opacity: 0.2; stroke-linecap: round; stroke-linejoin: round; }
+.docs-home .g-trace { fill: none; stroke: hsl(var(--acc)); stroke-width: 1.3; opacity: 0.5; stroke-linecap: round; stroke-linejoin: round; }
+.docs-home .g-trace-spark { fill: none; stroke: hsl(var(--acc)); stroke-width: 2; opacity: 0; stroke-linecap: round; stroke-linejoin: round; }
+.docs-home .g-tnode { fill: hsl(var(--acc)); --lit: 0.5; opacity: var(--lit); }
+.docs-home .g-tnode--end { --lit: 0.85; }
+.docs-home .g-tcore { fill: hsl(var(--stone-025)); --lit: 0.85; opacity: var(--lit); }
+
+@media (prefers-reduced-motion: no-preference) {
+  /* idle relations breathe in and out, each on its own (inline) clock */
+  .docs-home .g-mesh line {
+    opacity: 0.02;
+    animation-name: g-edgefade;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
+  }
+  @keyframes g-edgefade { 0%, 100% { opacity: 0.02; } 50% { opacity: 0.24; } }
+
+  /* each check group is dark until its 3s slot of the 18s cycle */
+  .docs-home .g-check {
+    opacity: 0;
+    animation: g-check-life 18s linear infinite;
+    animation-delay: calc(var(--i) * -3s);
+  }
+  @keyframes g-check-life {
+    0% { opacity: 0; } 1.5% { opacity: 1; } 14% { opacity: 1; } 18% { opacity: 0; } 100% { opacity: 0; }
+  }
+
+  /* body + halo are DRAWN ON behind the beam — only coloured once swept over */
+  .docs-home .g-trace,
+  .docs-home .g-trace-halo {
+    stroke-dasharray: 100 100;
+    animation: g-draw 18s linear infinite;
+    animation-delay: calc(var(--i) * -3s);
+  }
+  @keyframes g-draw {
+    0% { stroke-dashoffset: 100; } 1.5% { stroke-dashoffset: 100; }
+    11% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 0; }
+  }
+
+  /* the beam — one bright head; gap 1000 >> path so it never wraps round */
+  .docs-home .g-trace-spark {
+    stroke-dasharray: 14 1000;
+    animation: g-beam 18s linear infinite;
+    animation-delay: calc(var(--i) * -3s);
+  }
+  @keyframes g-beam {
+    0% { stroke-dashoffset: 14; opacity: 0; }
+    1.5% { stroke-dashoffset: 14; opacity: 1; }
+    11% { stroke-dashoffset: -100; opacity: 1; }
+    13%, 100% { stroke-dashoffset: -100; opacity: 0; }
+  }
+
+  /* each node lights only as the beam reaches it (delay ∝ its path fraction) */
+  .docs-home .g-tnode,
+  .docs-home .g-tcore {
+    opacity: 0;
+    animation: g-litnode 18s linear infinite;
+    animation-delay: calc(var(--i) * -3s + 0.27s + var(--f) * 1.71s);
+  }
+  @keyframes g-litnode { 0% { opacity: 0; } 1.2% { opacity: var(--lit); } 100% { opacity: var(--lit); } }
+
+  .docs-home .g-tw { animation: g-twinkle 4s ease-in-out infinite; }
+  @keyframes g-twinkle { 0%, 100% { opacity: 0.14; } 50% { opacity: 0.4; } }
+}
+@media (max-width: 900px) {
+  .docs-home .hero { grid-template-columns: 1fr; gap: 28px; }
+  .docs-home .hero-graph { max-width: 380px; }
+}
+.docs-home .hero h1 {
+  max-width: 21ch;
+  font-size: clamp(2.3rem, 4.2vw, 3.8rem);
+  font-weight: 200; line-height: 1.04; letter-spacing: -0.025em;
+  color: hsl(var(--stone-025)); hanging-punctuation: first;
+}
+.docs-home .hero h1 em { font-style: normal; font-weight: 600; color: hsl(var(--magenta-500)); }
+.docs-home .hero .standfirst {
+  margin: 30px 0 0; max-width: 48ch;
+  font-size: clamp(1rem, 1.5vw, 1.18rem); font-weight: 300; line-height: 1.62;
+  color: hsl(var(--stone-300));
+}
+.docs-home .hero .standfirst code {
+  font-family: var(--font-mono); font-size: 0.82em; color: hsl(var(--sand-300));
+  background: hsl(var(--stone-850) / 0.6); padding: 1px 6px; border-radius: 4px;
+}
+.docs-home .hero-tools { margin-top: 38px; display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+.docs-home .hero-search {
+  display: inline-flex; align-items: center; gap: 11px; min-width: min(420px, 80vw);
+  border: 1px solid hsl(var(--stone-700)); border-radius: 10px;
+  padding: 13px 14px; background: hsl(var(--stone-950) / 0.4);
+  color: hsl(var(--stone-400)); font-size: 14px; cursor: pointer; text-align: left;
+  font-family: var(--font-sans);
+  transition: border-color 220ms ease, background 220ms ease;
+}
+.docs-home .hero-search:hover { border-color: hsl(var(--stone-500)); background: hsl(var(--stone-900) / 0.5); }
+.docs-home .hero-search .ico { color: hsl(var(--stone-500)); display: flex; }
+.docs-home .hero-search .grow { flex: 1; }
+.docs-home .hero-search kbd {
+  font-family: var(--font-mono); font-size: 11px; color: hsl(var(--stone-400));
+  border: 1px solid hsl(var(--stone-700)); border-radius: 5px; padding: 2px 6px;
+}
+.docs-home .hero-aside {
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em;
+  color: hsl(var(--stone-500)); text-transform: uppercase;
+}
+/* Primary CTA — Sandworm button (marketing `default` variant): mono, high-
+   contrast neutral fill, magenta on hover. Themed tokens keep it light-on-dark
+   / dark-on-light. */
+.docs-home .hero-btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem; font-weight: 500; letter-spacing: 0.01em;
+  color: hsl(var(--stone-950));
+  background: hsl(var(--stone-025));
+  padding: 13px 20px; border-radius: 10px;
+  white-space: nowrap;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+.docs-home .hero-btn:hover {
+  background: hsl(var(--magenta-600)); color: #fff; transform: translateY(-1px);
+}
+
+/* ---------------- What's new / Latest releases (editorial) ---------------- */
+.docs-home .activity {
+  display: grid; grid-template-columns: 1fr 1fr; gap: clamp(40px, 6vw, 88px);
+  padding: clamp(44px, 6vh, 76px) 0 8px;
+}
+@media (max-width: 760px) { .docs-home .activity { grid-template-columns: 1fr; gap: 44px; } }
+.docs-home .activity-label {
+  font-family: var(--font-mono); font-size: 12px; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase; color: hsl(var(--stone-300));
+}
+.docs-home .activity-sub { margin: 7px 0 0; font-size: 14px; color: hsl(var(--stone-500)); }
+
+.docs-home .whatsnew, .docs-home .releases { margin-top: 18px; }
+.docs-home .wn-row {
+  display: grid; grid-template-columns: 116px 1fr; gap: 16px; align-items: baseline;
+  padding: 12px 0; border-top: 1px solid hsl(var(--stone-850));
+}
+.docs-home .wn-row:first-child { border-top: 0; }
+.docs-home .wn-date {
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.03em;
+  text-transform: uppercase; color: hsl(var(--stone-500)); white-space: nowrap;
+}
+.docs-home .wn-title { font-size: 14.5px; color: hsl(var(--stone-200)); transition: color 0.18s ease; }
+.docs-home .wn-row:hover .wn-title { color: hsl(var(--magenta-400)); }
+
+.docs-home .rel-row {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+  padding: 13px 0; border-top: 1px solid hsl(var(--stone-850));
+}
+.docs-home .rel-row:first-child { border-top: 0; }
+.docs-home .rel-ver {
+  font-family: var(--font-mono); font-size: 15px; color: hsl(var(--stone-100));
+  display: flex; align-items: center; gap: 10px;
+}
+.docs-home .rel-tag {
+  font-family: var(--font-mono); font-size: 9px; font-weight: 500; letter-spacing: 0.1em;
+  text-transform: uppercase; color: hsl(var(--teal-400));
+  border: 1px solid hsl(var(--teal-700)); border-radius: var(--radius-pill); padding: 2px 7px;
+}
+.docs-home .rel-meta { font-size: 13px; color: hsl(var(--stone-500)); text-align: right; }
+.docs-home .rel-row:hover .rel-ver { color: hsl(var(--teal-300)); }
+
+/* ---------------- The Index ---------------- */
+.docs-home .index-head {
+  display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 14px;
+  font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+  letter-spacing: 0.16em; text-transform: uppercase; color: hsl(var(--stone-500));
+}
+.docs-home .entry {
+  --accent: var(--magenta-500);
+  position: relative;
+  border-top: 1px solid hsl(var(--stone-800));
+  padding: clamp(26px, 3.4vw, 40px) 0;
+  transition: border-color 280ms ease;
+}
+.docs-home .entry:last-of-type { border-bottom: 1px solid hsl(var(--stone-800)); }
+.docs-home .entry::before {
+  content: ""; position: absolute; top: -1px; left: 0; height: 1px; width: 100%;
+  transform: scaleX(0); transform-origin: left; background: hsl(var(--accent));
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.docs-home .entry:hover, .docs-home .entry:focus-within { border-top-color: transparent; }
+.docs-home .entry:hover::before, .docs-home .entry:focus-within::before { transform: scaleX(1); }
+.docs-home .entry-row {
+  display: grid; grid-template-columns: clamp(56px, 5vw, 72px) 1fr auto;
+  align-items: baseline; gap: clamp(18px, 2vw, 30px);
+}
+.docs-home .entry-num {
+  /* scales near the name's rate so the size ratio stays stable across widths;
+     nowrap so the two digits never stack vertically in a tight cell */
+  font-size: clamp(2.1rem, 3.2vw, 2.7rem); font-weight: 200; line-height: 1;
+  color: hsl(var(--stone-600)); letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+  transition: color 280ms ease;
+}
+.docs-home .entry:hover .entry-num, .docs-home .entry:focus-within .entry-num { color: hsl(var(--accent)); }
+.docs-home .entry-main { min-width: 0; }
+.docs-home .entry-name {
+  display: flex; align-items: center; gap: 14px;
+  font-size: clamp(1.5rem, 2.6vw, 2.1rem); font-weight: 300; letter-spacing: -0.02em; line-height: 1.1;
+}
+.docs-home .entry-title { color: hsl(var(--stone-025)); }
+.docs-home .entry-title::after { content: ""; position: absolute; inset: 0; z-index: 1; }
+.docs-home .entry-name .pill {
+  font-family: var(--font-mono); font-size: 9.5px; font-weight: 500; letter-spacing: 0.1em;
+  text-transform: uppercase; color: hsl(var(--violet-400));
+  border: 1px solid hsl(var(--violet-700)); border-radius: var(--radius-pill);
+  padding: 2px 8px; transform: translateY(-2px);
+}
+.docs-home .entry-desc { margin: 9px 0 0; font-size: 14.5px; font-weight: 300; color: hsl(var(--stone-400)); max-width: 54ch; }
+.docs-home .entry-more {
+  display: grid; grid-template-rows: 0fr;
+  transition: grid-template-rows 460ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.docs-home .entry-more > div { overflow: hidden; }
+.docs-home .entry:hover .entry-more, .docs-home .entry:focus-within .entry-more { grid-template-rows: 1fr; }
+.docs-home .entry-sublinks {
+  display: flex; flex-wrap: wrap; gap: 6px 22px; padding-top: 16px; margin-top: 4px;
+  opacity: 0; transform: translateY(-4px);
+  transition: opacity 320ms ease 60ms, transform 320ms ease 60ms;
+}
+.docs-home .entry:hover .entry-sublinks, .docs-home .entry:focus-within .entry-sublinks { opacity: 1; transform: none; }
+.docs-home .entry-sublinks a {
+  position: relative; z-index: 2;
+  font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.02em;
+  color: hsl(var(--stone-400)); padding: 2px 0; border-bottom: 1px solid transparent;
+  transition: color 180ms ease, border-color 180ms ease;
+}
+.docs-home .entry-sublinks a:hover { color: hsl(var(--accent)); border-bottom-color: hsl(var(--accent) / 0.5); }
+.docs-home .entry-meta {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 14px;
+  text-align: right; white-space: nowrap;
+}
+.docs-home .entry-tag {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: 0.12em;
+  text-transform: uppercase; color: hsl(var(--stone-500)); transition: color 280ms ease;
+}
+.docs-home .entry:hover .entry-tag, .docs-home .entry:focus-within .entry-tag { color: hsl(var(--stone-300)); }
+.docs-home .entry-arrow {
+  width: 30px; height: 30px; border-radius: 50%; border: 1px solid hsl(var(--stone-700));
+  display: grid; place-items: center; color: hsl(var(--stone-400));
+  transition: border-color 280ms ease, color 280ms ease, transform 280ms ease;
+}
+.docs-home .entry:hover .entry-arrow, .docs-home .entry:focus-within .entry-arrow {
+  border-color: hsl(var(--accent)); color: hsl(var(--accent)); transform: translateX(4px);
+}
+@media (max-width: 640px) {
+  .docs-home .entry-row { grid-template-columns: 1fr; gap: 4px; }
+  .docs-home .entry-num { font-size: 1.4rem; }
+  .docs-home .entry-meta { flex-direction: row; align-items: center; justify-content: space-between; margin-top: 14px; width: 100%; }
+}
+
+/* ---------------- Colophon ---------------- */
+.docs-home .colophon {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 24px; flex-wrap: wrap;
+  padding: 48px 0 72px; margin-top: 36px;
+}
+.docs-home .colophon p { max-width: 46ch; font-size: 15px; font-weight: 300; color: hsl(var(--stone-400)); }
+.docs-home .colophon p b { color: hsl(var(--stone-200)); font-weight: 400; }
+.docs-home .colophon code { font-family: var(--font-mono); font-size: 0.85em; color: hsl(var(--sand-300)); }
+.docs-home .colophon .links { display: flex; gap: 20px; }
+.docs-home .colophon .links a {
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+  color: hsl(var(--stone-500)); transition: color 200ms ease;
+}
+.docs-home .colophon .links a:hover { color: hsl(var(--stone-200)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .docs-home .entry-more { grid-template-rows: 1fr; }
+  .docs-home .entry-sublinks { opacity: 1; transform: none; }
+  .docs-home * { transition-duration: 0.01ms !important; }
+}
+
+/* ===========================================================================
+   Home takeover — tame Nextra's default chrome on the landing route ONLY.
+   Scoped via :has(.docs-home); this stylesheet is route-split to the home.
+   ======================================================================== */
+body:has(.docs-home) { overflow-x: clip; }
+
+/* Full-bleed: neutralize the content article padding + width cap, then break
+   .docs-home out to the viewport. `article:has(.docs-home)` matches ONLY
+   Nextra's outer content article — never the .entry articles inside. */
+article:has(.docs-home) { padding: 0 !important; max-width: none !important; }
+.docs-home { margin-left: calc(50% - 50vw); margin-right: calc(50% - 50vw); }
+
+/* Hide the copy-page / page-actions header (a direct <div> child of the
+   content article; our content lives under a <main>, so it's preserved) */
+article:has(.docs-home) > div { display: none !important; }
+
+/* Hide Nextra's footer block (theme toggle + copyright) — our .colophon stays */
+body:has(.docs-home) [class~="x:bg-gray-100"] { display: none !important; }
+
+/* Blend the navbar into the editorial page (keeps its working search) */
+body:has(.docs-home) .nextra-navbar,
+body:has(.docs-home) .nextra-navbar-blur {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+/* Constrain the navbar to the same content frame as the page so the logo
+   and nav share the hero's left/right edges (same max-width + frame padding). */
+body:has(.docs-home) .nextra-navbar nav {
+  max-width: 1180px !important;
+  padding-left: var(--home-frame-pad) !important;
+  padding-right: var(--home-frame-pad) !important;
+}
