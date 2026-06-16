@@ -454,14 +454,13 @@ article:has(.docs-home) > div { display: none !important; }
 /* Hide Nextra's footer block (theme toggle + copyright) — our .colophon stays */
 body:has(.docs-home) [class~="x:bg-gray-100"] { display: none !important; }
 
-/* Blend the navbar into the editorial page (keeps its working search) */
-body:has(.docs-home) .nextra-navbar,
-body:has(.docs-home) .nextra-navbar-blur {
-  background: transparent !important;
+/* Keep Nextra's navbar background/blur so scrolled content doesn't show
+   through it. The blur layer is themed (--nextra-bg), so it stays seamless with
+   the editorial page at the top while staying opaque enough on scroll. Only the
+   hard border is softened. */
+body:has(.docs-home) .nextra-navbar {
   border-color: transparent !important;
   box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
 }
 /* Constrain the navbar to the same content frame as the page so the logo
    and nav share the hero's left/right edges (same max-width + frame padding). */

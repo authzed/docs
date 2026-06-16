@@ -1,7 +1,20 @@
 "use client";
 
 import "./docs-home.css";
+import Link from "next/link";
+import type { ElementType, ReactNode } from "react";
 import type { Release, WhatsNewItem } from "@/lib/home-data";
+
+/* Internal links go through next/link so the deploy's basePath (/docs) is
+   applied; external links fall back to a plain anchor. */
+function Lnk({ href, className, children }: { href: string; className?: string; children?: ReactNode }) {
+  const Tag = (href.startsWith("/") ? Link : "a") as ElementType;
+  return (
+    <Tag href={href} className={className}>
+      {children}
+    </Tag>
+  );
+}
 
 /* ---------------------------------------------------------------------------
    AuthZed Docs — home / welcome experience ("Editorial Pro")
@@ -299,10 +312,10 @@ export function DocsHome({
                 SpiceDB engine and the managed AuthZed platform.
               </p>
               <div className="hero-tools">
-                <a className="hero-btn" href="/spicedb/getting-started/discovering-spicedb">
+                <Lnk className="hero-btn" href="/spicedb/getting-started/discovering-spicedb">
                   Get started with SpiceDB
                   <ArrowIcon />
-                </a>
+                </Lnk>
                 <button className="hero-search" type="button" onClick={openSearch} aria-label="Search the documentation">
                   <span className="ico"><SearchIcon /></span>
                   <span className="grow">Search the docs…</span>
@@ -325,7 +338,7 @@ export function DocsHome({
                   <span className="entry-num">{e.num}</span>
                   <div className="entry-main">
                     <h2 className="entry-name">
-                      <a className="entry-title" href={e.href}>{e.name}</a>
+                      <Lnk className="entry-title" href={e.href}>{e.name}</Lnk>
                       {e.badge && <span className="pill">{e.badge}</span>}
                     </h2>
                     <p className="entry-desc">{e.desc}</p>
@@ -333,7 +346,7 @@ export function DocsHome({
                       <div>
                         <div className="entry-sublinks">
                           {e.sublinks.map((s) => (
-                            <a key={s.label} href={s.href}>{s.label}</a>
+                            <Lnk key={s.label} href={s.href}>{s.label}</Lnk>
                           ))}
                         </div>
                       </div>
@@ -354,10 +367,10 @@ export function DocsHome({
               <p className="activity-sub">Recent additions across the documentation.</p>
               <div className="whatsnew">
                 {whatsNew.map((n) => (
-                  <a className="wn-row" href={n.href} key={n.title}>
+                  <Lnk className="wn-row" href={n.href} key={n.title}>
                     <span className="wn-date">{n.date}</span>
                     <span className="wn-title">{n.title}</span>
-                  </a>
+                  </Lnk>
                 ))}
               </div>
             </div>
@@ -366,13 +379,13 @@ export function DocsHome({
               <p className="activity-sub">Recent SpiceDB open&ndash;source releases.</p>
               <div className="releases">
                 {releases.map((r) => (
-                  <a className="rel-row" href={r.href} key={r.ver}>
+                  <Lnk className="rel-row" href={r.href} key={r.ver}>
                     <span className="rel-ver">
                       {r.ver}
                       {r.latest && <span className="rel-tag">Latest</span>}
                     </span>
                     <span className="rel-meta">{r.date}</span>
-                  </a>
+                  </Lnk>
                 ))}
               </div>
             </div>
@@ -383,9 +396,9 @@ export function DocsHome({
               Permissions modeled as a <b>graph</b>, not a tangle of <code>if</code> statements.
             </p>
             <div className="links">
-              <a href="https://github.com/authzed/spicedb">GitHub</a>
-              <a href="https://authzed.com/discord">Discord</a>
-              <a href="https://authzed.com">authzed.com</a>
+              <Lnk href="https://github.com/authzed/spicedb">GitHub</Lnk>
+              <Lnk href="https://authzed.com/discord">Discord</Lnk>
+              <Lnk href="https://authzed.com">authzed.com</Lnk>
             </div>
           </footer>
         </main>
