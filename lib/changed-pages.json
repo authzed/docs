@@ -55,5 +55,8 @@
   },
   "/spicedb/ops/postgres-fdw": {
     "status": "updated"
+  },
+  "/spicedb/concepts/read-after-write": {
+    "status": "updated"
   }
 }

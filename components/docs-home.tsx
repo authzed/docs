@@ -51,7 +51,7 @@ const ENTRIES: Entry[] = [
       { label: "Modeling", href: "/spicedb/modeling/developing-a-schema" },
       { label: "Operations", href: "/spicedb/ops/operator" },
       { label: "API Reference", href: "/spicedb/api/http-api" },
-      { label: "Best Practices", href: "/best-practices" },
+      { label: "Best Practices", href: "/spicedb/best-practices" },
     ],
   },
   {

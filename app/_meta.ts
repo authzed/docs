@@ -26,10 +26,6 @@ export default {
     title: "Materialize",
     type: "page",
   },
-  "best-practices": {
-    title: "Best Practices",
-    type: "page",
-  },
   mcp: {
     title: "MCP",
     type: "page",
