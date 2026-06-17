@@ -13,6 +13,11 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = join(ROOT, "lib", "changed-pages.json");
 
+// Review aid ONLY — never ship to production. Show in local dev and Vercel
+// preview builds; emit an empty manifest (no banners, empty /changes) anywhere
+// that's a production build.
+const SHOW = process.env.NODE_ENV !== "production" || process.env.VERCEL_ENV === "preview";
+
 function sh(cmd) {
   return execSync(cmd, { cwd: ROOT, stdio: ["ignore", "pipe", "ignore"] }).toString().trim();
 }
@@ -33,7 +38,7 @@ function fileToRoute(file) {
 
 let manifest = {};
 try {
-  const base = resolveBase();
+  const base = SHOW ? resolveBase() : null;
   if (base) {
     const out = sh("git diff --name-status -M " + base + "...HEAD -- 'app/**/page.mdx' 'app/*/page.mdx'");
     for (const line of out.split("\n").filter(Boolean)) {

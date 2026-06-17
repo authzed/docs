@@ -1,7 +1,12 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import changed from "@/lib/changed-pages.json";
 
 export const metadata = { title: "Changed in this branch" };
+
+// Review aid only — never reachable on production (matches the empty-manifest
+// gate in scripts/build-changed-manifest.mjs).
+const SHOW = process.env.NODE_ENV !== "production" || process.env.VERCEL_ENV === "preview";
 
 type Entry = { status: "new" | "updated" };
 const MANIFEST = changed as Record<string, Entry>;
@@ -13,6 +18,7 @@ function label(route: string): string {
 }
 
 export default function ChangesPage() {
+  if (!SHOW) notFound();
   const routes = Object.keys(MANIFEST).sort();
   const created = routes.filter((r) => MANIFEST[r].status === "new");
   const updated = routes.filter((r) => MANIFEST[r].status === "updated");

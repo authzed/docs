@@ -41,7 +41,13 @@
   "/materialize/guides/relational-database": {
     "status": "new"
   },
+  "/spicedb/best-practices": {
+    "status": "updated"
+  },
   "/spicedb/concepts/querying-data": {
+    "status": "updated"
+  },
+  "/spicedb/concepts/read-after-write": {
     "status": "updated"
   },
   "/spicedb/getting-started/discovering-spicedb": {
@@ -54,9 +60,6 @@
     "status": "updated"
   },
   "/spicedb/ops/postgres-fdw": {
-    "status": "updated"
-  },
-  "/spicedb/concepts/read-after-write": {
     "status": "updated"
   }
 }
