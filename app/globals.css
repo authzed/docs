@@ -190,7 +190,7 @@ html.dark-mode {
    the primary conversion action is persistent instead of lost beside a short
    table of contents. Sandworm magenta; white text reads in both themes. */
 .nav-cta {
-  display: inline-flex;
+  display: none; /* desktop-only — see media query below */
   align-items: center;
   padding: 0.35rem 0.85rem;
   border-radius: 0.5rem;
@@ -203,3 +203,8 @@ html.dark-mode {
   transition: background-color 0.15s ease;
 }
 .nav-cta:hover { background: hsl(316 52% 38%); }
+/* Only show the CTA once there's room for it alongside the 5 nav tabs +
+   icons; below this it would push the nav into overflow. */
+@media (min-width: 1024px) {
+  .nav-cta { display: inline-flex; }
+}

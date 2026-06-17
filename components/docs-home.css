@@ -226,8 +226,22 @@ body:has(.docs-home) { --home-frame-pad: clamp(32px, 5vw, 80px); }
   @keyframes g-twinkle { 0%, 100% { opacity: 0.14; } 50% { opacity: 0.4; } }
 }
 @media (max-width: 900px) {
-  .docs-home .hero { grid-template-columns: 1fr; gap: 28px; }
-  .docs-home .hero-graph { max-width: 380px; }
+  /* Don't let the graph become a stacked row that shoves the docs index down.
+     Keep a single text column and "push off" the graph: absolutely positioned,
+     bled off the right and sat behind the text, so it adds ZERO flow height.
+     Column/stack order is unchanged — the graph never reflows below the text. */
+  .docs-home .hero { grid-template-columns: 1fr; gap: 0; overflow: hidden; }
+  .docs-home .hero-text { position: relative; z-index: 1; }
+  .docs-home .hero-graph {
+    position: absolute; top: 50%; right: -6%; transform: translateY(-50%);
+    width: min(58%, 360px); max-width: none; margin: 0;
+    z-index: 0; opacity: 0.45; pointer-events: none;
+  }
+}
+/* On phones there's no room beside the text — drop the decoration entirely
+   rather than letting it sit under the copy. */
+@media (max-width: 560px) {
+  .docs-home .hero-graph { display: none; }
 }
 .docs-home .hero h1 {
   max-width: 21ch;
