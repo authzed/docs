@@ -86,7 +86,8 @@ export default async function RootLayout({ children }) {
     <html lang="en" dir="ltr" suppressHydrationWarning>
       <Head
         color={{
-          hue: { dark: 45, light: 290 },
+          // sand-300 hue (28) — was 45, which read as gold/yellow not sand
+          hue: { dark: 28, light: 290 },
           saturation: { dark: 100, light: 100 },
         }}
         // Sandworm background — stone-975 (dark) / stone-025 (light) — so every

@@ -666,15 +666,10 @@ body:has(.docs-home) {
   font-size: clamp(2.1rem, 3.2vw, 2.7rem);
   font-weight: 200;
   line-height: 1;
-  color: hsl(var(--stone-600));
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  transition: color 280ms ease;
-}
-.docs-home .entry:hover .entry-num,
-.docs-home .entry:focus-within .entry-num {
-  color: hsl(var(--accent));
+  color: hsl(var(--accent)); /* color-code each surface by its accent */
 }
 .docs-home .entry-main {
   min-width: 0;
@@ -718,8 +713,7 @@ body:has(.docs-home) {
 }
 .docs-home .entry-more {
   display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 460ms cubic-bezier(0.22, 1, 0.36, 1);
+  grid-template-rows: 1fr; /* always open — sublinks stay visible for scanning */
 }
 .docs-home .entry-more > div {
   overflow: hidden;
@@ -734,11 +728,6 @@ body:has(.docs-home) {
   gap: 6px 22px;
   padding-top: 16px;
   margin-top: 4px;
-  opacity: 0;
-  transform: translateY(-4px);
-  transition:
-    opacity 320ms ease 60ms,
-    transform 320ms ease 60ms;
 }
 .docs-home .entry:hover .entry-sublinks,
 .docs-home .entry:focus-within .entry-sublinks {
