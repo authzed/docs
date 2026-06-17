@@ -8,6 +8,7 @@ import LogoIcon from "@/components/icons/logo-icon.svg";
 import BannerContents from "@/components/banner";
 import Providers from "@/components/providers";
 import { TocExtraContent } from "@/components/toc-extra-content";
+import { ContentStatus } from "@/components/content-status";
 import Scripts from "@/components/scripts";
 import type { Metadata, ResolvingMetadata } from "next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -126,7 +127,7 @@ export default async function RootLayout({ children }) {
         >
           <OurLayout>
             <SpeedInsights />
-            <Providers>{children}</Providers>
+            <Providers><ContentStatus />{children}</Providers>
             <Scripts />
           </OurLayout>
         </Layout>

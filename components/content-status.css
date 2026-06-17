@@ -1,0 +1,17 @@
+/* Content review banner — flags pages whose content is new/modified vs
+   origin/main so the team can spot what to review. Theme-adaptive:
+   darker text on light, lighter on dark. */
+.content-status {
+  display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap;
+  margin: 0 0 1.5rem; padding: 0.5rem 0.85rem;
+  border: 1px solid; border-radius: 8px;
+  font-size: 0.85rem; line-height: 1.4;
+}
+.content-status .content-status-dot { font-size: 0.65em; }
+.content-status .content-status-label { font-weight: 600; }
+.content-status .content-status-note { opacity: 0.7; }
+.content-status .content-status-link { margin-left: auto; text-decoration: underline; opacity: 0.85; color: inherit; }
+.content-status.is-new      { border-color: hsl(146 45% 38% / 0.5); background: hsl(146 45% 45% / 0.12); color: hsl(146 55% 26%); }
+.content-status.is-updated  { border-color: hsl(38 72% 45% / 0.5);  background: hsl(38 72% 50% / 0.12);  color: hsl(32 70% 30%); }
+.dark .content-status.is-new     { color: hsl(146 50% 78%); }
+.dark .content-status.is-updated { color: hsl(40 85% 78%); }

@@ -34,4 +34,7 @@ export default {
     title: "MCP",
     type: "page",
   },
+  changes: {
+    display: "hidden",
+  },
 } satisfies MetaRecord;
