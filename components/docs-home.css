@@ -901,10 +901,8 @@ body:has(.docs-home) .nextra-navbar {
   border-color: transparent !important;
   box-shadow: none !important;
 }
-/* Constrain the navbar to the same content frame as the page so the logo
-   and nav share the hero's left/right edges (same max-width + frame padding). */
-body:has(.docs-home) .nextra-navbar nav {
-  max-width: 1180px !important;
-  padding-left: var(--home-frame-pad) !important;
-  padding-right: var(--home-frame-pad) !important;
-}
+/* NOTE: the navbar is intentionally NOT re-constrained on the landing route.
+   It keeps Nextra's default width/padding (90rem / 1.5rem) so the top nav is
+   identical on the home page and doc pages — no width/padding jump between
+   routes. (Was max-width:1180px + frame padding, which read as extra padding
+   on the landing nav that vanished on doc pages.) */
