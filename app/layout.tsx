@@ -76,10 +76,7 @@ export default async function RootLayout({ children }) {
       chatLink="https://authzed.com/discord"
       projectLink="https://github.com/authzed/spicedb"
     >
-      <Link
-        href="https://authzed.com/schedule-demo"
-        className="nav-cta"
-      >
+      <Link href="https://authzed.com/schedule-demo" className="nav-cta">
         Book a demo
       </Link>
     </Navbar>
@@ -127,7 +124,10 @@ export default async function RootLayout({ children }) {
         >
           <OurLayout>
             <SpeedInsights />
-            <Providers><ContentStatus />{children}</Providers>
+            <Providers>
+              <ContentStatus />
+              {children}
+            </Providers>
             <Scripts />
           </OurLayout>
         </Layout>

@@ -19,13 +19,20 @@ const OUT = join(ROOT, "lib", "changed-pages.json");
 const SHOW = process.env.NODE_ENV !== "production" || process.env.VERCEL_ENV === "preview";
 
 function sh(cmd) {
-  return execSync(cmd, { cwd: ROOT, stdio: ["ignore", "pipe", "ignore"] }).toString().trim();
+  return execSync(cmd, { cwd: ROOT, stdio: ["ignore", "pipe", "ignore"] })
+    .toString()
+    .trim();
 }
 
 // Prefer origin/main, fall back to main.
 function resolveBase() {
   for (const ref of ["origin/main", "main"]) {
-    try { sh("git rev-parse --verify " + ref); return ref; } catch { /* next */ }
+    try {
+      sh("git rev-parse --verify " + ref);
+      return ref;
+    } catch {
+      /* next */
+    }
   }
   return null;
 }
@@ -40,7 +47,9 @@ let manifest = {};
 try {
   const base = SHOW ? resolveBase() : null;
   if (base) {
-    const out = sh("git diff --name-status -M " + base + "...HEAD -- 'app/**/page.mdx' 'app/*/page.mdx'");
+    const out = sh(
+      "git diff --name-status -M " + base + "...HEAD -- 'app/**/page.mdx' 'app/*/page.mdx'",
+    );
     for (const line of out.split("\n").filter(Boolean)) {
       const parts = line.split(/\t+/);
       const code = parts[0];
@@ -64,4 +73,8 @@ try {
 
 mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, JSON.stringify(manifest, null, 2) + "\n");
-console.log("[changed-manifest] " + Object.keys(manifest).length + " changed content page(s) -> lib/changed-pages.json");
+console.log(
+  "[changed-manifest] " +
+    Object.keys(manifest).length +
+    " changed content page(s) -> lib/changed-pages.json",
+);

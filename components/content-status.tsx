@@ -21,10 +21,14 @@ export function ContentStatus() {
   const isNew = entry.status === "new";
   return (
     <div className={`content-status ${isNew ? "is-new" : "is-updated"}`} role="note">
-      <span className="content-status-dot" aria-hidden="true">●</span>
+      <span className="content-status-dot" aria-hidden="true">
+        ●
+      </span>
       <span className="content-status-label">{isNew ? "New page" : "Updated content"}</span>
       <span className="content-status-note">— changed on this branch, for review</span>
-      <Link className="content-status-link" href="/changes">all changes</Link>
+      <Link className="content-status-link" href="/changes">
+        all changes
+      </Link>
     </div>
   );
 }

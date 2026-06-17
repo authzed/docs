@@ -13,9 +13,7 @@ const REVALIDATE = 60 * 60 * 6; // 6h — releases/PRs don't move faster than th
 const GH_HEADERS: HeadersInit = {
   Accept: "application/vnd.github+json",
   "X-GitHub-Api-Version": "2022-11-28",
-  ...(process.env.GITHUB_TOKEN
-    ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` }
-    : {}),
+  ...(process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}),
 };
 
 function fmtDate(iso: string): string {
@@ -29,17 +27,30 @@ function fmtDate(iso: string): string {
 // ---- Releases: SpiceDB GitHub releases (clean, fully dynamic) --------------
 
 const FALLBACK_RELEASES: Release[] = [
-  { ver: "v1.53.0", date: "May 13, 2026", latest: true, href: "https://github.com/authzed/spicedb/releases/tag/v1.53.0" },
-  { ver: "v1.52.0", date: "Apr 30, 2026", href: "https://github.com/authzed/spicedb/releases/tag/v1.52.0" },
-  { ver: "v1.51.1", date: "Apr 14, 2026", href: "https://github.com/authzed/spicedb/releases/tag/v1.51.1" },
+  {
+    ver: "v1.53.0",
+    date: "May 13, 2026",
+    latest: true,
+    href: "https://github.com/authzed/spicedb/releases/tag/v1.53.0",
+  },
+  {
+    ver: "v1.52.0",
+    date: "Apr 30, 2026",
+    href: "https://github.com/authzed/spicedb/releases/tag/v1.52.0",
+  },
+  {
+    ver: "v1.51.1",
+    date: "Apr 14, 2026",
+    href: "https://github.com/authzed/spicedb/releases/tag/v1.51.1",
+  },
 ];
 
 export async function getReleases(): Promise<Release[]> {
   try {
-    const res = await fetch(
-      "https://api.github.com/repos/authzed/spicedb/releases?per_page=10",
-      { headers: GH_HEADERS, next: { revalidate: REVALIDATE } },
-    );
+    const res = await fetch("https://api.github.com/repos/authzed/spicedb/releases?per_page=10", {
+      headers: GH_HEADERS,
+      next: { revalidate: REVALIDATE },
+    });
     if (!res.ok) return FALLBACK_RELEASES;
     const data = (await res.json()) as Array<{
       tag_name: string;
@@ -68,9 +79,21 @@ export async function getReleases(): Promise<Release[]> {
 // filter hard and fall back to a real curated list when too little survives.
 
 const FALLBACK_WHATSNEW: WhatsNewItem[] = [
-  { date: "Jun 2026", title: "Materialize promoted to its own documentation section", href: "/materialize/getting-started/overview" },
-  { date: "May 27, 2026", title: "Native dark-mode support for the API reference", href: "https://github.com/authzed/docs/pull/501" },
-  { date: "May 19, 2026", title: "Guide: using Postgres FDW with SpiceDB", href: "/spicedb/ops/postgres-fdw" },
+  {
+    date: "Jun 2026",
+    title: "Materialize promoted to its own documentation section",
+    href: "/materialize/getting-started/overview",
+  },
+  {
+    date: "May 27, 2026",
+    title: "Native dark-mode support for the API reference",
+    href: "https://github.com/authzed/docs/pull/501",
+  },
+  {
+    date: "May 19, 2026",
+    title: "Guide: using Postgres FDW with SpiceDB",
+    href: "/spicedb/ops/postgres-fdw",
+  },
   { date: "Apr 2026", title: "MCP server reference for connecting AI agents", href: "/mcp" },
 ];
 

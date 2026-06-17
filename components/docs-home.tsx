@@ -7,7 +7,15 @@ import type { Release, WhatsNewItem } from "@/lib/home-data";
 
 /* Internal links go through next/link so the deploy's basePath (/docs) is
    applied; external links fall back to a plain anchor. */
-function Lnk({ href, className, children }: { href: string; className?: string; children?: ReactNode }) {
+function Lnk({
+  href,
+  className,
+  children,
+}: {
+  href: string;
+  className?: string;
+  children?: ReactNode;
+}) {
   const Tag = (href.startsWith("/") ? Link : "a") as ElementType;
   return (
     <Tag href={href} className={className}>
@@ -97,14 +105,33 @@ const ENTRIES: Entry[] = [
 ];
 
 const ArrowIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+  <svg
+    width="15"
+    height="15"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={1.8}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
     <path d="M5 12h14" />
     <path d="m12 5 7 7-7 7" />
   </svg>
 );
 
 const SearchIcon = ({ size = 16 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" aria-hidden="true">
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={1.9}
+    strokeLinecap="round"
+    aria-hidden="true"
+  >
     <circle cx="11" cy="11" r="8" />
     <path d="m21 21-4.3-4.3" />
   </svg>
@@ -126,7 +153,11 @@ function gseed(i: number, s: number): number {
 // dissolves under the radial mask — free-floating, no grid (a snapped grid
 // read too stiff)
 const G_NODES: GPoint[] = (() => {
-  const cols = 8, rows = 8, span = 450, origin = -35, out: GPoint[] = [];
+  const cols = 8,
+    rows = 8,
+    span = 450,
+    origin = -35,
+    out: GPoint[] = [];
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       const i = r * cols + c;
@@ -140,16 +171,19 @@ const G_NODES: GPoint[] = (() => {
 
 // connect each object to its 3 nearest neighbours → many straight relations
 const G_EDGES: [number, number][] = (() => {
-  const out: [number, number][] = [], seen = new Set<string>();
+  const out: [number, number][] = [],
+    seen = new Set<string>();
   G_NODES.forEach((a, i) => {
-    G_NODES
-      .map((b, j) => [j, (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2] as [number, number])
+    G_NODES.map((b, j) => [j, (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2] as [number, number])
       .filter(([j]) => j !== i)
       .sort((p, q) => p[1] - q[1])
       .slice(0, 3)
       .forEach(([j]) => {
         const key = i < j ? `${i}-${j}` : `${j}-${i}`;
-        if (!seen.has(key)) { seen.add(key); out.push([i, j]); }
+        if (!seen.has(key)) {
+          seen.add(key);
+          out.push([i, j]);
+        }
       });
   });
   return out;
@@ -160,23 +194,30 @@ function polyD(ids: number[]): string {
 }
 
 // nodes inside the visible core (off-frame nodes only exist to bleed the fade)
-const G_VISIBLE = G_NODES
-  .map((n, i) => [i, n] as [number, GPoint])
-  .filter(([, n]) => n[0] > 18 && n[0] < 362 && n[1] > 18 && n[1] < 362);
+const G_VISIBLE = G_NODES.map((n, i) => [i, n] as [number, GPoint]).filter(
+  ([, n]) => n[0] > 18 && n[0] < 362 && n[1] > 18 && n[1] < 362,
+);
 
 // a "check" — nearest-neighbour walk from a seed node, winding through the field
 function walk(start: number, steps: number): number[] {
   let curr = start;
-  const path = [curr], used = new Set([curr]);
+  const path = [curr],
+    used = new Set([curr]);
   for (let s = 0; s < steps; s++) {
-    let best = -1, bd = Infinity;
+    let best = -1,
+      bd = Infinity;
     G_VISIBLE.forEach(([j]) => {
       if (used.has(j)) return;
       const d = (G_NODES[curr][0] - G_NODES[j][0]) ** 2 + (G_NODES[curr][1] - G_NODES[j][1]) ** 2;
-      if (d < bd) { bd = d; best = j; }
+      if (d < bd) {
+        bd = d;
+        best = j;
+      }
     });
     if (best < 0) break;
-    used.add(best); path.push(best); curr = best;
+    used.add(best);
+    path.push(best);
+    curr = best;
   }
   return path;
 }
@@ -198,7 +239,10 @@ const CHECK_SPECS: { at: [number, number]; len: number; acc: string }[] = [
   { at: [200, 180], len: 11, acc: "var(--red-400)" },
   { at: [250, 120], len: 5, acc: "var(--violet-400)" },
 ];
-const G_CHECKS = CHECK_SPECS.map((s) => ({ path: walk(nearest(s.at[0], s.at[1]), s.len), acc: s.acc }));
+const G_CHECKS = CHECK_SPECS.map((s) => ({
+  path: walk(nearest(s.at[0], s.at[1]), s.len),
+  acc: s.acc,
+}));
 
 function HeroGraph() {
   return (
@@ -214,12 +258,19 @@ function HeroGraph() {
             the visible web keeps shifting (always a different set of traces) */}
         <g className="g-mesh">
           {G_EDGES.map(([i, j], k) => {
-            const a = G_NODES[i], b = G_NODES[j];
+            const a = G_NODES[i],
+              b = G_NODES[j];
             return (
               <line
                 key={k}
-                x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]}
-                style={{ animationDuration: `${(5 + gseed(k, 7) * 6).toFixed(1)}s`, animationDelay: `${(-gseed(k, 8) * 11).toFixed(1)}s` }}
+                x1={a[0]}
+                y1={a[1]}
+                x2={b[0]}
+                y2={b[1]}
+                style={{
+                  animationDuration: `${(5 + gseed(k, 7) * 6).toFixed(1)}s`,
+                  animationDelay: `${(-gseed(k, 8) * 11).toFixed(1)}s`,
+                }}
               />
             );
           })}
@@ -230,8 +281,12 @@ function HeroGraph() {
           <circle
             key={i}
             className={`g-obj${i % 3 === 0 ? " g-tw" : ""}`}
-            cx={n[0]} cy={n[1]} r="2.2"
-            style={i % 3 === 0 ? { animationDelay: `${(gseed(i, 3) * -4).toFixed(1)}s` } : undefined}
+            cx={n[0]}
+            cy={n[1]}
+            r="2.2"
+            style={
+              i % 3 === 0 ? { animationDelay: `${(gseed(i, 3) * -4).toFixed(1)}s` } : undefined
+            }
           />
         ))}
 
@@ -240,7 +295,11 @@ function HeroGraph() {
           const d = polyD(chk.path);
           const end = chk.path[chk.path.length - 1];
           return (
-            <g className="g-check" key={ci} style={{ ["--acc" as string]: chk.acc, ["--i" as string]: ci }}>
+            <g
+              className="g-check"
+              key={ci}
+              style={{ ["--acc" as string]: chk.acc, ["--i" as string]: ci }}
+            >
               <path className="g-trace-halo" d={d} filter="url(#hg-glow)" pathLength={100} />
               <path className="g-trace" d={d} pathLength={100} />
               <path className="g-trace-spark" d={d} pathLength={100} />
@@ -248,13 +307,29 @@ function HeroGraph() {
                 const n = G_NODES[id];
                 const f = chk.path.length > 1 ? k / (chk.path.length - 1) : 0;
                 return (
-                  <circle key={`n${id}`} className={`g-tnode${id === end ? " g-tnode--end" : ""}`} cx={n[0]} cy={n[1]} r={id === end ? 3.2 : 2.6} style={{ ["--f" as string]: f.toFixed(3) }} />
+                  <circle
+                    key={`n${id}`}
+                    className={`g-tnode${id === end ? " g-tnode--end" : ""}`}
+                    cx={n[0]}
+                    cy={n[1]}
+                    r={id === end ? 3.2 : 2.6}
+                    style={{ ["--f" as string]: f.toFixed(3) }}
+                  />
                 );
               })}
               {chk.path.map((id, k) => {
                 const n = G_NODES[id];
                 const f = chk.path.length > 1 ? k / (chk.path.length - 1) : 0;
-                return <circle key={`c${id}`} className="g-tcore" cx={n[0]} cy={n[1]} r="1.3" style={{ ["--f" as string]: f.toFixed(3) }} />;
+                return (
+                  <circle
+                    key={`c${id}`}
+                    className="g-tcore"
+                    cx={n[0]}
+                    cy={n[1]}
+                    r="1.3"
+                    style={{ ["--f" as string]: f.toFixed(3) }}
+                  />
+                );
               })}
             </g>
           );
@@ -295,17 +370,24 @@ export function DocsHome({
               <p className="standfirst">
                 Relationship-based access control, the Google Zanzibar way: model a{" "}
                 <code>schema</code>, write <code>relationships</code>, and call{" "}
-                <code>CheckPermission</code> from your code. Quickstarts, schema modeling,
-                client SDKs, and full gRPC and HTTP API references — for the open-source
-                SpiceDB engine and the managed AuthZed platform.
+                <code>CheckPermission</code> from your code. Quickstarts, schema modeling, client
+                SDKs, and full gRPC and HTTP API references — for the open-source SpiceDB engine and
+                the managed AuthZed platform.
               </p>
               <div className="hero-tools">
                 <Lnk className="hero-btn" href="/spicedb/getting-started/discovering-spicedb">
                   Get started with SpiceDB
                   <ArrowIcon />
                 </Lnk>
-                <button className="hero-search" type="button" onClick={openSearch} aria-label="Search the documentation">
-                  <span className="ico"><SearchIcon /></span>
+                <button
+                  className="hero-search"
+                  type="button"
+                  onClick={openSearch}
+                  aria-label="Search the documentation"
+                >
+                  <span className="ico">
+                    <SearchIcon />
+                  </span>
                   <span className="grow">Search the docs…</span>
                   <kbd>⌘K</kbd>
                 </button>
@@ -326,7 +408,9 @@ export function DocsHome({
                   <span className="entry-num">{e.num}</span>
                   <div className="entry-main">
                     <h2 className="entry-name">
-                      <Lnk className="entry-title" href={e.href}>{e.name}</Lnk>
+                      <Lnk className="entry-title" href={e.href}>
+                        {e.name}
+                      </Lnk>
                       {e.badge && <span className="pill">{e.badge}</span>}
                     </h2>
                     <p className="entry-desc">{e.desc}</p>
@@ -334,7 +418,9 @@ export function DocsHome({
                       <div>
                         <div className="entry-sublinks">
                           {e.sublinks.map((s) => (
-                            <Lnk key={s.label} href={s.href}>{s.label}</Lnk>
+                            <Lnk key={s.label} href={s.href}>
+                              {s.label}
+                            </Lnk>
                           ))}
                         </div>
                       </div>
@@ -342,7 +428,9 @@ export function DocsHome({
                   </div>
                   <div className="entry-meta">
                     <span className="entry-tag">{e.tag}</span>
-                    <span className="entry-arrow"><ArrowIcon /></span>
+                    <span className="entry-arrow">
+                      <ArrowIcon />
+                    </span>
                   </div>
                 </div>
               </article>

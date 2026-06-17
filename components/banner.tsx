@@ -28,16 +28,14 @@ export default function Banner({ stars = "5.7k" }: { stars?: string }) {
       <div className="da-body">
         {isCommercial ? (
           <>
-            We annotated Google&rsquo;s Zanzibar paper with extra context and SpiceDB
-            comparisons.{" "}
+            We annotated Google&rsquo;s Zanzibar paper with extra context and SpiceDB comparisons.{" "}
             <span className="da-bracket">[</span>
             <a href="https://authzed.com/zanzibar?utm_source=docs">Read the annotated paper</a>
             <span className="da-bracket">]</span>
           </>
         ) : (
           <>
-            SpiceDB is 100% open source.{" "}
-            <span className="da-bracket">[</span>
+            SpiceDB is 100% open source. <span className="da-bracket">[</span>
             <a href="https://github.com/authzed/spicedb">Star us on GitHub</a>
             <span className="da-bracket">]</span>
           </>

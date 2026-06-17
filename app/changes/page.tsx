@@ -26,7 +26,9 @@ export default function ChangesPage() {
   const Section = ({ title, items }: { title: string; items: string[] }) =>
     items.length === 0 ? null : (
       <section style={{ marginTop: "2rem" }}>
-        <h2>{title} <span style={{ opacity: 0.5, fontWeight: 400 }}>({items.length})</span></h2>
+        <h2>
+          {title} <span style={{ opacity: 0.5, fontWeight: 400 }}>({items.length})</span>
+        </h2>
         <ul>
           {items.map((r) => (
             <li key={r}>
@@ -42,8 +44,8 @@ export default function ChangesPage() {
     <div style={{ maxWidth: 720, margin: "0 auto", padding: "2rem 0" }}>
       <h1>Changed in this branch</h1>
       <p>
-        Content pages that are new or modified versus the published docs
-        (<code>origin/main</code>). Styling and component changes are excluded.
+        Content pages that are new or modified versus the published docs (<code>origin/main</code>).
+        Styling and component changes are excluded.
         {routes.length === 0 && " No content changes detected."}
       </p>
       <Section title="New pages" items={created} />

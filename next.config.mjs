@@ -45,7 +45,11 @@ export default withNextra({
   async redirects() {
     return [
       { source: "/best-practices", destination: "/spicedb/best-practices", permanent: true },
-      { source: "/best-practices/:path*", destination: "/spicedb/best-practices/:path*", permanent: true },
+      {
+        source: "/best-practices/:path*",
+        destination: "/spicedb/best-practices/:path*",
+        permanent: true,
+      },
     ];
   },
   // This is necessary because we're using CDN domains.

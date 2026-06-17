@@ -133,7 +133,10 @@ html.dark-mode {
   font-family: ui-monospace, "JetBrains Mono", "SF Mono", Menlo, monospace;
 }
 @media (min-width: 1024px) {
-  .docs-announce { flex-wrap: nowrap; align-items: center; }
+  .docs-announce {
+    flex-wrap: nowrap;
+    align-items: center;
+  }
 }
 .docs-announce .da-prompt,
 .docs-announce .da-bracket,
@@ -144,23 +147,38 @@ html.dark-mode {
 }
 /* terminal cursor — the cli-spinners "hamburger" (☱☲☴). Static by default,
    animates only during the load burst or on hover (`.spin` toggled by the JS). */
-.docs-announce .da-spinner::before { content: "☱"; }
+.docs-announce .da-spinner::before {
+  content: "☱";
+}
 @media (prefers-reduced-motion: no-preference) {
-  .docs-announce.spin .da-spinner::before { animation: da-cursor 0.3s steps(1, end) infinite; }
+  .docs-announce.spin .da-spinner::before {
+    animation: da-cursor 0.3s steps(1, end) infinite;
+  }
   @keyframes da-cursor {
-    0%     { content: "☱"; }
-    33.33% { content: "☲"; }
-    66.66% { content: "☴"; }
+    0% {
+      content: "☱";
+    }
+    33.33% {
+      content: "☲";
+    }
+    66.66% {
+      content: "☴";
+    }
   }
 }
-.docs-announce .da-body { min-width: 0; flex: 1; }
+.docs-announce .da-body {
+  min-width: 0;
+  flex: 1;
+}
 .docs-announce .da-body a {
   color: #fff;
   text-decoration: underline;
   white-space: nowrap;
   transition: font-weight 0.1s ease;
 }
-.docs-announce .da-body a:hover { font-weight: 700; }
+.docs-announce .da-body a:hover {
+  font-weight: 700;
+}
 .docs-announce .da-meta {
   display: none;
   flex-shrink: 0;
@@ -168,14 +186,25 @@ html.dark-mode {
   gap: 0.5rem;
 }
 @media (min-width: 1024px) {
-  .docs-announce .da-meta { display: flex; }
+  .docs-announce .da-meta {
+    display: flex;
+  }
 }
-.docs-announce .da-meta a { color: hsl(283 4% 66.1%); text-decoration: none; } /* stone-300 */
-.docs-announce .da-meta a:hover { text-decoration: underline; }
+.docs-announce .da-meta a {
+  color: hsl(283 4% 66.1%);
+  text-decoration: none;
+} /* stone-300 */
+.docs-announce .da-meta a:hover {
+  text-decoration: underline;
+}
 
 /* ── Navbar logo — append a muted mono "/docs" path label (à la "/spicedb").
    Inherits the navbar text colour so it adapts to light/dark automatically. */
-.docs-logo { display: inline-flex; align-items: center; gap: 0.45rem; }
+.docs-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
 .docs-logo-slug {
   font-family: ui-monospace, "JetBrains Mono", "SF Mono", Menlo, monospace;
   font-size: 1.05rem;
@@ -202,9 +231,13 @@ html.dark-mode {
   background: hsl(316 50% 44%);
   transition: background-color 0.15s ease;
 }
-.nav-cta:hover { background: hsl(316 52% 38%); }
+.nav-cta:hover {
+  background: hsl(316 52% 38%);
+}
 /* Only show the CTA once there's room for it alongside the 5 nav tabs +
    icons; below this it would push the nav into overflow. */
 @media (min-width: 1024px) {
-  .nav-cta { display: inline-flex; }
+  .nav-cta {
+    display: inline-flex;
+  }
 }
