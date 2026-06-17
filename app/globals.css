@@ -185,3 +185,21 @@ html.dark-mode {
   color: currentColor;
   opacity: 0.5;
 }
+
+/* ── Navbar CTA — "Book a demo" promoted from the page TOC to the top nav so
+   the primary conversion action is persistent instead of lost beside a short
+   table of contents. Sandworm magenta; white text reads in both themes. */
+.nav-cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.85rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  color: #fff;
+  background: hsl(316 50% 44%);
+  transition: background-color 0.15s ease;
+}
+.nav-cta:hover { background: hsl(316 52% 38%); }

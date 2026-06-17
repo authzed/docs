@@ -74,7 +74,14 @@ export default async function RootLayout({ children }) {
       logoLink="/"
       chatLink="https://authzed.com/discord"
       projectLink="https://github.com/authzed/spicedb"
-    />
+    >
+      <Link
+        href="https://authzed.com/schedule-demo"
+        className="nav-cta"
+      >
+        Book a demo
+      </Link>
+    </Navbar>
   );
 
   return (

@@ -19,7 +19,7 @@ export default {
     type: "page",
   },
   authzed: {
-    title: "AuthZed",
+    title: "Managed SpiceDB",
     type: "page",
   },
   materialize: {

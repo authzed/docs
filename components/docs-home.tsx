@@ -51,11 +51,12 @@ const ENTRIES: Entry[] = [
       { label: "Modeling", href: "/spicedb/modeling/developing-a-schema" },
       { label: "Operations", href: "/spicedb/ops/operator" },
       { label: "API Reference", href: "/spicedb/api/http-api" },
+      { label: "Best Practices", href: "/best-practices" },
     ],
   },
   {
     num: "02",
-    name: "AuthZed",
+    name: "Managed SpiceDB",
     href: "/authzed/guides/picking-a-product",
     desc: "Managed, hosted SpiceDB — Cloud and Dedicated, private networking, audit logging, and more.",
     tag: "Managed platform",
@@ -82,19 +83,6 @@ const ENTRIES: Entry[] = [
   },
   {
     num: "04",
-    name: "Best Practices",
-    href: "/best-practices",
-    desc: "Production–ready recommendations — prioritized guidance for running authorization in production.",
-    tag: "Guides & reference",
-    accent: "var(--sand-300)",
-    sublinks: [
-      { label: "Essential", href: "/best-practices" },
-      { label: "Strongly Recommended", href: "/best-practices" },
-      { label: "Recommended", href: "/best-practices" },
-    ],
-  },
-  {
-    num: "05",
     name: "MCP",
     href: "/mcp",
     desc: "Model Context Protocol servers — connect AuthZed and SpiceDB to AI agents and assistants.",
@@ -329,7 +317,7 @@ export function DocsHome({
           <section aria-label="Documentation index">
             <div className="index-head">
               <span>Docs Index</span>
-              <span>Five surfaces</span>
+              <span>Four surfaces</span>
             </div>
 
             {ENTRIES.map((e) => (
