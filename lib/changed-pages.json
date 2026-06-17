@@ -8,9 +8,6 @@
   "/materialize/api/client-sdks": {
     "status": "new"
   },
-  "/materialize/api/download-api": {
-    "status": "new"
-  },
   "/materialize/api/lookup-permission-sets": {
     "status": "new"
   },
@@ -54,6 +51,9 @@
     "status": "updated"
   },
   "/spicedb/modeling/attributes": {
+    "status": "updated"
+  },
+  "/spicedb/modeling/validation-testing-debugging": {
     "status": "updated"
   },
   "/spicedb/ops/performance": {
