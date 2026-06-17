@@ -86,9 +86,12 @@ export default async function RootLayout({ children }) {
     <html lang="en" dir="ltr" suppressHydrationWarning>
       <Head
         color={{
-          // sand-300 hue (28) — was 45, which read as gold/yellow not sand
-          hue: { dark: 28, light: 290 },
-          saturation: { dark: 100, light: 100 },
+          // Sandworm sand — match the canonical token, not Nextra's default
+          // lightness. dark = sand-300 (28 100% 72%); light = a darker sand
+          // step (~sand-600) so links read on the light ground.
+          hue: { dark: 28, light: 22 },
+          saturation: { dark: 100, light: 55 },
+          lightness: { dark: 72, light: 45 },
         }}
         // Sandworm background — stone-975 (dark) / stone-025 (light) — so every
         // docs page matches the branded home instead of Nextra's neutral #111.
