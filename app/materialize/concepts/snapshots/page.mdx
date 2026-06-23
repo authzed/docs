@@ -13,7 +13,7 @@ Every piece of permission data Materialize hands you is anchored to the revision
 
 Snapshots are what make the two Materialize APIs compose safely:
 
-- [Hydration](./hydration) reads a snapshot in full via [LookupPermissionSets](../../api/lookup-permission-sets).
+- [The initial backfill](./permission-set-lifecycle) reads a snapshot in full.
 - [WatchPermissionSets](../../api/watch-permission-sets) advances that snapshot forward, delivering the deltas that move it from one revision to the next.
 
 ## Why the revision matters
@@ -24,13 +24,13 @@ Storing the snapshot revision **in the same transaction** as the permission data
 ## Snapshot lifecycle events
 
 - **Revision checkpoint** — SpiceDB changed, but nothing Materialize watches was affected. Advance your stored revision so you know where to resume.
-- **Breaking schema change** — the current snapshot is invalidated; you must build a fresh snapshot by re-[hydrating](./hydration) at the new revision.
-- **Snapshot rotation** — Materialize periodically deploys a new internal snapshot of the origin SpiceDB system as part of routine maintenance. A request against a retired snapshot returns `Aborted: Requested Revision Is No Longer Available`, signalling the consumer to re-hydrate from scratch.
+- **Breaking schema change** — the current snapshot is invalidated; you must build a fresh snapshot by re-running the [backfill](./permission-set-lifecycle) at the new revision.
+- **Snapshot rotation** — Materialize periodically deploys a new internal snapshot of the origin SpiceDB system as part of routine maintenance. A request against a retired snapshot returns `Aborted: Requested Revision Is No Longer Available`, signalling the consumer to re-run the [backfill](./permission-set-lifecycle) from scratch.
 
 <Callout type="warning">
   After a breaking schema change you **must** pass the revision token through `optional_starting_after`
-  when re-hydrating, or Materialize will stream against whatever snapshot is current and your data
-  won't reflect the schema change.
+  when re-running the backfill, or Materialize will stream against whatever snapshot is current and
+  your data won't reflect the schema change.
 </Callout>
 
 <Callout type="info">

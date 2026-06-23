@@ -1,0 +1,42 @@
+import { Callout } from "nextra/components";
+
+# The permission set lifecycle
+
+<Callout type="info">
+  **Draft — content review needed.** This concept page was promoted from prose that previously lived
+  inline in the API reference. The mechanics below are accurate to the existing docs; the framing is
+  new and should be reviewed (and expanded with diagrams/examples) before publishing.
+</Callout>
+
+The **permission set lifecycle** describes how your application's local copy of permission data is populated, kept current, and rebuilt over time — from an empty index to a complete, queryable [Permission Sets](./permission-sets) store, and back to a fresh index when your schema changes.
+
+When you first bring a system online, you have no permission data locally.
+The initial **backfill** reads the **current** state of every permission set Materialize is configured to watch and writes it into your datastore.
+Once the backfill is complete, you switch to [WatchPermissionSets](../../api/watch-permission-sets) to keep that data current — see [Snapshots](./snapshots) for how the handoff stays consistent.
+
+## Stages of the lifecycle
+
+1. **Backfill** — populate your store with the current state of every permission set. Two APIs can produce the initial backfill:
+   - **`DownloadPermissionSets`** (the Download API) — **recommended**. It ingests significantly faster than `LookupPermissionSets` and is the preferred path for the initial backfill.
+   - **[LookupPermissionSets](../../api/lookup-permission-sets)** — kept available for clients that find it easier to integrate with. Page through the stream via cursors until an iteration yields zero events. Each event carries the permission-set data to store **and** the cursor to resume from on failure.
+2. **Record the snapshot revision** — every backfill event includes the revision (`ZedToken`) the data was computed at. Store it transactionally alongside the data.
+3. **Switch to the change stream** — once the backfill completes, open [WatchPermissionSets](../../api/watch-permission-sets) using the stored snapshot revision so no changes are missed between the backfill and live updates.
+
+<Callout type="warning">
+  The lifecycle is not only a first-run concern. You must re-run the backfill after a **breaking
+  schema change**, which renders previously indexed permission sets stale. Build the machinery to
+  re-backfill at any time. See [Managing Client State](./managing-client-state).
+</Callout>
+
+## The lifecycle and snapshots
+
+A backfill always produces a [snapshot](./snapshots) — a point-in-time, internally consistent view of the permission sets at a specific revision.
+The relationship is one-directional: **the backfill is the act; a snapshot is the result.**
+You backfill _to_ a snapshot revision, then keep that snapshot live with the change stream.
+
+<Callout type="info">
+  **TODO:** add a dedicated `DownloadPermissionSets` (Download API) reference page — it's the
+  recommended backfill path but has no reference page yet. **TODO (Sam):** expand with a concrete
+  worked example and the four-phase / blue-green re-backfill strategy for breaking schema changes,
+  currently documented under [LookupPermissionSets](../../api/lookup-permission-sets).
+</Callout>

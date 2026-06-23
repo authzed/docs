@@ -17,7 +17,7 @@ This is what makes authorization-aware search, sorting, and filtering over large
 
 Permission sets reach your application through two complementary APIs:
 
-- [LookupPermissionSets](../../api/lookup-permission-sets) — reads the **current** permission sets as an initial backfill. See [Hydration](./hydration).
+- [LookupPermissionSets](../../api/lookup-permission-sets) — reads the **current** permission sets as an initial backfill. See [The permission set lifecycle](./permission-set-lifecycle).
 - [WatchPermissionSets](../../api/watch-permission-sets) — streams **changes** to permission sets as relationships and schema evolve. See [Snapshots](./snapshots) for how the two stay consistent.
 
 ## Storing permission sets
@@ -27,6 +27,6 @@ See [Syncing to a Relational Database](../../guides/relational-database) for wor
 
 <Callout type="info">
   The fields returned by `LookupPermissionSets` and `WatchPermissionSets` are identical — you store
-  them the same way regardless of which API delivered them. That symmetry is what lets you hydrate
+  them the same way regardless of which API delivered them. That symmetry is what lets you backfill
   with one API and keep current with the other.
 </Callout>

@@ -11,13 +11,13 @@ import { Callout } from "nextra/components";
 AuthZed Materialize takes inspiration from the Leopard index component described in the [Zanzibar paper](https://zanzibar.tech/2IoYDUFMAE:0:T).
 Much like the concept of a materialized view in relational databases, AuthZed Materialize is a service that you configure with a list of permissions that you want it to precompute, and it will calculate how those permissions change after relationships
 are written (specifically, when those relationships affect a subject's membership in a permission set or a set's permission on a specific resource), or when a new schema is written.
-These precomputed permissions can then be used either to provide faster checks and lookups through Accelerated Queries, or streamed to your own application database to do operations like searching, sorting, and filtering much more efficiently.
+These precomputed permissions can then be used either to provide faster checks and lookups through Accelerated Queries, or streamed into your own application database and **colocated** alongside the data they protect — a pattern known as **colocated permissions** — so you can search, sort, filter, and paginate over authorized objects natively and much more efficiently.
 
 In summary, AuthZed Materialize allows you to:
 
 - Speed up `CheckPermission` and `CheckBulkPermissions`.
 - Speed up `LookupResources` and `LookupSubjects`, especially when there is a large number of resources.
-- Build authorization-aware UIs, e.g. by providing a filtered and/or sorted list of more than several thousand authorized objects.
-- Perform ACL filtering in other secondary indexes, like a search index (e.g. Elasticsearch).
+- Build authorization-aware UIs — sort, filter, and paginate over many thousands of authorized objects natively in your own database by colocating computed permissions next to your application data.
+- Perform ACL filtering in secondary indexes too, like a search index (e.g. Elasticsearch) — authorization-aware UIs and search-index filtering are the same idea (ACL filtering) applied to different stores.
 
 [Dedicated]: https://authzed.com/docs/authzed/guides/picking-a-product#dedicated
