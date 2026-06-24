@@ -98,8 +98,8 @@ const ENTRIES: Entry[] = [
     accent: "var(--blue-500)",
     sublinks: [
       { label: "Overview", href: "/mcp" },
-      { label: "AuthZed Server", href: "/mcp" },
-      { label: "SpiceDB Dev Server", href: "/mcp" },
+      { label: "AuthZed Server", href: "/mcp/authzed/authzed-mcp-server" },
+      { label: "SpiceDB Dev Server", href: "/mcp/authzed/spicedb-dev-mcp-server" },
     ],
   },
 ];
