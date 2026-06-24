@@ -65,7 +65,7 @@ const ENTRIES: Entry[] = [
   {
     num: "02",
     name: "Managed SpiceDB",
-    href: "/authzed/guides/picking-a-product",
+    href: "/authzed/guides/cloud",
     desc: "Managed, hosted SpiceDB — Cloud and Dedicated, private networking, audit logging, and more.",
     tag: "Managed platform",
     accent: "var(--teal-500)",
