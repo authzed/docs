@@ -103,3 +103,141 @@ html.dark-mode {
 .swagger-ui {
   background-color: transparent;
 }
+
+/* ── Announcement bar — terminal style matching the marketing site ───────
+   Neutralize Nextra's default banner chrome and let our inner bar own the
+   full-bleed background, border, padding, and typography. Sandworm tokens
+   (stone-950 bg, stone-800 border, sand-300 accents, #fff text). */
+.nextra-banner {
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  color: inherit !important;
+  justify-content: flex-start !important;
+  text-align: left !important;
+}
+.docs-announce {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: flex-start;
+  text-align: left;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1.25rem;
+  background: hsl(280 36.6% 8%); /* sandworm stone-950 */
+  border-bottom: 2px solid hsl(279 11.5% 23.9%); /* sandworm stone-800 */
+  color: #fff;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  font-family: ui-monospace, "JetBrains Mono", "SF Mono", Menlo, monospace;
+}
+@media (min-width: 1024px) {
+  .docs-announce {
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+}
+.docs-announce .da-prompt,
+.docs-announce .da-bracket,
+.docs-announce .da-star,
+.docs-announce .da-spinner {
+  color: hsl(28 100% 72%); /* sand-300 */
+  flex-shrink: 0;
+}
+/* terminal cursor — the cli-spinners "hamburger" (☱☲☴). Static by default,
+   animates only during the load burst or on hover (`.spin` toggled by the JS). */
+.docs-announce .da-spinner::before {
+  content: "☱";
+}
+@media (prefers-reduced-motion: no-preference) {
+  .docs-announce.spin .da-spinner::before {
+    animation: da-cursor 0.3s steps(1, end) infinite;
+  }
+  @keyframes da-cursor {
+    0% {
+      content: "☱";
+    }
+    33.33% {
+      content: "☲";
+    }
+    66.66% {
+      content: "☴";
+    }
+  }
+}
+.docs-announce .da-body {
+  min-width: 0;
+  flex: 1;
+}
+.docs-announce .da-body a {
+  color: #fff;
+  text-decoration: underline;
+  white-space: nowrap;
+  transition: font-weight 0.1s ease;
+}
+.docs-announce .da-body a:hover {
+  font-weight: 700;
+}
+.docs-announce .da-meta {
+  display: none;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.5rem;
+}
+@media (min-width: 1024px) {
+  .docs-announce .da-meta {
+    display: flex;
+  }
+}
+.docs-announce .da-meta a {
+  color: hsl(283 4% 66.1%);
+  text-decoration: none;
+} /* stone-300 */
+.docs-announce .da-meta a:hover {
+  text-decoration: underline;
+}
+
+/* ── Navbar logo — append a muted mono "/docs" path label (à la "/spicedb").
+   Inherits the navbar text colour so it adapts to light/dark automatically. */
+.docs-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.docs-logo-slug {
+  font-family: ui-monospace, "JetBrains Mono", "SF Mono", Menlo, monospace;
+  font-size: 1.05rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: currentColor;
+  opacity: 0.5;
+}
+
+/* ── Navbar CTA — "Book a demo" promoted from the page TOC to the top nav so
+   the primary conversion action is persistent instead of lost beside a short
+   table of contents. Sandworm magenta; white text reads in both themes. */
+.nav-cta {
+  display: none; /* desktop-only — see media query below */
+  align-items: center;
+  padding: 0.35rem 0.85rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  color: #fff;
+  background: hsl(316 50% 44%);
+  transition: background-color 0.15s ease;
+}
+.nav-cta:hover {
+  background: hsl(316 52% 38%);
+}
+/* Only show the CTA once there's room for it alongside the 5 nav tabs +
+   icons; below this it would push the nav into overflow. */
+@media (min-width: 1024px) {
+  .nav-cta {
+    display: inline-flex;
+  }
+}

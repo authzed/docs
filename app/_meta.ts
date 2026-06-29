@@ -4,21 +4,33 @@ export default {
   index: {
     title: "Documentation",
     display: "hidden",
+    theme: {
+      layout: "full",
+      toc: false,
+      sidebar: false,
+      breadcrumb: false,
+      pagination: false,
+      timestamp: false,
+      copyPage: false,
+    },
   },
   spicedb: {
-    title: "SpiceDB Documentation",
+    title: "SpiceDB",
     type: "page",
   },
   authzed: {
-    title: "AuthZed Product Documentation",
+    title: "Managed SpiceDB",
     type: "page",
   },
-  "best-practices": {
-    title: "Best Practices",
+  materialize: {
+    title: "Materialize",
     type: "page",
   },
   mcp: {
     title: "MCP",
     type: "page",
+  },
+  changes: {
+    display: "hidden",
   },
 } satisfies MetaRecord;

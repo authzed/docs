@@ -40,6 +40,18 @@ const withNextra = nextra({
 
 export default withNextra({
   basePath: process.env.NEXT_PUBLIC_BASE_DIR ?? undefined,
+  // Best Practices moved under SpiceDB (it's SpiceDB-specific content). Keep
+  // the old indexed URL working. Fragments are preserved by the browser.
+  async redirects() {
+    return [
+      { source: "/best-practices", destination: "/spicedb/best-practices", permanent: true },
+      {
+        source: "/best-practices/:path*",
+        destination: "/spicedb/best-practices/:path*",
+        permanent: true,
+      },
+    ];
+  },
   // This is necessary because we're using CDN domains.
   // It adds `cross-origin="anonymous"` to script tags
   crossOrigin: "anonymous",

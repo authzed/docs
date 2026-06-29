@@ -1,0 +1,162 @@
+import { Callout } from "nextra/components";
+
+# LookupPermissionSets
+
+This API complements [WatchPermissionSets].
+When you first bring on a system that needs permissions data, [LookupPermissionSets] lets you create an initial snapshot of the permissions data, and then you can use the [WatchPermissionSets] API to keep the snapshot updated.
+
+The API is resumable via cursors, meaning that the client is responsible for specifying the cursor that denotes the permission set to start streaming from, and the number of them to be streamed.
+If no cursor is provided, Materialize will start streaming from what it considers the first change.
+The number of events to stream is required.
+
+The API also supports specifying an optional revision via the `optional_at_revision`, which indicates Materialize should start streaming events at a revision at least as fresh as the provided one.
+The server will guarantee the revision selected is equal to or more recent than the requested revision.
+This is useful when the client has been notified a [breaking schema change] occurred and that they should rebuild their indexes.
+If both `optional_at_revision` and `optional_starting_after` are provided, the latter always takes precedence.
+
+<Callout type="warning">
+  Client **must** provide the revision token after a [breaking schema change] through
+  `optional_starting_after`, otherwise Materialize will start streaming permission sets for whatever
+  snapshot revision is available at the moment, and won't reflect the schema changes.
+</Callout>
+
+The current cursor is provided with each event in the stream, so if the consumer client crashes it knows where to restart from, alongside the revision at which the data is computed.
+Once an event is received, the recommended course of action is to store the following as part of the same transaction in your database:
+
+- The data to insert into the permission sets table
+- The cursor into a table denoting the current state of the backfill
+- The current revision token into a table denoting the snapshot revision of the stored Materialize data
+
+In the event of the customer consumer being restarted, it should:
+
+- Select the current cursor from the backfill cursor table
+- Issue a [LookupPermissionSets] request with `optional_starting_after` set to the stored cursor
+- Resume ingestion as usual
+
+<Callout type="info">
+  While AuthZed treats correctness very seriously, bugs may be identified that affect the
+  correctness of the denormalized permissions computed by Materialize. Those incidents should be
+  rare, but consumers must have all the machinery in place to re-index via [LookupPermissionSets] at
+  any given time.
+</Callout>
+
+## Reindexing After A Breaking Schema Change
+
+Another scenario for invoking [LookupPermissionSets] is after a [breaking schema change] written to the origin SpiceDB instance.
+In this case, the index is rendered stale and a client must rebuild it by calling [LookupPermissionSets] at the revision the schema change was introduced.
+During this period, the previously ingested permission sets data will be stale.
+We are working on several options to minimize the lag caused and improve the developer experience:
+
+- On-Band: Stream breaking schema changes over [WatchPermissionSets] instead of requiring a [LookupPermissionSets] call.
+  This will reduce the amount of changes to stream and reduce the time to reindex.
+- Off-Band: Support Staging Schemas in SpiceDB so that your application can call [LookupPermissionSets] over the staged schema changes
+
+These are the two recommended strategies to handle breaking schema events in your application:
+
+### On-Band LookupPermissionSets Ingestion
+
+With on-band ingestion, your application reindexes all permission set data right after receiving a [breaking schema change].
+This will naturally lead to lag, but depending on the volume of data, your application may be able to withstand this.
+The tradeoff here is development velocity versus lag.
+If your application can't withstand lag during reindexing, please consider the off-band strategy.
+
+In this scenario, we recommend using the _versioned permission set tables strategy_: your application will keep track of various versions of the permission set.
+One will be the currently ingested and being updated with [WatchPermissionSets], and the new version is the result of a [BreakingSchemaChange] and is ingested with [LookupPermissionSets] while the previous version of the permission sets are being served.
+You should keep track of what is the current revision being served.
+
+### Off-Band LookupPermissionSets Ingestion
+
+With an off-band ingestion strategy the client will avoid the lag by following a strategy similar to non-breaking relational database migrations: by transforming your schema following a four-phase migration.
+
+A new permission will be written to your SpiceDB schema that includes the changes, and it will be added to a new Materialize instance run in parallel to the current one, similar to a blue/green deployment.
+You will be able to run [LookupPermissionSets] against the new instance to obtain all the permission sets plus the ones corresponding to the newly added permission.
+Once your index is ingested and is updated with [WatchPermissionSets], your application should be able to switch to use the new permission and the old permission can be dropped from Materialize first, and then from your schema.
+
+This strategy requires more steps and careful planning, but in exchange completely avoids any lag.
+
+<Callout type="info">
+  For the time being, Materialize instances are not self-serve, so you'll need to work with your
+  Account Team to execute the off-band ingestion strategy.
+</Callout>
+
+## Request
+
+```json
+{
+  "limit": "the_number_of_events_to_stream",
+  "optional_at_revision": "minimum revision to start streaming from",
+  "optional_starting_after": "continue stream from the specified cursor"
+}
+```
+
+## Response
+
+### Permission Set Sent Over The Stream
+
+```json
+{
+  "change": {
+    "at_revision": {
+      "token": "GiAKHjE3MTUzMzk0Mzg2MjA4NzI1MDIuMDAwMDAwMDAwMA=="
+    },
+    "operation": "SET_OPERATION_ADDED",
+    "parent_set": {
+      "object_type": "thumper/resource",
+      "object_id": "seconddoc",
+      "permission_or_relation": "reader"
+    },
+    "child_member": {
+      "object_type": "thumper/user",
+      "object_id": "tom",
+      "optional_permission_or_relation": ""
+    }
+  },
+  "cursor": {
+    "limit": 10000,
+    "token": {
+      "token": "GiAKHjE3MTUzMzk0Mzg2MjA4NzI1MDIuMDAwMDAwMDAwMA=="
+    },
+    "starting_index": 1,
+    "completed_members": false
+  }
+}
+```
+
+The payload comes with the permission set data to store in your database table, and the cursor that points to that permission set in case resumption is necessary.
+The computed revision is also provided as part of the request via `at_revision` so that once the permission set is streamed, the consumer knows where to start streaming [WatchPermissionSets] from.
+
+The consumer should continue to stream permission sets indefinitely until it has not received further messages over the stream.
+Please note that the server may return `EOF` to denote the stream is closed, but that does not mean there aren't more changes to serve.
+The client **must** open a new stream with the last cursor, and continue streaming until an iteration of the stream yielded zero events.
+At this point, the backfill is completed, and the consumer can start processing change events using [WatchPermissionSets], using the stored snapshot revision.
+
+## Errors
+
+### InvalidArgument: Cursor Limit Does Not Match Request Limit
+
+The limit specified in the request, and the limit specified in the initiating request that led to the currently provided cursor differ.
+To solve this, make sure you use the same limit for the initiating request as for every subsequent request.
+The limit is optional once you provide a cursor since it's stored in it.
+
+### FailedPrecondition: Snapshot Not Found For Revision, Try Again Later
+
+Whenever the client receives a `FailedPrecondition`, they should retry with a backoff.
+In this case, the client is asking for a revision that hasn't been yet processed by Materialize.
+You may receive this error when your client calls [LookupPermissionSets] right after receiving [BreakingSchemaChange] through the WatchPermissionsSets API.
+The client should retry with the same revision later on.
+
+### Aborted: Requested Revision Is No Longer Available
+
+This error is returned when a new Materialize has deployed a new snapshot of the origin SpiceDB permission system.
+This happens on a regular cadence and is part of Materialize's internal maintenance operations.
+When this error is returned, it indicates the client should restart [LookupPermissionSets] afresh, dropping the cursor in `optional_starting_after`, and also dropping `optional_at_revision`.
+Every previously stored data should also be discarded.
+If the volume of data to ingest via [LookupPermissionSets] is large enough it takes many hours to consume, please get in touch with AuthZed support to tweak your instance accordingly.
+
+[WatchPermissionSets]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.materialize.v0#authzed.api.materialize.v0.WatchPermissionSetsService.WatchPermissionSets
+[LookupPermissionSets]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.materialize.v0#authzed.api.materialize.v0.WatchPermissionSetsService.LookupPermissionSets
+[LookupResources]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.v1#authzed.api.v1.PermissionsService.LookupResources
+[LookupSubjects]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.v1#authzed.api.v1.PermissionsService.LookupSubjects
+[BreakingSchemaChange]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.materialize.v0#authzed.api.materialize.v0.BreakingSchemaChange
+[Breaking Schema Change]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.materialize.v0#authzed.api.materialize.v0.BreakingSchemaChange
+[breaking schema change]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.materialize.v0#authzed.api.materialize.v0.BreakingSchemaChange

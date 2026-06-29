@@ -1,0 +1,37 @@
+/* Feature-matrix marks. Theme-aware so the disc pops on either ground:
+   LIGHT (base) — a deeper, saturated teal→violet disc with a WHITE check.
+   DARK (html.dark) — the brighter Sandworm gradient with a dark check.
+   (The bright gradient alone washed out against white table cells.) */
+
+.feature-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  vertical-align: middle;
+}
+
+/* Yes — light (base) */
+.feature-yes {
+  background: linear-gradient(135deg, hsl(177 33% 45%), hsl(178 35% 38%) 45%, hsl(253 60% 55%));
+}
+.feature-yes svg {
+  stroke: #fff;
+}
+/* Yes — dark */
+html.dark .feature-yes {
+  background: linear-gradient(135deg, hsl(175 28% 73%), hsl(176 29% 57%) 45%, hsl(253 73% 63%));
+}
+html.dark .feature-yes svg {
+  stroke: hsl(280 37% 8%); /* stone-950 */
+}
+
+/* No — red-outlined disc, red x (reads on both grounds) */
+.feature-no {
+  border: 2px solid hsl(351 55% 53%); /* red-600 */
+}
+.feature-no svg {
+  stroke: hsl(351 55% 53%);
+}

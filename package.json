@@ -7,8 +7,9 @@
     "url": "https://github.com/authzed/docs/issues"
   },
   "scripts": {
-    "dev": "next dev --webpack",
-    "build": "next build --webpack",
+    "dev": "node scripts/build-changed-manifest.mjs && next dev --webpack",
+    "build": "node scripts/build-changed-manifest.mjs && next build --webpack",
+    "gen:changed": "node scripts/build-changed-manifest.mjs",
     "postbuild": "./scripts/postbuild.sh",
     "start": "next start",
     "lint:yaml": "yamllint .",

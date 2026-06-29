@@ -1,0 +1,201 @@
+import { Callout } from "nextra/components";
+
+# Syncing to a Relational Database
+
+Just as with relational database materialized views, you need to provide Materialize with the "queries" you'd like it to pre-compute.
+The configuration is described as a list of `resource#permission@subject` tuples.
+Example:
+
+```zed
+resource#view@user
+resource#edit@user
+```
+
+<Callout type="info">
+  During early access provisioning, Materialize instances are not self-service, so you'll need to
+  provide the permissions to be computed by Materialize directly to your AuthZed account team.
+</Callout>
+
+## Relational Database
+
+You can find a runnable version of these examples [here](https://dbfiddle.uk/dX10Cu3Z).
+
+These are tables you likely already have in your database
+
+1. something representing the user
+2. something representing the object we want to filter
+
+```sql
+CREATE TABLE users (
+    id     varchar(100) PRIMARY KEY,
+    name   varchar(40)
+);
+CREATE TABLE documents (
+    id     varchar(100) PRIMARY KEY,
+    name   varchar(40),
+    contents_bucket varchar(100)
+);
+```
+
+The `member_to_set` and `set_to_set` tables below are just used to track data from [LookupPermissionSets] and [WatchPermissionSets], all you need to do is store the fields directly from those APIs.
+
+```sql
+CREATE TABLE member_to_set (
+  member_type varchar(100),
+  member_id varchar(100),
+  member_relation varchar(100),
+  set_type varchar(100),
+  set_id varchar(100),
+  set_relation varchar(100)
+);
+
+CREATE TABLE set_to_set (
+  child_type varchar(100),
+  child_id varchar(100),
+  child_relation varchar(100),
+  parent_type varchar(100),
+  parent_id varchar(100),
+  parent_relation varchar(100)
+);
+```
+
+Seed some base data; this would already exist in the application:
+
+```sql
+INSERT INTO users (id, name) VALUES ('123', 'evan'), ('456', 'victor');
+INSERT INTO documents (id, name) VALUES ('123', 'evan secret doc'), ('456', 'victor shared doc');
+```
+
+Sync data from [LookupPermissionSets]/[WatchPermissionSets].
+The APIs return type/id/relation name:
+
+```sql
+INSERT INTO member_to_set (member_type, member_id, member_relation, set_type, set_id, set_relation)
+  VALUES ('user', '123', '', 'document', '123', 'view'),
+         ('user', '123', '', 'group', 'shared', 'member'),
+         ('user', '456', '', 'group', 'shared', 'member');
+
+INSERT INTO set_to_set (child_type, child_id, child_relation, parent_type, parent_id, parent_relation)
+  VALUES ('group', 'shared', 'member', 'document', '456', 'view');
+```
+
+To query, join the local application data with [LookupPermissionSets]/[WatchPermissionSets] data to filter by specific permissions.
+
+Find all documents `evan` can `view:`
+
+```sql
+SELECT d.id FROM documents d
+  LEFT JOIN set_to_set s2s ON d.id = s2s.parent_id
+  INNER JOIN member_to_set m2s ON (m2s.set_id = s2s.child_id AND m2s.set_type = s2s.child_type AND m2s.set_relation = s2s.child_relation) OR (d.id = m2s.set_id )
+  INNER JOIN users u ON u.id = m2s.member_id
+  WHERE
+   u.name = 'evan' AND
+   m2s.member_type = 'user' AND
+   m2s.member_relation = '' AND ((
+      s2s.parent_type = 'document' AND
+      s2s.parent_relation='view'
+    ) OR (
+      m2s.set_type = 'document' AND
+      m2s.set_relation = 'view'
+    ));
+```
+
+| id  |
+| :-- |
+| 123 |
+| 456 |
+
+The same query, by changing only the username, will find all documents `victor` can `view`:
+
+```sql
+SELECT d.id FROM documents d
+  LEFT JOIN set_to_set s2s ON d.id = s2s.parent_id
+  INNER JOIN member_to_set m2s ON (m2s.set_id = s2s.child_id AND m2s.set_type = s2s.child_type AND m2s.set_relation = s2s.child_relation) OR (d.id = m2s.set_id )
+  INNER JOIN users u ON u.id = m2s.member_id
+  WHERE
+   u.name = 'victor' AND
+   m2s.member_type = 'user' AND
+   m2s.member_relation = '' AND ((
+      s2s.parent_type = 'document' AND
+      s2s.parent_relation='view'
+    ) OR (
+      m2s.set_type = 'document' AND
+      m2s.set_relation = 'view'
+    ));
+```
+
+| id  |
+| :-- |
+| 456 |
+
+The above example shows the most flexible way to do this: you can update your SpiceDB schema and sync new permission sets data without SQL schema changes but at the cost of more verbose SQL queries.
+
+If you know that you only care about `document#view@user,` then you can store the data more concisely and query more simply.
+This strategy can also be used to shard the data coming from the Materialize APIs so that it does not all land in one table.
+
+Simplified permission sets storage (just for `document#view@user`):
+
+```sql
+CREATE TABLE user_to_set (
+  user_id varchar(100),
+  parent_set varchar(300)
+);
+
+CREATE TABLE set_to_document_view (
+  child_set varchar(300),
+  document_id varchar(100)
+);
+```
+
+Storing from [LookupPermissionSets]/[WatchPermissionSets] in this model requires some simple transformations compared to the previous example:
+
+```sql
+INSERT INTO user_to_set (user_id, parent_set)
+  VALUES ('123', 'document:123#view'),
+         ('123', 'group:shared#member'),
+         ('456', 'group:shared#member');
+
+INSERT INTO set_to_document_view (child_set, document_id)
+  VALUES ('document:123#view', '123'),
+         ('group:shared#member', '456');
+```
+
+Note that an extra entry (`document:123#view`, `123`) was added to simplify the join side (avoiding the `left join` in the previous example).
+The queries are a bit simpler, though they can't be used to answer any permission check other than `document#view@user`.
+
+Find all documents `evan` can `view`:
+
+```sql
+SELECT d.id FROM documents d
+  INNER JOIN set_to_document_view s2s ON d.id = s2s.document_id
+  INNER JOIN user_to_set m2s ON m2s.parent_set = s2s.child_set
+  INNER JOIN users u ON u.id = m2s.user_id
+  WHERE u.name = 'evan';
+```
+
+| id  |
+| :-- |
+| 123 |
+| 456 |
+
+Find all documents `victor` can `view`:
+
+```sql
+SELECT d.id FROM documents d
+  INNER JOIN set_to_document_view s2s ON d.id = s2s.document_id
+  INNER JOIN user_to_set m2s ON m2s.parent_set = s2s.child_set
+  INNER JOIN users u ON u.id = m2s.user_id
+  WHERE u.name = 'victor';
+```
+
+| id  |
+| :-- |
+| 456 |
+
+[WatchPermissionSets]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.materialize.v0#authzed.api.materialize.v0.WatchPermissionSetsService.WatchPermissionSets
+[LookupPermissionSets]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.materialize.v0#authzed.api.materialize.v0.WatchPermissionSetsService.LookupPermissionSets
+[LookupResources]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.v1#authzed.api.v1.PermissionsService.LookupResources
+[LookupSubjects]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.v1#authzed.api.v1.PermissionsService.LookupSubjects
+[BreakingSchemaChange]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.materialize.v0#authzed.api.materialize.v0.BreakingSchemaChange
+[Breaking Schema Change]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.materialize.v0#authzed.api.materialize.v0.BreakingSchemaChange
+[breaking schema change]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.materialize.v0#authzed.api.materialize.v0.BreakingSchemaChange

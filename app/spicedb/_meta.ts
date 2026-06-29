@@ -5,6 +5,7 @@ export default {
   ops: "Operations",
   integrations: "Integrations",
   tutorials: "Tutorials",
+  "best-practices": "Best Practices",
   api: "API Reference",
   links: "Links",
 };

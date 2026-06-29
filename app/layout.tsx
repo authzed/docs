@@ -8,6 +8,7 @@ import LogoIcon from "@/components/icons/logo-icon.svg";
 import BannerContents from "@/components/banner";
 import Providers from "@/components/providers";
 import { TocExtraContent } from "@/components/toc-extra-content";
+import { ContentStatus } from "@/components/content-status";
 import Scripts from "@/components/scripts";
 import type { Metadata, ResolvingMetadata } from "next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -42,32 +43,65 @@ export const generateMetadata = async (
   };
 };
 
+/** SpiceDB GitHub star count, cached hourly; falls back to a sane default. */
+async function getStarCount(): Promise<string> {
+  try {
+    const res = await fetch("https://api.github.com/repos/authzed/spicedb", {
+      next: { revalidate: 3600 },
+      headers: { Accept: "application/vnd.github+json" },
+    });
+    if (!res.ok) throw new Error(String(res.status));
+    const n = (await res.json())?.stargazers_count;
+    if (typeof n !== "number") throw new Error("no count");
+    return n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
+  } catch {
+    return "5.7k";
+  }
+}
+
 export default async function RootLayout({ children }) {
   const pageMap = await getPageMap();
   const enableSearch = process.env.NEXT_PUBLIC_ENABLE_SEARCH_BLOG_INTEGRATION === "true";
+  const starCount = await getStarCount();
 
   const navbar = (
     <Navbar
-      logo={<Logo />}
-      logoLink="https://authzed.com"
+      logo={
+        <span className="docs-logo">
+          <Logo />
+          <span className="docs-logo-slug">/docs</span>
+        </span>
+      }
+      logoLink="/"
       chatLink="https://authzed.com/discord"
       projectLink="https://github.com/authzed/spicedb"
-    />
+    >
+      <Link href="https://authzed.com/schedule-demo" className="nav-cta">
+        Book a demo
+      </Link>
+    </Navbar>
   );
 
   return (
     <html lang="en" dir="ltr" suppressHydrationWarning>
       <Head
         color={{
-          hue: { dark: 45, light: 290 },
-          saturation: { dark: 100, light: 100 },
+          // Sandworm sand — match the canonical token, not Nextra's default
+          // lightness. dark = sand-300 (28 100% 72%); light = a darker sand
+          // step (~sand-600) so links read on the light ground.
+          hue: { dark: 28, light: 22 },
+          saturation: { dark: 100, light: 55 },
+          lightness: { dark: 72, light: 45 },
         }}
+        // Sandworm background — stone-975 (dark) / stone-025 (light) — so every
+        // docs page matches the branded home instead of Nextra's neutral #111.
+        backgroundColor={{ dark: "#0c050f", light: "#f8f6f8" }}
       />
       <body>
         <Layout
           banner={
             <Banner dismissible={false}>
-              <BannerContents />
+              <BannerContents stars={starCount} />
             </Banner>
           }
           navbar={navbar}
@@ -94,7 +128,10 @@ export default async function RootLayout({ children }) {
         >
           <OurLayout>
             <SpeedInsights />
-            <Providers>{children}</Providers>
+            <Providers>
+              <ContentStatus />
+              {children}
+            </Providers>
             <Scripts />
           </OurLayout>
         </Layout>

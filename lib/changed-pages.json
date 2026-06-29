@@ -1,0 +1,65 @@
+{
+  "/authzed/guides/picking-a-product": {
+    "status": "updated"
+  },
+  "/authzed/guides/postgres-fdw": {
+    "status": "updated"
+  },
+  "/materialize/api/client-sdks": {
+    "status": "new"
+  },
+  "/materialize/api/lookup-permission-sets": {
+    "status": "new"
+  },
+  "/materialize/api/watch-permission-sets": {
+    "status": "new"
+  },
+  "/materialize/concepts/hydration": {
+    "status": "new"
+  },
+  "/materialize/concepts/managing-client-state": {
+    "status": "new"
+  },
+  "/materialize/concepts/permission-sets": {
+    "status": "new"
+  },
+  "/materialize/concepts/snapshots": {
+    "status": "new"
+  },
+  "/materialize/getting-started/limitations": {
+    "status": "new"
+  },
+  "/materialize/getting-started/overview": {
+    "status": "new"
+  },
+  "/materialize/guides/recommended-architecture": {
+    "status": "new"
+  },
+  "/materialize/guides/relational-database": {
+    "status": "new"
+  },
+  "/spicedb/best-practices": {
+    "status": "updated"
+  },
+  "/spicedb/concepts/querying-data": {
+    "status": "updated"
+  },
+  "/spicedb/concepts/read-after-write": {
+    "status": "updated"
+  },
+  "/spicedb/getting-started/discovering-spicedb": {
+    "status": "updated"
+  },
+  "/spicedb/modeling/attributes": {
+    "status": "updated"
+  },
+  "/spicedb/modeling/validation-testing-debugging": {
+    "status": "updated"
+  },
+  "/spicedb/ops/performance": {
+    "status": "updated"
+  },
+  "/spicedb/ops/postgres-fdw": {
+    "status": "updated"
+  }
+}
