@@ -1,3 +1,5 @@
+import { Callout } from "nextra/components";
+
 # SpiceDB Operator
 
 The [SpiceDB Operator] is a [Kubernetes Operator] that can manage the installation and lifecycle of SpiceDB clusters.
@@ -44,19 +46,33 @@ There may be exceptions to this rule, but they will be documented in release not
 
 The operator also introduces some new flags that are not present on the CLI:
 
-| Flag                         | Description                                                                                                                                                          | Type                        |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
-| image                        | A specific container image to run.                                                                                                                                   | string                      |
-| replicas                     | The number of nodes to run for this cluster.                                                                                                                         | string or int               |
-| skipMigrations               | If true, the operator will not run migrations on changes to this cluster.                                                                                            | string or bool              |
-| tlsSecretName                | The name of a Kubernetes secret in the same namespace to use as the TLS credentials for SpiceDB services.                                                            | string                      |
-| dispatchUpstreamCASecretName | The name of a Kubernetes secret in the same namespace to use as the TLS CA validation. This should be the CA cert that was used to issue the cert in `tlsSecretName` | string                      |
-| datastoreTLSSecretName       | The name of a Kubernetes secret containing a TLS secret to use when connecting to the datastore.                                                                     | string                      |
-| spannerCredentials           | The name of a Kubernetes secret containing credentials for talking to Cloud Spanner. Typically, this would not be used, in favor of workload identity.               | string                      |
-| extraPodLabels               | A set of additional labels to add to the spicedb pods.                                                                                                               | string or map[string]string |
-| extraPodAnnotations          | A set of additional annotations to add to the spicedb pods.                                                                                                          | string or map[string]string |
+| Flag                         | Description                                                                                                                                                                 | Type                        |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| image                        | A specific container image to run.                                                                                                                                          | string                      |
+| replicas                     | The number of nodes to run for this cluster.                                                                                                                                | string or int               |
+| skipMigrations               | If true, the operator will not run migrations on changes to this cluster.                                                                                                   | string or bool              |
+| tlsSecretName                | The name of a Kubernetes secret in the same namespace to use as the TLS credentials for SpiceDB services.                                                                   | string                      |
+| dispatchUpstreamCASecretName | The name of a Kubernetes secret in the same namespace to use as the TLS CA validation. This should be the CA cert that was used to issue the cert in `tlsSecretName`        | string                      |
+| datastoreTLSSecretName       | The name of a Kubernetes secret containing TLS material to use when connecting to the datastore. The secret's keys are mounted read-only as files under `/spicedb-db-tls/`. | string                      |
+| spannerCredentials           | The name of a Kubernetes secret containing credentials for talking to Cloud Spanner. Typically, this would not be used, in favor of workload identity.                      | string                      |
+| extraPodLabels               | A set of additional labels to add to the spicedb pods.                                                                                                                      | string or map[string]string |
+| extraPodAnnotations          | A set of additional annotations to add to the spicedb pods.                                                                                                                 | string or map[string]string |
 
 All other flags are passed through to SpiceDB without any additional processing.
+
+<Callout type="info">
+  When `datastoreTLSSecretName` is set, every key in the referenced secret is mounted as a read-only file under `/spicedb-db-tls/<key>` inside the SpiceDB pods (both the serve pods and the migration jobs).
+  The operator does not inject these paths into the connection string for you, so you must reference them yourself from the `datastore_uri` value in your SpiceDB config secret.
+
+For example, with PostgreSQL or CockroachDB:
+
+```
+postgresql://user:password@host:5432/spicedb?sslmode=verify-full&sslrootcert=/spicedb-db-tls/ca.crt&sslcert=/spicedb-db-tls/tls.crt&sslkey=/spicedb-db-tls/tls.key
+```
+
+The example uses libpq-style parameters; MySQL, Spanner, and other engines use their own connection-string conventions.
+
+</Callout>
 
 ### Global Config
 
