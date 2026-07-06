@@ -29,10 +29,11 @@ export const generateMetadata = async (
     },
     description: "Welcome to the SpiceDB and AuthZed docs site.",
     openGraph: {
-      title: {
-        default: "Authzed Docs",
-        template: "%s - Authzed Docs",
-      },
+      // Slack builds its preview links from these tags.
+      // Intentionally omit `title` here: an og:title template only applies when
+      // a child page sets `openGraph.title` as a string, which Nextra pages
+      // never do. Leaving it unset lets Next.js infer og:title from the
+      // (already templated) page `title`, so previews show the real page name.
       description: description ?? undefined,
     },
     alternates: {
