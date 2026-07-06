@@ -3,3 +3,53 @@
 Multi-Region Deployments are a collection of SpiceDB deployments that can be located in various regions across the world, but that all share a single [Datastore].
 
 [Datastore]: ../../spicedb/concepts/datastores
+
+## Connecting to a region
+
+There is no global endpoint that automatically routes you to the closest region.
+Each region is exposed as its own endpoint, and it is up to you to connect to the region closest to your workload to minimize latency.
+
+## Supported datastores
+
+Multi-region deployments are backed by datastores that replicate data across regions:
+
+- [CockroachDB][datastores-crdb] — the recommended datastore for multi-region deployments, with configurable region awareness. AuthZed's managed services standardize on CockroachDB.
+- [Cloud Spanner][datastores-spanner] — a good fit for multi-region deployments running on Google Cloud, taking advantage of Google's TrueTime.
+
+[PostgreSQL][datastores-pg] and [MySQL][datastores-mysql] are recommended for single-region deployments, though both support [read replicas][read-replicas] that let you serve primarily read workloads from other regions.
+
+[datastores-crdb]: ../../spicedb/concepts/datastores#cockroachdb
+[datastores-spanner]: ../../spicedb/concepts/datastores#cloud-spanner
+[datastores-pg]: ../../spicedb/concepts/datastores#postgresql
+[datastores-mysql]: ../../spicedb/concepts/datastores#mysql
+[read-replicas]: ../../spicedb/concepts/datastores#read-replicas
+
+## Replication delay and read-your-own-writes
+
+Because the datastore replicates data between regions, a write committed in one region is not instantaneously visible in another.
+There is a replication delay, so a read issued in a different region than the write may not observe that write until replication catches up.
+
+If you need read-your-own-writes (read-after-write) behavior across regions, do not rely on the region catching up on its own.
+Instead, use a [ZedToken] with [`at_least_as_fresh`][at-least-as-fresh] consistency.
+The ZedToken returned from a write encodes the point-in-time of that write, and passing it back on a subsequent read ensures the response is computed from data at least as fresh as that write — regardless of which region serves the read.
+
+[ZedToken]: ../../spicedb/concepts/consistency#zedtokens
+[at-least-as-fresh]: ../../spicedb/concepts/consistency#at-least-as-fresh
+
+## Fully consistent requests on multi-region CockroachDB
+
+`fully_consistent` does **not** guarantee read-after-write consistency on CockroachDB, including in multi-region deployments.
+
+At request time, SpiceDB directs the query towards one node in the CockroachDB cluster and runs [`cluster_logical_timestamp()`](https://www.cockroachlabs.com/docs/stable/functions-and-operators#system-info-functions) to pick its evaluation revision.
+Because CockroachDB is a distributed database, this timestamp can differ from other nodes by up to the cluster's configured [`max_offset`][max-offset] (default: 500ms).
+If the node handling the read picks a timestamp older than the one assigned to a recent write on a different node, the read will not see that write even though the data has been committed.
+
+This effect is more pronounced in a multi-region cluster, where nodes are spread across regions.
+The [overlap strategy][overlap-strategy] does not mitigate this — it prevents concurrent writes from committing in reverse order, but does not address clock skew between nodes during reads.
+
+If you need read-after-write consistency with CockroachDB, use a [ZedToken] with [`at_least_as_fresh`][at-least-as-fresh] instead.
+See [Consistency: Fully Consistent][fully-consistent] for details.
+
+[max-offset]: https://www.cockroachlabs.com/docs/stable/cockroach-start.html#flags-max-offset
+[overlap-strategy]: ../../spicedb/concepts/datastores#overlap-strategy
+[fully-consistent]: ../../spicedb/concepts/consistency#fully-consistent
