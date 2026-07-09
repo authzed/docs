@@ -33,10 +33,3 @@ Once the backfill is complete, you switch to [WatchPermissionSets](../../api/wat
 A backfill always produces a [snapshot](./snapshots) — a point-in-time, internally consistent view of the permission sets at a specific revision.
 The relationship is one-directional: **the backfill is the act; a snapshot is the result.**
 You backfill _to_ a snapshot revision, then keep that snapshot live with the change stream.
-
-<Callout type="info">
-  **TODO:** add a dedicated `DownloadPermissionSets` (Download API) reference page — it's the
-  recommended backfill path but has no reference page yet. **TODO (Sam):** expand with a concrete
-  worked example and the four-phase / blue-green re-backfill strategy for breaking schema changes,
-  currently documented under [LookupPermissionSets](../../api/lookup-permission-sets).
-</Callout>
