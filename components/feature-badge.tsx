@@ -4,7 +4,7 @@ import Link from "next/link";
 const FEATURES = {
   "accelerated-queries": {
     label: "Accelerated Queries",
-    status: "GA",
+    status: "Early Access",
     href: "/materialize/getting-started/overview#accelerated-queries",
   },
   "event-streams": {

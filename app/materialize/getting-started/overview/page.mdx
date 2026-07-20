@@ -11,11 +11,15 @@ AuthZed Materialize takes inspiration from the Leopard index component described
 Much like the concept of a materialized view in relational databases, AuthZed Materialize is a service that you configure with a list of permissions that you want it to precompute, and it will calculate how those permissions change after relationships
 are written (specifically, when those relationships affect a subject's membership in a permission set or a set's permission on a specific resource), or when a new schema is written.
 
-Materialize puts that precomputed data to work in two ways: **Accelerated Queries**, which is generally available, and **Event Streams**, which is in early access. Every other piece of Materialize content belongs to one of these two features — look for the badge at the top of the page, which also shows its release status.
+Materialize puts that precomputed data to work in two ways: **Accelerated Queries** and **Event Streams**, both currently in early access. Every other piece of Materialize content belongs to one of these two features — look for the badge at the top of the page, which also shows its release status.
 
 ## Accelerated Queries
 
-<Callout type="info">Accelerated Queries is generally available.</Callout>
+<Callout type="info">
+  Accelerated Queries is available to users of AuthZed [Dedicated] as part of an early access
+  program. Don't hesitate to get in touch with your AuthZed account team if you would like to
+  participate.
+</Callout>
 
 Accelerated Queries use Materialize's precomputed permissions cache to answer the SpiceDB queries your application already makes, without changing how you call SpiceDB:
 
