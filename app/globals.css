@@ -2,6 +2,54 @@
 
 @custom-variant dark (&:is(html[class~="dark"] *));
 
+/* ===========================================================================
+   Sandworm accent tokens — site-wide.
+   Raw HSL triplets (consumed as `hsl(var(--teal-500) / 0.5)`), so any
+   component can tint without redeclaring a color. LIGHT is the base; DARK
+   overrides under `html.dark` (next-themes, which also resolves "system").
+   The light shades are deliberately DARKER than Sandworm's native register
+   so they stay legible on a light ground — don't "correct" them upward
+   without re-checking contrast.
+   Previously scoped under `.docs-home` in components/docs-home.css, which
+   put them out of reach of everything else on the site. The `--stone-*` ramp
+   stays scoped there: it's inverted for that page and isn't general-purpose.
+   ======================================================================== */
+:root {
+  --magenta-300: 316 50% 45%;
+  --magenta-400: 316 48% 47%;
+  --magenta-500: 316 50% 44%;
+  --magenta-600: 316 52% 40%;
+  --magenta-950: 315 33.3% 7.1%;
+  --red-400: 352 70% 48%;
+  --teal-300: 178 40% 32%;
+  --teal-400: 178 38% 35%;
+  --teal-500: 178 35% 33%;
+  --teal-700: 178 30% 26%;
+  --violet-400: 253 60% 52%;
+  --violet-500: 253 62% 50%;
+  --violet-700: 255 50% 46%;
+  --sand-300: 30 75% 42%;
+  --blue-500: 200 75% 40%;
+}
+
+html.dark {
+  --magenta-300: 318 41.2% 70%;
+  --magenta-400: 317 40.2% 60%;
+  --magenta-500: 316 39.2% 51%;
+  --magenta-600: 316 42% 45%;
+  --magenta-950: 315 33.3% 7.1%;
+  --red-400: 355 91% 73.9%;
+  --teal-300: 175 27.5% 72.9%;
+  --teal-400: 176 28% 56%;
+  --teal-500: 177 28.2% 45.9%;
+  --teal-700: 178 30% 30%;
+  --violet-400: 253 76.5% 70%;
+  --violet-500: 253 73.4% 63.1%;
+  --violet-700: 255 58% 43.9%;
+  --sand-300: 28 100% 72%;
+  --blue-500: 195 73.4% 63.1%;
+}
+
 @theme {
   --breakpoint-*: initial;
   --breakpoint-sm: 640px;

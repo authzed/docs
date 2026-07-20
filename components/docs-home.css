@@ -25,22 +25,9 @@
   --stone-900: 300 24% 94%;
   --stone-950: 300 30% 96%;
   --stone-975: 300 40% 98%;
-  /* ---- Accents — LIGHT (darker shades so they read on a light ground) ---- */
-  --magenta-300: 316 50% 45%;
-  --magenta-400: 316 48% 47%;
-  --magenta-500: 316 50% 44%;
-  --magenta-600: 316 52% 40%;
-  --magenta-950: 315 33.3% 7.1%;
-  --red-400: 352 70% 48%;
-  --teal-300: 178 40% 32%;
-  --teal-400: 178 38% 35%;
-  --teal-500: 178 35% 33%;
-  --teal-700: 178 30% 26%;
-  --violet-400: 253 60% 52%;
-  --violet-500: 253 62% 50%;
-  --violet-700: 255 50% 46%;
-  --sand-300: 30 75% 42%;
-  --blue-500: 200 75% 40%;
+  /* ---- Accents (magenta/red/teal/violet/sand/blue) now live site-wide on
+     `:root` + `html.dark` in app/globals.css, so components outside this page
+     can use them too. Both light and dark values moved together. ---- */
   /* ---- Shared structural tokens ---- */
   --gradient-brand-warm: linear-gradient(
     to right,
@@ -81,21 +68,7 @@ html.dark .docs-home {
   --stone-900: 278 28.6% 11%;
   --stone-950: 280 36.6% 8%;
   --stone-975: 282 50% 3.9%;
-  --magenta-300: 318 41.2% 70%;
-  --magenta-400: 317 40.2% 60%;
-  --magenta-500: 316 39.2% 51%;
-  --magenta-600: 316 42% 45%;
-  --magenta-950: 315 33.3% 7.1%;
-  --red-400: 355 91% 73.9%;
-  --teal-300: 175 27.5% 72.9%;
-  --teal-400: 176 28% 56%;
-  --teal-500: 177 28.2% 45.9%;
-  --teal-700: 178 30% 30%;
-  --violet-400: 253 76.5% 70%;
-  --violet-500: 253 73.4% 63.1%;
-  --violet-700: 255 58% 43.9%;
-  --sand-300: 28 100% 72%;
-  --blue-500: 195 73.4% 63.1%;
+  /* Dark accents also moved to app/globals.css (`html.dark`). */
 
   background:
     radial-gradient(120% 80% at 88% -10%, hsl(var(--magenta-950) / 0.55), transparent 60%),

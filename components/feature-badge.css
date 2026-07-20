@@ -5,13 +5,21 @@
    resemblance, even though that component's semantics (content lifecycle:
    ready/draft/deprecated/under-review) differ from ours (feature identity +
    release maturity). Colors are teal (Accelerated Queries) and violet
-   (Event Streams), light/dark-adjusted the same way docs-home.css already
-   tunes those tokens for this site's two themes. */
+   (Event Streams), read from the shared Sandworm accent tokens in
+   app/globals.css so they can't drift from the rest of the site. */
+
+/* The row owns the vertical rhythm so two pills (Snapshots) sit on one line
+   without doubling the margin between them. */
+.feature-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1.5rem 0 1.75rem;
+}
 
 .feature-badge {
   display: inline-block;
-  margin: 1.5rem 0 1.75rem;
-  padding: 0.25rem 0.5rem;
+  padding: 0.25rem 0.75rem;
   border: 1px solid;
   border-radius: 9999px;
   font-size: 0.75rem;
@@ -19,24 +27,36 @@
   text-decoration: none;
 }
 
-.feature-badge-accelerated-queries {
-  color: hsl(178 35% 33%);
-  background: hsl(178 35% 33% / 0.1);
-  border-color: hsl(178 35% 33% / 0.5);
+/* Points at the early-access note in the TOC rail. Nudged up rather than set
+   as <sup> so it doesn't stretch the pill's line box. */
+.feature-badge-mark {
+  display: inline-block;
+  margin-left: 0.15em;
+  font-size: 0.9em;
+  line-height: 1;
+  vertical-align: 0.28em;
 }
-html.dark .feature-badge-accelerated-queries {
-  color: hsl(177 28.2% 45.9%);
-  background: hsl(177 28.2% 45.9% / 0.1);
-  border-color: hsl(177 28.2% 45.9% / 0.5);
+
+.feature-badge-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* No light/dark variants needed — --teal-500 and --violet-500 flip themselves
+   under html.dark (app/globals.css). */
+.feature-badge-accelerated-queries {
+  color: hsl(var(--teal-500));
+  background: hsl(var(--teal-500) / 0.1);
+  border-color: hsl(var(--teal-500) / 0.5);
 }
 
 .feature-badge-event-streams {
-  color: hsl(253 62% 50%);
-  background: hsl(253 62% 50% / 0.1);
-  border-color: hsl(253 62% 50% / 0.5);
-}
-html.dark .feature-badge-event-streams {
-  color: hsl(253 73.4% 63.1%);
-  background: hsl(253 73.4% 63.1% / 0.1);
-  border-color: hsl(253 73.4% 63.1% / 0.5);
+  color: hsl(var(--violet-500));
+  background: hsl(var(--violet-500) / 0.1);
+  border-color: hsl(var(--violet-500) / 0.5);
 }
