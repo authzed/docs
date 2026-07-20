@@ -7,11 +7,14 @@ import { Callout } from "nextra/components";
 
 # Snapshots
 
+<FeatureBadge feature="accelerated-queries" /> <FeatureBadge feature="event-streams" />
+
 A **snapshot** is a point-in-time, internally consistent view of every [Permission Set](./permission-sets) Materialize is tracking, computed at a specific SpiceDB revision.
 Every piece of permission data Materialize hands you is anchored to the revision (`ZedToken`) it was computed at — that revision _is_ the snapshot's identity.
 
-Snapshots are what make the two Materialize APIs compose safely:
+Snapshots underpin both Materialize features: they're what Materialize hydrates in order to answer Accelerated Queries, and they're what make the Event Streams APIs compose safely:
 
+- Materialize reads the current snapshot directly to answer Accelerated Queries like `CheckPermission`, `CheckBulkPermissions`, `LookupResources`, and `LookupSubjects`.
 - [The initial backfill](./permission-set-lifecycle) reads a snapshot in full.
 - [WatchPermissionSets](../api/watch-permission-sets) advances that snapshot forward, delivering the deltas that move it from one revision to the next.
 

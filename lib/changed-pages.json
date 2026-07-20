@@ -1,4 +1,16 @@
 {
+  "/materialize/api/client-sdks": {
+    "status": "updated"
+  },
+  "/materialize/api/lookup-permission-sets": {
+    "status": "updated"
+  },
+  "/materialize/api/watch-permission-sets": {
+    "status": "updated"
+  },
+  "/materialize/concepts/managing-client-state": {
+    "status": "updated"
+  },
   "/materialize/concepts/permission-set-lifecycle": {
     "status": "updated"
   },
@@ -6,6 +18,15 @@
     "status": "updated"
   },
   "/materialize/concepts/snapshots": {
+    "status": "updated"
+  },
+  "/materialize/getting-started/overview": {
+    "status": "updated"
+  },
+  "/materialize/guides/recommended-architecture": {
+    "status": "updated"
+  },
+  "/materialize/guides/relational-database": {
     "status": "updated"
   }
 }
