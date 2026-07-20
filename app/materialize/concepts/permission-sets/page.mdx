@@ -10,7 +10,7 @@ import { Callout } from "nextra/components";
 <FeatureBadge />
 
 A **permission set** is the unit of precomputed authorization data that Materialize produces.
-Where SpiceDB answers a permission question on demand by walking the relationship graph, Materialize continuously **precomputes** the membership of the permissions you configure it to watch and exposes that denormalized data to your application.
+Where SpiceDB answers a permission question on demand by walking the relationship graph, Materialize continuously [**hydrates**](./hydration) the membership of the [permissions you configure it to watch](./watched-permissions) and exposes that denormalized data to your application.
 
 Conceptually, a permission set captures two kinds of edges:
 
