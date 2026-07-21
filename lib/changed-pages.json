@@ -8,6 +8,9 @@
   "/materialize/api/watch-permission-sets": {
     "status": "updated"
   },
+  "/materialize/concepts/hydration": {
+    "status": "new"
+  },
   "/materialize/concepts/managing-client-state": {
     "status": "updated"
   },
@@ -19,6 +22,9 @@
   },
   "/materialize/concepts/snapshots": {
     "status": "updated"
+  },
+  "/materialize/concepts/watched-permissions": {
+    "status": "new"
   },
   "/materialize/getting-started/overview": {
     "status": "updated"

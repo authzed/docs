@@ -37,6 +37,8 @@ const PAGE_FEATURES: Record<string, readonly FeatureKey[]> = {
   "/materialize/concepts/permission-set-lifecycle": ["event-streams"],
   "/materialize/concepts/permission-sets": ["event-streams"],
   "/materialize/concepts/snapshots": ["accelerated-queries", "event-streams"],
+  "/materialize/concepts/hydration": ["accelerated-queries", "event-streams"],
+  "/materialize/concepts/watched-permissions": ["accelerated-queries", "event-streams"],
   "/materialize/guides/recommended-architecture": ["event-streams"],
   "/materialize/guides/relational-database": ["event-streams"],
 };

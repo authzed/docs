@@ -5,7 +5,7 @@ description: "Hydration is how Materialize turns your SpiceDB schema and relatio
 
 # Hydration
 
-<FeatureBadge feature="accelerated-queries" /> <FeatureBadge feature="event-streams" />
+<FeatureBadge />
 
 **Hydration** is the process Materialize uses to turn your SpiceDB schema and relationship data into the precomputed [permission sets](./permission-sets) that both Materialize features depend on: [Accelerated Queries](../getting-started/overview#accelerated-queries) reads hydrated data directly to answer checks and lookups, and [Event Streams](../getting-started/overview#event-streams) exposes that same hydrated data through `LookupPermissionSets` and `WatchPermissionSets`.
 
@@ -23,4 +23,4 @@ This is also why the cost of hydration tracks the size of the reachable graph, n
 ## When rehydration is required
 
 A [breaking schema change](./snapshots#snapshot-lifecycle-events) invalidates previously hydrated permission sets, since the reachability computed from the old schema no longer holds.
-Materialize signals this so you can re-run the [backfill](./permission-set-lifecycle) at the new revision — see [The Permission Set Lifecycle](./permission-set-lifecycle) for the full rebuild flow.
+Materialize signals this so you can re-run the [backfill](./permission-set-lifecycle) at the new revision. See [The Permission Set Lifecycle](./permission-set-lifecycle) for the full rebuild flow.

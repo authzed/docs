@@ -1,130 +1,134 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1230 740" font-family="Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1220 640" font-family="Helvetica, Arial, sans-serif">
   <defs>
     <marker id="arrow-neutral" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="#1a1a1a" />
     </marker>
-    <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M0,0 L10,5 L0,10 z" fill="#1a80b3" />
+    <marker id="arrow-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2e6b63" />
     </marker>
     <marker id="arrow-violet" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="#6d4de0" />
     </marker>
   </defs>
 
-  <rect width="1230" height="740" fill="#ffffff" />
+  <rect width="1220" height="640" fill="#ffffff" />
 
   <!-- Containers -->
-  <rect x="30" y="60" width="750" height="640" rx="14" fill="none" stroke="#6b7280" stroke-width="2" stroke-dasharray="8 6" />
-  <text x="46" y="46" font-size="18" font-style="italic" fill="#3f3f46">AuthZed Materialize</text>
+  <rect x="30" y="120" width="510" height="400" rx="14" fill="none" stroke="#9ca3af" stroke-width="2" stroke-dasharray="8 6" />
+  <text x="46" y="106" font-size="18" font-style="italic" fill="#3f3f46">AuthZed Materialize</text>
 
-  <rect x="940" y="60" width="260" height="640" rx="14" fill="none" stroke="#6b7280" stroke-width="2" stroke-dasharray="8 6" />
-  <text x="956" y="46" font-size="18" font-style="italic" fill="#3f3f46">Your Systems</text>
+  <rect x="640" y="110" width="210" height="360" rx="14" fill="none" stroke="#9ca3af" stroke-width="2" stroke-dasharray="8 6" />
+  <text x="656" y="96" font-size="18" font-style="italic" fill="#3f3f46">SpiceDB</text>
 
-  <!-- Boxes: AuthZed Materialize -->
+  <rect x="950" y="95" width="240" height="465" rx="14" fill="none" stroke="#9ca3af" stroke-width="2" stroke-dasharray="8 6" />
+  <text x="966" y="81" font-size="18" font-style="italic" fill="#3f3f46">Your Systems</text>
+
+  <!-- Boxes: AuthZed Materialize (2x2 grid: Hydrator/Cache Server top, Snapshotter/Event Log bottom) -->
+  <!-- Shifted down 60px from the original grid so Cache Server's center (200) lines up with SpiceDB's center (200), keeping the dispatch line straight -->
   <g>
-    <rect x="60" y="90" width="170" height="90" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="2" />
-    <text x="145" y="130" text-anchor="middle" font-size="17" font-weight="700" fill="#1a1a1a">Snapshotter</text>
-    <text x="145" y="152" text-anchor="middle" font-size="12.5" fill="#3f3f46">periodic snapshots</text>
-    <text x="145" y="167" text-anchor="middle" font-size="12.5" fill="#3f3f46">of schema + relationships</text>
+    <rect x="60" y="150" width="170" height="90" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="2" />
+    <text x="145" y="190" text-anchor="middle" font-size="17" font-weight="700" fill="#1a1a1a">Hydrator</text>
+    <text x="145" y="212" text-anchor="middle" font-size="12.5" fill="#3f3f46">computes permission sets</text>
+    <text x="145" y="227" text-anchor="middle" font-size="12.5" fill="#3f3f46">for watched permissions</text>
   </g>
 
   <g>
-    <rect x="320" y="90" width="170" height="90" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="2" />
-    <text x="405" y="130" text-anchor="middle" font-size="17" font-weight="700" fill="#1a1a1a">Hydrator</text>
-    <text x="405" y="152" text-anchor="middle" font-size="12.5" fill="#3f3f46">computes permission sets</text>
-    <text x="405" y="167" text-anchor="middle" font-size="12.5" fill="#3f3f46">for watched permissions</text>
+    <rect x="320" y="150" width="190" height="100" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="2" />
+    <text x="415" y="190" text-anchor="middle" font-size="17" font-weight="700" fill="#1a1a1a">Cache Server</text>
+    <text x="415" y="212" text-anchor="middle" font-size="12.5" fill="#3f3f46">serves hydrated</text>
+    <text x="415" y="227" text-anchor="middle" font-size="12.5" fill="#3f3f46">permission sets</text>
   </g>
 
   <g>
-    <rect x="60" y="340" width="170" height="100" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="2" />
-    <text x="145" y="385" text-anchor="middle" font-size="17" font-weight="700" fill="#1a1a1a">Datastore</text>
-    <text x="145" y="407" text-anchor="middle" font-size="12.5" fill="#3f3f46">underlying storage</text>
+    <rect x="60" y="400" width="170" height="90" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="2" />
+    <text x="145" y="440" text-anchor="middle" font-size="17" font-weight="700" fill="#1a1a1a">Snapshotter</text>
+    <text x="145" y="462" text-anchor="middle" font-size="12.5" fill="#3f3f46">periodic snapshots</text>
+    <text x="145" y="477" text-anchor="middle" font-size="12.5" fill="#3f3f46">of schema + relationships</text>
   </g>
 
   <g>
-    <rect x="320" y="340" width="170" height="100" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="2" />
-    <text x="405" y="395" text-anchor="middle" font-size="17" font-weight="700" fill="#1a1a1a">SpiceDB</text>
-    <text x="405" y="417" text-anchor="middle" font-size="12.5" fill="#3f3f46">the service</text>
+    <rect x="320" y="400" width="190" height="90" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="2" />
+    <text x="415" y="440" text-anchor="middle" font-size="17" font-weight="700" fill="#1a1a1a">Event Log</text>
+    <text x="415" y="462" text-anchor="middle" font-size="12.5" fill="#3f3f46">persists permission set changes</text>
+  </g>
+
+  <!-- Boxes: SpiceDB -->
+  <g>
+    <rect x="660" y="150" width="170" height="100" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="2" />
+    <text x="745" y="205" text-anchor="middle" font-size="17" font-weight="700" fill="#1a1a1a">SpiceDB</text>
+    <text x="745" y="227" text-anchor="middle" font-size="12.5" fill="#3f3f46">the service</text>
   </g>
 
   <g>
-    <rect x="560" y="340" width="190" height="100" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="2" />
-    <text x="655" y="380" text-anchor="middle" font-size="17" font-weight="700" fill="#1a1a1a">Cache Server</text>
-    <text x="655" y="402" text-anchor="middle" font-size="12.5" fill="#3f3f46">serves hydrated</text>
-    <text x="655" y="417" text-anchor="middle" font-size="12.5" fill="#3f3f46">permission sets</text>
-  </g>
-
-  <g>
-    <rect x="560" y="590" width="190" height="90" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="2" />
-    <text x="655" y="630" text-anchor="middle" font-size="17" font-weight="700" fill="#1a1a1a">Event Log</text>
-    <text x="655" y="652" text-anchor="middle" font-size="12.5" fill="#3f3f46">persists permission set changes</text>
+    <rect x="660" y="330" width="170" height="100" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="2" />
+    <text x="745" y="375" text-anchor="middle" font-size="17" font-weight="700" fill="#1a1a1a">Datastore</text>
+    <text x="745" y="397" text-anchor="middle" font-size="12.5" fill="#3f3f46">underlying storage</text>
   </g>
 
   <!-- Boxes: Your Systems -->
   <g>
-    <rect x="970" y="140" width="200" height="150" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="2" />
-    <text x="1070" y="185" text-anchor="middle" font-size="17" font-weight="700" fill="#1a1a1a">Your Application</text>
-    <text x="1070" y="210" text-anchor="middle" font-size="12" fill="#3f3f46">calls SpiceDB exactly as</text>
-    <text x="1070" y="226" text-anchor="middle" font-size="12" fill="#3f3f46">it always has</text>
+    <rect x="970" y="125" width="200" height="150" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="2" />
+    <text x="1070" y="170" text-anchor="middle" font-size="17" font-weight="700" fill="#1a1a1a">Your Application</text>
+    <text x="1070" y="195" text-anchor="middle" font-size="12" fill="#3f3f46">calls SpiceDB exactly as</text>
+    <text x="1070" y="211" text-anchor="middle" font-size="12" fill="#3f3f46">it always has</text>
   </g>
 
   <g>
-    <rect x="970" y="420" width="200" height="90" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="2" />
-    <text x="1070" y="455" text-anchor="middle" font-size="17" font-weight="700" fill="#1a1a1a">Event Processor</text>
-    <text x="1070" y="477" text-anchor="middle" font-size="11.5" fill="#3f3f46">backfills + watches</text>
-    <text x="1070" y="492" text-anchor="middle" font-size="11.5" fill="#3f3f46">permission sets</text>
+    <rect x="970" y="310" width="200" height="90" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="2" />
+    <text x="1070" y="345" text-anchor="middle" font-size="17" font-weight="700" fill="#1a1a1a">Event Processor</text>
+    <text x="1070" y="367" text-anchor="middle" font-size="11.5" fill="#3f3f46">backfills + watches</text>
+    <text x="1070" y="382" text-anchor="middle" font-size="11.5" fill="#3f3f46">permission sets</text>
   </g>
 
   <g>
-    <rect x="970" y="600" width="200" height="100" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="2" />
-    <text x="1070" y="635" text-anchor="middle" font-size="17" font-weight="700" fill="#1a1a1a">Your Database</text>
-    <text x="1070" y="657" text-anchor="middle" font-size="11.5" fill="#3f3f46">or search index</text>
-    <text x="1070" y="672" text-anchor="middle" font-size="11.5" fill="#3f3f46">(colocated permissions)</text>
+    <rect x="970" y="430" width="200" height="100" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="2" />
+    <text x="1070" y="465" text-anchor="middle" font-size="17" font-weight="700" fill="#1a1a1a">Your Database</text>
+    <text x="1070" y="487" text-anchor="middle" font-size="11.5" fill="#3f3f46">or search index</text>
+    <text x="1070" y="502" text-anchor="middle" font-size="11.5" fill="#3f3f46">(colocated permissions)</text>
   </g>
 
   <!-- Arrows -->
-  <!-- 1: Datastore -> Snapshotter -->
-  <path d="M145,340 V182" fill="none" stroke="#1a1a1a" stroke-width="2" marker-end="url(#arrow-neutral)" />
-  <text x="172" y="265" font-size="12" fill="#1a1a1a">schema +</text>
-  <text x="172" y="280" font-size="12" fill="#1a1a1a">relationships</text>
+  <!-- 1: Snapshotter -> Hydrator (same column, straight up) -->
+  <path d="M145,400 V242" fill="none" stroke="#1a1a1a" stroke-width="2" marker-end="url(#arrow-neutral)" />
+  <text x="160" y="325" font-size="12" fill="#1a1a1a">snapshot</text>
 
-  <!-- 2: Snapshotter -> Hydrator -->
-  <path d="M228,135 H318" fill="none" stroke="#1a1a1a" stroke-width="2" marker-end="url(#arrow-neutral)" />
-  <text x="273" y="122" text-anchor="middle" font-size="12" fill="#1a1a1a">snapshot</text>
+  <!-- 2: Hydrator -> Cache Server (same row, straight across) -->
+  <path d="M228,197 H318" fill="none" stroke="#1a1a1a" stroke-width="2" marker-end="url(#arrow-neutral)" />
+  <text x="273" y="176" text-anchor="middle" font-size="11.5" fill="#1a1a1a">hydrated</text>
+  <text x="273" y="189" text-anchor="middle" font-size="11.5" fill="#1a1a1a">permission sets</text>
 
-  <!-- 3: Datastore <-> SpiceDB -->
-  <path d="M232,390 H318" fill="none" stroke="#1a1a1a" stroke-width="2" marker-end="url(#arrow-neutral)" marker-start="url(#arrow-neutral)" />
-  <text x="275" y="377" text-anchor="middle" font-size="11.5" fill="#1a1a1a">reads / writes</text>
+  <!-- 3: Cache Server -> Event Log (same column, straight down) -->
+  <path d="M415,252 V398" fill="none" stroke="#1a1a1a" stroke-width="2" marker-end="url(#arrow-neutral)" />
+  <text x="405" y="310" text-anchor="end" font-size="12" fill="#1a1a1a">permission set</text>
+  <text x="405" y="325" text-anchor="end" font-size="12" fill="#1a1a1a">changes</text>
 
-  <!-- 4: SpiceDB <-> Cache Server (Accelerated Queries dispatch) -->
-  <path d="M492,390 H558" fill="none" stroke="#1a80b3" stroke-width="2.5" marker-end="url(#arrow-blue)" marker-start="url(#arrow-blue)" />
-  <text x="525" y="300" text-anchor="middle" font-size="12.5" fill="#1a80b3" font-weight="600">Accelerated</text>
-  <text x="525" y="316" text-anchor="middle" font-size="12.5" fill="#1a80b3" font-weight="600">Queries</text>
-  <text x="525" y="332" text-anchor="middle" font-size="11" fill="#1a80b3">(dispatch)</text>
+  <!-- 4: SpiceDB <-> Datastore -->
+  <path d="M745,250 V328" fill="none" stroke="#1a1a1a" stroke-width="2" marker-end="url(#arrow-neutral)" marker-start="url(#arrow-neutral)" />
+  <text x="745" y="293" text-anchor="middle" font-size="11.5" fill="#1a1a1a">reads / writes</text>
 
-  <!-- 5: Hydrator -> Cache Server -->
-  <path d="M405,182 V250 H655 V338" fill="none" stroke="#1a1a1a" stroke-width="2" marker-end="url(#arrow-neutral)" />
-  <text x="530" y="240" text-anchor="middle" font-size="12" fill="#1a1a1a">hydrated permission sets</text>
+  <!-- 5: Datastore -> Snapshotter, routed via the bottom margin -->
+  <path d="M660,410 H600 V545 H145 V492" fill="none" stroke="#1a1a1a" stroke-width="2" marker-end="url(#arrow-neutral)" />
+  <text x="400" y="562" text-anchor="middle" font-size="12" fill="#1a1a1a">schema + relationships</text>
 
-  <!-- 6: Datastore -> Cache Server (direct real-time watch) -->
-  <path d="M145,440 V495 H600 V438" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#arrow-neutral)" />
-  <text x="370" y="482" text-anchor="middle" font-size="12" fill="#1a1a1a">watches datastore directly (real-time updates)</text>
+  <!-- 6: SpiceDB <-> Cache Server (Accelerated Queries dispatch) — both centered at y=200, now a single straight line -->
+  <path d="M660,200 H512" fill="none" stroke="#2e6b63" stroke-width="2.5" marker-end="url(#arrow-teal)" marker-start="url(#arrow-teal)" />
+  <text x="586" y="180" text-anchor="middle" font-size="11.5" fill="#2e6b63" font-weight="600">Accelerated</text>
+  <text x="586" y="193" text-anchor="middle" font-size="11.5" fill="#2e6b63" font-weight="600">Queries</text>
 
-  <!-- 7: Cache Server -> Event Log -->
-  <path d="M710,440 V588" fill="none" stroke="#1a1a1a" stroke-width="2" marker-end="url(#arrow-neutral)" />
-  <text x="732" y="505" font-size="12" fill="#1a1a1a">permission set</text>
-  <text x="732" y="520" font-size="12" fill="#1a1a1a">changes</text>
+  <!-- 7: Datastore -> Cache Server (direct real-time watch) — enters Cache Server's bottom edge via the gap below it, so it never crosses the dispatch line at y=200 -->
+  <path d="M660,350 H600 V300 H460 V252" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 6" marker-end="url(#arrow-neutral)" />
+  <text x="605" y="315" text-anchor="middle" font-size="11.5" fill="#1a1a1a">watches datastore</text>
+  <text x="605" y="329" text-anchor="middle" font-size="11.5" fill="#1a1a1a">directly (real-time)</text>
 
-  <!-- 8: SpiceDB <-> Your Application (normal SpiceDB API calls, unchanged by Materialize) -->
-  <path d="M440,340 V200 H968" fill="none" stroke="#1a1a1a" stroke-width="2" marker-end="url(#arrow-neutral)" marker-start="url(#arrow-neutral)" />
-  <text x="700" y="188" text-anchor="middle" font-size="12" fill="#1a1a1a">checks &amp; lookups (e.g. CheckPermission)</text>
+  <!-- 8: SpiceDB <-> Your Application (normal SpiceDB API calls, unchanged by Materialize) — short, direct path -->
+  <path d="M830,200 H968" fill="none" stroke="#1a1a1a" stroke-width="2" marker-end="url(#arrow-neutral)" marker-start="url(#arrow-neutral)" />
+  <text x="899" y="188" text-anchor="middle" font-size="11.5" fill="#1a1a1a">checks &amp; lookups</text>
 
-  <!-- 9: Event Log <-> Event Processor (Event Streams) -->
-  <path d="M750,635 H790 V465 H968" fill="none" stroke="#6d4de0" stroke-width="2.5" marker-end="url(#arrow-violet)" marker-start="url(#arrow-violet)" />
-  <text x="844" y="452" text-anchor="middle" font-size="12.5" fill="#6d4de0" font-weight="600">Event Streams</text>
+  <!-- 9: Event Log <-> Event Processor (Event Streams), routed via the bottom margin, well below the schema + relationships line -->
+  <path d="M415,490 V585 H920 V355 H968" fill="none" stroke="#6d4de0" stroke-width="2.5" marker-end="url(#arrow-violet)" marker-start="url(#arrow-violet)" />
+  <text x="650" y="573" text-anchor="middle" font-size="12.5" fill="#6d4de0" font-weight="600">Event Streams</text>
 
   <!-- 10: Event Processor -> Your Database -->
-  <path d="M1070,510 V598" fill="none" stroke="#1a1a1a" stroke-width="2" marker-end="url(#arrow-neutral)" />
-  <text x="1095" y="558" font-size="12" fill="#1a1a1a">stores permission</text>
-  <text x="1095" y="573" font-size="12" fill="#1a1a1a">sets</text>
+  <path d="M1070,400 V428" fill="none" stroke="#1a1a1a" stroke-width="2" marker-end="url(#arrow-neutral)" />
+  <text x="1095" y="418" font-size="12" fill="#1a1a1a">stores permission sets</text>
 </svg>

@@ -7,7 +7,7 @@ import { Callout } from "nextra/components";
 
 # Watched Permissions
 
-<FeatureBadge feature="accelerated-queries" /> <FeatureBadge feature="event-streams" />
+<FeatureBadge />
 
 A **watched permission** is the unit of configuration for Materialize: a `resource#permission@subject` tuple that tells Materialize which permission, for which subject type, to precompute.
 Everything Materialize does starts from the list of watched permissions you configure.
@@ -27,13 +27,13 @@ Each tuple names:
 - The **permission or relation** to watch (`view`, `edit`)
 - The **subject type** Materialize should compute membership for (`user`)
 
-If you only care about a specific relation on the subject — for example, `group#member` rather than the group itself — you can specify that too: `resource#view@group#member`.
+If you only care about a specific relation on the subject (for example, `group#member` rather than the group itself) you can specify that too: `resource#view@group#member`.
 
 ## What watching a permission actually does
 
-Materialize doesn't precompute your whole schema — only the watched permissions and whatever they structurally reach through unions, intersections, exclusions, and arrows. That reachable set is exactly what [hydration](./hydration) computes and keeps up to date.
+Materialize doesn't precompute your whole schema. It only tracks your watched permissions and whatever they structurally reach through unions, intersections, exclusions, and arrows. That reachable set is exactly what [hydration](./hydration) computes and keeps up to date.
 
-Because reachability is a pure function of your schema and your watched permissions, adding a new watched permission — or watching a permission with a much wider reach through your schema — extends that graph, and with it, the amount of work hydration has to do.
+Because reachability is a pure function of your schema and your watched permissions, adding a new watched permission, or watching a permission with a much wider reach through your schema, extends that graph, and with it, the amount of work hydration has to do.
 
 ## Constraints
 
@@ -44,7 +44,7 @@ The permission's path also can't cross any of the schema features Materialize do
 ## Configuring watched permissions
 
 <Callout type="info">
-  During early access, work with your AuthZed account team ro configure you list of watched
+  During early access, work with your AuthZed account team to configure your list of watched
   permissions.
 </Callout>
 

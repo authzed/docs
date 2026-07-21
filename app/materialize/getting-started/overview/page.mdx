@@ -4,6 +4,7 @@ description: "AuthZed Materialize precomputes the permissions you configure it t
 ---
 
 import { Callout } from "nextra/components";
+import MaterializeArchitecture from "@/public/images/materialize-architecture.svg";
 
 # What is Materialize?
 
@@ -11,7 +12,13 @@ AuthZed Materialize takes inspiration from the Leopard index component described
 Much like the concept of a materialized view in relational databases, AuthZed Materialize is a service that you configure with a list of permissions that you want it to precompute, and it will calculate how those permissions change after relationships
 are written (specifically, when those relationships affect a subject's membership in a permission set or a set's permission on a specific resource), or when a new schema is written.
 
-Materialize puts that precomputed data to work in two ways: **Accelerated Queries** and **Event Streams**, both currently in early access. Every other piece of Materialize content belongs to one of these two features — look for the badge at the top of the page, which links back to the feature it belongs to.
+Materialize puts that precomputed data to work in two ways: **Accelerated Queries** and **Event Streams**, both currently in early access. Every other piece of Materialize content belongs to one of these two features.  Look for badges at the top of the page, which link back to the feature it belongs to.
+
+<MaterializeArchitecture
+  role="img"
+  aria-label="The services that make up AuthZed Materialize, and how they connect to your application"
+  className="w-full h-auto"
+/>
 
 ## Accelerated Queries
 
