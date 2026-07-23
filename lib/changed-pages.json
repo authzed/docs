@@ -34,5 +34,8 @@
   },
   "/materialize/guides/relational-database": {
     "status": "updated"
+  },
+  "/materialize/getting-started/limitations": {
+    "status": "updated"
   }
 }

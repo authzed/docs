@@ -1,4 +1,4 @@
 export default {
-  overview: "Overview (Needs Review)",
+  overview: "Overview",
   limitations: "Limitations",
 };

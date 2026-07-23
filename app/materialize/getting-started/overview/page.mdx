@@ -40,7 +40,7 @@ Accelerated Queries use Materialize's precomputed permissions cache to answer th
   Don't hesitate to get in touch with your AuthZed account team if you would like to participate.
 </Callout>
 
-Event Streams let you take Materialize's precomputed permission data out of SpiceDB and keep your own copy of it — either **colocated** alongside the data it protects in your application database, or in a secondary index like a search engine, a pattern known as **colocated permissions**.
+Event Streams let you take Materialize's precomputed permission data out of SpiceDB and keep your own copy of it — either colocated alongside the data it protects in your application database, or in a secondary index like a search engine.
 
 - Download the current state of every [permission set](../../concepts/permission-sets) with `LookupPermissionSets`, then keep it current in real time with `WatchPermissionSets`. See [The Permission Set Lifecycle](../../concepts/permission-set-lifecycle).
 - Build authorization-aware UIs — sort, filter, and paginate over many thousands of authorized objects natively in your own database by colocating computed permissions next to your application data.

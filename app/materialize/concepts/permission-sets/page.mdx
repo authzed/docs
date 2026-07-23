@@ -15,7 +15,49 @@ Where SpiceDB answers a permission question on demand by walking the relationshi
 Conceptually, a permission set captures two kinds of edges:
 
 - **Member → set** — a subject (e.g. `user:evan`) is a member of a permission set (e.g. `document:123#view`).
-- **Set → set** — one set is nested inside another (e.g. `group:shared#member` grants `document:456#view`).
+- **Set → set** — one set is nested inside another. The nested set can be a plain relation, like a group membership (`group:engineering#member` grants `document:456#view`), or another permission entirely, like an edit permission that also grants view access (`document:123#edit` grants `document:123#view`).
+
+<details>
+<summary>See the schema and relationships that produce the edges above</summary>
+
+```zed
+definition user {}
+
+definition group {
+  relation member: user
+}
+
+definition document {
+  relation viewer: user | group#member
+  relation editor: user
+
+  permission edit = editor
+  permission view = viewer + edit
+}
+```
+
+```zed
+document:123#viewer@user:evan
+document:123#editor@user:alex
+document:456#viewer@group:engineering#member
+```
+
+- `document:123#viewer@user:evan` makes `user:evan` a **member** of the `document:123#view` permission set.
+- `document:123#editor@user:alex` makes `user:alex` a member of `document:123#edit`. Because `view` is defined as `viewer + edit`, `document:123#edit` is nested in `document:123#view` — the **set → set** edge from the permission example above.
+- `document:456#viewer@group:engineering#member` makes the `group:engineering#member` relation itself a viewer of `document:456`, nesting `group:engineering#member` inside `document:456#view` — the **set → set** edge from the group example above.
+
+</details>
+
+<Callout type="info">
+  Materialize (and the files it produces, see
+  [DownloadPermissionSets](../api/download-permission-sets#file-formats)) calls the nested set the
+  **child** and the set it grants into the **parent** — but this isn't a containment hierarchy like
+  a filesystem or an org chart, where a parent owns and cascades down to its children. It's closer
+  to set membership: being in the child set implies you're also in the parent set, so the grant
+  flows from child up to parent, not parent down to child. It's also not a strict tree — a single
+  child set can have many parents at once (e.g., one group's membership might grant view access to
+  many different documents), so don't assume a child has only one parent.
+</Callout>
 
 Together these let your application reconstruct "which resources can this subject access" — and the inverse — without issuing a `LookupResources` or `CheckPermission` call per request.
 This is what makes authorization-aware search, sorting, and filtering over large result sets practical.
