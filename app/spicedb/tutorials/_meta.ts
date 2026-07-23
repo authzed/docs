@@ -4,4 +4,5 @@ export default {
   "ai-agent-authorization": "Authorization for AI Agents using SpiceDB",
   "secure-rag-pipelines": "Securing RAG Pipelines with SpiceDB",
   "agentic-rag": "Tutorial: Building Agentic RAG with SpiceDB, LangChain & Weaviate",
+  "federated-authorization": "Federate Authorization Across Multiple Identity Providers",
 };

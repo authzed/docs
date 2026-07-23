@@ -1,0 +1,254 @@
+import { Callout, Tabs } from "nextra/components";
+
+# Tutorial: Federate Authorization Across Multiple Identity Providers
+
+The federated authorization problem is a gap when teams rely on incompatible identity providers (IdP) that cannot be instantly unified. This creates a barrier where shared resources remain inaccessible to users, making impractical identity migrations the only traditional path forward. For example: You work at a large enterprise where one business unit logs in through Keycloak and contractors use GitHub, but they all need to share the same resources. This problem persists with the implementation of RAG pipelines and internal chatbots too.
+
+This tutorial illustrates how you can use SpiceDB to centralize permissions by mapping disparate external accounts to a single, unified internal user model.
+
+The central idea is: don't point your resources at "the GitHub user" or "the Keycloak user."
+Point them at an internal user you own, and bind each external account to it.
+
+![Many identity providers, one federated authorization: external accounts from swappable IdPs each bind to one internal user, and SpiceDB governs document access for internal users only](/images/federated-architecture.png)
+
+## Prerequisites
+
+- A running SpiceDB instance.
+  [Install SpiceDB](/spicedb/getting-started/install) and start it.
+- The [`zed` CLI](/spicedb/getting-started/installing-zed), pointed at your instance:
+
+  ```sh
+  zed context set tutorial localhost:50051 "your-preshared-key" --insecure
+  ```
+
+- An app that already authenticates users and can read each token's stable id: the `sub` claim for OIDC providers like Keycloak, the numeric account id for GitHub.
+
+## Step 1: Write the schema
+
+Give each identity provider its own object type, and have both bind to a shared `user`.
+Resources reference only that `user`.
+
+```zed
+definition user {}
+
+definition keycloak_account {
+    relation bound_to: user
+}
+
+definition github_account {
+    relation bound_to: user
+}
+
+definition document {
+    relation owner: user
+    relation editor: user
+    relation viewer: user
+
+    permission edit  = editor + owner
+    permission view  = viewer + edit
+    permission share = owner
+}
+```
+
+Write it:
+
+```sh
+zed schema write schema.zed
+```
+
+`keycloak_account` and `github_account` are separate types, so two providers can't collide on an id.
+The `document` definition has no idea either one exists.
+
+## Step 2: Resolve each login to an internal user
+
+This is the critical federation step, and it runs in your app on every login. We're going to use the `sub` claim (the stable, unique identifier the IdP promises won't change) from their token, and look up `keycloak_account:<sub>`. That resolves to an internal `user:<uuid>`. A GitHub login does the same thing with GitHub's numeric `account id`.
+
+```
+keycloak_account:9f3c…    #bound_to@user:7b1e…
+github_account:1119120    #bound_to@user:4a02…
+```
+
+1. Read the stable id from the token — the `sub` for Keycloak, the account id for GitHub.
+2. Look up `<provider>_account:<id>`'s `bound_to`. If it resolves to a `user`, you're done.
+3. If nothing is bound yet, mint a new `user:<uuid>` and write the binding.
+
+<Callout type="warning">
+  Note: Key in on the immutable id but never the email. Emails change and get reassigned, so an
+  email-keyed binding can silently point at the wrong person.
+</Callout>
+
+<Callout type="warning">
+  If the lookup errors, fail the login otherwise the system can swallow the error and create a new
+  user instead, and a returning user loses all their access.
+</Callout>
+
+A first Keycloak login writes one relationship:
+
+```sh
+zed relationship create keycloak_account:9f3c bound_to user:7b1e
+```
+
+A GitHub login binds its own account to its own internal user:
+
+```sh
+zed relationship create github_account:1119120 bound_to user:4a02
+```
+
+## Step 3: Grant access
+
+Permissions are written as relationships.
+Make `user:7b1e` the owner of a document.
+The Python examples assume an already-initialized SpiceDB client from the [`authzed-py`](https://github.com/authzed/authzed-py) library.
+
+<Tabs items={["zed", "Python"]}>
+<Tabs.Tab>
+
+```sh
+zed relationship create document:readme owner user:7b1e
+```
+
+</Tabs.Tab>
+<Tabs.Tab>
+
+```python
+from authzed.api.v1 import (
+    WriteRelationshipsRequest, RelationshipUpdate, Relationship,
+    ObjectReference, SubjectReference,
+)
+
+client.WriteRelationships(WriteRelationshipsRequest(
+    updates=[RelationshipUpdate(
+        operation=RelationshipUpdate.OPERATION_TOUCH,
+        relationship=Relationship(
+            resource=ObjectReference(object_type="document", object_id="readme"),
+            relation="owner",
+            subject=SubjectReference(
+                object=ObjectReference(object_type="user", object_id="7b1e"),
+            ),
+        ),
+    )],
+))
+```
+
+</Tabs.Tab>
+</Tabs>
+
+You don't grant view, edit, and share separately.
+You write `owner`, and the schema computes the rest.
+
+## Step 4: Check a permission
+
+SpiceDB resolves permission by answering a question in the form of "is this `actor` allowed to perform this `action` on this `resource`?" or in this case "can `user:7b1e` view the doc?"
+
+<Tabs items={["zed", "Python"]}>
+<Tabs.Tab>
+
+```sh
+zed permission check document:readme view user:7b1e
+# true
+```
+
+</Tabs.Tab>
+<Tabs.Tab>
+
+```python
+from authzed.api.v1 import CheckPermissionRequest, CheckPermissionResponse
+
+resp = client.CheckPermission(CheckPermissionRequest(
+    resource=ObjectReference(object_type="document", object_id="readme"),
+    permission="view",
+    subject=SubjectReference(
+        object=ObjectReference(object_type="user", object_id="7b1e"),
+    ),
+))
+allowed = resp.permissionship == CheckPermissionResponse.PERMISSIONSHIP_HAS_PERMISSION
+# allowed == True
+```
+
+</Tabs.Tab>
+</Tabs>
+
+The check names a `user`, not a Keycloak or GitHub account.
+Authentication is upstream; this is downstream.
+They meet at the `user` id and nowhere else.
+
+## Step 5: Share, then list
+
+Share the document with the GitHub-bound user as a viewer, and confirm the check flips to `true`:
+
+<Tabs items={["zed", "Python"]}>
+<Tabs.Tab>
+
+```sh
+zed relationship create document:readme viewer user:4a02
+zed permission check document:readme view user:4a02
+# true
+```
+
+</Tabs.Tab>
+<Tabs.Tab>
+
+```python
+# Imports as in Step 3
+client.WriteRelationships(WriteRelationshipsRequest(
+    updates=[RelationshipUpdate(
+        operation=RelationshipUpdate.OPERATION_TOUCH,
+        relationship=Relationship(
+            resource=ObjectReference(object_type="document", object_id="readme"),
+            relation="viewer",
+            subject=SubjectReference(
+                object=ObjectReference(object_type="user", object_id="4a02"),
+            ),
+        ),
+    )],
+))
+```
+
+</Tabs.Tab>
+</Tabs>
+
+To build a dashboard, ask the inverse question — which documents can this user see?
+
+<Tabs items={["zed", "Python"]}>
+<Tabs.Tab>
+
+```sh
+zed permission lookup-resources document view user:4a02
+# document:readme
+```
+
+</Tabs.Tab>
+<Tabs.Tab>
+
+```python
+from authzed.api.v1 import LookupResourcesRequest
+
+for resp in client.LookupResources(LookupResourcesRequest(
+    resource_object_type="document",
+    permission="view",
+    subject=SubjectReference(
+        object=ObjectReference(object_type="user", object_id="4a02"),
+    ),
+)):
+    print(resp.resource_object_id)  # document:readme
+```
+
+</Tabs.Tab>
+</Tabs>
+
+That returns everything reachable through any path (owned, editor, or viewer) without those rules living in your app.
+
+## A note on consistency
+
+The demo reads default to `minimize_latency`, which is fast but can be a few seconds stale.
+
+When a user needs to see a change they just made, take the `ZedToken` returned by the write and pass it on the next read as `at_least_as_fresh`.
+That gives you read-your-writes without giving up caching.
+See [Consistency](/spicedb/concepts/consistency) for the details.
+
+## Next steps
+
+This pattern is provider-agnostic: add a third IdP by adding one more `*_account` type, and nothing downstream changes.
+To run this in production instead of a local container, provision a managed instance on [AuthZed Cloud](https://authzed.com/cloud/signup).
+
+The full runnable demo for this tutorial lives in the [authzed/examples repository](https://github.com/authzed/examples/tree/main/federated-authorization).
