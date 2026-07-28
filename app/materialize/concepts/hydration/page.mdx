@@ -17,7 +17,7 @@ This is also why the cost of hydration tracks the size of the reachable graph, n
 
 ## Offline hydration vs. online hydration
 
-- **Offline hydration** reads a full [snapshot](./snapshots) of your relationship data and computes every reachable permission set from scratch. This is what backs the initial [backfill](./permission-set-lifecycle).
+- **Offline hydration** reads a full point-in-time capture of your SpiceDB schema and relationship data and computes every reachable permission set from scratch, producing the first permission set snapshot at that revision. This is what backs the initial [backfill](./permission-set-lifecycle).
 - **Online hydration** applies as new relationship and schema changes arrive after that initial pass, updating only the permission sets a given change actually affects, in the order the changes occurred.
 
 ## When rehydration is required

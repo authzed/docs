@@ -1,6 +1,6 @@
 ---
 title: "Snapshots"
-description: "Snapshots are point-in-time, internally consistent views of Materialize permission sets anchored to a SpiceDB revision, enabling safe resume, rotation, and rebuilds."
+description: "Permission set snapshots are point-in-time, internally consistent views of Materialize permission sets anchored to a SpiceDB revision, distinct from a SpiceDB snapshot of schema and relationship data. The revision lets consumers resume safely after a disconnect, and it's what Materialize rotates during routine maintenance and rebuilds after a breaking schema change."
 ---
 
 import { Callout } from "nextra/components";
@@ -9,14 +9,22 @@ import { Callout } from "nextra/components";
 
 <FeatureBadge />
 
-A **snapshot** is a point-in-time, internally consistent view of every [Permission Set](./permission-sets) Materialize is tracking, computed at a specific SpiceDB revision.
-Every piece of permission data Materialize hands you is anchored to the revision (`ZedToken`) it was computed at — that revision _is_ the snapshot's identity.
+A **permission set snapshot** is a point-in-time, internally consistent view of every [Permission Set](./permission-sets) Materialize is tracking, computed at a specific SpiceDB revision.
+Every piece of permission data Materialize hands you is anchored to the revision (`ZedToken`) it was computed at: that revision _is_ the permission set snapshot's identity.
 
-Snapshots underpin both Materialize features: they're what Materialize [hydrates](./hydration) in order to answer Accelerated Queries, and they're what make the Event Streams APIs compose safely:
+A permission set snapshot is not the same thing as a SpiceDB snapshot of your schema and relationship data.
+A [SpiceDB revision][spicedb-revision] is a point-in-time coordinate encoded in a `ZedToken`, and a SpiceDB snapshot is the consistent read of your schema and relationship data as of that revision.
+A permission set snapshot is a further step removed: it's what Materialize has computed from that SpiceDB snapshot, every permission set, as of the same revision.
+Internally, AuthZed engineers sometimes call this a **groupstore**.
+On this page, "snapshot" always refers to the permission set snapshot unless stated otherwise.
 
-- Materialize reads the current snapshot directly to answer Accelerated Queries like `CheckPermission`, `CheckBulkPermissions`, `LookupResources`, and `LookupSubjects`.
-- [The initial backfill](./permission-set-lifecycle) reads a snapshot in full.
-- [WatchPermissionSets](../api/watch-permission-sets) advances that snapshot forward, delivering the deltas that move it from one revision to the next.
+[spicedb-revision]: https://authzed.com/docs/spicedb/concepts/consistency#zedtokens
+
+Permission set snapshots underpin both Materialize features: they're what Materialize [hydrates](./hydration) in order to answer Accelerated Queries, and they're what make the Event Streams APIs compose safely:
+
+- Materialize reads the current permission set snapshot directly to answer Accelerated Queries like `CheckPermission`, `CheckBulkPermissions`, `LookupResources`, and `LookupSubjects`.
+- [The initial backfill](./permission-set-lifecycle) reads a permission set snapshot in full.
+- [WatchPermissionSets](../api/watch-permission-sets) advances that permission set snapshot forward, delivering the deltas that move it from one revision to the next.
 
 ## Why the revision matters
 
@@ -25,12 +33,12 @@ Storing the snapshot revision **in the same transaction** as the permission data
 
 ## Snapshot lifecycle events
 
-- **Revision checkpoint** — SpiceDB changed, but nothing Materialize watches was affected. Advance your stored revision so you know where to resume.
-- **Breaking schema change** — the current snapshot is invalidated; you must build a fresh snapshot by re-running the [backfill](./permission-set-lifecycle) at the new revision.
-- **Snapshot rotation** — Materialize periodically deploys a new internal snapshot of the origin SpiceDB system as part of routine maintenance. A request against a retired snapshot returns `Aborted: Requested Revision Is No Longer Available`, signalling the consumer to re-run the [backfill](./permission-set-lifecycle) from scratch.
+- **Revision checkpoint**: SpiceDB changed, but nothing Materialize watches was affected. Advance your stored revision so you know where to resume.
+- **Breaking schema change**: the current permission set snapshot is invalidated. You must build a fresh one by re-running the [backfill](./permission-set-lifecycle) at the new revision.
+- **Snapshot rotation**: as part of routine maintenance, Materialize periodically takes a new SpiceDB snapshot of your schema and relationship data and rebuilds the permission set snapshot from it. A request against a retired permission set snapshot returns `Aborted: Requested Revision Is No Longer Available`, signalling the consumer to re-run the [backfill](./permission-set-lifecycle) from scratch.
 
 <Callout type="warning">
   After a breaking schema change you **must** pass the revision token through `optional_starting_after`
-  when re-running the backfill, or Materialize will stream against whatever snapshot is current and
-  your data won't reflect the schema change.
+  when re-running the backfill, or Materialize will stream against whatever permission set snapshot is
+  current and your data won't reflect the schema change.
 </Callout>
