@@ -69,18 +69,20 @@ github_account:1119120    #bound_to@user:4a02…
 ```
 
 1. Read the stable id from the token — the `sub` for Keycloak, the account id for GitHub.
+
+   <Callout type="warning">
+     Key on the immutable id but never the email. Emails change and get reassigned, so an
+     email-keyed binding can silently point at the wrong person.
+   </Callout>
+
 2. Look up `<provider>_account:<id>`'s `bound_to`. If it resolves to a `user`, you're done.
+
+   <Callout type="warning">
+     If the lookup errors, fail the login — otherwise the system can swallow the error and create a
+     new user instead, and a returning user loses all their access.
+   </Callout>
+
 3. If nothing is bound yet, mint a new `user:<uuid>` and write the binding.
-
-<Callout type="warning">
-  Note: Key in on the immutable id but never the email. Emails change and get reassigned, so an
-  email-keyed binding can silently point at the wrong person.
-</Callout>
-
-<Callout type="warning">
-  If the lookup errors, fail the login otherwise the system can swallow the error and create a new
-  user instead, and a returning user loses all their access.
-</Callout>
 
 A first Keycloak login writes one relationship:
 
