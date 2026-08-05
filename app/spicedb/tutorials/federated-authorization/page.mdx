@@ -9,7 +9,7 @@ This tutorial illustrates how you can use SpiceDB to centralize permissions by m
 The central idea is: don't point your resources at "the GitHub user" or "the Keycloak user."
 Point them at an internal user you own, and bind each external account to it.
 
-![Many identity providers, one federated authorization: external accounts from swappable IdPs each bind to one internal user, and SpiceDB governs document access for internal users only](/images/federated-architecture.png)
+![Many identity providers, one federated authorization: the app resolves each login from a swappable IdP to an internal user via a bound_to lookup in SpiceDB, which stores the identity bindings and governs document access for internal users only](/images/federated-architecture.png)
 
 ## Prerequisites
 
@@ -75,7 +75,7 @@ github_account:1119120    #bound_to@user:4a02…
      email-keyed binding can silently point at the wrong person.
    </Callout>
 
-2. Look up `<provider>_account:<id>`'s `bound_to`. If it resolves to a `user`, you're done.
+2. Call SpiceDB `LookupSubjects` on `<provider>_account:<id>`'s `bound_to` relation to get the internal `user`. If it resolves, you're done.
 
    <Callout type="warning">
      If the lookup errors, fail the login — otherwise the system can swallow the error and create a
@@ -83,6 +83,8 @@ github_account:1119120    #bound_to@user:4a02…
    </Callout>
 
 3. If nothing is bound yet, mint a new `user:<uuid>` and write the binding.
+
+4. Carry the resolved `user:<uuid>` for the rest of the session. Every later permission check uses it, and never the raw IdP subject. This demo keeps it in a signed session cookie but in production you would probably use a server-side session store or a type of middleware to manage this.
 
 A first Keycloak login writes one relationship:
 
@@ -135,6 +137,7 @@ client.WriteRelationships(WriteRelationshipsRequest(
 </Tabs.Tab>
 </Tabs>
 
+Every time a document is created, or a user is added to or removed from a doc, you create, update, or delete the corresponding relationship in SpiceDB: an `owner` when the document is created, a `viewer` or `editor` when you share it, and a deletion when you revoke access.
 You don't grant view, edit, and share separately.
 You write `owner`, and the schema computes the rest.
 
@@ -170,9 +173,9 @@ allowed = resp.permissionship == CheckPermissionResponse.PERMISSIONSHIP_HAS_PERM
 </Tabs.Tab>
 </Tabs>
 
-The check names a `user`, not a Keycloak or GitHub account.
-Authentication is upstream; this is downstream.
-They meet at the `user` id and nowhere else.
+The check names a `user:<uuid>`, not a Keycloak or GitHub account as SpiceDB never learns which IdP the request came from.
+Authentication is upstream, where your app trades an IdP token for the internal `user` id; authorization is downstream, where SpiceDB evaluates permissions against that id alone.
+The two halves meet at the `user` id and nowhere else.
 
 ## Step 5: Share, then list
 
@@ -209,7 +212,7 @@ client.WriteRelationships(WriteRelationshipsRequest(
 </Tabs.Tab>
 </Tabs>
 
-To build a dashboard, ask the inverse question — which documents can this user see?
+To build a dashboard, ask the inverse question - which documents can this user see?
 
 <Tabs items={["zed", "Python"]}>
 <Tabs.Tab>
@@ -238,7 +241,8 @@ for resp in client.LookupResources(LookupResourcesRequest(
 </Tabs.Tab>
 </Tabs>
 
-That returns everything reachable through any path (owned, editor, or viewer) without those rules living in your app.
+This uses SpiceDB's `LookupResources` API. Instead of asking "can this user view this document?", it answers "which documents can this user view?".
+That returns everything reachable through any path (owner, editor, or viewer) without those rules living in your app.
 
 ## A note on consistency
 
