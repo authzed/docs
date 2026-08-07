@@ -2,6 +2,9 @@
   "/materialize/api/client-sdks": {
     "status": "updated"
   },
+  "/materialize/api/download-permission-sets": {
+    "status": "new"
+  },
   "/materialize/api/lookup-permission-sets": {
     "status": "updated"
   },
@@ -26,6 +29,9 @@
   "/materialize/concepts/watched-permissions": {
     "status": "new"
   },
+  "/materialize/getting-started/limitations": {
+    "status": "updated"
+  },
   "/materialize/getting-started/overview": {
     "status": "updated"
   },
@@ -33,9 +39,6 @@
     "status": "updated"
   },
   "/materialize/guides/relational-database": {
-    "status": "updated"
-  },
-  "/materialize/getting-started/limitations": {
     "status": "updated"
   }
 }
