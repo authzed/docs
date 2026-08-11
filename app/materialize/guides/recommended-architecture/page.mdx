@@ -7,11 +7,13 @@ import { Callout } from "nextra/components";
 
 # Recommended Architecture
 
-## Consuming Client
+<FeatureBadge />
+
+## Event Processor
 
 ![authzed-materialize](/images/authzed-materialize.png)
 
-Customers will need to build a client to act as an "event processor" that consumes permission updates and writes those updates to a datastore like Postgres.
+Customers will need to build a client to act as an event processor that consumes permission updates and writes those updates to a datastore like Postgres.
 The consumer should be designed with resumability in mind by keeping track of the last revision consumed, just as any other stream processor.
 
 ## Durability

@@ -4,24 +4,45 @@ description: "AuthZed Materialize precomputes the permissions you configure it t
 ---
 
 import { Callout } from "nextra/components";
+import MaterializeArchitecture from "@/public/images/materialize-architecture.svg";
 
 # What is Materialize?
-
-<Callout type="info">
-  AuthZed Materialize is available to users of AuthZed [Dedicated] as part of an early access
-  program. Don't hesitate to get in touch with your AuthZed account team if you would like to
-  participate.
-</Callout>
 
 AuthZed Materialize takes inspiration from the Leopard index component described in the [Zanzibar paper](https://zanzibar.tech/2IoYDUFMAE:0:T).
 Much like the concept of a materialized view in relational databases, AuthZed Materialize is a service that you configure with a list of permissions that you want it to precompute, and it will calculate how those permissions change after relationships
 are written (specifically, when those relationships affect a subject's membership in a permission set or a set's permission on a specific resource), or when a new schema is written.
-These precomputed permissions can then be used either to provide faster checks and lookups through Accelerated Queries, or streamed into your own application database and **colocated** alongside the data they protect — a pattern known as **colocated permissions** — so you can search, sort, filter, and paginate over authorized objects natively and much more efficiently.
 
-In summary, AuthZed Materialize allows you to:
+Materialize puts that precomputed data to work in two ways: **Accelerated Queries** and **Event Streams**, both currently in early access. Every other piece of Materialize content belongs to one of these two features. Look for badges at the top of the page, which link back to the feature it belongs to.
+
+<MaterializeArchitecture
+  role="img"
+  aria-label="The services that make up AuthZed Materialize, and how they connect to your application"
+  className="w-full h-auto"
+/>
+
+## Accelerated Queries
+
+<Callout type="info">
+  Accelerated Queries is available to users of AuthZed [Dedicated] as part of an early access
+  program. Don't hesitate to get in touch with your AuthZed account team if you would like to
+  participate.
+</Callout>
+
+Accelerated Queries use Materialize's precomputed permissions cache to answer the SpiceDB queries your application already makes, without changing how you call SpiceDB:
 
 - Speed up `CheckPermission` and `CheckBulkPermissions`.
 - Speed up `LookupResources` and `LookupSubjects`, especially when there is a large number of resources.
+
+## Event Streams
+
+<Callout type="info">
+  Event Streams is available to users of AuthZed [Dedicated] as part of an early access program.
+  Don't hesitate to get in touch with your AuthZed account team if you would like to participate.
+</Callout>
+
+Event Streams let you take Materialize's precomputed permission data out of SpiceDB and keep your own copy of it — either colocated alongside the data it protects in your application database, or in a secondary index like a search engine.
+
+- Download the current state of every [permission set](../../concepts/permission-sets) with `LookupPermissionSets`, then keep it current in real time with `WatchPermissionSets`. See [The Permission Set Lifecycle](../../concepts/permission-set-lifecycle).
 - Build authorization-aware UIs — sort, filter, and paginate over many thousands of authorized objects natively in your own database by colocating computed permissions next to your application data.
 - Perform ACL filtering in secondary indexes too, like a search index (e.g. Elasticsearch) — authorization-aware UIs and search-index filtering are the same idea (ACL filtering) applied to different stores.
 

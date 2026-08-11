@@ -1,0 +1,53 @@
+---
+title: "Watched Permissions"
+description: "A watched permission is a resource#permission@subject tuple that tells Materialize which permission to precompute — the configuration that drives hydration and everything built on top of it."
+---
+
+import { Callout } from "nextra/components";
+
+# Watched Permissions
+
+<FeatureBadge />
+
+A **watched permission** is the unit of configuration for Materialize: a `resource#permission@subject` tuple that tells Materialize which permission, for which subject type, to precompute.
+Everything Materialize does starts from the list of watched permissions you configure.
+
+## Format
+
+A watched permission is written the same way you'd write a relationship or a check, minus the specific object IDs:
+
+```zed
+resource#view@user
+resource#edit@user
+```
+
+Each tuple names:
+
+- The **resource type** holding the permission (`resource`)
+- The **permission or relation** to watch (`view`, `edit`)
+- The **subject type** Materialize should compute membership for (`user`)
+
+If you only care about a specific relation on the subject (for example, `group#member` rather than the group itself) you can specify that too: `resource#view@group#member`.
+
+## What watching a permission actually does
+
+Materialize doesn't precompute your whole schema. It only tracks your watched permissions and whatever they structurally reach through unions, intersections, exclusions, and arrows. That reachable set is exactly what [hydration](./hydration) computes and keeps up to date.
+
+Because reachability is a pure function of your schema and your watched permissions, adding a new watched permission, or watching a permission with a much wider reach through your schema, extends that graph, and with it, the amount of work hydration has to do.
+
+## Constraints
+
+A watched permission must reference real schema elements: an existing resource type, an existing permission or relation on it, and an existing subject type. Materialize validates this when you configure it and will reject a permission that doesn't resolve.
+
+The permission's path also can't cross any of the schema features Materialize doesn't support. See [Limitations](../getting-started/limitations) for the full list.
+
+## Configuring watched permissions
+
+<Callout type="info">
+  During early access, work with your AuthZed account team to configure your list of watched
+  permissions.
+</Callout>
+
+[Caveats]: https://authzed.com/docs/spicedb/concepts/caveats
+[Wildcard]: https://authzed.com/docs/spicedb/concepts/schema#wildcards
+[.all intersections]: https://authzed.com/docs/spicedb/concepts/schema#all-intersection-arrow

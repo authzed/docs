@@ -1,0 +1,107 @@
+/* Early-access note, tinted with the same Sandworm accent token as the pill it
+   belongs to (app/globals.css), so the pill's asterisk and this note read as
+   one marker. Deliberately quieter than a Nextra <Callout>: a hairline rule
+   rather than a filled box. */
+
+.feature-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Exactly one placement is ever visible. Nextra hides the TOC column below
+   80rem (`x:max-xl:hidden` in nextra-theme-docs/style.css) — matching that
+   number here is what keeps the asterisk from pointing at nothing on a
+   laptop. If Nextra ever moves its breakpoint, this has to move with it. */
+.feature-notes-rail {
+  margin-top: 1.5rem;
+}
+@media (width < 80rem) {
+  .feature-notes-rail {
+    display: none;
+  }
+}
+
+.feature-notes-inline {
+  margin: -0.75rem 0 1.75rem;
+  max-width: 46rem;
+}
+@media (width >= 80rem) {
+  .feature-notes-inline {
+    display: none;
+  }
+}
+
+.feature-note {
+  border-left: 2px solid;
+  padding: 0.125rem 0 0.125rem 0.625rem;
+}
+
+.feature-note-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.2em;
+  margin: 0 0 0.15rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.feature-note-mark {
+  font-size: 0.9em;
+  line-height: 1;
+}
+
+/* Collapsed inline note: no head, because the pill directly above it already
+   says the feature name. With two pills the note can't claim either accent,
+   so it falls back to a hairline in the body's own grey — the per-feature
+   rules below re-tint it when there's only one pill to match. */
+.feature-note-collapsed {
+  border-color: #d1d5db;
+}
+html.dark .feature-note-collapsed {
+  border-color: #4b5563;
+}
+
+/* No head to hang the asterisk on, so it leads the body instead. */
+.feature-note-collapsed .feature-note-mark {
+  margin-right: 0.3em;
+}
+
+.feature-note-body {
+  margin: 0;
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  color: #6b7280;
+}
+html.dark .feature-note-body {
+  color: #9ca3af;
+}
+
+.feature-note-body a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.feature-note-body a:hover {
+  text-decoration-thickness: 2px;
+}
+
+/* Colour identity — matches .feature-badge-* one for one. The mark is called
+   out separately so it keeps the accent in the collapsed note too, where it
+   sits in the grey body rather than the tinted head. */
+.feature-note-accelerated-queries {
+  border-color: hsl(var(--teal-500) / 0.5);
+}
+.feature-note-accelerated-queries .feature-note-head,
+.feature-note-accelerated-queries .feature-note-mark {
+  color: hsl(var(--teal-500));
+}
+
+.feature-note-event-streams {
+  border-color: hsl(var(--violet-500) / 0.5);
+}
+.feature-note-event-streams .feature-note-head,
+.feature-note-event-streams .feature-note-mark {
+  color: hsl(var(--violet-500));
+}

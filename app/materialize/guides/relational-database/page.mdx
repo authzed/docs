@@ -3,23 +3,16 @@ title: "Syncing to a Relational Database"
 description: "Store Materialize permission sets in member_to_set and set_to_set tables and use SQL joins for authorization-aware filtering, with worked examples."
 ---
 
-import { Callout } from "nextra/components";
-
 # Syncing to a Relational Database
 
-Just as with relational database materialized views, you need to provide Materialize with the "queries" you'd like it to pre-compute.
-The configuration is described as a list of `resource#permission@subject` tuples.
-Example:
+<FeatureBadge />
+
+Materialize is configured with a list of [watched permissions](../concepts/watched-permissions) — the `resource#permission@subject` tuples it pre-computes. This guide assumes you've already configured watched permissions like:
 
 ```zed
 resource#view@user
 resource#edit@user
 ```
-
-<Callout type="info">
-  During early access provisioning, Materialize instances are not self-service, so you'll need to
-  provide the permissions to be computed by Materialize directly to your AuthZed account team.
-</Callout>
 
 ## Relational Database
 
@@ -157,12 +150,12 @@ Storing from [LookupPermissionSets]/[WatchPermissionSets] in this model requires
 ```sql
 INSERT INTO user_to_set (user_id, parent_set)
   VALUES ('123', 'document:123#view'),
-         ('123', 'group:shared#member'),
-         ('456', 'group:shared#member');
+         ('123', 'group:engineering#member'),
+         ('456', 'group:engineering#member');
 
 INSERT INTO set_to_document_view (child_set, document_id)
   VALUES ('document:123#view', '123'),
-         ('group:shared#member', '456');
+         ('group:engineering#member', '456');
 ```
 
 Note that an extra entry (`document:123#view`, `123`) was added to simplify the join side (avoiding the `left join` in the previous example).
