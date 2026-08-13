@@ -42,7 +42,7 @@ Accelerated Queries use Materialize's precomputed permissions cache to answer th
 
 Event Streams let you take Materialize's precomputed permission data out of SpiceDB and keep your own copy of it — either colocated alongside the data it protects in your application database, or in a secondary index like a search engine.
 
-- Download the current state of every [permission set](../../concepts/permission-sets) with `LookupPermissionSets`, then keep it current in real time with `WatchPermissionSets`. See [The Permission Set Lifecycle](../../concepts/permission-set-lifecycle).
+- Download the current state of every [permission set](../concepts/permission-sets) with `LookupPermissionSets`, then keep it current in real time with `WatchPermissionSets`. See [The Permission Set Lifecycle](../concepts/permission-set-lifecycle).
 - Build authorization-aware UIs — sort, filter, and paginate over many thousands of authorized objects natively in your own database by colocating computed permissions next to your application data.
 - Perform ACL filtering in secondary indexes too, like a search index (e.g. Elasticsearch) — authorization-aware UIs and search-index filtering are the same idea (ACL filtering) applied to different stores.
 
