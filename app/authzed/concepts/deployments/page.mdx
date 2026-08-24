@@ -1,0 +1,51 @@
+---
+title: "Deployments"
+description: "A single, independently-scaled SpiceDB cluster that serves a Permission System from one region."
+---
+
+import { Callout } from "nextra/components";
+
+# Deployments
+
+A Deployment is a single running SpiceDB cluster that serves a Permission System from one region.
+
+Every Permission System is made up of one or more Deployments, each sharing the same underlying [Datastore].
+In the simplest case, a Permission System has exactly one Deployment running in one region.
+Adding more Deployments lets the same Permission System serve traffic from additional regions at once — see [Multi-Region Deployments].
+
+[Datastore]: ../../spicedb/concepts/datastores
+[Multi-Region Deployments]: ../multi-region
+
+## Deployments vs. Permission Systems
+
+A Permission System is the logical authorization system: its schema, its relationships, and the datastore that stores them.
+A Deployment is the compute that actually serves requests for that Permission System from a specific region.
+
+This split is why a single Permission System can run in multiple regions without duplicating data: each Deployment is a separate SpiceDB cluster, but all of a Permission System's Deployments read from and write to the same datastore.
+
+## What you configure per Deployment
+
+When you add a Deployment to a Permission System, you choose:
+
+- **Name** — how the Deployment is identified in the Management Dashboard.
+- **Region** — where the SpiceDB cluster runs.
+- **vCPUs** — the amount of compute allocated to each replica.
+- **Replicas** — how many SpiceDB instances serve the Deployment. More replicas increase availability and read throughput.
+
+<Callout type="info">
+  The vCPUs and replicas you configure here are for **SpiceDB's compute** — the layer that serves Check, LookupResources, and other API requests.
+  They are separate from the compute provisioned for your [Datastore], which scales independently based on data volume and read/write load.
+
+If requests are slow or timing out, check which side is the bottleneck before resizing: high SpiceDB CPU or request queuing points to under-provisioned Deployment vCPUs, while slow query latency at the datastore points to the datastore needing more resources instead.
+
+</Callout>
+
+Each Deployment exposes its own endpoint.
+There is no global endpoint that automatically routes requests to the nearest Deployment — your workloads should connect to the endpoint of the Deployment closest to them to minimize latency.
+
+## Workload isolation
+
+Deployments on AuthZed Dedicated and Cloud run on hardware dedicated to your organization, separate from the shared control plane services (such as the Management Dashboard and observability tooling).
+See [Workload Isolation] for details.
+
+[Workload Isolation]: ../workload-isolation
