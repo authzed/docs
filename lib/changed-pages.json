@@ -1,44 +1,11 @@
 {
-  "/materialize/api/client-sdks": {
-    "status": "updated"
-  },
-  "/materialize/api/download-permission-sets": {
+  "/authzed/concepts/deployments": {
     "status": "new"
   },
-  "/materialize/api/lookup-permission-sets": {
+  "/authzed/concepts/multi-region": {
     "status": "updated"
   },
-  "/materialize/api/watch-permission-sets": {
-    "status": "updated"
-  },
-  "/materialize/concepts/hydration": {
-    "status": "new"
-  },
-  "/materialize/concepts/managing-client-state": {
-    "status": "updated"
-  },
-  "/materialize/concepts/permission-set-lifecycle": {
-    "status": "updated"
-  },
-  "/materialize/concepts/permission-sets": {
-    "status": "updated"
-  },
-  "/materialize/concepts/snapshots": {
-    "status": "updated"
-  },
-  "/materialize/concepts/watched-permissions": {
-    "status": "new"
-  },
-  "/materialize/getting-started/limitations": {
-    "status": "updated"
-  },
-  "/materialize/getting-started/overview": {
-    "status": "updated"
-  },
-  "/materialize/guides/recommended-architecture": {
-    "status": "updated"
-  },
-  "/materialize/guides/relational-database": {
+  "/authzed/guides/cloud": {
     "status": "updated"
   }
 }
