@@ -120,11 +120,11 @@ On a Service Account on the **source** PS:
 ```yaml
 ## For backup
 # Exporting relationships
-authzed.api/ExportBulkRelationships
-authzed.api/BulkExportRelationships
+authzed.v1/ExportBulkRelationships
+authzed.v1/BulkExportRelationships
 
 # Dumping existing schema
-authzed.api/ReadSchema
+authzed.v1/ReadSchema
 ```
 
 On a Service Account on the **destination** PS:
@@ -133,14 +133,14 @@ On a Service Account on the **destination** PS:
 ## For restore
 ## Put these on the DESTINATION PS
 # Importing relationships
-authzed.api/ImportBulkRelationships
-authzed.api/BulkImportRelationships
+authzed.v1/ImportBulkRelationships
+authzed.v1/BulkImportRelationships
 
 # Retrying failed relationships
-authzed.api/WriteRelationships
+authzed.v1/WriteRelationships
 
 # Writing new schema
-authzed.api/WriteSchema
+authzed.v1/WriteSchema
 ```
 
 ## Example Rule CEL Expressions
