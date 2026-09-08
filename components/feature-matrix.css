@@ -8,6 +8,8 @@
   --fm-label: hsl(280 6% 22%);
   --fm-head: hsl(280 10% 12%);
   --fm-muted: hsl(280 4% 48%);
+  --fm-link-rule: hsl(280 5% 72%);
+  --fm-link: hsl(var(--sand-300));
   margin-top: 1.5rem;
   overflow-x: auto;
 }
@@ -17,6 +19,8 @@ html.dark .feature-matrix {
   --fm-label: hsl(280 6% 82%);
   --fm-head: hsl(300 6% 95%);
   --fm-muted: hsl(280 4% 55%);
+  --fm-link-rule: hsl(279 8% 36%);
+  --fm-link: hsl(var(--sand-300));
 }
 
 .feature-matrix table {
@@ -65,14 +69,20 @@ html.dark .feature-matrix {
   padding-left: 1.5rem;
   text-align: left;
 }
-.feature-matrix thead th a {
+.feature-matrix thead th a,
+.feature-matrix tbody td:first-child a {
   color: inherit;
   font-weight: inherit;
-  text-decoration: none;
-}
-.feature-matrix thead th a:hover {
   text-decoration: underline;
-  text-underline-offset: 0.2em;
+  text-decoration-color: var(--fm-link-rule);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+  transition: color 120ms, text-decoration-color 120ms;
+}
+.feature-matrix thead th a:hover,
+.feature-matrix tbody td:first-child a:hover {
+  color: var(--fm-link);
+  text-decoration-color: currentColor;
 }
 
 /* Row labels: mono, like the web tables. Links stay links, quietly. */
@@ -83,14 +93,6 @@ html.dark .feature-matrix {
   color: var(--fm-label);
   text-align: left;
   white-space: nowrap;
-}
-.feature-matrix tbody td:first-child a {
-  color: inherit;
-  text-decoration: none;
-}
-.feature-matrix tbody td:first-child a:hover {
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
 }
 /* Nextra appends an arrow icon to external links; keep it, just quiet it. */
 .feature-matrix tbody td:first-child a svg,
