@@ -1,0 +1,128 @@
+/* Feature matrix — the docs twin of authzed.com's pricing/Support comparison
+   tables (web: pricing/TableGroup.tsx + SupportComparison.tsx). Unlayered so
+   it wins over Nextra's `x:` table utilities without !important. */
+
+.feature-matrix {
+  --fm-rule: hsl(280 5% 84%);
+  --fm-hover: hsl(300 8% 96%);
+  --fm-label: hsl(280 6% 22%);
+  --fm-head: hsl(280 10% 12%);
+  --fm-muted: hsl(280 4% 48%);
+  margin-top: 1.5rem;
+  overflow-x: auto;
+}
+html.dark .feature-matrix {
+  --fm-rule: hsl(279 9% 22%);
+  --fm-hover: hsl(279 12% 11%);
+  --fm-label: hsl(280 6% 82%);
+  --fm-head: hsl(300 6% 95%);
+  --fm-muted: hsl(280 4% 55%);
+}
+
+.feature-matrix table {
+  display: table;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border-collapse: collapse;
+  overflow: visible;
+}
+
+.feature-matrix tr {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-top: 1px solid var(--fm-rule);
+  border-bottom: 1px solid var(--fm-rule);
+  background: transparent;
+}
+.feature-matrix thead tr {
+  border-top: 0;
+}
+.feature-matrix tbody tr:hover {
+  background: var(--fm-hover);
+}
+
+.feature-matrix th,
+.feature-matrix td {
+  margin: 0;
+  padding: 1rem 0.5rem;
+  border: 0;
+  vertical-align: middle;
+}
+
+/* Column headers: plain text, not link-orange. The link still works. */
+.feature-matrix thead th {
+  padding-top: 0.75rem;
+  padding-bottom: 1rem;
+  font-family: inherit;
+  font-size: 1.125rem;
+  font-weight: 400;
+  color: var(--fm-head);
+  text-align: center;
+}
+.feature-matrix thead th:first-child {
+  padding-left: 1.5rem;
+  text-align: left;
+}
+.feature-matrix thead th a {
+  color: inherit;
+  font-weight: inherit;
+  text-decoration: none;
+}
+.feature-matrix thead th a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* Row labels: mono, like the web tables. Links stay links, quietly. */
+.feature-matrix tbody td:first-child {
+  padding-left: 1.5rem;
+  font-family: ui-monospace, "JetBrains Mono", "SF Mono", Menlo, monospace;
+  font-size: 0.875rem;
+  color: var(--fm-label);
+  text-align: left;
+  white-space: nowrap;
+}
+.feature-matrix tbody td:first-child a {
+  color: inherit;
+  text-decoration: none;
+}
+.feature-matrix tbody td:first-child a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+/* Nextra appends an arrow icon to external links; keep it, just quiet it. */
+.feature-matrix tbody td:first-child a svg,
+.feature-matrix thead th a svg {
+  opacity: 0.6;
+}
+
+/* Value cells: centred, ruled between columns, never against the label. */
+.feature-matrix tbody td:not(:first-child) {
+  border-left: 1px solid var(--fm-rule);
+  font-size: 0.875rem;
+  text-align: center;
+  color: var(--fm-label);
+}
+.feature-matrix tbody td:not(:first-child) .feature-mark {
+  vertical-align: middle;
+}
+
+/* Group-label row: a bold first cell and nothing else in the row.
+   Reads as a section header (web: RowGroup title), not a scored feature. */
+.feature-matrix tbody tr:has(> td:first-child > strong) {
+  background: transparent;
+}
+.feature-matrix tbody tr:has(> td:first-child > strong) td:first-child {
+  padding-top: 1rem;
+  padding-bottom: 0.75rem;
+  font-size: 1rem;
+  font-weight: 300;
+}
+.feature-matrix tbody tr:has(> td:first-child > strong) strong {
+  font-weight: inherit;
+}
+.feature-matrix tbody tr:has(> td:first-child > strong) td:not(:first-child) {
+  border-left-color: transparent;
+}
