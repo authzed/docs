@@ -77,8 +77,20 @@
   white-space: nowrap;
 }
 
-/* Materialize pages stack the feature pills directly under this row; close
-   the gap so the two rows read as one header block, not two paragraphs. */
-.product-badge-row:has(+ .feature-badge-row) {
-  margin-bottom: 0.25rem;
+/* Materialize: the feature pills join this row after a thin divider. The
+   feature row's own box dissolves so its pills become siblings here; the
+   inline early-access note (shown only below the TOC breakpoint) takes a
+   full line under the pills. */
+.product-badge-divider {
+  width: 1px;
+  height: 1.1rem;
+  margin: 0 0.25rem;
+  background: hsl(30 5% 50% / 0.35);
+}
+.product-badge-row .feature-badge-row {
+  display: contents;
+}
+.product-badge-row .feature-notes-inline,
+.product-badge-row .feature-notes {
+  flex-basis: 100%;
 }
