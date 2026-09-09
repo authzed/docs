@@ -26,35 +26,19 @@ type Props = {
 
 export function ProductBadge({ available, diy = [] }: Props) {
   const yes = PRODUCT_ORDER.filter((k) => available.includes(k));
-  const build = PRODUCT_ORDER.filter(
-    (k) => !available.includes(k) && diy.includes(k),
-  );
-  const missing = PRODUCT_ORDER.filter(
-    (k) => !available.includes(k) && !diy.includes(k),
-  );
+  const build = PRODUCT_ORDER.filter((k) => !available.includes(k) && diy.includes(k));
+  const missing = PRODUCT_ORDER.filter((k) => !available.includes(k) && !diy.includes(k));
 
   return (
-    <span
-      className="product-badge-row"
-      role="group"
-      aria-label="Product availability"
-    >
+    <span className="product-badge-row" role="group" aria-label="Product availability">
       <span className="product-badge-label">Available on</span>
       {yes.map((k) => (
-        <Link
-          key={k}
-          href={PRODUCTS[k].href}
-          className="product-badge product-badge-yes"
-        >
+        <Link key={k} href={PRODUCTS[k].href} className="product-badge product-badge-yes">
           {PRODUCTS[k].label}
         </Link>
       ))}
       {build.map((k) => (
-        <Link
-          key={k}
-          href={PRODUCTS[k].href}
-          className="product-badge product-badge-diy"
-        >
+        <Link key={k} href={PRODUCTS[k].href} className="product-badge product-badge-diy">
           {PRODUCTS[k].label}
           <span className="product-badge-suffix" aria-hidden="true">
             DIY

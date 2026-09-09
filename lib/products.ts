@@ -31,5 +31,4 @@ export const PRODUCT_ORDER: readonly ProductKey[] = [
   "enterprise",
 ];
 
-export const FEATURE_MATRIX_HREF =
-  "/authzed/guides/picking-a-product#feature-matrix";
+export const FEATURE_MATRIX_HREF = "/authzed/guides/picking-a-product#feature-matrix";
