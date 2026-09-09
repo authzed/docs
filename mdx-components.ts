@@ -2,6 +2,7 @@ import { useMDXComponents as getDocsMDXComponents } from "nextra-theme-docs";
 import type { Component } from "react";
 import { Yes, No } from "@/components/feature-icon";
 import { FeatureBadge } from "@/components/feature-badge";
+import { ProductBadge } from "@/components/product-badge";
 
 const docsComponents = getDocsMDXComponents();
 
@@ -10,5 +11,6 @@ export const useMDXComponents = (components?: Component) => ({
   Yes,
   No,
   FeatureBadge,
+  ProductBadge,
   ...components,
 });

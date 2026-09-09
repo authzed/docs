@@ -7,7 +7,10 @@ import { Callout, Tabs } from "nextra/components";
 
 # Audit Logging
 
-Audit Logging is functionality exclusive to AuthZed products that publishes logs of SpiceDB API operations to a log sink.
+<ProductBadge available={["cloud", "dedicated", "enterprise"]} />
+
+Audit Logging publishes logs of SpiceDB API operations to a log sink.
+It ships with AuthZed Cloud, Dedicated, and Enterprise; SpiceDB open source does not include it.
 
 ## Log Format
 
@@ -171,7 +174,12 @@ The process for setting up audit logging varies depending on the AuthZed product
 
 Using the web dashboard, navigate to the Permission System's settings page to find the Audit Log settings.
 
-### Self-Hosted
+### SpiceDB Enterprise (self-hosted) [#self-hosted]
+
+<Callout type="warning">
+  **AuthZed Enterprise only.** The `--extender-audit-*` flags below exist in the AuthZed-licensed SpiceDB Enterprise binary.
+  They are not present in [SpiceDB open source](/authzed/guides/picking-a-product#open-source), which has no audit logging.
+</Callout>
 
 Use the following command-line flags:
 

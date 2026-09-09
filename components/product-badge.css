@@ -1,0 +1,81 @@
+/* Product-availability pills — which AuthZed tiers a feature ships on.
+   Geometry and type match feature-badge.css so the two pill families read as
+   one system when they sit under adjacent H1s. Colour is deliberately a
+   single brand accent (--sand-300, the same token the site uses for links)
+   rather than one hue per product: the pills answer "is it on the tier I
+   use?", and a struck, dimmed pill answers "no" faster than a colour key. */
+
+.product-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1.5rem 0 1.75rem;
+}
+
+.product-badge-label {
+  margin-right: 0.25rem;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: hsl(var(--stone-500, 30 5% 50%));
+  text-decoration: none;
+}
+
+.product-badge-label:hover {
+  text-decoration: underline;
+}
+
+.product-badge {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4em;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.product-badge-yes {
+  color: hsl(var(--sand-300));
+  background: hsl(var(--sand-300) / 0.1);
+  border-color: hsl(var(--sand-300) / 0.5);
+}
+
+/* Present but unavailable: kept in the row so absence is legible. */
+.product-badge-no {
+  color: hsl(var(--stone-500, 30 5% 50%) / 0.7);
+  background: transparent;
+  border-color: hsl(var(--stone-500, 30 5% 50%) / 0.25);
+}
+
+.product-badge-no s {
+  text-decoration-thickness: 1px;
+}
+
+.product-badge-diy {
+  color: hsl(var(--stone-500, 30 5% 50%));
+  background: transparent;
+  border-color: hsl(var(--stone-500, 30 5% 50%) / 0.4);
+}
+
+.product-badge-suffix {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  opacity: 0.8;
+}
+
+.product-badge-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
