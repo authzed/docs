@@ -33,4 +33,7 @@ export default {
   changes: {
     display: "hidden",
   },
+  review: {
+    display: "hidden",
+  },
 } satisfies MetaRecord;
