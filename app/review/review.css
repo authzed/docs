@@ -118,3 +118,17 @@ html.dark .pa-review td {
   line-height: 1.4;
   color: hsl(30 5% 50%);
 }
+
+/* Page links: this is a page.tsx, not MDX, so Nextra's prose link colour
+   doesn't reach here. Body colour with a sand underline, sand on hover. */
+.pa-review td a {
+  color: inherit;
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: hsl(var(--sand-300) / 0.6);
+  text-underline-offset: 0.2em;
+}
+.pa-review td a:hover {
+  color: hsl(var(--sand-300));
+  text-decoration-color: hsl(var(--sand-300));
+}
