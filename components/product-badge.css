@@ -76,3 +76,9 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* Materialize pages stack the feature pills directly under this row; close
+   the gap so the two rows read as one header block, not two paragraphs. */
+.product-badge-row:has(+ .feature-badge-row) {
+  margin-bottom: 0.25rem;
+}
