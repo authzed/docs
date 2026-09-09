@@ -404,3 +404,35 @@ article table td code.nextra-code {
 article table td:last-child {
   min-width: 6rem;
 }
+
+/* ── Callouts ───────────────────────────────────────────────────────────────
+   Nextra colours its <Callout> with stock Tailwind hues (yellow-700 text on
+   yellow-50, blue-700 on blue-100, …), none of which are Sandworm. Re-key each
+   type to the site's own tokens, in the same tint/border/ink recipe the
+   product and feature pills use: 10% tint, 50% border, full-strength ink.
+   Types are matched on Nextra's own background class since the component
+   exposes no type attribute. */
+
+.nextra-callout {
+  --co: var(--blue-500);
+  background: hsl(var(--co) / 0.1);
+  border-color: hsl(var(--co) / 0.5);
+  color: hsl(var(--co));
+}
+.nextra-callout[class*="x:bg-yellow-"] {
+  --co: var(--sand-300);
+}
+.nextra-callout[class*="x:bg-red-"] {
+  --co: var(--red-400);
+}
+.nextra-callout[class*="x:bg-green-"] {
+  --co: var(--teal-500);
+}
+.nextra-callout[class*="x:bg-purple-"] {
+  --co: var(--violet-500);
+}
+/* Light mode: the tokens are mid-lightness, so ink needs to be darker than
+   the border to keep body text readable on the tint. */
+html:not(.dark) .nextra-callout {
+  color: hsl(from hsl(var(--co)) h s calc(l - 10));
+}
