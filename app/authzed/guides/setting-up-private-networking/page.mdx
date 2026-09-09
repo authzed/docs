@@ -114,60 +114,211 @@ Most users of AuthZed Dedicated on GCP privately connect to SpiceDB with GCP [Pr
 
 <Steps>
 
-### Configure the VPC Endpoint
+### Onboarding
+
+The customer success team at AuthZed should reach out about Private Networking during
+onboarding, and will provide the service attachment for your environment.
+
+In the case where there's any miscommunication, please reach out via Slack or [schedule a call][call].
+
+### Create the Private Service Connect Endpoint
 
 1. Navigate to “Private Service Connect” and make sure you are on the “Connected Endpoints” tab.
 1. Click “Connect Endpoint”
 
-   | Option                 | Selection                                      |
-   | ---------------------- | ---------------------------------------------- |
-   | Target                 | “Published service”                            |
-   | Target service         | This will be provided to you by Authzed        |
-   | Endpoint name          | Name this whatever you want                    |
-   | Network and subnetwork | Select the networks you need connectivity from |
-   | IP address             | Choose whatever IP you'd like                  |
+   | Option                 | Selection                                                                                                  |
+   | ---------------------- | ---------------------------------------------------------------------------------------------------------- |
+   | Target                 | “Published service”                                                                                        |
+   | Target service         | The service attachment provided to you by the AuthZed team                                                 |
+   | Endpoint name          | Name this whatever you want                                                                                |
+   | Network and subnetwork | The VPC your SpiceDB clients run in, and any regular subnet in that VPC in the service attachment's region |
+   | IP address             | Any available internal address from that subnet                                                            |
 
-### Enable DNS
+1. Check the endpoint's connection status. It can only carry traffic once it reaches
+   `ACCEPTED`. `PENDING` usually means the AuthZed team has not yet allowlisted your
+   project, and `Rejected`, `Closed` or `Needs attention` all mean the connection is not
+   usable. If it does not reach `ACCEPTED`, contact the AuthZed team with the endpoint's
+   project number and status.
 
-1. Navigate to Cloud DNS and create a zone
+The endpoint does not have to sit in your clients' subnet, but it must be in the service
+attachment's region. By default your clients must be in that region too; to connect from
+other regions, enable
+[global access](https://docs.cloud.google.com/vpc/docs/about-vpc-hosted-services#global-access)
+on the endpoint with `--allow-psc-global-access`.
 
-   | Option    | Selection                                                                 |
-   | --------- | ------------------------------------------------------------------------- |
-   | Zone type | private                                                                   |
-   | DNS Name  | This will be provided to you by Authzed                                   |
-   | Networks  | Select the network where the Private Service Connect endpoint is deployed |
+An endpoint is reachable from the VPC it is created in, and from that VPC's Shared VPC
+service projects and connected on-premises networks. It is **not** reachable over VPC
+Network Peering, so unless you use
+[Network Connectivity Center connection propagation](https://docs.cloud.google.com/vpc/docs/about-propagated-connections)
+to share one endpoint with spoke VPCs, each VPC that needs access requires its own
+endpoint.
 
-1. Add record set
+Permission systems in a given environment and logical region all sit behind the same
+AuthZed service attachment. When each VPC has its own endpoint, what differs between them
+is only the endpoint IP address.
 
-   | Option     | Selection                                      |
-   | ---------- | ---------------------------------------------- |
-   | DNS name   | This will be provided to you by Authzed        |
-   | IP address | Enter your Private Service Connect endpoint IP |
-
-### Add Permission System
+### Add a Permission System
 
 1. Login to your SpiceDB management console
 2. On the homepage, select "Add Permission System"
 3. Configure your permission system to your liking and create it
 4. If you enabled [Restricted API Access](../concepts/restricted-api-access), configure it and provision a token. Otherwise, provision a token without FGAM
 
+Note the endpoint hostname shown for the permission system. You need it to build DNS in the
+next step, and it is where the logical region and environment ID come from.
+
+### Create the DNS Zone
+
+The AuthZed service attachment does not advertise a PSC DNS domain, so no consumer-side DNS
+is created for you and you build a Cloud DNS private zone yourself. (On AWS, PrivateLink's
+private DNS name covers this, which is why the AWS steps above are shorter.) Endpoint
+hostnames look like this:
+
+```
+<permission-system>.<logical-region>.<environment-id>.gcp.authzed.net
+```
+
+So a permission system reached at `my-app-b7448e.aus-se1.abcd1234.gcp.authzed.net` has
+logical region `aus-se1` and environment ID `abcd1234`. The region label is a _logical_
+region and does not always match the GCP region name, as in that example. Read both values
+from the endpoint hostname rather than assuming the GCP region.
+
+Create one zone per logical region, in each VPC that needs its own DNS view:
+
+| Option    | Selection                                                                           |
+| --------- | ----------------------------------------------------------------------------------- |
+| Zone type | private                                                                             |
+| Zone name | A name of your choosing, such as `authzed-aus-se1`; you pass this to `--zone` below |
+| DNS Name  | `<logical-region>.<environment-id>.gcp.authzed.net`                                 |
+| Networks  | Select the network where the Private Service Connect endpoint is deployed           |
+
+Or with the CLI, continuing the example above:
+
+```sh
+gcloud dns managed-zones create authzed-aus-se1 \
+  --dns-name="aus-se1.abcd1234.gcp.authzed.net." \
+  --visibility=private \
+  --networks=VPC_NETWORK \
+  --project=PROJECT_ID
+```
+
+In a Shared VPC, `PROJECT_ID` is the host project, so that all service projects using that
+network resolve the zone.
+
+<Callout type="warning">
+  Scope the zone to the logical region. Do not create it at
+  `<environment-id>.gcp.authzed.net`: a Cloud DNS private zone is authoritative for its
+  entire subtree and will not fall back to public DNS for names it does not contain, so a
+  zone at that level stops your management console from resolving inside the VPC. If you
+  already created a zone at that level, delete it and recreate it at the logical region.
+  Adding the narrower zone alongside it is not enough, because the broader zone still wins
+  for your console's hostname.
+</Callout>
+
+**Which hostnames stay on public DNS.**
+Your management console and Cloud API are served over the public internet and are not on
+the Private Service Connect path. Their hostnames sit outside the logical region's
+namespace, so scoping the zone as above is what keeps them resolving publicly. Do not add
+private records for them.
+
+Permission system hostnames also resolve publicly, to an address that does not serve them.
+The private record in your VPC is what overrides that and directs the hostname to your
+endpoint.
+
+### Add DNS Records
+
+Each A record points at the endpoint address that this VPC reaches the service attachment
+through. Either list each permission system explicitly:
+
+```sh
+gcloud dns record-sets create \
+  "my-app-b7448e.aus-se1.abcd1234.gcp.authzed.net." \
+  --zone=authzed-aus-se1 --type=A --ttl=60 \
+  --rrdatas=ENDPOINT_IP --project=PROJECT_ID
+```
+
+Or create a single wildcard covering every permission system in the region, including ones
+you add later:
+
+```sh
+gcloud dns record-sets create \
+  "*.aus-se1.abcd1234.gcp.authzed.net." \
+  --zone=authzed-aus-se1 --type=A --ttl=60 \
+  --rrdatas=ENDPOINT_IP --project=PROJECT_ID
+```
+
+The wildcard means you do not touch DNS as permission systems come and go. It also answers
+for every name under the region, including typos and permission systems this VPC has no
+reason to reach. Explicit records limit which names resolve through the private zone and
+let you roll out one permission system at a time, at the cost of a record each time.
+
+DNS is not an authorization boundary in either case. API tokens are scoped to a single
+permission system, so a client that resolves a hostname it should not be using still cannot
+read or write that permission system's data. See
+[Restricted API Access](../concepts/restricted-api-access) for access controls.
+
+Nothing is served at the zone apex, so no A record is needed there; leave the auto-created
+NS and SOA records alone. In the Cloud DNS console the apex is the DNS name field left
+blank, not `@`.
+
+**Resolving from on-premises or VPN clients.**
+A VPN connection does not by itself give a client visibility into a Cloud DNS private
+zone. To resolve these hostnames from outside GCP you also need:
+
+1. An [inbound DNS server policy](https://docs.cloud.google.com/dns/docs/server-policies-overview)
+   in the VPC where your Cloud VPN or Interconnect terminates. If that is not the VPC
+   holding the endpoint, the zone must also be visible there, via Shared VPC or
+   [DNS peering](https://docs.cloud.google.com/dns/docs/zones/zones-overview), and the
+   endpoint must still be reachable from the client's network.
+1. A conditional forwarder on your on-premises resolver for
+   `<logical-region>.<environment-id>.gcp.authzed.net`, pointing at that policy's inbound
+   forwarding addresses.
+1. On-premises routes and firewall rules permitting TCP and UDP port 53 to those forwarding
+   addresses, and TCP port 443 to the endpoint's IP address. If you also forward queries
+   outbound from Cloud DNS to on-premises resolvers, add a route for `35.199.192.0/19`.
+
 ### Verify Connectivity
 
-Verify connectivity from client machine with the [Zed CLI tool](https://github.com/authzed/zed)
+Run these from a machine that resolves through the zone you created: inside that VPC, or an
+on-premises client if you configured hybrid forwarding above. Confirm egress to TCP port
+443 on the endpoint address is permitted first.
 
-```zed
-zed context set permission_system_name example.com:443 sdbst_h256_123
+First confirm DNS resolves to your endpoint:
+
+```sh
+dig +short my-app-b7448e.aus-se1.abcd1234.gcp.authzed.net
 ```
 
-```zed
-zed schema write example.yaml
+This should return your Private Service Connect endpoint IP address. If it returns a
+public address, the private zone is not in effect for this resolver.
+
+<Callout type="info">
+  `ping` is not a useful test here. The endpoint is a TCP forwarding rule and does not answer ICMP,
+  so it fails whether or not your configuration is correct. `nc` is also misleading, because it can
+  connect to the public address and appear to succeed while the private zone is still misconfigured.
+</Callout>
+
+Then verify the service itself with [Zed]. If you don't already have zed installed, you can
+follow [this guide][install-zed].
+
+```sh
+zed context set network-test my-app-b7448e.aus-se1.abcd1234.gcp.authzed.net:443 sdbst_h256_cef4fc239bf...
 ```
 
-```zed
+```sh
 zed schema read
 ```
 
-The last Zed command should display the schema to your terminal.
+This should display your schema. On a permission system with no schema yet you will get
+the error below, which still confirms the network path is working:
+
+```
+code = NotFound
+desc = No schema has been defined; please call WriteSchema to start
+```
+
+If you changed or removed a private zone immediately before testing, allow time for cached
+negative answers to expire. Common resolvers cache these for up to 15 minutes.
 
 </Steps>
 
