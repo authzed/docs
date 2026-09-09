@@ -13,20 +13,25 @@
   border-radius: 9999px;
   vertical-align: middle;
 }
+/* Glyph fills the disc: 15px in a 24px circle, strokeWidth 3 in the SVG. */
+.feature-mark svg {
+  width: 15px;
+  height: 15px;
+}
 
 /* Yes — light (base) */
 .feature-yes {
-  background: linear-gradient(135deg, hsl(var(--teal-400)), hsl(var(--teal-700)));
+  background: linear-gradient(135deg, hsl(var(--teal-500)), hsl(var(--teal-700)));
 }
 .feature-yes svg {
   stroke: #fff;
 }
 /* Yes — dark */
 html.dark .feature-yes {
-  background: linear-gradient(135deg, hsl(var(--teal-300)), hsl(var(--teal-500)));
+  background: linear-gradient(135deg, hsl(var(--teal-400)), hsl(var(--teal-700)));
 }
 html.dark .feature-yes svg {
-  stroke: hsl(280 37% 8%); /* stone-950 */
+  stroke: #fff;
 }
 
 /* No — red-outlined disc, red x (reads on both grounds) */
