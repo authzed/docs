@@ -31,7 +31,7 @@ html.dark .feature-yes {
   background: linear-gradient(135deg, hsl(var(--teal-400)), hsl(var(--teal-700)));
 }
 html.dark .feature-yes svg {
-  stroke: #fff;
+  stroke: hsl(280 37% 8%); /* stone-950 */
 }
 
 /* No — red-outlined disc, red x (reads on both grounds) */
