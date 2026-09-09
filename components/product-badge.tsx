@@ -1,11 +1,15 @@
+"use client";
+
 import "./product-badge.css";
 import Link from "next/link";
-import { PRODUCTS, PRODUCT_ORDER, type ProductKey } from "@/lib/products";
+import { usePathname } from "next/navigation";
+import { PRODUCTS, PRODUCT_ORDER, availabilityForPath, type ProductKey } from "@/lib/products";
 
-/* Which AuthZed products a page's feature ships on. Used in MDX right under
-   the H1 of a concept page:
+/* Which AuthZed products a page applies to. Rendered under every H1 by
+   mdx-components.ts; the tiers come from the route via lib/products.ts
+   (section defaults plus per-page facts), so pages carry no markup. Props
+   are accepted for a one-off placement with explicit tiers:
 
-     <ProductBadge available={["cloud", "dedicated", "enterprise"]} />
      <ProductBadge available={["dedicated"]} diy={["open-source", "enterprise"]} />
 
    Reads left to right as a sentence: AVAILABLE ON, the tiers that have it
@@ -16,15 +20,18 @@ import { PRODUCTS, PRODUCT_ORDER, type ProductKey } from "@/lib/products";
    needs "not in Open Source" in one glance, not a decode. A page where
    nothing is excluded gets no negative pill at all.
 
-   Sibling of feature-badge.tsx (Materialize feature identity). This one is
-   props-driven rather than route-driven because availability is per-page
-   data the author states, not something derivable from the URL. */
+   Sibling of feature-badge.tsx (Materialize feature identity). */
 type Props = {
-  available: readonly ProductKey[];
+  available?: readonly ProductKey[];
   diy?: readonly ProductKey[];
 };
 
-export function ProductBadge({ available, diy = [] }: Props) {
+export function ProductBadge(props: Props) {
+  const fromRoute = availabilityForPath(usePathname());
+  const available = props.available ?? fromRoute?.available;
+  const diy = props.diy ?? fromRoute?.diy ?? [];
+  if (!available) return null;
+
   const yes = PRODUCT_ORDER.filter((k) => available.includes(k));
   const build = PRODUCT_ORDER.filter((k) => !available.includes(k) && diy.includes(k));
   const missing = PRODUCT_ORDER.filter((k) => !available.includes(k) && !diy.includes(k));
