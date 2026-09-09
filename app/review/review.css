@@ -31,6 +31,15 @@
   width: 100%;
   border-collapse: collapse;
 }
+.pa-review thead th {
+  /* Sticky under the navbar (and the banner when one is showing) so the
+     tier columns stay labelled through 93 rows. Opaque ground from Nextra's
+     own page colour so rows scroll underneath cleanly. */
+  position: sticky;
+  top: calc(var(--nextra-navbar-height, 64px) + var(--nextra-banner-height, 0px));
+  z-index: 1;
+  background: rgb(var(--nextra-bg));
+}
 .pa-review th {
   padding: 0.25rem 0.5rem 0.5rem;
   border-bottom: 1px solid hsl(280 6% 60%);
