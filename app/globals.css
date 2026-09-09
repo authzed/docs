@@ -289,3 +289,118 @@ html.dark-mode {
     display: inline-flex;
   }
 }
+
+/* ── Tables ─────────────────────────────────────────────────────────────────
+   Nextra's default MDX table is a full grid: 1px borders on every cell, zebra
+   rows, 16px body text, generous padding. On reference tables (flag lists,
+   feature matrices) that reads as a spreadsheet and fights the page. This
+   restyles every markdown table to horizontal rules only, a quiet mono
+   header row, and slightly smaller type, in the same register as the
+   Feature Matrix and the web comparison tables. Unlayered so it wins over
+   Nextra's `x:` utilities without !important. */
+
+.nextra-content table,
+article table {
+  --tbl-rule: hsl(280 5% 84%);
+  --tbl-head-rule: hsl(280 6% 60%);
+  --tbl-hover: hsl(300 8% 96%);
+  --tbl-head: hsl(280 4% 44%);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  border-collapse: collapse;
+}
+html.dark .nextra-content table,
+html.dark article table {
+  --tbl-rule: hsl(279 9% 22%);
+  --tbl-head-rule: hsl(279 8% 40%);
+  --tbl-hover: hsl(279 12% 11%);
+  --tbl-head: hsl(280 4% 58%);
+}
+
+.nextra-content table tr,
+article table tr {
+  border: 0;
+  border-bottom: 1px solid var(--tbl-rule);
+  background: transparent;
+}
+.nextra-content table thead tr,
+article table thead tr {
+  border-bottom: 1px solid var(--tbl-head-rule);
+}
+.nextra-content table tbody tr:last-child,
+article table tbody tr:last-child {
+  border-bottom: 1px solid var(--tbl-head-rule);
+}
+.nextra-content table tbody tr:hover,
+article table tbody tr:hover {
+  background: var(--tbl-hover);
+}
+
+.nextra-content table th,
+.nextra-content table td,
+article table th,
+article table td {
+  border: 0;
+  padding: 0.55rem 0.75rem;
+  vertical-align: top;
+  text-align: left;
+}
+.nextra-content table th:first-child,
+.nextra-content table td:first-child,
+article table th:first-child,
+article table td:first-child {
+  padding-left: 0.25rem;
+}
+.nextra-content table th:last-child,
+.nextra-content table td:last-child,
+article table th:last-child,
+article table td:last-child {
+  padding-right: 0.25rem;
+}
+
+/* Header row: mono, small, tracked, muted. A label, not a bold sentence. */
+.nextra-content table th,
+article table th {
+  padding-top: 0.25rem;
+  padding-bottom: 0.5rem;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--tbl-head);
+}
+
+/* Centered columns (Feature Matrix) keep their alignment from the markdown. */
+.nextra-content table th[style*="text-align: center"],
+.nextra-content table td[style*="text-align: center"],
+article table th[style*="text-align: center"],
+article table td[style*="text-align: center"] {
+  text-align: center;
+}
+
+/* First column is the row's identifier: keep it from collapsing, break it only
+   at a hyphen or space. Long code values (connection URIs) may break anywhere
+   rather than push the table sideways. */
+.nextra-content table td:first-child,
+article table td:first-child {
+  min-width: 11rem;
+  overflow-wrap: normal;
+}
+.nextra-content table td code,
+.nextra-content table td code.nextra-code,
+article table td code,
+article table td code.nextra-code {
+  font-size: 0.8em;
+  white-space: normal;
+  /* word-break, not overflow-wrap: Nextra's own `code.nextra-code` rule pins
+     overflow-wrap to break-word, which does not shrink a cell's min-content,
+     so a long URI would still push the table sideways. */
+  word-break: break-word;
+}
+/* Trailing column is usually a short value (default, type). A floor keeps
+   `1000000` on one line while a long URI in the same slot still wraps. */
+.nextra-content table td:last-child,
+article table td:last-child {
+  min-width: 6rem;
+}
