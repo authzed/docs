@@ -1,9 +1,9 @@
 /* Product-availability pills — which AuthZed tiers a feature ships on.
    Geometry and type match feature-badge.css so the two pill families read as
-   one system when they sit under adjacent H1s. Colour is deliberately a
-   single brand accent (--sand-300, the same token the site uses for links)
-   rather than one hue per product: the pills answer "is it on the tier I
-   use?", and a struck, dimmed pill answers "no" faster than a colour key. */
+   one system when they sit under adjacent H1s. Three states, three treatments:
+   sand = ships with it, dashed stone = you can build it yourself (the Feature
+   Matrix's DIY), solid stone = not available. The negative is a spelled-out "Not in …" pill,
+   never a struck or dimmed tier: absence has to read in one glance. */
 
 .product-badge-row {
   display: flex;
@@ -20,12 +20,7 @@
   font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: hsl(var(--stone-500, 30 5% 50%));
-  text-decoration: none;
-}
-
-.product-badge-label:hover {
-  text-decoration: underline;
+  color: hsl(30 5% 50%);
 }
 
 .product-badge {
@@ -40,34 +35,36 @@
   text-decoration: none;
 }
 
+/* --sand-300 flips itself under html.dark (app/globals.css). */
 .product-badge-yes {
   color: hsl(var(--sand-300));
   background: hsl(var(--sand-300) / 0.1);
   border-color: hsl(var(--sand-300) / 0.5);
 }
 
-/* Present but unavailable: kept in the row so absence is legible. */
-.product-badge-no {
-  color: hsl(var(--stone-500, 30 5% 50%) / 0.7);
-  background: transparent;
-  border-color: hsl(var(--stone-500, 30 5% 50%) / 0.25);
-}
-
-.product-badge-no s {
-  text-decoration-thickness: 1px;
-}
-
 .product-badge-diy {
-  color: hsl(var(--stone-500, 30 5% 50%));
+  color: inherit;
   background: transparent;
-  border-color: hsl(var(--stone-500, 30 5% 50%) / 0.4);
+  border-color: hsl(30 5% 50% / 0.6);
+  border-style: dashed;
+}
+
+.product-badge-not {
+  color: inherit;
+  background: hsl(30 5% 50% / 0.12);
+  border-color: hsl(30 5% 50% / 0.45);
 }
 
 .product-badge-suffix {
   font-family: var(--font-mono, ui-monospace, monospace);
   font-size: 0.6rem;
   letter-spacing: 0.1em;
-  opacity: 0.8;
+  opacity: 0.85;
+}
+
+.product-badge-glyph {
+  font-size: 0.7rem;
+  line-height: 1;
 }
 
 .product-badge-sr {
