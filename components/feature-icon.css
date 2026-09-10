@@ -35,3 +35,23 @@ html.dark .feature-yes svg {
 .feature-no svg {
   stroke: hsl(351 55% 53%);
 }
+
+/* Absent — muted dash, no disc. Reads as "nothing here" rather than "no". */
+.feature-absent {
+  color: hsl(280 4% 62%);
+  font-size: 1.125rem;
+  line-height: 1;
+}
+html.dark .feature-absent {
+  color: hsl(279 9% 40%);
+}
+
+.feature-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
