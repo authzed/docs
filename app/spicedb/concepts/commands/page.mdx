@@ -27,14 +27,13 @@ A database that stores and computes permissions
 
 ### Children commands
 
-- [spicedb datastore](#reference-spicedb-datastore)	 - datastore operations
-- [spicedb lsp](#reference-spicedb-lsp)	 - serve language server protocol
-- [spicedb man](#reference-spicedb-man)	 - Generate man page
-- [spicedb postgres-fdw](#reference-spicedb-postgres-fdw)	 - serve a Postgres Foreign Data Wrapper for SpiceDB (EXPERIMENTAL)
-- [spicedb serve](#reference-spicedb-serve)	 - serve the permissions database
-- [spicedb serve-testing](#reference-spicedb-serve-testing)	 - test server with an in-memory datastore
-- [spicedb version](#reference-spicedb-version)	 - displays the version of SpiceDB
-
+- [spicedb datastore](#reference-spicedb-datastore) - datastore operations
+- [spicedb lsp](#reference-spicedb-lsp) - serve language server protocol
+- [spicedb man](#reference-spicedb-man) - Generate man page
+- [spicedb postgres-fdw](#reference-spicedb-postgres-fdw) - serve a Postgres Foreign Data Wrapper for SpiceDB (EXPERIMENTAL)
+- [spicedb serve](#reference-spicedb-serve) - serve the permissions database
+- [spicedb serve-testing](#reference-spicedb-serve-testing) - test server with an in-memory datastore
+- [spicedb version](#reference-spicedb-version) - displays the version of SpiceDB
 
 ## Reference: `spicedb datastore`
 
@@ -50,11 +49,10 @@ Operations against the configured datastore
 
 ### Children commands
 
-- [spicedb datastore gc](#reference-spicedb-datastore-gc)	 - executes garbage collection
-- [spicedb datastore head](#reference-spicedb-datastore-head)	 - compute the head (latest) database migration revision available
-- [spicedb datastore migrate](#reference-spicedb-datastore-migrate)	 - execute datastore schema migrations
-- [spicedb datastore repair](#reference-spicedb-datastore-repair)	 - executes datastore repair
-
+- [spicedb datastore gc](#reference-spicedb-datastore-gc) - executes garbage collection
+- [spicedb datastore head](#reference-spicedb-datastore-head) - compute the head (latest) database migration revision available
+- [spicedb datastore migrate](#reference-spicedb-datastore-migrate) - execute datastore schema migrations
+- [spicedb datastore repair](#reference-spicedb-datastore-repair) - executes datastore repair
 
 ## Reference: `spicedb datastore gc`
 
@@ -137,8 +135,6 @@ spicedb datastore gc [flags]
       --skip-release-check   if true, skips checking for new SpiceDB releases
 ```
 
-
-
 ## Reference: `spicedb datastore head`
 
 compute the head (latest) database migration revision available
@@ -163,8 +159,6 @@ spicedb datastore head [flags]
       --log-level string     verbosity of logging ("trace", "debug", "info", "warn", "error") (default "info")
       --skip-release-check   if true, skips checking for new SpiceDB releases
 ```
-
-
 
 ## Reference: `spicedb datastore migrate`
 
@@ -198,8 +192,6 @@ spicedb datastore migrate [revision] [flags]
       --log-level string     verbosity of logging ("trace", "debug", "info", "warn", "error") (default "info")
       --skip-release-check   if true, skips checking for new SpiceDB releases
 ```
-
-
 
 ## Reference: `spicedb datastore repair`
 
@@ -282,8 +274,6 @@ spicedb datastore repair [flags]
       --skip-release-check   if true, skips checking for new SpiceDB releases
 ```
 
-
-
 ## Reference: `spicedb lsp`
 
 serve language server protocol
@@ -307,19 +297,16 @@ spicedb lsp [flags]
       --skip-release-check   if true, skips checking for new SpiceDB releases
 ```
 
-
-
 ## Reference: `spicedb man`
 
 Generate a man page for SpiceDB.
- The output can be redirected to a file and installed to the system:
+The output can be redirected to a file and installed to the system:
 
 ```
   spicedb man > spicedb.1
   sudo mv spicedb.1 /usr/share/man/man1/
   sudo mandb  # Update man page database
 ```
-
 
 ```
 spicedb man
@@ -332,8 +319,6 @@ spicedb man
       --log-level string     verbosity of logging ("trace", "debug", "info", "warn", "error") (default "info")
       --skip-release-check   if true, skips checking for new SpiceDB releases
 ```
-
-
 
 ## Reference: `spicedb postgres-fdw`
 
@@ -361,8 +346,6 @@ spicedb postgres-fdw [flags]
       --log-level string     verbosity of logging ("trace", "debug", "info", "warn", "error") (default "info")
       --skip-release-check   if true, skips checking for new SpiceDB releases
 ```
-
-
 
 ## Reference: `spicedb serve`
 
@@ -547,8 +530,6 @@ spicedb serve [flags]
       --skip-release-check   if true, skips checking for new SpiceDB releases
 ```
 
-
-
 ## Reference: `spicedb serve-testing`
 
 An in-memory spicedb server which serves completely isolated datastores per client-supplied auth token used.
@@ -605,8 +586,6 @@ spicedb serve-testing [flags]
       --skip-release-check   if true, skips checking for new SpiceDB releases
 ```
 
-
-
 ## Reference: `spicedb version`
 
 displays the version of SpiceDB
@@ -628,6 +607,3 @@ spicedb version [flags]
       --log-level string     verbosity of logging ("trace", "debug", "info", "warn", "error") (default "info")
       --skip-release-check   if true, skips checking for new SpiceDB releases
 ```
-
-
-
