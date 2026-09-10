@@ -77,7 +77,9 @@ html.dark .feature-matrix {
   text-decoration-color: var(--fm-link-rule);
   text-decoration-thickness: 1px;
   text-underline-offset: 0.3em;
-  transition: color 120ms, text-decoration-color 120ms;
+  transition:
+    color 120ms,
+    text-decoration-color 120ms;
 }
 .feature-matrix thead th a:hover,
 .feature-matrix tbody td:first-child a:hover {
