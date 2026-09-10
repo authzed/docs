@@ -59,9 +59,9 @@ There are three approaches for filtering resources based on whether users have a
 
 2. **CheckBulkPermissions** - Use when accessible resources are too large for LookupResources. Fetch a page of candidate results from your database, then call `CheckBulkPermissions` to determine which ones the user can access. Keep iterating until you have a full page of permitted results. This works well with cursor-based pagination and search interfaces.
 
-3. **Materialize** (Early Access) - For maximum scalability with large datasets or high traffic. Materialize watches permission changes in SpiceDB and maintains a local denormalized view of user permissions, allowing you to use simple database JOINs for filtering.
+3. **Materialize's Event Streams** (Early Access) - For maximum scalability with large datasets or high traffic. Materialize watches permission changes in SpiceDB and maintains a local denormalized view of user permissions, allowing you to use simple database JOINs for filtering.
 
-Choose based on your scale: start with LookupResources, move to CheckBulkPermissions when needed, and consider Materialize for the highest performance requirements. [Learn more]
+Choose based on your scale: start with LookupResources, move to CheckBulkPermissions when needed, and consider Materialize's Event Streams for the highest performance requirements. [Learn more]
 
 [Learn more]: ../modeling/protecting-a-list-endpoint
 

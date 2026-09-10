@@ -1,11 +1,14 @@
 {
-  "/authzed/concepts/deployments": {
-    "status": "new"
-  },
-  "/authzed/concepts/multi-region": {
+  "/authzed/guides/picking-a-product": {
     "status": "updated"
   },
-  "/authzed/guides/cloud": {
+  "/materialize/getting-started/overview": {
+    "status": "updated"
+  },
+  "/spicedb/getting-started/faq": {
+    "status": "updated"
+  },
+  "/spicedb/modeling/protecting-a-list-endpoint": {
     "status": "updated"
   }
 }

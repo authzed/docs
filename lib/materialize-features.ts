@@ -21,11 +21,10 @@ export const FEATURES = {
 
 export type FeatureKey = keyof typeof FEATURES;
 
-/* Every feature is in early access today, so the note's text doesn't vary.
-   It's per-feature anyway because the note is colour-matched to its pill —
-   and because these will go GA on different dates. */
+/* Per-feature because the note is colour-matched to its pill, and because
+   these go GA on different dates — Accelerated Queries reached GA first. */
 export const EARLY_ACCESS: Record<FeatureKey, boolean> = {
-  "accelerated-queries": true,
+  "accelerated-queries": false,
   "event-streams": true,
 };
 
