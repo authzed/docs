@@ -90,7 +90,11 @@
 .product-badge-row .feature-badge-row {
   display: contents;
 }
-.product-badge-row .feature-notes-inline,
-.product-badge-row .feature-notes {
+.product-badge-row .feature-notes-inline {
   flex-basis: 100%;
+  /* Its own margins assume it follows a row with a 1.75rem bottom margin
+     (negative top to pull up, 1.75rem bottom to space the body). Inside
+     this row the flex gap already separates it from the pills and the row
+     carries the bottom margin, so both go. */
+  margin: 0.25rem 0 0;
 }
