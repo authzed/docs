@@ -7,8 +7,6 @@ import { Callout } from "nextra/components";
 
 # DownloadPermissionSets
 
-<FeatureBadge />
-
 For large datasets, `DownloadPermissionSets` is a faster alternative to [LookupPermissionSets] for the initial [backfill](../concepts/permission-set-lifecycle): instead of streaming individual events over a single connection, it hands you a manifest of files you can fetch directly from blob storage, in parallel.
 
 ## Request

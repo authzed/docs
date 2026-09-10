@@ -1,0 +1,134 @@
+/* REVIEW AID — styles for app/review/page.tsx. Delete with the route. */
+.pa-review {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 2rem 1rem 4rem;
+  font-size: 0.875rem;
+}
+.pa-review h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+.pa-review p {
+  max-width: 68ch;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+.pa-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin: 0 0 1.5rem;
+  color: hsl(30 5% 50%);
+}
+.pa-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.pa-review table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.pa-review thead th {
+  /* Sticky under the navbar so the tier columns stay labelled through 93
+     rows. The banner is static and scrolls away, so it doesn't add to the
+     offset. Opaque ground from Nextra's own page colour so rows scroll
+     underneath cleanly. */
+  position: sticky;
+  top: var(--nextra-navbar-height, 64px);
+  z-index: 1;
+  background: rgb(var(--nextra-bg));
+}
+.pa-review th {
+  padding: 0.25rem 0.5rem 0.5rem;
+  border-bottom: 1px solid hsl(280 6% 60%);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: hsl(280 4% 44%);
+  text-align: left;
+}
+html.dark .pa-review th {
+  border-bottom-color: hsl(279 8% 40%);
+  color: hsl(280 4% 58%);
+}
+.pa-review td {
+  padding: 0.55rem 0.5rem;
+  border-bottom: 1px solid hsl(280 5% 84%);
+  vertical-align: top;
+}
+html.dark .pa-review td {
+  border-bottom-color: hsl(279 9% 22%);
+}
+.pa-center {
+  text-align: center !important;
+  width: 6.5rem;
+}
+.pa-route {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.7rem;
+  color: hsl(30 5% 50%);
+  margin-top: 0.15rem;
+}
+.pa-diy {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  padding: 0.1rem 0.45rem;
+  border: 1px dashed hsl(30 5% 50% / 0.6);
+  border-radius: 9999px;
+}
+.pa-none {
+  color: hsl(30 5% 50% / 0.5);
+}
+.pa-src {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border: 1px solid;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.pa-src-matrix {
+  color: hsl(var(--teal-500));
+  border-color: hsl(var(--teal-500) / 0.5);
+  background: hsl(var(--teal-500) / 0.1);
+}
+.pa-src-section {
+  color: hsl(30 5% 50%);
+  border-color: hsl(30 5% 50% / 0.35);
+}
+.pa-src-confirm {
+  color: hsl(var(--sand-300));
+  border-color: hsl(var(--sand-300) / 0.5);
+  background: hsl(var(--sand-300) / 0.1);
+}
+.pa-row-confirm td {
+  background: hsl(var(--sand-300) / 0.04);
+}
+.pa-note {
+  margin-top: 0.3rem;
+  max-width: 34ch;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: hsl(30 5% 50%);
+}
+
+/* Page links: this is a page.tsx, not MDX, so Nextra's prose link colour
+   doesn't reach here. Body colour with a sand underline, sand on hover. */
+.pa-review td a {
+  color: inherit;
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: hsl(var(--sand-300) / 0.6);
+  text-underline-offset: 0.2em;
+}
+.pa-review td a:hover {
+  color: hsl(var(--sand-300));
+  text-decoration-color: hsl(var(--sand-300));
+}
