@@ -1,0 +1,66 @@
+---
+title: "SpiceDB for Oso users"
+description: "How SpiceDB compares to Oso Cloud: feature-by-feature support, an AI-assisted migration path, and how Oso's concepts map onto SpiceDB."
+---
+
+import { Callout } from "nextra/components";
+
+# SpiceDB for Oso users
+
+This document is designed to help teams already using Oso Cloud evaluate SpiceDB: where existing Oso concepts carry over directly, what an AI-assisted migration looks like, and where the two systems genuinely differ.
+
+<Callout type="info" emoji="ℹ️">
+  The focus of the content below is not intended to be a competitive analysis, but rather a bridge
+  to understand SpiceDB for existing Oso users.
+</Callout>
+
+## SpiceDB support for top Oso features
+
+If you're already relying on Oso Cloud for the features below, SpiceDB supports the same workflows:
+
+| Oso Cloud feature                                                       | SpiceDB equivalent                                                                                                                         |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Polar, Oso's declarative policy language                                | [Schema Language](/spicedb/concepts/schema): definitions, relations, and permissions, written and versioned the same way Polar files are   |
+| Built-in RBAC via a resource block's `roles`/`permissions`              | A relation for role assignment plus a permission for computed access, the pattern SpiceDB schemas use throughout                           |
+| Built-in ReBAC via `relations` and `"role" if "role" on "..."` cascades | A relation to another definition plus an [arrow](/spicedb/concepts/schema#--arrow) (`parent->role`) that cascades permissions the same way |
+| `authorize`, a single yes/no decision                                   | `CheckPermission`                                                                                                                          |
+| `actions`, listing which actions are available on a resource            | `CheckBulkPermissions` over the candidate actions                                                                                          |
+| `list` / `authorize_resources`, centralized list filtering              | `LookupResources` / `CheckBulkPermissions`                                                                                                 |
+| Facts (`has_role`, `has_relation`, and so on)                           | Relationships, SpiceDB's core data primitive                                                                                               |
+| Context facts, request-scoped data that isn't stored                    | [Caveats](/spicedb/concepts/caveats), evaluated with context passed at check time                                                          |
+| Polar Tests (`test "name" { setup { ... } assert allow(...); }`)        | [`zed validate`](/spicedb/modeling/validation-testing-debugging#zed-validate) with test relationships and assertions                       |
+| A `global` block for org-wide or superadmin roles                       | A singleton definition referenced by an arrow from every resource, the conventional pattern for platform-wide grants                       |
+
+## How to migrate
+
+Most of the work in migrating off Oso is translating Polar policies and facts into a SpiceDB schema and relationships, not rewriting how your application calls into its authorization layer: the check, list, and write call sites map over directly (see the table above).
+
+AuthZed's `spicedb-dev` AI agent plugin already automates this kind of migration for OpenFGA-family sources today, converting the schema, the relationship data, the application code, and the tests, then verifying the result with a differential test harness before cutover.
+Support for Oso Cloud specifically is coming soon as part of that same automated flow.
+
+See [Build with your AI agent](/spicedb/getting-started/build-with-an-agent#migrating-to-spicedb) to get AI-assisted help planning and implementing your migration.
+
+## Oso concepts and how they map to SpiceDB
+
+| Oso concept                                                               | SpiceDB equivalent                                                                                                     |
+| ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Actor                                                                     | Subject                                                                                                                |
+| Resource                                                                  | Resource                                                                                                               |
+| A `.polar` policy file                                                    | A `.zed` schema file                                                                                                   |
+| `roles = [...]` on a resource block                                       | A relation, written to directly                                                                                        |
+| `permissions = [...]` and `"x" if "y"` shorthand                          | A permission, computed as a union of relations and other permissions                                                   |
+| `relations = { parent: Organization }` and `"role" if "role" on "parent"` | A relation to another definition plus an arrow from it                                                                 |
+| Facts (`has_role`, `has_relation`, and unary facts)                       | Relationships: a fact's subject, predicate, and object become a relationship's subject, relation, and resource         |
+| `not` on a fact                                                           | The [exclusion](/spicedb/concepts/schema#--exclusion) operator (`-`)                                                   |
+| The `allow` rule                                                          | No separate override layer: the schema's permission graph _is_ the authorization logic, so there's nothing to override |
+| Context facts                                                             | Caveat context, passed at check time instead of stored                                                                 |
+
+### How SpiceDB is different
+
+A few differences are worth knowing going in, so you can plan for them rather than discover them mid-migration:
+
+- **SpiceDB is a database, not a policy engine with pluggable data sources.** Oso lets a Polar policy pull facts from three places at query time (centralized facts, request-scoped context, and your own database via Local Authorization). SpiceDB has one model: everything a permission decision depends on is either a stored relationship or caveat context passed with the check. This is usually a smaller change than it sounds like, but it does mean data that Oso could leave in your own database now needs an explicit relationship, including structural edges (like the `global`-block pattern above) that don't look like "data" in the original Polar source.
+- **Consistency is a first-class, explicit choice in SpiceDB.** SpiceDB gives you [tunable consistency](/spicedb/concepts/consistency) and ZedTokens to guarantee a check sees the effects of a prior write, avoiding the [New Enemy Problem](/spicedb/concepts/zanzibar#new-enemy-problem). Oso Cloud has no documented equivalent guarantee, so if your application depends on read-your-writes behavior today, it's worth confirming what it actually relies on before migrating.
+- **Relation and permission names are schema, not runtime strings.** Polar treats role and permission names as ordinary strings, so a runtime-configurable set of roles or permissions is straightforward to express. In SpiceDB, those names are schema identifiers written to `WriteSchema`, so a highly dynamic, per-tenant vocabulary needs more upfront modeling (typically a fixed set of relations covering every role you'll ever need, rather than names invented at runtime).
+- **SpiceDB doesn't compile to SQL.** Oso's `list_local`/`authorize_local` return a SQL fragment your app embeds directly in its own query, which scales to very large, sortable, paginated result sets. SpiceDB's `LookupResources` returns resource IDs directly instead. For the same scale and pagination needs, [AuthZed Materialize](https://authzed.com/products/authzed-materialize) is the equivalent answer.
+- **SpiceDB is open source and self-hostable**, with a managed offering ([AuthZed Cloud](https://authzed.com/cloud)) alongside it. Oso Cloud's authorization engine is hosted-only; there's no self-hosted deployment of the core service to run on your own infrastructure.
