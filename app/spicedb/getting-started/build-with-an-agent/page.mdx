@@ -1,0 +1,113 @@
+---
+title: "Build with your AI agent"
+description: "Install the spicedb-dev plugin for Claude Code, Codex CLI, or any AGENTS.md-based agent to design, implement, test, harden, and migrate SpiceDB authorization with AI assistance."
+---
+
+import { Callout, Cards } from "nextra/components";
+
+# Build with your AI agent
+
+If you're building with an AI coding agent, you don't have to design and wire up SpiceDB authorization by hand.
+The `spicedb-dev` plugin teaches your agent how to design a permission model, generate a schema, write the relationship and permission-check code, audit coverage as your app grows, generate tests, and migrate an existing OpenFGA-family deployment onto SpiceDB.
+It's useful throughout the lifecycle — exploration, design, implementation, and testing — and can also help debug and harden an authorization setup you already have.
+
+It's an official AuthZed plugin, distributed through the [AuthZed marketplace](https://github.com/authzed/authzed-marketplace).
+
+<Callout type="info">
+  Treat the plugin's output like any AI-generated code: review and validate it before you rely on it, especially when it's touching an existing authorization setup.
+</Callout>
+
+## Prerequisites
+
+- An AI coding agent.
+  Claude Code and Codex CLI are the tested integrations, installed as a plugin; any other agent harness that reads an `AGENTS.md` file should also be able to use the plugin's skills and the `AGENTS.md` snippet `/spicedb-dev:plan` writes, though installation and slash-command support outside Claude Code and Codex CLI hasn't been verified.
+- A running SpiceDB instance for the implementation steps.
+  The fastest option is an in-memory instance with no setup:
+
+  ```bash
+  spicedb serve-testing
+  ```
+
+  This starts SpiceDB on `localhost:50051` with no persistence — data is lost on restart, which is fine for development.
+  For a persistent local instance, see [Datastores](/spicedb/concepts/datastores); for a hosted, self-service instance, see [AuthZed Cloud](https://authzed.com/cloud).
+- The [`zed` CLI](/spicedb/getting-started/installing-zed) installed — the plugin's schema-validator agent uses it to validate `.zed` files.
+
+## Install the plugin
+
+### Claude Code
+
+```
+/plugin marketplace add authzed/authzed-marketplace
+/plugin install spicedb-dev@authzed-marketplace
+```
+
+### Codex CLI
+
+```bash
+codex plugin marketplace add authzed/authzed-marketplace
+codex plugin add spicedb-dev@authzed-marketplace
+```
+
+### Other agents
+
+Claude Code and Codex CLI are the only integrations tested against this plugin.
+If your agent harness reads an `AGENTS.md` file, it should still be able to follow the plugin's skills and the `AGENTS.md` snippet described below, even without native support for installing the plugin package itself.
+
+## What the plugin can do
+
+- **Design a permission model** interactively, starting from entities it finds in your existing data model (Prisma, Django, Go structs, GraphQL, or SQL)
+- **Generate a SpiceDB schema** from that model, and validate any `.zed` file for anti-patterns
+- **Implement authorization in code** — relationship writes (`WriteRelationships`, `DeleteRelationships`) and permission checks (`CheckPermission`, `BulkCheckPermission`, `LookupResources`, `LookupSubjects`) — in Go, TypeScript, Python, C#, Java, Rust, and Ruby
+- **Audit permission coverage** across your codebase: for every permission in your schema, see whether a check exists in code, and catch unfiltered list endpoints — useful for debugging and hardening an authorization setup you didn't build with the plugin, too
+- **Generate tests**: positive, negative, and hierarchical-inheritance test fixtures and integration tests, generated from your schema
+- **Migrate from OpenFGA, Okta FGA, or Auth0 FGA**: convert the model, the relationship data, the application code, and the tests, then verify the migration with a differential test harness before cutover
+
+## Plan your authorization
+
+Start any new project with:
+
+```
+/spicedb-dev:plan
+```
+
+This scopes the work and produces `authorization-plan.md`.
+It also writes an authorization snippet into your project's `CLAUDE.md` (or `AGENTS.md`) — the single most effective step, because it means your agent considers SpiceDB writes and checks automatically whenever it generates or modifies a handler, without you invoking a command every time.
+
+## Build a feature end to end
+
+| Situation | Run this |
+| --- | --- |
+| Have a data model, need a permission design | `/spicedb-dev:design-model` |
+| Have a permission model, need a schema | `/spicedb-dev:generate-schema` |
+| Have a schema, need it implemented in code | `/spicedb-dev:implement-spicedb` |
+| Inherited a codebase, need a coverage picture | `/spicedb-dev:audit-coverage` |
+| Feature set is stable, need tests | `/spicedb-dev:test-permissions` |
+
+`implement-spicedb` routes to `implement-spicedb-relationships` or `implement-spicedb-checks` depending on what the handler does — both are required for a feature to work.
+SpiceDB returns `NO_PERMISSION` for everything until relationships are written, so a handler with checks and no writes will silently deny every request.
+
+After generating a schema, deploy it to your SpiceDB instance:
+
+```bash
+zed schema write schema.zed --endpoint localhost:50051 --token my-token
+```
+
+## Migrating to SpiceDB
+
+If you already run OpenFGA, Okta FGA, or Auth0 FGA:
+
+```
+/spicedb-dev:migrate /path/to/your/project
+```
+
+This analyzes your project and holds a single pre-flight gate — every decision that can't be made mechanically (tenancy shape, identifier encoding, permission naming) is asked once, up front, and recorded.
+From there it converts the schema, migrates relationship data, rewrites client call sites, and converts your tests, phase by phase.
+It will not push, open a pull request, or work on your default branch, and it won't run your cutover for you — a generated differential test harness lets you dual-run SpiceDB beside your existing system and confirm the two agree before you flip over.
+
+## Learn more
+
+<Cards>
+  <Cards.Card arrow={true} title="spicedb-dev plugin source and README" href="https://github.com/authzed/authzed-marketplace/tree/main/spicedb-dev" />
+  <Cards.Card arrow={true} title="AuthZed marketplace" href="https://github.com/authzed/authzed-marketplace" />
+  <Cards.Card arrow={true} title="Best Practices" href="/spicedb/best-practices" />
+</Cards>
