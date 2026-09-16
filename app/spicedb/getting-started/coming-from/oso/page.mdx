@@ -3,18 +3,11 @@ title: "SpiceDB for Oso users"
 description: "How SpiceDB compares to Oso Cloud: feature-by-feature support, an AI-assisted migration path, and how Oso's concepts map onto SpiceDB."
 ---
 
-import { Callout } from "nextra/components";
-
 # SpiceDB for Oso users
 
 This document is designed to help teams already using Oso Cloud evaluate SpiceDB: where existing Oso concepts carry over directly, what an AI-assisted migration looks like, and where the two systems genuinely differ.
 
-<Callout type="info" emoji="ℹ️">
-  The focus of the content below is not intended to be a competitive analysis, but rather a bridge
-  to understand SpiceDB for existing Oso users.
-</Callout>
-
-## SpiceDB support for top Oso features
+## SpiceDB support for Oso features
 
 If you're already relying on Oso Cloud for the features below, SpiceDB supports the same workflows:
 
@@ -35,8 +28,7 @@ If you're already relying on Oso Cloud for the features below, SpiceDB supports 
 
 Most of the work in migrating off Oso is translating Polar policies and facts into a SpiceDB schema and relationships, not rewriting how your application calls into its authorization layer: the check, list, and write call sites map over directly (see the table above).
 
-AuthZed's `spicedb-dev` AI agent plugin already automates this kind of migration for OpenFGA-family sources today, converting the schema, the relationship data, the application code, and the tests, then verifying the result with a differential test harness before cutover.
-Support for Oso Cloud specifically is coming soon as part of that same automated flow.
+AuthZed's `spicedb-dev` AI agent plugin automates this kind of migration: converting the schema, the relationship data, the application code, and the tests, then verifying the result with a differential test harness before cutover.
 
 See [Build with your AI agent](/spicedb/getting-started/build-with-an-agent#migrating-to-spicedb) to get AI-assisted help planning and implementing your migration.
 
@@ -59,8 +51,8 @@ See [Build with your AI agent](/spicedb/getting-started/build-with-an-agent#migr
 
 A few differences are worth knowing going in, so you can plan for them rather than discover them mid-migration:
 
-- **SpiceDB is a database, not a policy engine with pluggable data sources.** Oso lets a Polar policy pull facts from three places at query time (centralized facts, request-scoped context, and your own database via Local Authorization). SpiceDB has one model: everything a permission decision depends on is either a stored relationship or caveat context passed with the check. This is usually a smaller change than it sounds like, but it does mean data that Oso could leave in your own database now needs an explicit relationship, including structural edges (like the `global`-block pattern above) that don't look like "data" in the original Polar source.
-- **Consistency is a first-class, explicit choice in SpiceDB.** SpiceDB gives you [tunable consistency](/spicedb/concepts/consistency) and ZedTokens to guarantee a check sees the effects of a prior write, avoiding the [New Enemy Problem](/spicedb/concepts/zanzibar#new-enemy-problem). Oso Cloud has no documented equivalent guarantee, so if your application depends on read-your-writes behavior today, it's worth confirming what it actually relies on before migrating.
-- **Relation and permission names are schema, not runtime strings.** Polar treats role and permission names as ordinary strings, so a runtime-configurable set of roles or permissions is straightforward to express. In SpiceDB, those names are schema identifiers written to `WriteSchema`, so a highly dynamic, per-tenant vocabulary needs more upfront modeling (typically a fixed set of relations covering every role you'll ever need, rather than names invented at runtime).
-- **SpiceDB doesn't compile to SQL.** Oso's `list_local`/`authorize_local` return a SQL fragment your app embeds directly in its own query, which scales to very large, sortable, paginated result sets. SpiceDB's `LookupResources` returns resource IDs directly instead. For the same scale and pagination needs, [AuthZed Materialize](https://authzed.com/products/authzed-materialize) is the equivalent answer.
-- **SpiceDB is open source and self-hostable**, with a managed offering ([AuthZed Cloud](https://authzed.com/cloud)) alongside it. Oso Cloud's authorization engine is hosted-only; there's no self-hosted deployment of the core service to run on your own infrastructure.
+- **SpiceDB centralizes all of your authorization data in one purpose-built store.** Everything a permission decision depends on, stored relationships and caveat context passed with the check, lives in a single, indexed database rather than being split across centralized facts, request context, and your own application database the way it can be in Oso. Bringing data fully into SpiceDB, including structural edges like the `global`-block pattern above, gives you one queryable, auditable place to answer "who can access what."
+- **Consistency is a first-class, explicit choice in SpiceDB.** [Tunable consistency](/spicedb/concepts/consistency) and ZedTokens let you guarantee a check sees the effects of a prior write, avoiding the [New Enemy Problem](/spicedb/concepts/zanzibar#new-enemy-problem) whenever your workload needs that guarantee.
+- **Every relation and permission is defined once, in your schema.** Because SpiceDB validates relations and permissions against a schema at `WriteSchema` time rather than resolving role and permission names as runtime strings, [typechecking](/spicedb/concepts/schema#typechecking) catches naming drift before it becomes a live authorization bug, and your whole team can find every role and permission your app grants in one file.
+- **`LookupResources` gives you filtered results straight from the authorization graph, no SQL to write.** Where Oso's `list_local` returns a raw SQL fragment for your app to embed in its own query, SpiceDB answers the same question directly. For the largest, most performance-sensitive filtered lists, [AuthZed Materialize](https://authzed.com/products/authzed-materialize) extends that same graph into pre-computed, database-native filtering.
+- **SpiceDB is open source, and you choose where it runs.** Self-host it yourself, or use [AuthZed Cloud](https://authzed.com/cloud) as a managed option, with the same schema and API either way.
