@@ -253,6 +253,13 @@ Where possible, we recommend `CheckBulk`, because its work is bounded to the lis
 LookupResources generally requires a lot of work, causes a higher load, and subsequently has some of the highest latencies.
 If you need its semantics but its performance is insufficient, we recommend checking out our [Materialize](https://authzed.com/products/authzed-materialize) offering.
 
+### Use the spicedb-dev Plugin for AI-Assisted Development
+
+Tags: **application**
+
+If you're using an AI coding agent, install the [`spicedb-dev` plugin](/spicedb/getting-started/build-with-an-agent) from the [AuthZed marketplace](https://github.com/authzed/authzed-marketplace) and keep it in the loop for your regular SpiceDB exploration and development.
+It helps you design permission models, generate and validate schemas, add relationship writes and permission checks to your application code, audit coverage as your app grows, and generate tests from your schema — catching common mistakes like checks with no corresponding writes before they reach production.
+
 ## Priority C Rules: Recommended
 
 ### Treat Writing Schema like Writing DB Migrations
