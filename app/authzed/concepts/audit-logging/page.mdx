@@ -1,6 +1,6 @@
 ---
 title: "Audit Logging"
-description: "AuthZed functionality that publishes detailed logs of SpiceDB API operations to log sinks like AWS Kinesis and Kinesis Firehose."
+description: "AuthZed functionality that publishes detailed logs of SpiceDB API operations to log sinks like AWS Kinesis, GCP Pub/Sub, etc."
 ---
 
 import { Callout, Tabs } from "nextra/components";
@@ -138,7 +138,7 @@ For Dedicated customers, this role will also need a trust policy which allows th
 in order to deliver logs to the stream.
 
 To find the Dedicated AWS account ID, navigate to the Permission System's settings page, find the Audit Log settings,
-and choose "AWS Kinesis" or "AWS Kinesis Firehose" as the log sink.
+and choose an available log sink.
 The account ID will be displayed in the configuration.
 
 This is an example trust policy that allows the AuthZed account to assume the role:
@@ -162,6 +162,19 @@ This is an example trust policy that allows the AuthZed account to assume the ro
   ]
 }
 ```
+
+### GCP Pub/Sub
+
+As a prerequisite to use [Pub/Sub] as a log sink, the **Storage Object Admin** role of the target GCP account
+must be granted to the service account being used by SpiceDB Enterprise.
+
+[Pub/Sub]: https://docs.cloud.google.com/pubsub/docs/overview
+
+#### Dedicated
+
+To find the Dedicated GCP service account ID, navigate to the Permission System's settings page, find the Audit Log settings,
+and choose an available log sink.
+The service account ID will be displayed in the configuration.
 
 ## Configuration
 
