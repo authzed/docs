@@ -14,13 +14,67 @@ jobs:
       preview_url: "${{ steps.waitForVercelPreviewDeployment.outputs.url }}"
     steps:
       - name: "Wait for Vercel preview deployment to be ready"
-        uses: "patrickedqvist/wait-for-vercel-preview@v1.3.1"
+        uses: "actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3" # v9
         id: "waitForVercelPreviewDeployment"
         with:
-          token: "${{ secrets.GITHUB_TOKEN }}"
-          check_interval: 30
-          max_timeout: 600
-          allow_inactive: true
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const isPullRequest = Boolean(context.payload.pull_request);
+
+            // The docs repo deploys via its own workflows (vercel-preview.yml,
+            // vercel-production.yml), which create the GitHub Deployment as
+            // github-actions[bot], not vercel[bot].
+            const sha = isPullRequest
+              ? context.payload.pull_request.head.sha
+              : context.sha;
+            const environment = isPullRequest
+              ? "Preview (GitHub Actions)"
+              : "Production";
+
+            const checkIntervalSeconds = 30;
+            const maxTimeoutSeconds = 600;
+            const iterations = Math.floor(maxTimeoutSeconds / checkIntervalSeconds);
+
+            core.info("Waiting 30 seconds for deployment workflow to start...");
+            await new Promise((resolve) => setTimeout(resolve, 30000));
+
+            for (let i = 0; i < iterations; i++) {
+              const { data: deployments } = await github.rest.repos.listDeployments({
+                owner,
+                repo,
+                sha,
+                environment,
+              });
+
+              const deployment = deployments.sort((a, b) => b.id - a.id)[0];
+
+              if (deployment) {
+                const { data: statuses } = await github.rest.repos.listDeploymentStatuses({
+                  owner,
+                  repo,
+                  deployment_id: deployment.id,
+                });
+
+                const status = statuses[0];
+
+                if (status && status.state === "success" && status.environment_url) {
+                  core.info(`Deployment successful! URL: ${status.environment_url}`);
+                  core.setOutput("url", status.environment_url);
+                  return;
+                }
+
+                if (status && ["failure", "error", "inactive", "cancelled"].includes(status.state)) {
+                  core.setFailed(`Vercel deployment ${deployment.id} reported state "${status.state}"`);
+                  return;
+                }
+              }
+
+              core.info(`Waiting for Vercel deployment (attempt ${i + 1} / ${iterations})`);
+              await new Promise((resolve) => setTimeout(resolve, checkIntervalSeconds * 1000));
+            }
+
+            core.setFailed(`Timed out waiting for a successful Vercel deployment on ${sha}`);
 
   link_checker:
     name: "Link Checker"
@@ -28,7 +82,7 @@ jobs:
     needs: "preview"
     timeout-minutes: 15
     steps:
-      - uses: "actions/checkout@v3"
+      - uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6
       - name: "Link Checker"
         uses: "filiph/linkcheck@3.0.0"
         with:
