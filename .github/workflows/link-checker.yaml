@@ -86,4 +86,9 @@ jobs:
       - name: "Link Checker"
         uses: "filiph/linkcheck@3.0.0"
         with:
-          arguments: "--skip-file /github/workspace/linkcheck-skip.txt ${{ needs.preview.outputs.preview_url }}"
+          # --no-check-anchors: Nextra doesn't render heading `id`s into the
+          # static HTML server-side (they're attached client-side after
+          # hydration), so the crawler flags every #fragment link as a
+          # missing anchor. link-checker-full.yaml already disables this for
+          # the same reason.
+          arguments: "--skip-file /github/workspace/linkcheck-skip.txt --no-check-anchors ${{ needs.preview.outputs.preview_url }}"
