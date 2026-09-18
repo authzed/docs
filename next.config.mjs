@@ -77,6 +77,26 @@ export default withNextra({
         destination: "/spicedb/integrations/langchain-spicedb",
         permanent: true,
       },
+      // /spicedb/getting-started, /authzed/guides, and /materialize/getting-started
+      // are section folders with no index page of their own. Nextra's breadcrumb
+      // component links a section's top-level crumb (e.g. "SpiceDB") to its first
+      // child folder's bare route rather than resolving to a real leaf page, so
+      // without these redirects those crumbs 404.
+      {
+        source: "/spicedb/getting-started",
+        destination: "/spicedb/getting-started/discovering-spicedb",
+        permanent: true,
+      },
+      {
+        source: "/authzed/guides",
+        destination: "/authzed/guides/cloud",
+        permanent: true,
+      },
+      {
+        source: "/materialize/getting-started",
+        destination: "/materialize/getting-started/overview",
+        permanent: true,
+      },
     ];
   },
   // This is necessary because we're using CDN domains.
