@@ -8,7 +8,7 @@ import { Callout, Cards } from "nextra/components";
 # Build with your AI agent
 
 If you're building with an AI coding agent, you don't have to design and wire up SpiceDB authorization by hand.
-The `spicedb-dev` plugin teaches your agent how to design a permission model, generate a schema, write the relationship and permission-check code, audit coverage as your app grows, generate tests, and migrate an existing authorization solution (OpenFGA, Okta FGA, etc.) onto SpiceDB.
+The `spicedb-dev` plugin teaches your agent how to design a permission model, generate a schema, write the relationship and permission-check code, audit coverage as your app grows, generate tests, and migrate an existing authorization solution (OpenFGA, Okta FGA, OSO, etc.) onto SpiceDB.
 It's useful throughout the lifecycle, from exploration and design through implementation and testing, and can also help debug and harden an authorization setup you already have.
 
 It's an official AuthZed plugin, distributed through the [AuthZed marketplace](https://github.com/authzed/authzed-marketplace).
@@ -63,7 +63,7 @@ That gets you the plugin's guidance without depending on slash-command support.
 - **Implement authorization in code**: relationship writes (`WriteRelationships`, `DeleteRelationships`) and permission checks (`CheckPermission`, `BulkCheckPermission`, `LookupResources`, `LookupSubjects`) in Go, TypeScript, Python, C#, Java, Rust, and Ruby
 - **Audit permission coverage** across your codebase: for every permission in your schema, see whether a check exists in code, and catch unfiltered list endpoints, which is useful for debugging and hardening an authorization setup you didn't build with the plugin, too
 - **Generate tests**: positive, negative, and hierarchical-inheritance test fixtures and integration tests, generated from your schema
-- **Migrate from an existing authorization solution** (OpenFGA, Okta FGA, etc.): convert the model, the relationship data, the application code, and the tests, then verify the migration with a differential test harness before cutover
+- **Migrate from an existing authorization solution** (OpenFGA, Okta FGA, OSO, etc.): convert the model, the relationship data, the application code, and the tests, then verify the migration with a differential test harness before cutover
 
 ## Plan your authorization
 
@@ -95,7 +95,7 @@ zed schema write schema.zed --endpoint localhost:50051 --token my-token
 
 ## Migrating to SpiceDB
 
-If you already run an existing authorization solution (OpenFGA, Okta FGA, etc.):
+If you already run an existing authorization solution (OpenFGA, Okta FGA, OSO, etc.):
 
 ```
 /spicedb-dev:migrate /path/to/your/project
