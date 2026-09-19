@@ -1,0 +1,84 @@
+# SpiceDB Proxies
+
+A SpiceDB proxy sits between clients and an existing service, checks permissions in SpiceDB, and only forwards requests that are authorized.
+Proxies are a way to add fine-grained authorization to systems you don't control or don't want to modify, such as off-the-shelf infrastructure like [Prometheus] or the Kubernetes API server.
+
+This page describes the proxies maintained by AuthZed and the general pattern for building your own.
+
+[Prometheus]: https://prometheus.io
+
+## prom-authzed-proxy
+
+[prom-authzed-proxy] is a proxy for [Prometheus] that authorizes the request's [Bearer Token] with SpiceDB and enforces a label in the PromQL query.
+It's useful for multi-tenant Prometheus deployments where each tenant should only be able to query their own metrics.
+
+For each request, the proxy reads the resource ID from a query parameter and checks that the Bearer Token has the configured permission on that resource.
+If the check succeeds, the query is forwarded to the upstream Prometheus with a matching label enforced; if it fails, the proxy responds with an HTTP 403.
+
+[prom-authzed-proxy]: https://github.com/authzed/prom-authzed-proxy
+[Bearer Token]: https://datatracker.ietf.org/doc/html/rfc6750#section-2.1
+
+### Installation
+
+Install with [Go]:
+
+```sh
+go install github.com/authzed/prom-authzed-proxy/cmd/prom-authzed-proxy@latest
+```
+
+Or pull the container image with [Docker]:
+
+```sh
+docker pull authzed/prom-authzed-proxy:latest
+```
+
+[Go]: https://golang.org/dl/
+[Docker]: https://www.docker.com/products/docker-desktop
+
+### Example
+
+The following command runs the proxy in front of a Prometheus and a SpiceDB, both running on localhost:
+
+```sh
+prom-authzed-proxy \
+    --proxy-addr :8443 \
+    --proxy-upstream-prometheus-addr http://localhost:9090 \
+    --proxy-spicedb-endpoint localhost:50051 \
+    --proxy-spicedb-insecure \
+    --proxy-spicedb-token tc_client_token_1234deadbeef \
+    --proxy-check-resource-type metric \
+    --proxy-check-resource-id-query-param install \
+    --proxy-check-permission view \
+    --proxy-check-subject-type token
+```
+
+With this configuration, the proxy listens on port 8443 and, for each request, reads the resource ID from the `install` query parameter and checks that the Bearer Token has the `view` permission on that `metric`.
+When the check passes, a matching `install` label is enforced in the query forwarded to Prometheus.
+If `--proxy-spicedb-endpoint` is omitted, the proxy connects to AuthZed Cloud at `grpc.authzed.com:443` by default.
+
+## spicedb-kubeapi-proxy
+
+[spicedb-kubeapi-proxy] is a proxy that runs between clients and the Kubernetes API server and authorizes requests and filters responses using an embedded or remote SpiceDB.
+It can run in-cluster or out-of-cluster, doesn't require admin permissions in the base cluster, and doesn't require syncing data between SpiceDB and Kubernetes.
+
+The proxy is configured with rules that define how requests are authorized:
+
+- **Check** rules authorize whether a request is allowed to proceed at all.
+- **Filter** rules filter responses (including lists) from the Kubernetes API server based on data in SpiceDB, so users only see the resources they have access to.
+- **Update Relationship** rules write or delete relationships in SpiceDB based on the request being authorized, for example granting a user ownership of a pod they just created.
+
+[spicedb-kubeapi-proxy]: https://github.com/authzed/spicedb-kubeapi-proxy
+
+## Building your own proxy
+
+The same pattern applies to any service you want to protect with SpiceDB:
+
+1. **Authenticate the request**: determine the subject making the request, for example from a Bearer Token or client certificate.
+2. **Map the request to a resource and permission**: derive the resource type, resource ID, and required permission from the request's path, query parameters, or body.
+3. **Check the permission**: call the [`CheckPermission`] API and reject the request (typically with an HTTP 403) if the subject doesn't have the permission.
+4. **Forward or filter**: forward authorized requests to the upstream service; for endpoints that return lists, filter the request or response using [`LookupResources`] or [`CheckBulkPermissions`] as described in [Protecting a List Endpoint].
+
+[`CheckPermission`]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.CheckPermission
+[`LookupResources`]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.LookupResources
+[`CheckBulkPermissions`]: https://buf.build/authzed/api/docs/main:authzed.api.v1#authzed.api.v1.PermissionsService.CheckBulkPermissions
+[Protecting a List Endpoint]: /spicedb/modeling/protecting-a-list-endpoint
