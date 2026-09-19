@@ -1,6 +1,6 @@
 ---
 title: "Frequently-asked Questions"
-description: "Answers to common SpiceDB questions on open-source licensing, IT infrastructure, policy engines, filtering resources by access, and getting involved."
+description: "Answers to common SpiceDB questions on open-source licensing, IT infrastructure, policy engines, credential revocation, filtering resources by access, and getting involved."
 ---
 
 # Frequently-asked Questions
@@ -50,6 +50,25 @@ For these scenarios, SpiceDB supports [Caveats] as a light-weight form of policy
 
 [Reverse Indices]: ../concepts/zanzibar/#reverse-indices
 [caveats]: ../concepts/caveats
+
+## Does SpiceDB revoke permissions when an OAuth token or session is revoked?
+
+No.
+SpiceDB is an authorization system, not an authentication system.
+A permission check is computed from the schema and relationships stored in SpiceDB, together with any caveat context stored on those relationships or supplied with the request; relationships with expiration also depend on the datastore's clock.
+SpiceDB does not consult any external credential state.
+
+SpiceDB is commonly deployed behind a separate authentication layer, such as an OAuth 2.0 provider, that verifies who the caller is before the application asks SpiceDB what the caller may do.
+Revoking a credential at that layer affects only that layer, and how quickly it takes effect depends on the credential: a revoked opaque token or session stops working at the next introspection, while a self-contained JWT is typically accepted until it expires.
+Either way, revocation does not remove any relationships, so SpiceDB permission checks for that subject continue to succeed for as long as the granting relationships exist.
+The same applies to `LookupResources` and `LookupSubjects`, which resolve from the same stored state.
+
+To remove a subject's access in SpiceDB, delete the relationships that grant it, or model time-bound access with [expiring relationships] or [Caveats].
+Note that a check using the default `minimize_latency` [consistency] mode can be served from a cached snapshot, so it may not observe a relationship deletion immediately; see [read-after-write] for that window and how to close it.
+
+[expiring relationships]: ../concepts/expiring-relationships
+[consistency]: ../concepts/consistency
+[read-after-write]: ../concepts/read-after-write
 
 ## How do I filter resources based on access decisions in SpiceDB?
 
