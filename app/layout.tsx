@@ -12,6 +12,15 @@ import { ContentStatus } from "@/components/content-status";
 import Scripts from "@/components/scripts";
 import type { Metadata, ResolvingMetadata } from "next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { cookies } from "next/headers";
+import NextScript from "next/script";
+import {
+  CONSENT_COOKIE_NAME,
+  parseConsentCookie,
+  GTM_ID,
+  buildConsentDefaultScript,
+  buildGtmLoaderScript,
+} from "@/lib/consent";
 import "./globals.css";
 
 import { default as OurLayout } from "@/components/layout";
@@ -64,6 +73,9 @@ export default async function RootLayout({ children }) {
   const pageMap = await getPageMap();
   const enableSearch = process.env.NEXT_PUBLIC_ENABLE_SEARCH_BLOG_INTEGRATION === "true";
   const starCount = await getStarCount();
+  const cookieStore = await cookies();
+  const consent = parseConsentCookie(cookieStore.get(CONSENT_COOKIE_NAME)?.value);
+  const consentDefaultScript = buildConsentDefaultScript(consent);
 
   const navbar = (
     <Navbar
@@ -97,8 +109,31 @@ export default async function RootLayout({ children }) {
         // Sandworm background — stone-975 (dark) / stone-025 (light) — so every
         // docs page matches the branded home instead of Nextra's neutral #111.
         backgroundColor={{ dark: "#0c050f", light: "#f8f6f8" }}
-      />
+      >
+        {/* Google Consent Mode v2 defaults — must run before GTM */}
+        <script dangerouslySetInnerHTML={{ __html: consentDefaultScript }} />
+
+        {/* Google Tag Manager */}
+        {GTM_ID && (
+          <NextScript
+            id="gtm-script"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{ __html: buildGtmLoaderScript(GTM_ID) }}
+          />
+        )}
+      </Head>
       <body>
+        {/* GTM noscript fallback */}
+        {GTM_ID && (
+          <noscript>
+            <iframe
+              src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
+              height="0"
+              width="0"
+              style={{ display: "none", visibility: "hidden" }}
+            />
+          </noscript>
+        )}
         <Layout
           banner={
             <Banner dismissible={false}>
