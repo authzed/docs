@@ -164,6 +164,10 @@ html.dark-mode {
   justify-content: flex-start !important;
   text-align: left !important;
 }
+/* Nextra's inner content wrapper adds its own `py-2.5`. */
+.nextra-banner > div:has(> .docs-announce) {
+  padding: 0 !important;
+}
 .docs-announce {
   display: flex;
   flex-wrap: wrap;
@@ -192,6 +196,20 @@ html.dark-mode {
 .docs-announce .da-spinner {
   color: hsl(28 100% 72%); /* sand-300 */
   flex-shrink: 0;
+}
+/* The glyphs come from a fallback font with differing advance widths, so fix
+   the box width or the message jitters sideways while the cursor animates. */
+.docs-announce .da-spinner {
+  width: 1em;
+  text-align: center;
+  font-size: 1.5em;
+  /* Share the text's line box (0.8125rem × 1.4) so the cursor tracks the
+     first line when the message wraps. */
+  line-height: calc(0.8125rem * 1.4);
+  align-self: flex-start;
+  /* The fallback glyph draws low in its box; center its ink on the text. */
+  position: relative;
+  top: -0.15em;
 }
 /* terminal cursor — the cli-spinners "hamburger" (☱☲☴). Static by default,
    animates only during the load burst or on hover (`.spin` toggled by the JS). */

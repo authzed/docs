@@ -1,0 +1,241 @@
+---
+title: "Migrate to SpiceDB"
+description: "What's involved in migrating an existing authorization system to SpiceDB: planning, converting the schema, data, code, and tests, verifying against the source system, and cutting over production traffic."
+---
+
+import { Callout } from "nextra/components";
+
+# Migrate to SpiceDB
+
+Moving an existing authorization system onto SpiceDB comes down to four conversions and a cutover.
+Your authorization model becomes a SpiceDB schema, your existing data becomes relationships, your application's authorization calls become SpiceDB client calls, and your existing tests become SpiceDB validation files.
+Then you confirm the two systems agree, and move production traffic over.
+
+This page describes each stage, the decisions you'll face, and the problems most likely to catch you out, whichever system you're coming from.
+The pages under [Migrate from](#migrate-from) cover what's specific to each source system.
+If you'd like a conceptual comparison first, the pages under [Coming from](/spicedb/getting-started/coming-from/oso) explain how a source system's ideas map onto SpiceDB's.
+
+<Callout type="info">
+  AuthZed's `spicedb-dev` AI agent plugin can automate much of this work for the source systems it
+  supports, but nothing on this page requires it. See [Automating with the `spicedb-dev`
+  plugin](#automating-with-the-spicedb-dev-plugin).
+</Callout>
+
+## Stages of a migration
+
+| Stage                                      | What happens                                                  | You're done when                                                  |
+| ------------------------------------------ | ------------------------------------------------------------- | ----------------------------------------------------------------- |
+| [Plan](#plan-before-you-convert)           | Take inventory and make the decisions that affect every stage | Every decision that affects more than one stage is written down   |
+| [Schema](#convert-and-validate-the-schema) | Convert the source model to a SpiceDB schema and validate it  | `zed validate --fail-on-warn` is clean                            |
+| [Data](#migrate-the-data)                  | Extract, transform, load, and verify your relationship data   | The loaded data matches the source                                |
+| [Code](#update-your-application-code)      | Replace the source client with a SpiceDB client               | Every call site is converted or explicitly flagged                |
+| [Tests](#convert-your-tests)               | Convert your existing tests to SpiceDB validation files       | The converted tests pass                                          |
+| [Verify](#run-both-systems-side-by-side)   | Run SpiceDB beside the source system and compare answers      | Every permission you plan to cut over has enough agreeing answers |
+| [Cutover](#cutover)                        | Move production traffic over and retire the source system     | The source system is removed                                      |
+
+None of the stages before cutover moves a single production request to SpiceDB.
+They produce a schema, data, code, and evidence that the two systems agree.
+
+A few ordering constraints matter:
+
+- **Make the cross-cutting decisions first.** Tenancy, identifier, and naming choices change the schema, the data, and the code at once, so changing your mind later means redoing work in all three.
+- **Convert the schema before anything else.** The data, code, and tests all use the names the schema defines.
+- **Load and verify the data before running converted code against SpiceDB.** Checks against an empty or partially loaded instance deny everything that touches the missing data.
+- **Data and tests are independent** of each other, so you can do them in either order.
+
+## Plan before you convert
+
+Before converting anything, read your whole authorization model and find every place your application calls the source system.
+The point of this pass is to surface the decisions that affect more than one stage, and to make them together, because they interact: a tenancy choice constrains how you name identifiers, which constrains how you rewrite the data, which constrains every call site.
+
+As you go, note which parts of your model will convert directly and which won't.
+Most models have a core that translates almost mechanically, plus a handful of constructs that need a real design decision, such as a permission computed by a custom query, or roles that customers define at runtime.
+Those few constructs are usually where the effort goes, so identifying them early is the best way to estimate the migration.
+Some constructs are simply more work: if tenants can define new resource types at runtime, for example, each one needs a schema change, which is an ongoing cost rather than a one-time one.
+Others don't belong in the schema at all, such as a comparison between two values your application stores, and stay in application code.
+
+Keep a written record of every decision and mapping you make, and treat it as the single source of truth for the stages that follow.
+Changing a recorded decision after data has been loaded under it isn't a simple refresh, because it changes names that stored data already uses.
+
+### Cross-cutting decisions
+
+| Decision          | When it comes up                                       | Options                                                                                                                                                                       |
+| ----------------- | ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tenancy           | The source has more than one isolated store or tenant  | One SpiceDB instance with a `tenant` resource type (the usual choice), separate SpiceDB deployments for true isolation, or per-tenant definitions if models genuinely differ. |
+| Identifiers       | Any object ID uses characters SpiceDB doesn't allow    | Leave legal IDs unchanged, or encode IDs per type.                                                                                                                            |
+| Relation splits   | The source lets one name be both assigned and computed | A consistent naming convention for the stored half, such as a `__direct` suffix.                                                                                              |
+| Permission naming | Permission names read as role nouns instead of verbs   | Keep the source names, or rename them.                                                                                                                                        |
+| Consistency       | Call sites read right after writing                    | Map the source's preferences literally, or pass SpiceDB's consistency tokens for read-your-writes.                                                                            |
+
+#### Identifiers
+
+SpiceDB definition, relation, and permission names are lowercase letters, digits, and underscores, 3 to 64 characters long, with no leading or trailing underscore.
+Object IDs allow letters, digits, and `/ _ | - = +`, up to 1,024 characters, so an `@` in an email address used as an ID is the most common problem.
+
+If some IDs need to change, encoding them per type (for example with base64url) is a safe, reversible default.
+Whatever you choose, the data load and every call site have to encode identically, or checks fail for that type.
+Don't rely only on searching fixtures and config to decide whether your IDs are legal: applications often build IDs at request time, from a token claim, a joined path, or a custom escaping helper, and none of those show up in a search.
+
+#### Relation splits
+
+SpiceDB separates relationships you write (a `relation`) from access it computes (a `permission`).
+Many source systems let one name do both, so converting it means splitting it in two: a relation such as `viewer__direct` that holds direct assignments, and a permission that keeps the original name, `viewer`, and computes access from it.
+
+Getting the two names mixed up fails differently depending on the direction:
+
+- **Writes must target the relation.** A write to a permission returns an error, so this mistake is easy to spot.
+- **Checks must use the permission.** Checking the relation is allowed, and returns only directly assigned subjects, so this mistake produces wrong answers with no error.
+
+Apply the split identically everywhere you touch the data: in the load, in every call site, and in your tests.
+
+#### Sync obligations
+
+Some conversions create a permanent duty to keep SpiceDB consistent with another system, not just a one-time copy.
+This happens whenever your model depends on state that lives elsewhere, such as a resource attribute that becomes a relationship in SpiceDB: something now has to write it on create, update it on change, and remove it on delete.
+How many of these you have is often what separates a straightforward migration from an ongoing synchronization project, so find them during planning.
+For each one, work out where the state comes from, what will keep SpiceDB current, how you'll backfill existing data, and how you'll notice drift.
+
+## Convert and validate the schema
+
+Translate the declarative core of your model first: resource types, relations, and permissions.
+Doing this before touching application code means a mistranslation shows up as a local validation failure instead of a production check that quietly gives the wrong answer.
+
+- Where a construct has more than one valid SpiceDB encoding, weigh the tradeoffs rather than taking the first one that compiles.
+- Source conditions and attribute checks usually become [caveats](/spicedb/concepts/caveats).
+  If one depends on stored state outside SpiceDB, it becomes a relationship you keep in sync instead.
+- Arrows in SpiceDB should point at permissions, so if an arrow's target became a relation during the split, add a permission alias for it.
+- Save renames and restructuring for after the migration.
+  The data, code, and tests all depend on the names you produce now.
+
+Validate with [`zed validate --fail-on-warn`](/spicedb/modeling/validation-testing-debugging#zed-validate).
+Several important problems are only warnings, such as an arrow that points at a relation, so a plain `zed validate` can pass while the schema is wrong.
+Validation checks the schema against its own assertions, not against your data.
+
+See the [schema language reference](/spicedb/concepts/schema) and [Developing a Schema](/spicedb/modeling/developing-a-schema) for SpiceDB's side of each construct.
+
+## Migrate the data
+
+Data migration is usually a script that extracts your source data, transforms it using the mappings you recorded, and loads it into SpiceDB.
+It writes to a live authorization system, so a mistake is expensive to undo.
+
+Things to plan for:
+
+- **Deploy the schema first.** A load against a missing or stale schema fails in confusing ways.
+- **Make sure the extraction is complete.** Export tools and APIs often page or cap results silently, so count the source independently rather than trusting the export.
+- **Transform using the model, not just the data.** Many sources store data whose types are only implicit, so deciding which relation a record belongs to, and whether its IDs need encoding, requires the model.
+- **Use idempotent writes.** Writing with `TOUCH` rather than `CREATE` means a re-run or resumed load doesn't fail on relationships that already exist.
+  For large volumes, [bulk import](/spicedb/ops/data/bulk-operations) is faster but fails on existing relationships, so pair it with a `TOUCH` fallback.
+  See [Writing relationships](/spicedb/ops/data/writing-relationships).
+- **Checkpoint long loads** so an interruption doesn't mean starting over.
+
+### Verify the load
+
+Verification should read SpiceDB back, not just confirm that you read the source correctly:
+
+- **Compare an independent source count** with what you extracted, to catch an export that under-read the source.
+- **Read the relationships back from SpiceDB** and confirm the total matches, with nothing missing or duplicated.
+- **Spot-check permissions in both directions.** Check a sample of access you expect to be allowed, and pair each with access you know is denied.
+  A transform bug that drops a condition turns a conditional grant into an unconditional one, and only a check you expect to fail can reveal it.
+
+Note that `zed validate` only evaluates the relationships in its own file, so it can't tell you anything about the data you loaded.
+
+### Keep the data in sync
+
+A one-time copy is out of date as soon as extraction ends if the source is still taking writes.
+Either pause writes to the source during the load, or replay changes made since extraction until the two agree.
+A matching count on a live store is necessary but not sufficient, since a delete and a write in the same window cancel out.
+For SpiceDB's own change feed, see [Watching changes](/spicedb/concepts/watch).
+
+## Update your application code
+
+This stage adds a SpiceDB [client library](/spicedb/getting-started/client-libraries) and rewrites every call site of the source client.
+It edits code your team owns and changes dependencies, so review it like any large refactor.
+
+These problems compile cleanly and then fail or answer incorrectly at runtime:
+
+- **Split names.** Use the relation for writes and relationship filters, and the permission for checks and lookups.
+- **Unencoded IDs.** If you encoded IDs during the load, every call site that builds an ID of that type has to encode it the same way.
+- **Result ordering.** Some sources return batch results keyed by a correlation ID, while SpiceDB returns them in request order.
+- **Async clients.** If your source client was synchronous and the SpiceDB client for your language isn't, a missed `await` can turn a denial into an allow. In Python, for example, an un-awaited coroutine is truthy.
+- **Read-after-write.** A check that runs right after a related write can see the previous state unless you pass the write's [ZedToken](/spicedb/concepts/consistency#zedtokens).
+  See [Read-After-Write Consistency](/spicedb/concepts/read-after-write).
+
+### Don't turn an unconverted check into a denial
+
+If you can't convert a call site yet, avoid making it return `false`.
+A `false` that means "not implemented" looks exactly like a real denial, and the gap later resurfaces as a mysterious permission failure.
+Where a caller depends on the result, raise an error instead, and mark every unconverted or approximated call site with a searchable comment so nothing is forgotten.
+
+A clean build only shows the rewrite compiles.
+Whether it behaves like the source system is what [running both systems side by side](#run-both-systems-side-by-side) is for.
+
+## Convert your tests
+
+Your source system's test suite is an oracle you already have.
+Convert its fixtures and assertions into [SpiceDB validation files](/spicedb/modeling/validation-testing-debugging#zed-validate).
+
+- **Validation files have one shared set of relationships.** If your source tests each carry their own data, you'll need to merge them, or split tests whose data genuinely conflicts into separate files.
+- **"Who can access this?" and "what can this user access?" assertions don't convert.** Validation files only express individual checks, so verify list-style behavior against a running instance with `LookupResources` and `LookupSubjects`.
+- **Passing tests prove less than they seem.** They confirm the assertions you kept, not all of the source system's behavior.
+
+Keep track of anything you couldn't convert, so you know which guarantees still need covering.
+
+## Run both systems side by side
+
+Converted tests only cover cases someone wrote down.
+Running SpiceDB beside the source system on real traffic covers everything else: each real decision the source makes is also sent to SpiceDB in the background, and the answers are compared without affecting what the caller gets.
+
+What makes this comparison trustworthy:
+
+- **It can never affect a real decision.** SpiceDB's answer is logged and compared, never returned to a caller. A slow or failed SpiceDB call should cost a missing record, never a failed request.
+- **It distinguishes errors from denials.** Record whether each answer was allowed, denied, conditional on missing context, errored, or never arrived. Once an error is stored as a denial, the two can't be told apart.
+- **It accounts for timing.** A check made just after a write can briefly return the previous answer. Before treating a mismatch as real, re-ask SpiceDB at a consistency level at least as fresh as the answer it gave.
+- **It covers the permission surface, not just the traffic.** A rarely used permission, or one resolved through a parent relationship, needs much more sampling than a busy one. Confirm every resource type and permission you plan to cut over has a meaningful number of distinct comparisons, not just a high agreement rate over a few repeated questions.
+- **It handles the data it stores carefully.** Comparison records contain real resource and user IDs, and possibly request context such as IP or email addresses. Decide retention and what to store up front.
+
+Over time, confirmed agreements can become permanent regression tests.
+
+<Callout type="warning">
+  A passing comparison only measures the questions production happened to ask. A permission can look
+  fully verified while a different way of reaching it, such as through a parent, a wildcard, or a
+  condition, was never exercised.
+</Callout>
+
+## Cutover
+
+Moving production traffic from the source system to SpiceDB is a separate, later step, and the one migrations most often get wrong.
+Rather than switching everything at once, expand SpiceDB's responsibility one resource type at a time:
+
+1. **Start with one representative resource type.** Pick one that's low-risk but has a real parent-child relationship, since hierarchy is where SpiceDB's behavior differs most from a flat role check. Run the data, code, and test stages on it before widening.
+2. **Write to both systems and compare reads.** Writes still go to the source first and are mirrored to SpiceDB. The source still answers every check, and SpiceDB answers the same question in the background.
+3. **Reconcile continuously.** Some drift between the two systems is normal, so run an ongoing job that checks for it, rather than trusting that dual writes never fail.
+4. **Switch one resource type at a time behind a flag.** Make sure the flag can be flipped back without a deploy, and keep the source path working until the new setting has proven itself.
+5. **Remove the source system last,** only after reconciliation has stayed quiet for a full cycle of how your product is used, such as a billing cycle. Make sure "quiet" means the systems agreed, not that comparisons stopped happening.
+
+These last steps depend on your deployment and risk tolerance, and only your team can decide when giving up the fallback path is acceptable.
+
+## Automating with the `spicedb-dev` plugin
+
+AuthZed's `spicedb-dev` AI agent plugin automates much of the work above for OpenFGA, Okta FGA, Auth0 FGA, and Oso Cloud.
+If it detects a source it doesn't support, it says so rather than improvising a translation.
+To install and run it, see [Build with your AI agent](/spicedb/getting-started/build-with-an-agent#migrating-to-spicedb).
+
+| Stage  | Plugin command                | What it produces                                            |
+| ------ | ----------------------------- | ----------------------------------------------------------- |
+| Plan   | `/spicedb-dev:migrate`        | A migration plan and a machine-readable record of decisions |
+| Schema | `/spicedb-dev:migrate-schema` | A `.zed` schema and a validation report                     |
+| Data   | `/spicedb-dev:migrate-data`   | A migration script and identifier encoder in your language  |
+| Code   | `/spicedb-dev:migrate-code`   | A SpiceDB client and rewritten call sites                   |
+| Tests  | `/spicedb-dev:migrate-tests`  | SpiceDB validation files                                    |
+| Verify | `/spicedb-dev:migrate-verify` | A comparison harness in your repository, for you to wire in |
+
+Cutover has no command, because it depends on your deployment.
+
+## Migrate from
+
+These pages cover what's specific to each source system: how its constructs map onto SpiceDB, the decisions to expect, and the details of moving its data, code, and tests.
+
+- [OpenFGA and Okta FGA](/spicedb/migrate-to-spicedb/migrate-from/openfga)
+- [Oso](/spicedb/migrate-to-spicedb/migrate-from/oso)
+
+For a conceptual comparison, see the pages under [Coming from](/spicedb/getting-started/coming-from/oso), which also cover [Open Policy Agent](/spicedb/getting-started/coming-from/opa) and [Ruby on Rails](/spicedb/getting-started/coming-from/cancancan).

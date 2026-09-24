@@ -1,0 +1,284 @@
+---
+title: "Migrate from Oso to SpiceDB"
+description: "Oso Cloud specifics for migrating to SpiceDB: how Polar policies and facts map, the decisions to expect, exporting facts, SDK call differences, and converting Polar tests."
+---
+
+import { Callout } from "nextra/components";
+
+# Migrate from Oso to SpiceDB
+
+This guidance applies to **Oso Cloud**, where a Polar policy and a store of facts are queried over Oso's API.
+Read the [migration overview](/spicedb/migrate-to-spicedb/overview) first for the general process.
+For a conceptual comparison of the two systems, see [SpiceDB for Oso users](/spicedb/getting-started/coming-from/oso).
+
+If you use the deprecated open-source `oso` library instead, the policy guidance below still applies, since its policies are also Polar.
+Its data lives in your application's own objects rather than as facts, though, so the data stage becomes a custom extraction from your database.
+
+<Callout type="info">
+  AuthZed's `spicedb-dev` AI agent plugin can automate an Oso Cloud migration. To install and run
+  it, see [Build with your AI
+  agent](/spicedb/getting-started/build-with-an-agent#migrating-to-spicedb).
+</Callout>
+
+Oso's declarative core translates almost mechanically: a `has_role(User{"alice"}, "steward", Lab{"genomics"})` fact is already a relationship, with the role string doing the job of a relation name.
+**The cost of an Oso migration is rarely the schema.**
+It's attributes, list endpoints, and the data you'll need to keep in sync.
+
+## Planning
+
+### Find every Oso integration
+
+A codebase can use Oso in more than one service, and in more than one form: an SDK, direct REST calls with no SDK, or a policy file on its own.
+Look for `.polar` files and Oso configuration as well as SDK dependencies, and note which form each integration uses, since it determines what the code stage involves there.
+A codebase may also carry more than one policy, and each contributes to the schema.
+
+Work from the policy that's actually deployed, which you can fetch from Oso, rather than a checked-in copy that may lag behind it.
+
+### What drives the cost
+
+A few questions predict most of the effort:
+
+- **How many unary facts does your policy use?** Facts like `is_public(Document{"readme"})` each become data you keep in sync, and they're typically the largest cost.
+- **Do any rules put a variable in the role position, or compare two stored facts?** These need design decisions, described below.
+- **Do you call `listLocal` or `authorizeLocal`?** If so, you'll need a different approach to database-level filtering.
+- **Do you create Oso clients per request, or read in one service after writing in another?** This affects what consistency you had, and what you'll need in SpiceDB.
+
+### How Polar maps to SpiceDB
+
+| Oso                                | SpiceDB                                   | Notes                                                      |
+| ---------------------------------- | ----------------------------------------- | ---------------------------------------------------------- |
+| `actor` or `resource` block        | `definition`                              |                                                            |
+| `roles = [...]`                    | `relation`, one per role                  | Roles that are also derived by rule split into two names   |
+| `permissions = [...]`              | `permission`                              | Names may need renaming                                    |
+| `relations = {...}`                | `relation` to another definition          |                                                            |
+| `"a" if "b";`                      | `permission a = b`                        |                                                            |
+| `"a" if "b" on "rel";`             | `rel->b`                                  | Both are single-hop                                        |
+| `global` block                     | A singleton definition and an arrow       | Needs a relationship written for every object that uses it |
+| `not` on a fact                    | `-` exclusion                             |                                                            |
+| Recursive rules                    | Recursive permissions                     |                                                            |
+| Unary facts                        | A marker relation, wildcard, or caveat    | Needs a decision; see below                                |
+| Context facts                      | Caveat context, or stored relationships   | Needs a decision; see below                                |
+| Customer-defined roles             | Role objects and subject sets             | Maps as data                                               |
+| Variable in the role position      | Generated schema                          | Needs a decision; see below                                |
+| Predicates with 4 or 5 arguments   | An extra definition to hold the arguments | More relationships per fact                                |
+| Comparison across two stored facts | Caveat context or application code        | Needs a decision; see below                                |
+| Query Builder                      | Composed lookups in your application      | Needs a decision; see below                                |
+| `listLocal` and `authorizeLocal`   | `LookupResources`, or Materialize         | Needs a decision; see below                                |
+
+## Decisions to expect
+
+### Unary facts
+
+A unary fact such as `is_open_access(Dataset{"atlas"})` represents a property of a resource.
+In SpiceDB it becomes a relationship, which means something has to write it when the resource is created, update it when the property changes, and remove it on delete.
+You already sync these facts into Oso, so the migration moves that work rather than adding it.
+
+You can encode each one in a few ways, and the choice affects list performance:
+
+- **A marker relation**, such as `relation archived: system`, with one relationship per flagged object.
+- **A wildcard**, such as `relation public: user:*`, which suits "everyone can" attributes.
+- **A caveat**, when the attribute is really part of the request rather than stored state. This removes the sync work, but the caller has to supply the value on every check.
+
+### Customer-defined roles and runtime permissions
+
+Customer-defined roles mostly map as data: role objects become a definition, and grants become relationships.
+What doesn't map as data is a name invented at runtime, because relation and permission names are part of the SpiceDB schema.
+If your policy has a variable in the role position, or permissions whose names come from users, your options are:
+
+- **Fix the vocabulary.** Oso's own guidance favors a small, fixed set, so many teams can, and it's by far the cheapest option.
+- **Enumerate known roles** and generate a permission for each, which works whenever the set of roles is known when you write the schema.
+- **Generate schema at runtime.** This works, but schema changes then enter your application's write path and apply to every tenant.
+- **Keep the role-to-action mapping in your application,** and have SpiceDB answer only the role question.
+
+### Comparisons between stored facts
+
+Oso's entitlements pattern compares two stored values, such as usage against an allowance.
+A SpiceDB caveat compares stored context against values supplied with the request, so you'll need to move the comparison into your application, precompute the result and keep it in sync, or leave that one check out of the migration for now.
+
+### Query Builder, `listLocal`, and `authorizeLocal`
+
+Oso's Query Builder returns bindings for several variables at once.
+SpiceDB's lookups answer one question at a time, "what can this subject access?" or "who can access this?", so multi-variable queries become joins in your application.
+
+`listLocal` and `authorizeLocal` compile your policy into SQL that your application adds to its own queries, giving you filtering, pagination, and counts in one round trip.
+In SpiceDB, filtering comes from `LookupResources`:
+
+- For small collections, look up the accessible IDs and filter your query with them.
+- For large collections that need sorting and pagination, [AuthZed Materialize](/materialize/getting-started/overview) provides database-native filtering.
+  It doesn't support permissions that use caveats or wildcards, which are common encodings for Oso attributes, so check each permission before relying on it.
+
+### Names and IDs
+
+Oso role and permission names are free-form strings, while SpiceDB names are [identifiers](/spicedb/migrate-to-spicedb/overview#identifiers), so expect to rename some, especially names that came from a UI.
+Watch for names that collide after normalizing, such as `"Admin"` and `"admin"`, or `repo.read` and `repo-read`, because merging two distinct permissions silently grants access.
+Your call sites and tests use the original strings, so keep a record of every rename.
+
+Most object IDs carry over unchanged.
+The usual exceptions are email addresses, IDs containing a `.`, and anything your application percent-encodes.
+
+## Converting the policy
+
+A resource block like this:
+
+```polar
+resource Dataset {
+  permissions = ["download", "annotate"];
+  roles = ["analyst", "curator"];
+  relations = { lab: Lab };
+
+  "download" if "analyst";
+  "annotate" if "curator";
+  "analyst" if "curator";
+  "curator" if "steward" on "lab";
+}
+```
+
+converts to:
+
+```zed
+definition dataset {
+    relation lab: lab
+
+    relation curator__direct: user
+    relation analyst__direct: user
+
+    permission curator = curator__direct + lab->steward
+    permission analyst = analyst__direct + curator
+
+    permission download = analyst
+    permission annotate = curator
+}
+```
+
+An Oso role can be assigned directly with a `has_role` fact and also derived by a rule, so a role that's both becomes a [relation split](/spicedb/migrate-to-spicedb/overview#relation-splits): a `__direct` relation for assignments, and a permission with the original name.
+A role that's only assigned stays a plain relation, and one that's only derived becomes a plain permission.
+
+A few other shapes are easy to miss:
+
+- **Rules written as `allow(...)`.** Free-standing rules can be spelled `has_permission(...)` or `allow(...)`, and some policies use only `allow`. Look for both.
+- **Rules with no body.** `has_permission(_: User, "browse", _: Lab);` grants every user `browse` on every lab. It becomes a wildcard relation plus one relationship per lab, and since it has no `if`, it's easy to overlook.
+- **Self-reference.** A rule like "users can view their own profile" converts with [the `self` keyword](/spicedb/concepts/schema#the-self-keyword), with no relationships needed.
+- **Global blocks.** A `global` block becomes a singleton definition that other definitions reach through an arrow, and every object that references it needs a relationship to the singleton. Nothing in the policy makes that data requirement obvious.
+- **Negation.** Polar's `not` becomes SpiceDB exclusion (`-`). Parenthesize it when mixing operators.
+
+Validate with `zed validate --fail-on-warn`.
+The most common Oso-related warning is an arrow that points at a relation, which needs a permission alias on the target definition.
+
+## Exporting and loading facts
+
+Exporting the policy is simple, but exporting facts has some limits to plan around:
+
+- **You need to know every predicate name in advance,** since there's no endpoint to list them. Get them from the policy.
+- **Fact reads aren't paginated** by the SDKs, so large environments need to split the export.
+- **Some account tiers cap how many facts a call returns,** and return an error rather than truncating.
+- **There's no bulk export or change feed.**
+
+Oso's point-in-time recovery helps a lot here: restoring into a new environment gives you a frozen snapshot to export from at your own pace.
+
+Facts map onto relationships like this:
+
+| Oso fact                                          | SpiceDB relationship                                 |
+| ------------------------------------------------- | ---------------------------------------------------- |
+| `has_role(User:alice, String:steward, Lab:gx)`    | `lab:gx#steward__direct@user:alice`                  |
+| `has_relation(Dataset:atlas, String:lab, Lab:gx)` | `dataset:atlas#lab@lab:gx`                           |
+| `is_open_access(Dataset:atlas)`                   | Depends on the encoding you chose for unary facts    |
+| A fact with a value, such as an allowance         | A relationship with caveat context holding the value |
+
+Role facts are written to the `__direct` relation, while checks use the permission.
+
+### Context facts that fail closed
+
+Oso lets a request carry facts that exist only for that request.
+If those facts carry values, a caveat preserves that shape.
+If they're really edges that your application recomputes on every call, such as a resource hierarchy, they need to be stored as relationships in SpiceDB, which is a new write path.
+
+This matters because the failure is silent.
+Until those relationships are written, every check that depended on them is denied with no error, because the schema and the stored data are both correct.
+Identify every context fact your application passes before you start converting code.
+
+## Updating application code
+
+Oso ships SDKs for several languages, and the method names are the same across them apart from casing: `listLocal` in Node is `list_local` in Python, so search case-insensitively.
+A codebase may also mix SDK generations, which pass facts in different shapes, so read each call site rather than assuming.
+
+| Oso                                            | SpiceDB                                 |
+| ---------------------------------------------- | --------------------------------------- |
+| `authorize`                                    | `CheckPermission`                       |
+| `authorize_resources`, `actions`               | `CheckBulkPermissions`                  |
+| `list`, `list_paginated`                       | `LookupResources`                       |
+| `insert`, `bulk`, `batch`                      | `WriteRelationships`                    |
+| `delete`                                       | `DeleteRelationships`                   |
+| `get`                                          | `ReadRelationships`                     |
+| `policy`                                       | `WriteSchema`                           |
+| Query Builder, `list_local`, `authorize_local` | Needs a decision; see above             |
+| Context facts                                  | Caveat context, or stored relationships |
+
+Differences worth knowing:
+
+- **`list` and `LookupResources` behave differently.** `LookupResources` streams typed results rather than returning bare IDs, can return duplicates across pages, and returns at most 1,000 results per page. Neither system gives a total count.
+- **Wildcard deletes and reads name the relation in SpiceDB.** An Oso `delete` or `get` that wildcards the middle argument becomes one call per relation.
+- **Batches become one write.** SpiceDB writes are atomic per call, so an Oso `batch` becomes a single `WriteRelationships` call.
+- **Unsolvable rules surface earlier.** A rule that Oso can answer for `authorize` but not for `list` fails at schema-write time in SpiceDB, rather than when a user reaches the endpoint.
+
+### Consistency
+
+Oso doesn't document a consistency guarantee.
+Its SDKs track recent writes per client instance, which gives read-your-writes only within one process, and replica lag can be around a second.
+If your application creates clients per request, or writes in one service and reads in another, it may not have had read-your-writes before.
+
+In SpiceDB, pass the [ZedToken](/spicedb/concepts/consistency#zedtokens) from a write into checks and lookups that depend on it.
+This matters for lookups too, where a stale answer is an empty list rather than one wrong result.
+See [Read-After-Write Consistency](/spicedb/concepts/read-after-write).
+
+## Converting Polar tests
+
+Polar test blocks convert closely into SpiceDB validation files:
+
+```polar
+test "lab staff can download datasets" {
+    setup {
+        has_role(User{"ana"}, "staff", Lab{"genomics"});
+        has_relation(Dataset{"atlas"}, "lab", Lab{"genomics"});
+    }
+
+    assert allow(User{"ana"}, "download", Dataset{"atlas"});
+    assert_not allow(User{"ana"}, "annotate", Dataset{"atlas"});
+}
+```
+
+```yaml
+relationships: |
+  lab:genomics#staff__direct@user:ana
+  dataset:atlas#lab@lab:genomics
+
+assertions:
+  assertTrue:
+    - dataset:atlas#download@user:ana
+  assertFalse:
+    - dataset:atlas#annotate@user:ana
+```
+
+Things to watch:
+
+- **Setup facts use the relation, and assertions use the permission.** Getting this backwards produces a file that passes while testing nothing.
+- **IDs follow the same encoding as your data.** An ID rewritten only in the test file won't match what your application writes.
+- **`iff` assertions make two claims.** `assert allow(..., action, ...) iff action in [...]` means the listed actions are allowed and every other action is denied, so convert both halves.
+- **Fixtures need inlining,** since each validation file is self-contained.
+- **Tests of logic that moved to your application** move with it, so record them rather than dropping them.
+
+## Running both systems side by side
+
+The [side-by-side comparison](/spicedb/migrate-to-spicedb/overview#run-both-systems-side-by-side) on the overview applies as described.
+A few Oso specifics:
+
+- **Oso's local dev server is free,** which makes it cheap to run the Oso side of a comparison or test a converted policy.
+- **Context facts are part of the question.** Replaying an Oso check without the context facts it originally carried asks a different question.
+- **A `list` that errors on an unsolvable rule is an Oso error,** not a disagreement. SpiceDB returning more results in that case is expected.
+- **The comparison harness can see staler Oso answers than your application did,** since it doesn't share your application's client state. Re-ask before treating a single mismatch as real.
+
+## Gotchas
+
+- **Missing relationships fail closed with no error.** Relationships for bodiless rules, `global` blocks, and context facts all produce silent denials if they aren't written.
+- **Look for both `allow` and `has_permission`, and for rules with no body.**
+- **Search SDK calls case-insensitively.** `listLocal` and `list_local` are the same call.
+- **Watch for name collisions** when normalizing role and permission names.
