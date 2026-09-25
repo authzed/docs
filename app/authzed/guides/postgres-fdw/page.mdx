@@ -76,20 +76,20 @@ Create a **Role** that defines what permissions the FDW will have.
 Create a role named `fdw-full-access` with these permissions:
 
 ```
-authzed.api/ReadSchema
-authzed.api/WriteSchema
-authzed.api/ReadRelationships
-authzed.api/WriteRelationships
-authzed.api/DeleteRelationships
-authzed.api/CheckPermission
-authzed.api/LookupResources
-authzed.api/LookupSubjects
-authzed.api/ExpandPermissionTree
-authzed.api/Watch
-authzed.api/ExportBulkRelationships
-authzed.api/BulkExportRelationships
-authzed.api/ImportBulkRelationships
-authzed.api/BulkImportRelationships
+authzed.v1/ReadSchema
+authzed.v1/WriteSchema
+authzed.v1/ReadRelationships
+authzed.v1/WriteRelationships
+authzed.v1/DeleteRelationships
+authzed.v1/CheckPermission
+authzed.v1/LookupResources
+authzed.v1/LookupSubjects
+authzed.v1/ExpandPermissionTree
+authzed.v1/Watch
+authzed.v1/ExportBulkRelationships
+authzed.v1/BulkExportRelationships
+authzed.v1/ImportBulkRelationships
+authzed.v1/BulkImportRelationships
 ```
 
 **For read-only access** (recommended for analytics/reporting):
@@ -97,12 +97,12 @@ authzed.api/BulkImportRelationships
 Create a role named `fdw-read-only` with these permissions:
 
 ```
-authzed.api/ReadSchema
-authzed.api/ReadRelationships
-authzed.api/CheckPermission
-authzed.api/LookupResources
-authzed.api/LookupSubjects
-authzed.api/ExpandPermissionTree
+authzed.v1/ReadSchema
+authzed.v1/ReadRelationships
+authzed.v1/CheckPermission
+authzed.v1/LookupResources
+authzed.v1/LookupSubjects
+authzed.v1/ExpandPermissionTree
 ```
 
 <Callout type="info">
