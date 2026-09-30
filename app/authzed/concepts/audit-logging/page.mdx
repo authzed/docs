@@ -1,6 +1,6 @@
 ---
 title: "Audit Logging"
-description: "AuthZed functionality that publishes detailed logs of SpiceDB API operations to log sinks like AWS Kinesis, GCP Pub/Sub, etc."
+description: "AuthZed functionality that publishes detailed logs of SpiceDB API operations to log sinks like AWS Kinesis, Google Cloud Storage (GCS), etc."
 ---
 
 import { Callout, Tabs } from "nextra/components";
@@ -163,12 +163,12 @@ This is an example trust policy that allows the AuthZed account to assume the ro
 }
 ```
 
-### GCP Pub/Sub
+### Google Cloud Storage (GCS)
 
-As a prerequisite to use [Pub/Sub] as a log sink, the **Storage Object Admin** role of the target GCP account
+As a prerequisite to use [Google Cloud Storage (GCS)] as a log sink, the **Storage Object Admin** role of the target GCP account
 must be granted to the service account being used by SpiceDB Enterprise.
 
-[Pub/Sub]: https://docs.cloud.google.com/pubsub/docs/overview
+[Google Cloud Storage (GCS)]: https://docs.cloud.google.com/storage/docs/introduction
 
 #### Dedicated
 
