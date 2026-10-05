@@ -1,11 +1,5 @@
 {
-  "/materialize/concepts/permission-set-lifecycle": {
-    "status": "updated"
-  },
-  "/materialize/concepts/permission-sets": {
-    "status": "updated"
-  },
-  "/materialize/concepts/snapshots": {
-    "status": "updated"
+  "/spicedb/tutorials/federated-authorization": {
+    "status": "new"
   }
 }
