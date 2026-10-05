@@ -9,7 +9,14 @@ This tutorial illustrates how you can use SpiceDB to centralize permissions by m
 The central idea is: don't point your resources at "the GitHub user" or "the Keycloak user."
 Point them at an internal user you own, and bind each external account to it.
 
-![Many identity providers, one federated authorization: the app resolves each login from a swappable IdP to an internal user via a bound_to lookup in SpiceDB, which stores the identity bindings and governs document access for internal users only](/images/federated-architecture.png)
+![Many identity providers, one federated authorization: the app resolves each login from a swappable IdP to an internal user via a bound_to lookup in SpiceDB, which stores the identity bindings and governs document access for internal users only, persisting both to PostgreSQL so they survive a restart](/images/federated-architecture.png)
+
+<Callout type="info">
+  The full runnable demo for this tutorial lives in the [`authzed/examples`
+  repository](https://github.com/authzed/examples/tree/main/federated-authorization). It wires up
+  Keycloak, GitHub OAuth, SpiceDB, and PostgreSQL with Docker Compose, so you can run
+  `docker-compose up --build` and follow along against a live stack.
+</Callout>
 
 ## Prerequisites
 
@@ -18,7 +25,7 @@ Point them at an internal user you own, and bind each external account to it.
 - The [`zed` CLI](/spicedb/getting-started/installing-zed), pointed at your instance:
 
   ```sh
-  zed context set tutorial localhost:50051 "your-preshared-key" --insecure
+  zed context set tutorial localhost:50051 "demo-token-do-not-use-in-prod" --insecure
   ```
 
 - An app that already authenticates users and can read each token's stable id: the `sub` claim for OIDC providers like Keycloak, the numeric account id for GitHub.
@@ -244,6 +251,16 @@ for resp in client.LookupResources(LookupResourcesRequest(
 This uses SpiceDB's `LookupResources` API. Instead of asking "can this user view this document?", it answers "which documents can this user view?".
 That returns everything reachable through any path (owner, editor, or viewer) without those rules living in your app.
 
+## A note on persistence
+
+The demo backs SpiceDB with PostgreSQL (`--datastore-engine=postgres`), with a one-shot `datastore migrate head` that runs before SpiceDB starts.
+
+The bindings are the federation, so they have to outlive a restart.
+If SpiceDB forgot `keycloak_account:9f3c #bound_to user:7b1e`, the next login would find nothing bound and mint a second `user:<uuid>` — the same failure the Step 2 warning guards against — and the first user's document grants would be stranded on the old id.
+Persisting to Postgres is what keeps a returning user mapped to the same internal user, and their access, across restarts.
+
+The app keeps its own user profiles and document metadata in a local SQLite database, but SpiceDB stays the source of truth for identity bindings and authorization.
+
 ## A note on consistency
 
 The demo reads default to `minimize_latency`, which is fast but can be a few seconds stale.
@@ -256,3 +273,5 @@ See [Consistency](/spicedb/concepts/consistency) for the details.
 
 This pattern is provider-agnostic: add a third IdP by adding one more `*_account` type, and nothing downstream changes.
 To run this in production instead of a local container, provision a managed instance on [AuthZed Cloud](https://authzed.com/cloud/signup).
+
+The [`authzed/examples` repository](https://github.com/authzed/examples/tree/main/federated-authorization) has the complete demo — schema, app, and the Docker Compose stack. You could also add a third IdP or point it at your own documents.
