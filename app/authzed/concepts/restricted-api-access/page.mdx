@@ -7,7 +7,8 @@ import { Callout, Tabs } from "nextra/components";
 
 # Restricted API Access
 
-Restricted API Access is functionality exclusive to AuthZed products that restricts access to SpiceDB for API Tokens.
+Restricted API Access restricts access to SpiceDB for API Tokens.
+It ships with AuthZed Cloud, Dedicated, and Enterprise; SpiceDB open source does not include it.
 
 This functionality enables organizations to apply the principle of least-privilege to services accessing SpiceDB.
 For example, read-only tokens can be created for services that should never need to write to SpiceDB.
@@ -209,15 +210,31 @@ The process for setting up this feature varies depending on the AuthZed product 
 
 Using the web dashboard, navigate to the Permission System's "Access" tab.
 
-### Self-Hosted
+### SpiceDB Enterprise (self-hosted) [#self-hosted]
+
+<Callout type="warning">
+  **AuthZed Enterprise only.** The `--extender-*` flags below are flags on `spicedb serve` in the
+  AuthZed-licensed SpiceDB Enterprise binary. They are not present in [SpiceDB open
+  source](/authzed/guides/picking-a-product#open-source), so passing them to the open source
+  `spicedb` fails with an unknown-flag error.
+</Callout>
+
+For example:
+
+```sh
+spicedb serve \
+  --grpc-preshared-key "<your-key>" \
+  --extender-enabled authzed-fgam \
+  --extender-authzed-fgam-endpoint file:///etc/spicedb/fgam.yaml
+```
 
 Use the following command-line flags:
 
-| Flag                                  | Description                                                                                                                                                                           | Default |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| --extender-authzed-fgam-endpoint      | defines the external SpiceDB endpoint used to authorize operations for the authzed-fgam extender. If a file:// endpoint is provided, server is run embedded with static configuration |         |
-| --extender-authzed-fgam-preshared-key | defines the external SpiceDB preshared key used to authorize operations for the authzed-fgam extender. Ignored if endpoint is local (file://)                                         |         |
-| --extender-enabled                    | must be set to `authzed-fgam`                                                                                                                                                         |         |
+| Flag                                    | Description                                                                                                                                                                           | Default |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| `--extender-authzed-fgam-endpoint`      | defines the external SpiceDB endpoint used to authorize operations for the authzed-fgam extender. If a file:// endpoint is provided, server is run embedded with static configuration |         |
+| `--extender-authzed-fgam-preshared-key` | defines the external SpiceDB preshared key used to authorize operations for the authzed-fgam extender. Ignored if endpoint is local (file://)                                         |         |
+| `--extender-enabled`                    | must be set to `authzed-fgam`                                                                                                                                                         |         |
 
 If you set `--extender-authzed-fgam-endpoint` to a file, it must be a YAML configuration file.
 

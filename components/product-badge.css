@@ -1,0 +1,100 @@
+/* Product-availability pills — which AuthZed tiers a feature ships on.
+   Geometry and type match feature-badge.css so the two pill families read as
+   one system when they sit under adjacent H1s. Three states, three treatments:
+   sand = ships with it, dashed stone = you can build it yourself (the Feature
+   Matrix's DIY), solid stone = not available. The negative is a spelled-out "Not in …" pill,
+   never a struck or dimmed tier: absence has to read in one glance. */
+
+.product-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1.5rem 0 1.75rem;
+}
+
+.product-badge-label {
+  margin-right: 0.25rem;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: hsl(30 5% 50%);
+}
+
+.product-badge {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4em;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+/* --sand-300 flips itself under html.dark (app/globals.css). */
+.product-badge-yes {
+  color: hsl(var(--sand-300));
+  background: hsl(var(--sand-300) / 0.1);
+  border-color: hsl(var(--sand-300) / 0.5);
+}
+
+.product-badge-diy {
+  color: inherit;
+  background: transparent;
+  border-color: hsl(30 5% 50% / 0.6);
+  border-style: dashed;
+}
+
+.product-badge-not {
+  color: inherit;
+  background: hsl(30 5% 50% / 0.12);
+  border-color: hsl(30 5% 50% / 0.45);
+}
+
+.product-badge-suffix {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  opacity: 0.85;
+}
+
+.product-badge-glyph {
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
+.product-badge-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Materialize: the feature pills join this row after a thin divider. The
+   feature row's own box dissolves so its pills become siblings here; the
+   inline early-access note (shown only below the TOC breakpoint) takes a
+   full line under the pills. */
+.product-badge-divider {
+  width: 1px;
+  height: 1.1rem;
+  margin: 0 0.25rem;
+  background: hsl(30 5% 50% / 0.35);
+}
+.product-badge-row .feature-badge-row {
+  display: contents;
+}
+.product-badge-row .feature-notes-inline {
+  flex-basis: 100%;
+  /* Its own margins assume it follows a row with a 1.75rem bottom margin
+     (negative top to pull up, 1.75rem bottom to space the body). Inside
+     this row the flex gap already separates it from the pills and the row
+     carries the bottom margin, so both go. */
+  margin: 0.25rem 0 0;
+}
