@@ -12,9 +12,9 @@ Point them at an internal user you own, and bind each external account to it.
 ![Many identity providers, one federated authorization: the app resolves each login from a swappable IdP to an internal user via a bound_to lookup in SpiceDB, which stores the identity bindings and governs document access for internal users only, persisting both to PostgreSQL so they survive a restart](/images/federated-architecture.png)
 
 <Callout type="info">
-  The full runnable demo for this tutorial lives in the
-  [`authzed/examples` repository](https://github.com/authzed/examples/tree/main/federated-authorization).
-  It wires up Keycloak, GitHub OAuth, SpiceDB, and PostgreSQL with Docker Compose, so you can run
+  The full runnable demo for this tutorial lives in the [`authzed/examples`
+  repository](https://github.com/authzed/examples/tree/main/federated-authorization). It wires up
+  Keycloak, GitHub OAuth, SpiceDB, and PostgreSQL with Docker Compose, so you can run
   `docker-compose up --build` and follow along against a live stack.
 </Callout>
 
