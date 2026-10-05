@@ -1,0 +1,26 @@
+---
+title: "Hydration"
+description: "Hydration is how Materialize turns your SpiceDB schema and relationships into precomputed permission sets, computing only what's reachable from the permissions you've configured it to watch."
+---
+
+# Hydration
+
+<FeatureBadge />
+
+**Hydration** is the process Materialize uses to turn your SpiceDB schema and relationship data into the precomputed [permission sets](./permission-sets) that both Materialize features depend on: [Accelerated Queries](../getting-started/overview#accelerated-queries) reads hydrated data directly to answer checks and lookups, and [Event Streams](../getting-started/overview#event-streams) exposes that same hydrated data through `LookupPermissionSets` and `WatchPermissionSets`.
+
+## Only what's reachable
+
+Hydration doesn't compute every permission your schema could produce, only the [permissions you've configured Materialize to watch](./watched-permissions), plus everything those permissions structurally depend on through unions, intersections, exclusions, and arrows. This **reachability** is a pure function of your schema and your watched permissions, so Materialize computes it once per hydration run and reuses it throughout.
+
+This is also why the cost of hydration tracks the size of the reachable graph, not the size of your whole schema: watching a permission with a much wider reach, or adding a new watched permission, can noticeably change how much work hydration has to do.
+
+## Offline hydration vs. online hydration
+
+- **Offline hydration** reads a full point-in-time capture of your SpiceDB schema and relationship data and computes every reachable permission set from scratch, producing the first permission set snapshot at that revision. This is what backs the initial [backfill](./permission-set-lifecycle).
+- **Online hydration** applies as new relationship and schema changes arrive after that initial pass, updating only the permission sets a given change actually affects, in the order the changes occurred.
+
+## When rehydration is required
+
+A [breaking schema change](./snapshots#snapshot-lifecycle-events) invalidates previously hydrated permission sets, since the reachability computed from the old schema no longer holds.
+Materialize signals this so you can re-run the [backfill](./permission-set-lifecycle) at the new revision. See [The Permission Set Lifecycle](./permission-set-lifecycle) for the full rebuild flow.

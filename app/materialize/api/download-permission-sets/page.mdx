@@ -1,0 +1,103 @@
+---
+title: "DownloadPermissionSets"
+description: "Bulk-download permission sets as Parquet or Avro files for a fast initial backfill, with guidance on parsing normalized and denormalized files and why Parquet is the recommended format."
+---
+
+import { Callout } from "nextra/components";
+
+# DownloadPermissionSets
+
+<FeatureBadge />
+
+For large datasets, `DownloadPermissionSets` is a faster alternative to [LookupPermissionSets] for the initial [backfill](../concepts/permission-set-lifecycle): instead of streaming individual events over a single connection, it hands you a manifest of files you can fetch directly from blob storage, in parallel.
+
+## Request
+
+The request maps to [`DownloadPermissionSetsRequest`]:
+
+```json
+{
+  "optional_at_revision": "the_zed_token"
+}
+```
+
+If `optional_at_revision` is omitted, Materialize returns files for the latest fully-published revision. If provided, Materialize returns files for that specific revision if they're still available (see [Snapshot rotation](../concepts/snapshots#snapshot-lifecycle-events)).
+
+Once you've backfilled from the downloaded files, switch to [WatchPermissionSets] to keep your copy current. See [The Permission Set Lifecycle](../concepts/permission-set-lifecycle) for the full flow.
+
+## Response
+
+The response ([`DownloadPermissionSetsResponse`]) lists the available [`File`]s:
+
+```json
+{
+  "timestamp": "2026-07-01T12:00:00Z",
+  "files": [
+    { "name": "metadata.json", "url": "https://..." },
+    { "name": "members.parquet", "url": "https://..." },
+    { "name": "sets.parquet", "url": "https://..." },
+    { "name": "member_to_set.parquet", "url": "https://..." },
+    { "name": "set_to_set.parquet", "url": "https://..." }
+  ]
+}
+```
+
+Each file's `url` is a **time-limited signed URL**: download promptly, and re-call `DownloadPermissionSets` to get fresh URLs if a batch download runs long. `metadata.json` is always included and describes the revision:
+
+```json
+{
+  "revision": "the_zed_token",
+  "watched_permissions": ["document#view@user", "document#edit@user"],
+  "numShards": 4,
+  "files": ["members-shard-0.parquet", "members-shard-1.parquet", "..."]
+}
+```
+
+<Callout type="warning">
+  Large datasets are sharded across multiple files per table (`members-shard-0.parquet`,
+  `members-shard-1.parquet`, and so on). The internal IDs in each table are only unique *within
+  their own shard*. Read `metadata.json`'s `files` list to discover the actual shard files for a
+  revision, and treat each table's shards as one combined multi-file dataset rather than
+  concatenating them naively.
+</Callout>
+
+## File formats
+
+<Callout type="warning">
+  Avro support is being phased out. New integrations should use Parquet: it's faster to query, works
+  natively with standard data tools, and is where future development is focused.
+</Callout>
+
+Which formats a given revision publishes depends on how your Materialize instance is configured. Work with your AuthZed account team to enable Parquet if you're not seeing it in your manifest yet.
+
+### Parquet (recommended)
+
+Parquet ships in two shapes, covering the same [permission set](../concepts/permission-sets) data at different levels of normalization:
+
+- **Normalized** (`members.parquet`, `sets.parquet`, `member_to_set.parquet`, `set_to_set.parquet`): mirrors the underlying model directly. `members.parquet` and `sets.parquet` assign a compact integer `internal_id` to each subject and each resource#permission set. `member_to_set.parquet` expresses each **member → set** edge as a `member_id` column plus a `sets` column (a list of set IDs). `set_to_set.parquet` expresses each **set → set** edge (see [Permission Sets](../concepts/permission-sets) for what "child" and "parent" mean here) as a `child_set_id` column plus a `parent_sets` column (a list of parent set IDs). Smaller on disk, but you'll need to join back to `members`/`sets` to recover the actual `subject_type`/`subject_id` or `resource_type`/`resource_id` values.
+- **Flat** (`flat_member_to_set.parquet`, `flat_set_to_set.parquet`): fully denormalized, every row already carries the resolved string values directly, no lookup tables, no joins. `flat_member_to_set.parquet` has `resource_type`, `resource_rel`, `resource_id`, `subject_type`, `subject_rel`, `subject_id`. `flat_set_to_set.parquet` has the same six fields split into `child_resource_type`/`child_resource_rel`/`child_resource_id` and `parent_resource_type`/`parent_resource_rel`/`parent_resource_id`. Pick this if you're loading straight into a query engine or your own database.
+
+Both shapes are plain Parquet files, so any Parquet reader works: DuckDB, pandas/pyarrow, Spark, and most data warehouses can query them directly without a custom parser. For example, with the flat files and [DuckDB](https://duckdb.org/):
+
+```sql
+-- Every subject that can view a given document, no joins required
+SELECT subject_type, subject_id
+FROM 'flat_member_to_set.parquet'
+WHERE resource_type = 'document' AND resource_id = '123' AND resource_rel = 'view';
+```
+
+### Avro (legacy)
+
+Avro files (`members.avro`, `sets.avro`, `member_to_set.avro`, `set_to_set.avro`) use the same normalized shape as the Parquet equivalents: integer `internal_id`s in `members`/`sets`, referenced by `member_to_set`/`set_to_set`. They're encoded as Avro [Object Container Format](https://avro.apache.org/docs/current/specification/#object-container-files), which embeds its own schema, so any standard Avro library can decode a file without needing the schema separately.
+
+## Errors
+
+### NotFound
+
+Returned when no download manifest exists for the requested revision (or for the latest revision, if none was specified). For example, if hydration hasn't published a manifest yet, or the requested revision has aged out. Retry against the latest revision, or re-run without `optional_at_revision`.
+
+[WatchPermissionSets]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.materialize.v0#authzed.api.materialize.v0.WatchPermissionSetsService.WatchPermissionSets
+[LookupPermissionSets]: https://buf.build/authzed/api/docs/v1.35.0:authzed.api.materialize.v0#authzed.api.materialize.v0.WatchPermissionSetsService.LookupPermissionSets
+[`DownloadPermissionSetsRequest`]: https://buf.build/authzed/api/file/main%3Aauthzed/api/materialize/v0/
+[`DownloadPermissionSetsResponse`]: https://buf.build/authzed/api/file/main%3Aauthzed/api/materialize/v0/
+[`File`]: https://buf.build/authzed/api/file/main%3Aauthzed/api/materialize/v0/

@@ -7,6 +7,8 @@ import { Callout } from "nextra/components";
 
 # The permission set lifecycle
 
+<FeatureBadge />
+
 The **permission set lifecycle** describes how your application's local copy of permission data is populated, kept current, and rebuilt over time — from an empty index to a complete, queryable [Permission Sets](./permission-sets) store, and back to a fresh index when your schema changes.
 
 When you first bring a system online, you have no permission data locally.
@@ -16,7 +18,7 @@ Once the backfill is complete, you switch to [WatchPermissionSets](../api/watch-
 ## Stages of the lifecycle
 
 1. **Backfill** — populate your store with the current state of every permission set. Two APIs can produce the initial backfill:
-   - **`DownloadPermissionSets`** (the Download API) — **recommended**. It ingests significantly faster than `LookupPermissionSets` and is the preferred path for the initial backfill.
+   - **[DownloadPermissionSets](../api/download-permission-sets)** (the Download API) — **recommended**. It ingests significantly faster than `LookupPermissionSets` and is the preferred path for the initial backfill.
    - **[LookupPermissionSets](../api/lookup-permission-sets)** — kept available for clients that find it easier to integrate with. Page through the stream via cursors until an iteration yields zero events. Each event carries the permission-set data to store **and** the cursor to resume from on failure.
 2. **Record the snapshot revision** — every backfill event includes the revision (`ZedToken`) the data was computed at. Store it transactionally alongside the data.
 3. **Switch to the change stream** — once the backfill completes, open [WatchPermissionSets](../api/watch-permission-sets) using the stored snapshot revision so no changes are missed between the backfill and live updates.

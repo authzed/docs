@@ -30,6 +30,12 @@ Sign in to [AuthZed Cloud](https://app.authzed.cloud) and click on the **+Create
   - Choose the number of vCPUs for your deployment. The recommendation is to start with 2 vCPUs and then monitor the Metrics and change it based on your workload.
   - Choose the number of replicas to deploy SpiceDB with primarily read workloads. The recommendation is 3 but will depend on your latency requirements.
 
+<Callout type="info">
+  These vCPUs provision **SpiceDB's compute**, not your datastore's. See [What you configure per
+  Deployment](/authzed/concepts/deployments#what-you-configure-per-deployment) for how the two scale
+  independently.
+</Callout>
+
 ## Configuring Access
 
 Before using the Permissions System, let's configure access to it.

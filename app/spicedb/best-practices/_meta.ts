@@ -10,14 +10,14 @@ export default {
   },
   priority: {
     title: "Essential",
-    href: "#priority-a-essential",
+    href: "/spicedb/best-practices#priority-a-essential",
   },
   "strongly-recommended": {
     title: "Strongly Recommended",
-    href: "#priority-b-strongly-recommended",
+    href: "/spicedb/best-practices#priority-b-strongly-recommended",
   },
   recommended: {
     title: "Recommended",
-    href: "#priority-c-recommended",
+    href: "/spicedb/best-practices#priority-c-recommended",
   },
 };

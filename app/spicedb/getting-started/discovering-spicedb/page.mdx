@@ -4,7 +4,7 @@ description: "Overview of SpiceDB, the open-source Google Zanzibar-inspired data
 ---
 
 import { Cards } from "nextra/components";
-import { faQuestion, faHand, faDollarSign } from "@fortawesome/free-solid-svg-icons";
+import { faQuestion, faHand, faBook, faTruckMoving } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 # SpiceDB Documentation
@@ -26,9 +26,15 @@ Welcome to the official documentation for the SpiceDB ecosystem.
   />
   <Cards.Card
     arrow
-    icon={<FontAwesomeIcon icon={faDollarSign} />}
-    title="Paid products? That's the AuthZed docs"
+    icon={<FontAwesomeIcon icon={faBook} />}
+    title="AuthZed product docs"
     href="../../authzed/guides/picking-a-product"
+  />
+  <Cards.Card
+    arrow
+    icon={<FontAwesomeIcon icon={faTruckMoving} />}
+    title="Migrating to SpiceDB"
+    href="/spicedb/migrate-to-spicedb/overview"
   />
 </Cards>
 

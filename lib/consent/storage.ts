@@ -30,6 +30,7 @@ export function parseConsentCookie(rawValue: string | undefined | null): Consent
 }
 
 export const CONSENT_COOKIE_NAME = COOKIE_NAME;
+export const CONSENT_COOKIE_VERSION = COOKIE_VERSION;
 
 export function consentedIdentify(
   ph: { identify: (id: string, props?: Record<string, unknown>) => void },

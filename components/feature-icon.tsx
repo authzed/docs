@@ -2,7 +2,13 @@ import "./feature-icon.css";
 
 /* Feature-matrix marks for docs tables — Lucide check / x glyphs in Sandworm
    colors, matching the marketing pricing comparison. Theme-aware styling lives
-   in feature-icon.css. Used in MDX as <Yes /> / <No /> (mdx-components.ts). */
+   in feature-icon.css. Used in MDX as <Yes /> / <No /> / <Absent />
+   (mdx-components.ts).
+
+   <No /> is a red cross: a real negative (a permission check that denied).
+   <Absent /> is a muted dash: a tier that simply doesn't carry a line. In a
+   product matrix an absence is not a failure, so it should not read as one.
+   Same rule as the marketing pricing/support comparison (SupportComparison). */
 
 export function Yes() {
   return (
@@ -38,6 +44,15 @@ export function No() {
       >
         <path d="M18 6 6 18M6 6l12 12" />
       </svg>
+    </span>
+  );
+}
+
+export function Absent() {
+  return (
+    <span className="feature-mark feature-absent">
+      <span aria-hidden="true">&ndash;</span>
+      <span className="feature-sr">Not included</span>
     </span>
   );
 }

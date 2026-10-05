@@ -16,4 +16,5 @@ export {
   CONSENT_COOKIE_NAME,
 } from "./storage";
 export { isEUVisitor } from "./eu-detection";
+export { GTM_ID, buildConsentDefaultScript, buildGtmLoaderScript } from "./gtm";
 export type { ConsentPreferences } from "./types";

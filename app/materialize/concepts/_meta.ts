@@ -1,6 +1,8 @@
 export default {
+  "watched-permissions": "Watched Permissions",
+  snapshots: "Snapshots",
+  hydration: "Hydration",
   "permission-sets": "Permission Sets",
   "permission-set-lifecycle": "Permission Set Lifecycle",
-  snapshots: "Snapshots",
   "managing-client-state": "Managing Client State",
 };

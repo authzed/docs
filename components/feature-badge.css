@@ -1,0 +1,62 @@
+/* Materialize feature badges — clickable pill linking back to the feature's
+   definition on the Overview page. Text casing, font weight, border opacity,
+   and padding are adopted from Sandworm's status-badge.tsx
+   (github.com/authzed/design/tree/main/sandworm/components/ui) for family
+   resemblance, even though that component's semantics (content lifecycle:
+   ready/draft/deprecated/under-review) differ from ours (feature identity +
+   release maturity). Colors are teal (Accelerated Queries) and violet
+   (Event Streams), read from the shared Sandworm accent tokens in
+   app/globals.css so they can't drift from the rest of the site. */
+
+/* The row owns the vertical rhythm so two pills (Snapshots) sit on one line
+   without doubling the margin between them. */
+.feature-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1.5rem 0 1.75rem;
+}
+
+.feature-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+/* Points at the early-access note in the TOC rail. Nudged up rather than set
+   as <sup> so it doesn't stretch the pill's line box. */
+.feature-badge-mark {
+  display: inline-block;
+  margin-left: 0.15em;
+  font-size: 0.9em;
+  line-height: 1;
+  vertical-align: 0.28em;
+}
+
+.feature-badge-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* No light/dark variants needed — --teal-500 and --violet-500 flip themselves
+   under html.dark (app/globals.css). */
+.feature-badge-accelerated-queries {
+  color: hsl(var(--teal-500));
+  background: hsl(var(--teal-500) / 0.1);
+  border-color: hsl(var(--teal-500) / 0.5);
+}
+
+.feature-badge-event-streams {
+  color: hsl(var(--violet-500));
+  background: hsl(var(--violet-500) / 0.1);
+  border-color: hsl(var(--violet-500) / 0.5);
+}

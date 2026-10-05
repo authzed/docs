@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1210 650" font-family="Inter, system-ui, sans-serif">
+  <!-- Redrawn against AuthZed's Sandworm design system (github.com/authzed/design/tree/main/sandworm):
+       solid 1px stone-200 node cards, mono-caps state labels, orthogonal stone-400 connectors with
+       rounded corners. No scope containers needed here — this is a pure state machine, not a system map. -->
+  <defs>
+    <marker id="arrow-neutral" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8e8891" />
+    </marker>
+  </defs>
+
+  <rect width="1210" height="650" fill="#f8f7f8" />
+
+  <!-- State 1: Lookup State -->
+  <g>
+    <rect x="90" y="110" width="230" height="150" rx="10" fill="#ffffff" stroke="#c7c4ca" stroke-width="1" />
+    <text x="205" y="138" text-anchor="middle" font-family="ui-monospace, 'JetBrains Mono', 'SF Mono', Menlo, monospace" font-size="11" font-weight="500" letter-spacing="0.08em" fill="#8e8891">STATE 1</text>
+    <text x="205" y="162" text-anchor="middle" font-size="17" font-weight="700" fill="#1e1424">Lookup State</text>
+    <text x="205" y="192" text-anchor="middle" font-size="11.5" fill="#79727e">Consuming events from</text>
+    <text x="205" y="208" text-anchor="middle" font-size="11.5" fill="#79727e">LookupPermissionSets API</text>
+  </g>
+
+  <!-- State 2: Watch State -->
+  <g>
+    <rect x="940" y="110" width="230" height="150" rx="10" fill="#ffffff" stroke="#c7c4ca" stroke-width="1" />
+    <text x="1055" y="138" text-anchor="middle" font-family="ui-monospace, 'JetBrains Mono', 'SF Mono', Menlo, monospace" font-size="11" font-weight="500" letter-spacing="0.08em" fill="#8e8891">STATE 2</text>
+    <text x="1055" y="162" text-anchor="middle" font-size="17" font-weight="700" fill="#1e1424">Watch State</text>
+    <text x="1055" y="192" text-anchor="middle" font-size="11.5" fill="#79727e">Consuming events from</text>
+    <text x="1055" y="208" text-anchor="middle" font-size="11.5" fill="#79727e">WatchPermissionSets API</text>
+  </g>
+
+  <!-- State 3: Waiting State -->
+  <g>
+    <rect x="515" y="430" width="230" height="150" rx="10" fill="#ffffff" stroke="#c7c4ca" stroke-width="1" />
+    <text x="630" y="458" text-anchor="middle" font-family="ui-monospace, 'JetBrains Mono', 'SF Mono', Menlo, monospace" font-size="11" font-weight="500" letter-spacing="0.08em" fill="#8e8891">STATE 3</text>
+    <text x="630" y="482" text-anchor="middle" font-size="17" font-weight="700" fill="#1e1424">Waiting State</text>
+    <text x="630" y="512" text-anchor="middle" font-size="11.5" fill="#79727e">Waiting for</text>
+    <text x="630" y="528" text-anchor="middle" font-size="11.5" fill="#79727e">LookupPermissionSetsRequired</text>
+    <text x="630" y="544" text-anchor="middle" font-size="11.5" fill="#79727e">event</text>
+  </g>
+
+  <!-- Transition 1 -> 2: straight, both centered at y=185 -->
+  <path d="M320,185 H938" fill="none" stroke="#8e8891" stroke-width="1.5" marker-end="url(#arrow-neutral)" />
+  <text x="629" y="172" text-anchor="middle" font-size="12" fill="#655d69">LookupPermissionSets API</text>
+  <text x="629" y="203" text-anchor="middle" font-size="12" fill="#655d69">stream completes</text>
+
+  <!-- Transition 2 -> 3: rounded orthogonal, enters the vertical middle of Waiting State's right edge (mirrors the left-edge exit of 3 -> 1 below) -->
+  <path d="M1055,260 L1055,495 A10,10 0 0,1 1045,505 L747,505"
+        fill="none" stroke="#8e8891" stroke-width="1.5" marker-end="url(#arrow-neutral)" />
+  <text x="901" y="478" text-anchor="middle" font-size="12" fill="#655d69">BreakingSchemaChangeRequired</text>
+  <text x="901" y="492" text-anchor="middle" font-size="12" fill="#655d69">event received</text>
+
+  <!-- Transition 3 -> 1: rounded orthogonal -->
+  <path d="M515,505 L215,505 A10,10 0 0,1 205,495 L205,262"
+        fill="none" stroke="#8e8891" stroke-width="1.5" marker-end="url(#arrow-neutral)" />
+  <text x="360" y="478" text-anchor="middle" font-size="12" fill="#655d69">LookupPermissionSetsRequired</text>
+  <text x="360" y="492" text-anchor="middle" font-size="12" fill="#655d69">event received</text>
+
+  <!-- Error-resume self-loop: State 1 — exits and re-enters Lookup State's own top edge -->
+  <path d="M150,110 V80 A10,10 0 0,1 160,70 H250 A10,10 0 0,1 260,80 V110"
+        fill="none" stroke="#8e8891" stroke-width="1.5" marker-end="url(#arrow-neutral)" />
+  <text x="205" y="41" text-anchor="middle" font-size="11.5" font-style="italic" fill="#655d69">In case of error resume</text>
+  <text x="205" y="55" text-anchor="middle" font-size="11.5" fill="#655d69">using latest <tspan font-weight="700">cursor</tspan></text>
+
+  <!-- Error-resume self-loop: State 2 — exits and re-enters Watch State's own top edge -->
+  <path d="M1000,110 V80 A10,10 0 0,1 1010,70 H1100 A10,10 0 0,1 1110,80 V110"
+        fill="none" stroke="#8e8891" stroke-width="1.5" marker-end="url(#arrow-neutral)" />
+  <text x="1055" y="41" text-anchor="middle" font-size="11.5" font-style="italic" fill="#655d69">In case of error resume</text>
+  <text x="1055" y="55" text-anchor="middle" font-size="11.5" fill="#655d69">using latest <tspan font-weight="700">token</tspan></text>
+</svg>
