@@ -125,6 +125,14 @@ the datastore chosen.
   deployments.
 </Callout>
 
+## Expiration and Caching
+
+If a relationship expires during a cache window and SpiceDB has already cached a subproblem that uses that relationship,
+if the cache window is valid for a given request,
+SpiceDB will respond with the cached value even if a fresh datastore read would exclude that relationship.
+This is a deliberate decision consistent with the rest of our caching semantics; if a given request
+should not use a cached value, the `fully_consistent` consistency option can be used.
+
 ## Migrating Off Of Expiration With Caveats
 
 If you implemented expiration using caveats, this section describes migrating to the new expiration feature.

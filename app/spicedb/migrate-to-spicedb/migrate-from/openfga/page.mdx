@@ -1,0 +1,282 @@
+---
+title: "Migrate from OpenFGA to SpiceDB"
+description: "OpenFGA, Okta FGA, and Auth0 FGA specifics for migrating to SpiceDB: how models and conditions map, the decisions to expect, extracting tuples, client call differences, and converting tests."
+---
+
+import { Callout } from "nextra/components";
+
+# Migrate from OpenFGA to SpiceDB
+
+OpenFGA, Okta FGA, and Auth0 FGA share the same modeling language, so the guidance here applies to all three, and Okta FGA's differences are limited to a few API calls.
+Read the [migration overview](/spicedb/migrate-to-spicedb/overview) first for the general process.
+
+<Callout type="info">
+  AuthZed's `spicedb-dev` AI agent plugin can automate an OpenFGA migration. To install and run it,
+  see [Build with your AI agent](/spicedb/getting-started/build-with-an-agent#migrating-to-spicedb).
+</Callout>
+
+OpenFGA and SpiceDB are both based on Google's Zanzibar, so most of a model translates directly.
+The main structural difference is that OpenFGA uses one kind of name, `define`, for both stored and computed access, while SpiceDB separates them into relations and permissions.
+
+## Planning
+
+### Find your complete model
+
+OpenFGA models live in more places than `.fga` files: inline in a `.fga.yaml` store file, as authorization-model JSON, as a modular `fga.mod` manifest with several files, embedded as a string in application code, or only in a live store.
+If your SDK is a dependency but you can't find a model file, it's probably embedded in code.
+When a DSL file and a generated JSON copy both exist, confirm they match, since the JSON is usually what reaches production.
+
+### What drives the cost
+
+A few things predict most of the effort:
+
+- **How many `define`s mix a type list with an operator.** Each becomes a [relation split](#the-relation-split), which changes stored data and call sites.
+- **Contextual tuples.** They don't appear in the model at all, and they're the largest source of unplanned work.
+- **How many stores you use.** More than one store means a tenancy decision.
+- **Whether you pin authorization model IDs.** SpiceDB has no equivalent.
+- **Your test assertions.** Only `check` assertions convert directly, so count `list_objects` and `list_users` assertions separately.
+
+### How the model maps to SpiceDB
+
+| OpenFGA                                                | SpiceDB                                        | Notes                                         |
+| ------------------------------------------------------ | ---------------------------------------------- | --------------------------------------------- |
+| `model` and `schema 1.1` header                        | Omitted                                        |                                               |
+| `define viewer: [user, group#member]`                  | `relation viewer: user \| group#member`        |                                               |
+| `define viewer: [user:*]`                              | `relation viewer: user:*`                      |                                               |
+| `define viewer: [user with cond]`                      | `relation viewer: user with cond`              |                                               |
+| `a or b`, `a and b`, `a but not b`                     | `(a + b)`, `(a & b)`, `(a - b)`                | Always parenthesize                           |
+| `member from parent`                                   | `parent->member`                               | The operand order reverses                    |
+| `condition c(p: int) { ... }`                          | `caveat c(p int) { ... }`                      | A few parameter types need body changes       |
+| A `define` mixing a type list with an operator         | A `relation` plus a `permission`               | See [the relation split](#the-relation-split) |
+| `module` and `extend type`                             | Composable schemas with `partial` and `import` | See [modular models](#modular-models)         |
+| A condition comparing a grant time to the current time | Native expiration, or a caveat                 | See [conditions](#conditions)                 |
+
+## Decisions to expect
+
+### Contextual tuples
+
+Contextual tuples are relationships passed with a request and never stored.
+SpiceDB's per-request data is [caveat context](/spicedb/concepts/caveats), which carries values rather than relationships, so each call site that passes contextual tuples needs its own decision:
+
+- **Store the relationships** if the "temporary" edge is really durable state. This is often the best answer.
+- **Re-model the tuple as caveat context** if it really carries a value, such as an IP address.
+- **Write the relationships around the check and remove them afterward,** which is correct but adds latency and cleanup.
+
+Search the whole repository for them, including `.fga.yaml` test files, since a test that passes contextual tuples implies production code that does too.
+Storing or re-modeling them can create data you'll need to [keep in sync](/spicedb/migrate-to-spicedb/overview#sync-obligations).
+
+### Multiple stores
+
+A SpiceDB instance holds one schema and one relationship graph, so if you use several OpenFGA stores, you'll need to choose a [tenancy approach](/spicedb/migrate-to-spicedb/overview#cross-cutting-decisions).
+Code that creates stores at runtime is tenant provisioning, and needs rewriting to match.
+If every extra store ID you find is test scaffolding, this doesn't apply.
+
+Even with one store, watch for types such as `role` or `group` with no relationship back to their tenant.
+Their isolation depends on your application never writing a cross-tenant relationship, in OpenFGA and SpiceDB alike.
+
+### Model ID pinning
+
+SpiceDB always serves the current schema, and schema changes take effect immediately.
+Rolling out a change is managed through your deployment process instead, as a series of additive steps: add new relations, backfill, move readers over, then remove the old ones.
+Pinning one model ID in config is usually just habit and can be dropped, but per-request pinning is often a rollout mechanism that something depends on, and needs a replacement plan.
+
+### Embedded OpenFGA server
+
+Some applications import OpenFGA as a Go library and run it in-process against their own database.
+SpiceDB can also be embedded as a Go library, so you can keep the in-process shape, or take the opportunity to run SpiceDB as a separate service.
+Either way, extract tuples from the embedded store's own database tables, since the `fga` CLI assumes a reachable server.
+
+### Transitive wildcards
+
+OpenFGA lets a relation include a userset, such as `[team#member]`, whose relation itself allows a wildcard like `[user:*]`.
+SpiceDB rejects this.
+The usual fix is to add a permission alias for the intermediate relation and point the userset at it.
+Other options are to move the wildcard onto the outer relation, which makes it unconditionally public, or to drop the wildcard and grant subjects individually.
+
+## Converting the schema
+
+### The relation split
+
+OpenFGA uses `define` for both stored and computed access, so a `define` that mixes a type list with an operator becomes two names in SpiceDB:
+
+```
+define viewer: [user, group#member] or editor or editor from parent
+```
+
+```zed
+relation viewer__direct: user | group#member
+permission viewer = (viewer__direct + editor + parent->editor)
+```
+
+The permission keeps the original name, so checks, other permissions, and test assertions keep working.
+Every stored `viewer` tuple, though, is now written to `viewer__direct`.
+A `define` with only a type list stays a plain relation, and one with no type list becomes a plain permission.
+
+The name depends on where it appears:
+
+| Where                  | OpenFGA                           | SpiceDB                                   |
+| ---------------------- | --------------------------------- | ----------------------------------------- |
+| Writing a relationship | `organization:o#member@user:erik` | `organization:o#member__direct@user:erik` |
+| A userset subject      | `...@organization:o#member`       | `...@organization:o#member`               |
+| A check or assertion   | `member` on `organization:o`      | `organization:o#member`                   |
+
+Writing to the permission returns an error.
+Checking the `__direct` relation is allowed, but returns only directly granted subjects, so that mistake produces wrong answers with no error.
+
+### Permission names
+
+Because OpenFGA doesn't distinguish relations from permissions, a split permission keeps a role noun as its name, such as `permission owner` rather than `permission own`.
+Leaving names as they are is usually safest, since other services, dashboards, or configuration may reference them by string.
+
+### Arrows and precedence
+
+`member from parent` becomes `parent->member`, with the operands reversed, which is an easy translation mistake.
+SpiceDB also recommends that arrows point at permissions, so where an arrow's target is a relation, add a permission alias on the target and point the arrow at it.
+If the arrow's relation allows more than one type, such as `relation parent: drive | folder`, the target name has to exist on every one of those types.
+A missing alias on one type isn't reported as a warning, and checks through that type return `false`, so review these by hand.
+
+SpiceDB's operator precedence differs from what you might expect: union binds tighter than intersection, so `a + b & c` means `(a + b) & c`.
+OpenFGA already requires parentheses when mixing operators, so keep one parenthesized group per source expression.
+
+### Names
+
+SpiceDB names must be lowercase, 3 to 64 characters, and use only letters, digits, and underscores, as described under [identifiers](/spicedb/migrate-to-spicedb/overview#identifiers).
+OpenFGA names with uppercase letters, hyphens, dots, slashes, a leading underscore, or fewer than three characters need renaming.
+SpiceDB also reserves some words, including `relation`, `permission`, `definition`, and `caveat`.
+Watch for names that collide once normalized, such as `can-edit` and `can_edit`.
+
+### Caveats
+
+Most OpenFGA conditions carry over with only a change to the parameter declaration syntax.
+Two parameter types need body changes:
+
+- **`uint`** values are treated as `int` inside a SpiceDB caveat expression, so drop the `u` suffix from literals, writing `x > 0` rather than `x > 0u`.
+- **`ipaddress`** values can't be constructed from a literal in the body. Compare against a CIDR with `.in_cidr()` instead, using a `/32` or `/128` prefix for an exact address.
+
+SpiceDB also rejects parameters the expression doesn't use.
+In both systems, indexing a map with a missing key is an evaluation error, so guard map lookups where the key may be absent.
+
+### Conditions
+
+Some condition shapes have more than one valid SpiceDB encoding:
+
+- **Time-limited grants** are best expressed with [native expiration](/spicedb/concepts/expiring-relationships), which has no per-check cost and removes expired relationships from every read immediately. Use a caveat instead if any call site needs to ask "as of" a different time, such as an audit query.
+- **Per-request values,** such as a source IP or current usage against a quota, are best kept as caveats. Replacing them with a stored marker reflects the state at the last write rather than the current request, which for a security boundary is a different guarantee.
+
+### Customer-defined roles
+
+Customer-defined roles work without any special construct.
+A `role` type with an `assignee` relation can be granted any permission that lists `role#assignee` among its allowed types, so creating a new role and granting it a permission is just relationship writes, with no schema change.
+A role that needs to grant something the schema didn't anticipate still needs a schema change.
+
+### Modular models
+
+OpenFGA merges `fga.mod` modules into one model.
+In SpiceDB, each `extend type` becomes a [partial](/spicedb/modeling/composable-schemas), and a root file imports each module and combines the partials into the base definitions.
+`WriteSchema` doesn't accept imports, so compile the modules into one file with `zed schema compile` before deploying, and validate the compiled result.
+
+## Extracting and loading tuples
+
+The `fga` CLI's defaults stop early without warning, so check them before trusting an export:
+
+- `fga tuple read` follows a limited number of pages by default. Pass `--max-pages 0` to read everything.
+- `fga store export` stops at 100 tuples by default, and `--max-tuples 0` means zero, not unlimited, so use it only for small stores.
+- The CLI doesn't give you a continuation token to resume from, so for an extraction that has to resume across runs, use the `Read` API directly.
+
+A tuple with a condition carries it as a nested `condition` object holding a `name` and `context`.
+A transform that looks for the condition in the wrong place will load every conditional grant as unconditional, and count-based verification won't catch it.
+
+OpenFGA tuples don't say which relations were split or which IDs need encoding, so the transform has to apply your recorded mappings: write to the `__direct` relation where a split exists, and keep the permission name when it appears in a userset subject.
+
+A few load details:
+
+- Stored caveat context is limited to 25,000 bytes per relationship, and context supplied with a check to 4,096 bytes.
+- The `zed relationship` batch commands apply one caveat to every line, so load caveated tuples with a client library instead.
+
+To catch writes made during the migration, capture a change token with `fga tuple changes` before extraction, and replay changes from it after the load.
+
+### Identifiers
+
+OpenFGA accepts IDs such as `user:alice@corp.com` that SpiceDB doesn't, so emails and similar IDs need [encoding](/spicedb/migrate-to-spicedb/overview#identifiers).
+Share one encoding module between the data load and your application code, since two slightly different encodings produce permanent `false` results.
+If you use base64url, be consistent about padding, because most languages offer both padded and unpadded variants.
+Also look for escaping helpers in your application, such as one that percent-encodes `/`, since they produce characters SpiceDB doesn't allow and won't show up in fixtures.
+
+## Updating application code
+
+The OpenFGA SDKs come in a few shapes, sometimes within one codebase: `OpenFgaClient`, the lower-level `OpenFgaApi`, and the older `Auth0FgaApi`.
+Convert each call site based on the shape it uses.
+
+| OpenFGA                                | SpiceDB                             | Notes                                                     |
+| -------------------------------------- | ----------------------------------- | --------------------------------------------------------- |
+| `check`                                | `CheckPermission`                   |                                                           |
+| `batchCheck`                           | `CheckBulkPermissions`              | Results are in request order, not keyed by correlation ID |
+| `listObjects`, `streamedListObjects`   | `LookupResources`                   | Always streams; use the permission name                   |
+| `listUsers`                            | `LookupSubjects`                    | Use the permission name                                   |
+| `listRelations`                        | A bulk check across the permissions |                                                           |
+| `expand`                               | `ExpandPermissionTree`              | Returns a fully resolved tree in one call                 |
+| `read`                                 | `ReadRelationships`                 | Use the relation name                                     |
+| `write`, `writeTuples`, `deleteTuples` | `WriteRelationships`                | Use the relation name                                     |
+| `readChanges`                          | `Watch`                             | A stream rather than a poll                               |
+| `writeAuthorizationModel`              | `WriteSchema`                       | Replaces the live schema                                  |
+| `readLatestAuthorizationModel`         | `ReadSchema`                        |                                                           |
+
+Differences worth knowing:
+
+- **Duplicate handling.** OpenFGA's default write fails on an existing tuple, which corresponds to SpiceDB's `CREATE`. Ignoring duplicates corresponds to `TOUCH`.
+- **Non-transactional writes.** OpenFGA can write in chunks with partial success, while each SpiceDB write call is atomic. Decide whether to keep all-or-nothing behavior or write individually.
+- **`listRelations` error handling** varies by SDK version and language on both sides, so decide deliberately what a single failure should do rather than letting it become a denial.
+- **Wildcard subjects in checks.** OpenFGA accepts `*` as a check subject and SpiceDB doesn't. For a relation with only direct assignments, check whether the wildcard relationship exists instead. For anything computed, there's no equivalent, so it needs a design decision.
+- **`readChanges` to `Watch`** changes the calling code's structure, since Watch resumes from a revision token rather than a timestamp.
+- **Calls with no SpiceDB equivalent,** such as store management and `readAssertions`, need to be handled according to your tenancy and testing decisions.
+
+### Consistency
+
+SpiceDB lets every request choose how fresh its answer must be, from the fastest cached result, to one at least as recent as a given write, to one computed from the very latest data, and it's designed to prevent the [New Enemy Problem](/spicedb/concepts/zanzibar#new-enemy-problem).
+OpenFGA's two consistency preferences cover only part of that range, so they don't line up one-to-one with SpiceDB's [consistency levels](/spicedb/concepts/consistency#levels).
+The nearest matches are full consistency for `HIGHER_CONSISTENCY` and minimized latency for `MINIMIZE_LATENCY`, which is fine for a check that doesn't depend on a recent write.
+For one that does, such as creating a resource and checking it on the next request, pass the [ZedToken](/spicedb/concepts/consistency#zedtokens) from the write, which OpenFGA had no equivalent for.
+The same applies to lookups, where a stale answer is a short or empty list.
+See [Read-After-Write Consistency](/spicedb/concepts/read-after-write).
+
+## Converting tests
+
+Your `.fga.yaml` files convert into SpiceDB validation files:
+
+| `.fga.yaml`                                | SpiceDB validation file                          |
+| ------------------------------------------ | ------------------------------------------------ |
+| `model` or `model_file`                    | `schema` or `schemaFile`                         |
+| `tuples`, at the root or in `tests` blocks | `relationships`                                  |
+| `check` assertions                         | `assertTrue` and `assertFalse`                   |
+| `check.context`                            | A `with {...}` suffix on the assertion           |
+| A tuple's `condition`                      | A `[name:{...}]` suffix on the relationship      |
+| `list_objects` and `list_users`            | No equivalent; verify against a running instance |
+
+Things to watch:
+
+- **Tuples use the relation, and assertions use the permission.** A file with the two swapped still validates, while testing the wrong thing.
+- **Collect tuples from every `tests` block,** not just the root, or you'll get an empty set of relationships.
+- **`tests` blocks share one set of relationships.** OpenFGA isolates each block, but a validation file doesn't, so blocks whose data conflicts, such as a document that's `draft` in one test and `published` in another, need separate files.
+- **Cumulative tutorial-style files** (`step-1`, `step-2`, and so on) are common, so pick the most complete one deliberately.
+
+## Running both systems side by side
+
+The [side-by-side comparison](/spicedb/migrate-to-spicedb/overview#run-both-systems-side-by-side) on the overview applies as described.
+A few OpenFGA specifics:
+
+- **Translate observed calls through your mappings,** so a check on `viewer` in OpenFGA compares against the `viewer` permission in SpiceDB, never `viewer__direct`.
+- **Count SDK exceptions as errors, not denials,** including a condition missing required context. Observe calls at the SDK boundary, before any application code that defaults failures to `false`.
+- **OpenFGA never returns a conditional answer,** so a SpiceDB answer that depends on missing context is a coverage gap rather than a disagreement.
+- **Compare list results as sets.** Non-streaming `listObjects` stops at 1,000 results by default, so sample from `streamedListObjects`, and remove duplicates from SpiceDB's results before comparing.
+
+## Gotchas
+
+- **Writes go to `viewer__direct`, and checks stay on `viewer`.** See [the relation split](#the-relation-split).
+- **Arrow operands reverse, and union binds tighter than intersection.**
+- **Every type an arrow can traverse needs the target name,** or checks through the missing type silently return `false`.
+- **Contextual tuples don't appear in the model.** Search the whole repository, including `.fga.yaml` files.
+- **IDs containing `@`, `.`, or `%` need encoding,** and `uint` and `ipaddress` caveat bodies need changes.
+- **`fga tuple read` needs `--max-pages 0`, `fga store export` stops at 100 tuples, and a tuple's `condition` is a nested object.**
+- **`batchCheck` results pair by position** in SpiceDB, not by correlation ID.
+
+See the [schema language reference](/spicedb/concepts/schema) for SpiceDB's side of every construct on this page.

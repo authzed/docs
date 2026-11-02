@@ -1,11 +1,5 @@
 {
-  "/authzed/concepts/deployments": {
-    "status": "new"
-  },
-  "/authzed/concepts/multi-region": {
-    "status": "updated"
-  },
-  "/authzed/guides/cloud": {
+  "/spicedb/tutorials/federated-authorization": {
     "status": "updated"
   }
 }

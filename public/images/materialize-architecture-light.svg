@@ -10,16 +10,21 @@
          components arranged in the same two rows (row 1 y-center 190, row 2 y-center 430). This isn't a
          literal "process vs. storage" split (Hydrator and Event Processor are processes too) — it's purely
          so that every connector that stays within one row is a short straight line, and only the two
-         cross-cutting flows (Event Streams; watches datastore directly) need routed detours. -->
+         cross-cutting flows (Event Streams; watches datastore directly) need routed detours.
+       - Light/dark: this file is one of a light/dark pair (see materialize-architecture-dark.svg),
+         swapped via Tailwind dark: classes in the mdx that embeds it — same convention as
+         ps-light.svg / ps-dark.svg. Teal and violet match the site's teal500 / violet500 tokens
+         (see feature-badge.css) at each theme's fixed value, so this diagram can't drift from the
+         Accelerated Queries / Event Streams colors used everywhere else. -->
   <defs>
     <marker id="arrow-neutral" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="#8e8891" />
     </marker>
     <marker id="arrow-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M0,0 L10,5 L0,10 z" fill="#72b1ad" />
+      <path d="M0,0 L10,5 L0,10 z" fill="hsl(178 35% 33%)" />
     </marker>
     <marker id="arrow-violet" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M0,0 L10,5 L0,10 z" fill="#7a5ce6" />
+      <path d="M0,0 L10,5 L0,10 z" fill="hsl(253 62% 50%)" />
     </marker>
   </defs>
 
@@ -41,16 +46,18 @@
   <!-- Row 1 (y-center 190): Hydrator, Cache Server | SpiceDB | Your Application, Event Processor -->
   <g>
     <rect x="50" y="145" width="170" height="90" rx="10" fill="#ffffff" stroke="#c7c4ca" stroke-width="1" />
-    <text x="135" y="185" text-anchor="middle" font-size="17" font-weight="700" fill="#1e1424">Hydrator</text>
-    <text x="135" y="207" text-anchor="middle" font-size="11.5" fill="#79727e">computes permission sets</text>
-    <text x="135" y="222" text-anchor="middle" font-size="11.5" fill="#79727e">for watched permissions</text>
+    <text x="135" y="172" text-anchor="middle" font-size="17" font-weight="700" fill="#1e1424">Offline</text>
+    <text x="135" y="192" text-anchor="middle" font-size="17" font-weight="700" fill="#1e1424">Hydrator</text>
+    <text x="135" y="210" text-anchor="middle" font-size="11.5" fill="#79727e">computes permission sets</text>
+    <text x="135" y="225" text-anchor="middle" font-size="11.5" fill="#79727e">for watched permissions</text>
   </g>
 
   <g>
     <rect x="250" y="140" width="190" height="100" rx="10" fill="#ffffff" stroke="#c7c4ca" stroke-width="1" />
-    <text x="345" y="180" text-anchor="middle" font-size="17" font-weight="700" fill="#1e1424">Cache Server</text>
-    <text x="345" y="202" text-anchor="middle" font-size="11.5" fill="#79727e">serves hydrated</text>
-    <text x="345" y="217" text-anchor="middle" font-size="11.5" fill="#79727e">permission sets</text>
+    <text x="345" y="167" text-anchor="middle" font-size="17" font-weight="700" fill="#1e1424">Online</text>
+    <text x="345" y="187" text-anchor="middle" font-size="17" font-weight="700" fill="#1e1424">Hydrator</text>
+    <text x="345" y="205" text-anchor="middle" font-size="11.5" fill="#79727e">serves hydrated</text>
+    <text x="345" y="220" text-anchor="middle" font-size="11.5" fill="#79727e">permission sets</text>
   </g>
 
   <g>
@@ -122,9 +129,9 @@
   <text x="605" y="314" text-anchor="middle" font-size="11.5" fill="#655d69">reads / writes</text>
 
   <!-- 5: SpiceDB <-> Cache Server (Accelerated Queries dispatch) — same row, straight across, teal = active path -->
-  <path d="M442,190 H518" fill="none" stroke="#72b1ad" stroke-width="1.5" marker-end="url(#arrow-teal)" marker-start="url(#arrow-teal)" />
-  <text x="480" y="170" text-anchor="middle" font-size="11.5" fill="#4a7d7b" font-weight="600">Accelerated</text>
-  <text x="480" y="183" text-anchor="middle" font-size="11.5" fill="#4a7d7b" font-weight="600">Queries</text>
+  <path d="M442,190 H518" fill="none" stroke="hsl(178 35% 33%)" stroke-width="1.5" marker-end="url(#arrow-teal)" marker-start="url(#arrow-teal)" />
+  <text x="480" y="170" text-anchor="middle" font-size="11.5" fill="hsl(178 35% 33%)" font-weight="600">Accelerated</text>
+  <text x="480" y="183" text-anchor="middle" font-size="11.5" fill="hsl(178 35% 33%)" font-weight="600">Queries</text>
 
   <!-- 6: SpiceDB <-> Your Application (normal SpiceDB API calls, unchanged by Materialize) — same row, straight across -->
   <path d="M692,190 H768" fill="none" stroke="#8e8891" stroke-width="1.5" marker-end="url(#arrow-neutral)" marker-start="url(#arrow-neutral)" />
@@ -146,8 +153,8 @@
        Cache Server reads the events it wrote to the Event Log (see connector 3) and streams them to the
        customer's Event Processor; bidirectional to also carry backfill requests. -->
   <path d="M390,138 V110 A10,10 0 0,1 400,100 H1000 A10,10 0 0,1 1010,110 V143"
-        fill="none" stroke="#7a5ce6" stroke-width="1.5" marker-end="url(#arrow-violet)" marker-start="url(#arrow-violet)" />
-  <text x="700" y="92" text-anchor="middle" font-size="12.5" fill="#6242e0" font-weight="600">Event Streams</text>
+        fill="none" stroke="hsl(253 62% 50%)" stroke-width="1.5" marker-end="url(#arrow-violet)" marker-start="url(#arrow-violet)" />
+  <text x="700" y="92" text-anchor="middle" font-size="12.5" fill="hsl(253 62% 50%)" font-weight="600">Event Streams</text>
 
   <!-- 10: Event Processor -> Your Database (same column, straight down) -->
   <path d="M1080,237 V378" fill="none" stroke="#8e8891" stroke-width="1.5" marker-end="url(#arrow-neutral)" />
