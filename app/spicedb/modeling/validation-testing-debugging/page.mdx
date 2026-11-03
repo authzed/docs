@@ -62,6 +62,35 @@ definition document {
 }
 ```
 
+On an empty test Permissions System, write the schema above and grant `user:fred` the `reader` relation on `document:firstdoc`:
+
+```sh
+grpcurl \
+  -H "Authorization: Bearer your-token-here" \
+  -d '{
+    "schema": "definition user {}\n\ndefinition document {\n  relation writer: user\n  relation reader: user\n  permission view = writer + reader\n}"
+  }' \
+  your-spicedb-instance:443 \
+  authzed.api.v1.SchemaService/WriteSchema
+
+grpcurl \
+  -H "Authorization: Bearer your-token-here" \
+  -d '{
+    "updates": [
+      {
+        "operation": "OPERATION_TOUCH",
+        "relationship": {
+          "resource": {"objectType": "document", "objectId": "firstdoc"},
+          "relation": "reader",
+          "subject": {"object": {"objectType": "user", "objectId": "fred"}}
+        }
+      }
+    ]
+  }' \
+  your-spicedb-instance:443 \
+  authzed.api.v1.PermissionsService/WriteRelationships
+```
+
 The following request uses [grpcurl](https://github.com/fullstorydev/grpcurl) to check whether `user:fred` can `view` `document:firstdoc`, with tracing enabled:
 
 ```sh
@@ -71,13 +100,15 @@ grpcurl \
     "resource": {"objectType": "document", "objectId": "firstdoc"},
     "permission": "view",
     "subject": {"object": {"objectType": "user", "objectId": "fred"}},
+    "consistency": {"fullyConsistent": true},
     "withTracing": true
   }' \
   your-spicedb-instance:443 \
   authzed.api.v1.PermissionsService/CheckPermission
 ```
 
-The response includes the trace in the `debugTrace` field:
+The response includes the trace in the `debugTrace` field.
+The trace output is illustrative; durations and cache details vary between runs.
 
 ```json
 {
