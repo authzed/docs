@@ -361,6 +361,11 @@ By far, the most common sign you need to scale your datastore up or out is high 
 
 ### Scaling the SpiceDB Compute
 
+Use logical checks per second as the baseline workload measure when sizing SpiceDB compute.
+A logical check represents an individual permission check: a `CheckPermission` request counts as one, while a `CheckBulkPermissions` request containing 100 checks counts as 100.
+Monitor the rate of the `spicedb_services_logical_checks_total` counter across your deployment's replicas, and use representative load tests to determine the compute needed to meet your latency requirements.
+Compute cost per logical check varies with schema complexity, relationship fanout, consistency settings, and cache utilization.
+
 Like the datastore, it’s important to scale if CPU utilization is high; however, since SpiceDB is such a performance sensitive workload, we've seen significant performance gains from scaling out CPU in nodes that we’re experiencing less than 30% CPU utilization.
 
 ## How Authzed helps with Load Testing SpiceDB
