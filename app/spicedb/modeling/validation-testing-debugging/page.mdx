@@ -48,6 +48,118 @@ The response will include a field, `debug_trace`, that contains the trace in pro
   information will be found in the response footer as JSON.
 </Callout>
 
+#### Example
+
+Given the following schema:
+
+```zed
+definition user {}
+
+definition document {
+  relation writer: user
+  relation reader: user
+  permission view = writer + reader
+}
+```
+
+On an empty test Permissions System, write the schema above and grant `user:fred` the `reader` relation on `document:firstdoc`:
+
+```sh
+grpcurl \
+  -H "Authorization: Bearer your-token-here" \
+  -d '{
+    "schema": "definition user {}\n\ndefinition document {\n  relation writer: user\n  relation reader: user\n  permission view = writer + reader\n}"
+  }' \
+  your-spicedb-instance:443 \
+  authzed.api.v1.SchemaService/WriteSchema
+
+grpcurl \
+  -H "Authorization: Bearer your-token-here" \
+  -d '{
+    "updates": [
+      {
+        "operation": "OPERATION_TOUCH",
+        "relationship": {
+          "resource": {"objectType": "document", "objectId": "firstdoc"},
+          "relation": "reader",
+          "subject": {"object": {"objectType": "user", "objectId": "fred"}}
+        }
+      }
+    ]
+  }' \
+  your-spicedb-instance:443 \
+  authzed.api.v1.PermissionsService/WriteRelationships
+```
+
+The following request uses [grpcurl](https://github.com/fullstorydev/grpcurl) to check whether `user:fred` can `view` `document:firstdoc`, with tracing enabled:
+
+```sh
+grpcurl \
+  -H "Authorization: Bearer your-token-here" \
+  -d '{
+    "resource": {"objectType": "document", "objectId": "firstdoc"},
+    "permission": "view",
+    "subject": {"object": {"objectType": "user", "objectId": "fred"}},
+    "consistency": {"fullyConsistent": true},
+    "withTracing": true
+  }' \
+  your-spicedb-instance:443 \
+  authzed.api.v1.PermissionsService/CheckPermission
+```
+
+The response includes the trace in the `debugTrace` field.
+The trace output is illustrative; durations and cache details vary between runs.
+
+```json
+{
+  "checkedAt": {
+    "token": "GhUKEzE3MDYxMTIwMDAwMDAwMDAwMDA="
+  },
+  "permissionship": "PERMISSIONSHIP_HAS_PERMISSION",
+  "debugTrace": {
+    "check": {
+      "resource": { "objectType": "document", "objectId": "firstdoc" },
+      "permission": "view",
+      "permissionType": "PERMISSION_TYPE_PERMISSION",
+      "subject": { "object": { "objectType": "user", "objectId": "fred" } },
+      "result": "PERMISSIONSHIP_HAS_PERMISSION",
+      "duration": "0.000066s",
+      "subProblems": {
+        "traces": [
+          {
+            "resource": { "objectType": "document", "objectId": "firstdoc" },
+            "permission": "writer",
+            "permissionType": "PERMISSION_TYPE_RELATION",
+            "subject": { "object": { "objectType": "user", "objectId": "fred" } },
+            "result": "PERMISSIONSHIP_NO_PERMISSION",
+            "duration": "0.000012s"
+          },
+          {
+            "resource": { "objectType": "document", "objectId": "firstdoc" },
+            "permission": "reader",
+            "permissionType": "PERMISSION_TYPE_RELATION",
+            "subject": { "object": { "objectType": "user", "objectId": "fred" } },
+            "result": "PERMISSIONSHIP_HAS_PERMISSION",
+            "duration": "0.000020s"
+          }
+        ]
+      }
+    },
+    "schemaUsed": "definition user {}\n\ndefinition document {\n  relation writer: user\n  relation reader: user\n  permission view = writer + reader\n}"
+  }
+}
+```
+
+The `debugTrace` field contains:
+
+- `check`: the root of the trace tree for the requested permission
+- `schemaUsed`: the schema that was used to compute the check
+
+Each node in the trace tree includes the `resource`, `permission`, and `subject` being checked, whether `permission` names a permission or a relation (`permissionType`), the `result`, and the time spent computing it (`duration`).
+Nested checks appear under `subProblems.traces`; a node served from the cache has `wasCachedResult: true` instead.
+
+[zed's explain flag](#explain-flag) prints the same trace as a tree for this check.
+
 ## Playground
 
 ### Assertions
