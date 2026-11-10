@@ -1,17 +1,47 @@
 ---
-title: "Workload Isolation"
-description: "AuthZed functionality that gives SpiceDB deployments dedicated hardware to guarantee performance and prevent noisy neighbor problems."
+title: "Workload Isolation and QoS"
+description: "How AuthZed Cloud and Dedicated protect SpiceDB deployments from noisy neighbors, with reserved resources on Cloud and fully isolated infrastructure on Dedicated."
 ---
 
 import YouTube from "@/components/youtube-wrapper";
 
-# Workload Isolation
+# Workload Isolation and QoS
 
-Workload Isolation gives your SpiceDB deployments access to hardware that is only used by you, to guarantee performance and prevent "noisy neighbor" problems.
+Other workloads running on the same machines as SpiceDB can slow down your permission checks, especially at the tail of your latency distribution (p99).
+This is often called the "noisy neighbor" problem.
+
+AuthZed protects your SpiceDB deployments from noisy neighbors at two levels:
+
+| Level                                               |  [Cloud]   | [Dedicated] |
+| --------------------------------------------------- | :--------: | :---------: |
+| [Workload QoS](#workload-qos)                       |  <Yes />   |   <Yes />   |
+| [Full Workload Isolation](#full-workload-isolation) | <Absent /> |   <Yes />   |
+
+[Cloud]: ../guides/picking-a-product#cloud
+[Dedicated]: ../guides/picking-a-product#dedicated
+
+## Workload QoS
+
+Every SpiceDB pod gets a fixed amount of CPU and memory that is reserved for it.
+Other workloads can't use that share, and your pods are the last to be evicted if a node runs low on memory.
+
+SpiceDB also runs on nodes that are separate from AuthZed's own platform services (see [Control Plane](#control-plane)), so management and monitoring work never competes with your permission checks.
+
+On AuthZed Cloud, SpiceDB nodes are shared with other Cloud customers' deployments.
+Your CPU and memory are reserved, but other resources on a node, such as CPU caches, memory bandwidth and network bandwidth, are shared.
+
+## Full Workload Isolation
+
+AuthZed Dedicated runs in a cloud account and Kubernetes cluster dedicated to your organization, so no other customer's workloads run on your machines.
+
+Within that cluster, permission systems marked as production run on node pools used only by that permission system.
+Development permission systems share a node pool with your other development permission systems.
+
+Full Workload Isolation includes Workload QoS: SpiceDB pods on Dedicated also get reserved CPU and memory.
 
 ## Control Plane
 
-Services that are secondary to serving real-time requests run one shared workload called the control plane.
+Services that are secondary to serving real-time requests run as one shared workload called the control plane, on nodes separate from SpiceDB.
 
 These services include:
 
@@ -19,9 +49,9 @@ These services include:
 - Observability services for the SRE team (e.g. Prometheus, Grafana, Jaeger)
 - Compliance infrastructure
 
-## Workloads
-
 ## Example Architecture Diagram
+
+This example shows an AuthZed Dedicated cluster, with SpiceDB pods and control plane services running on separate nodes.
 
 ![Workload Isolation Diagram](/images/workload-isolation-diagram.png)
 
