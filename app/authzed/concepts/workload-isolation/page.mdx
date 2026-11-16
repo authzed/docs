@@ -28,7 +28,8 @@ Other workloads can't use that share, and your pods are the last to be evicted i
 SpiceDB also runs on nodes that are separate from AuthZed's own platform services (see [Control Plane](#control-plane)), so management and monitoring work never competes with your permission checks.
 
 On AuthZed Cloud, SpiceDB nodes are shared with other Cloud customers' deployments.
-Your CPU and memory are reserved, but other resources on a node, such as CPU caches, memory bandwidth and network bandwidth, are shared.
+Each SpiceDB pod is pinned to its own whole CPU cores, which no other workload on the node can run on, and its memory is reserved.
+Other resources on a node, such as CPU caches, memory bandwidth and network bandwidth, are still shared.
 
 ## Full Workload Isolation
 
