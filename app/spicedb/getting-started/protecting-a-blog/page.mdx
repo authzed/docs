@@ -15,7 +15,7 @@ Instead of introducing an unfamiliar example app and altering various locations 
 
 One of:
 
-- An [Authzed Cloud] Permission System
+- An AuthZed Cloud Permission System
 - A [running instance] of [SpiceDB][SpiceDB] with the configured preshared key for SpiceDB:
 
 ```bash
@@ -26,7 +26,6 @@ spicedb serve --grpc-preshared-key "t_your_token_here_1234567deadbeef"
 docker run --rm -p 50051:50051 authzed/spicedb serve --grpc-preshared-key "t_your_token_here_1234567deadbeef"
 ```
 
-[Authzed Cloud]: https://authzed.com/cloud/signup
 [SpiceDB]: https://github.com/authzed/spicedb
 [running instance]: /spicedb/getting-started/install/docker
 
@@ -93,7 +92,7 @@ dependencies {
 
 <Callout>
 
-    If you are using [AuthZed Cloud],
+    If you are using AuthZed Cloud,
     click on the **Connect** button on the dashboard to get both the endpoint that you use to connect to your permission system,
     and the full `zed` command needed to connect to it.
 

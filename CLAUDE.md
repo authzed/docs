@@ -26,7 +26,6 @@ app/
 components/
 ├── ui/               # Reusable UI components
 ├── banner.tsx
-├── cta.tsx
 └── youtube-wrapper.tsx
 
 scripts/              # Build and utility scripts
