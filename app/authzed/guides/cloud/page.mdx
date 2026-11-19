@@ -68,6 +68,8 @@ WriteRelationships
 CheckPermission
 ```
 
+The dashboard omits the `authzed.v1/` prefix when displaying permissions; in static FGAM YAML configuration, use the full name, such as `authzed.v1/CheckPermission`.
+
 Finally, let’s create a Policy.
 Policies are what bind Roles to a Service Account.
 Click on Policies -> Create policy.
