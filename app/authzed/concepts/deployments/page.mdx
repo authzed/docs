@@ -45,7 +45,8 @@ There is no global endpoint that automatically routes requests to the nearest De
 
 ## Workload isolation
 
-Deployments on AuthZed Dedicated and Cloud run on hardware dedicated to your organization, separate from the shared control plane services (such as the Management Dashboard and observability tooling).
-See [Workload Isolation] for details.
+Deployments on AuthZed Cloud and Dedicated run on nodes separate from the shared control plane services (such as the Management Dashboard and observability tooling), with CPU and memory reserved for each SpiceDB pod.
+On AuthZed Dedicated, the cloud account and cluster are also dedicated to your organization; on AuthZed Cloud, SpiceDB nodes are shared with other Cloud customers.
+See [Workload Isolation and QoS] for details.
 
-[Workload Isolation]: workload-isolation
+[Workload Isolation and QoS]: workload-isolation
