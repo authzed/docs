@@ -1,6 +1,6 @@
 ---
 title: "Audit Logging"
-description: "AuthZed functionality that publishes detailed logs of SpiceDB API operations to log sinks like AWS Kinesis, GCP Pub/Sub, etc."
+description: "AuthZed functionality that publishes detailed logs of SpiceDB API operations to log sinks like AWS Kinesis, AWS S3, GCP Pub/Sub, etc."
 ---
 
 import { Callout, Tabs } from "nextra/components";
@@ -109,10 +109,53 @@ Please reach out to your success team with any requests.
 
 </Callout>
 
-### AWS Kinesis and Kinesis Firehose
+### AWS
 
-As a prerequisite to use [Kinesis] or [Kinesis Firehose] as a log sink, an IAM role must exist in the AWS account
-with the necessary permissions to write to the Kinesis stream or Firehose delivery stream.
+All AWS log sinks ([Kinesis], [Kinesis Firehose] and [S3]) deliver logs using an IAM role in the target AWS account.
+That role needs:
+
+1. A [trust policy](#aws-trust-policy) that allows AuthZed to assume it (Dedicated and Cloud only)
+2. A permissions policy that allows writing to the specific sink, as shown in the sections below
+
+[Kinesis]: https://aws.amazon.com/kinesis
+[Kinesis Firehose]: https://docs.aws.amazon.com/firehose/latest/dev/what-is-this-service.html
+[S3]: https://aws.amazon.com/s3
+
+#### Trust Policy (Dedicated & Cloud) [#aws-trust-policy]
+
+For Dedicated and Cloud customers, the role needs a trust policy which allows it to be assumed by the AuthZed account
+in order to deliver logs.
+The same trust policy applies to every AWS log sink.
+
+To find the AuthZed AWS account ID and the external ID, navigate to the Permission System's settings page,
+find the Audit Log settings, and choose an available log sink.
+Both values will be displayed in the configuration.
+
+This is an example trust policy that allows the AuthZed account to assume the role:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::EXAMPLE_AUTHZED_ACCOUNT_ID:root"
+      },
+      "Action": "sts:AssumeRole",
+      "Condition": {
+        "StringEquals": {
+          "sts:ExternalId": "EXAMPLE_EXTERNAL_ID"
+        }
+      }
+    }
+  ]
+}
+```
+
+#### Kinesis and Kinesis Firehose
+
+The role must have permission to write to the Kinesis stream or Firehose delivery stream.
 
 This is an example policy that grants the necessary permissions to write to a Firehose delivery stream:
 
@@ -130,39 +173,34 @@ This is an example policy that grants the necessary permissions to write to a Fi
 }
 ```
 
-[Kinesis]: https://aws.amazon.com/kinesis
-[Kinesis Firehose]: https://docs.aws.amazon.com/firehose/latest/dev/what-is-this-service.html
+#### S3
 
-#### Dedicated
+The role must have permission to write objects to the S3 bucket.
 
-For Dedicated customers, this role will also need a trust policy which allows the role to be assumed by the AuthZed account
-in order to deliver logs to the stream.
-
-To find the Dedicated AWS account ID, navigate to the Permission System's settings page, find the Audit Log settings,
-and choose an available log sink.
-The account ID will be displayed in the configuration.
-
-This is an example trust policy that allows the AuthZed account to assume the role:
+This is an example policy that grants the necessary permissions to write to an S3 bucket:
 
 ```json
 {
   "Version": "2012-10-17",
   "Statement": [
     {
+      "Sid": "AuthZedAuditLog",
       "Effect": "Allow",
-      "Principal": {
-        "AWS": "EXAMPLE_AUTHZED_ACCOUNT_ID"
-      },
-      "Action": "sts:AssumeRole",
-      "Condition": {
-        "StringEquals": {
-          "sts:ExternalId": "EXAMPLE_EXTERNAL_ID"
-        }
-      }
+      "Action": ["s3:PutObject"],
+      "Resource": "arn:aws:s3:::EXAMPLE_BUCKET_NAME/*"
     }
   ]
 }
 ```
+
+Once the role exists, provide the following in the Audit Log settings:
+
+- the name of the S3 bucket
+- the ARN of the IAM role (e.g. `arn:aws:iam::<your-account-id>:role/<role-name>`)
+- the AWS region of the bucket
+
+Audit log objects are written to the root of the bucket.
+Shortly after audit logging is enabled, objects should begin to appear in the bucket.
 
 ### GCP Pub/Sub
 
