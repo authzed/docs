@@ -298,6 +298,7 @@ The `unit` field supports:
 - `"day"`
 
 You can also specify custom durations using Go duration syntax (e.g., `"30s"`, `"15m"`, `"2h"`, `"90s"`).
+Custom durations require SpiceDB Enterprise v1.57.0 or later; earlier versions reject them with `invalid unit`.
 
 ### Self-Hosted Configuration
 
@@ -305,19 +306,30 @@ The following sections apply only to self-hosted SpiceDB Enterprise deployments.
 
 #### Basic Setup
 
-For self-hosted SpiceDB Enterprise deployments, use the following command-line flag:
+The rate limit extender is disabled by default.
+It depends on the [Restricted API Access](/authzed/concepts/restricted-api-access) extender (`authzed-fgam`) for authentication, so enable both and point them at the same FGAM configuration file:
 
-| Flag                  | Description                                         | Default |
-| --------------------- | --------------------------------------------------- | ------- |
-| `--rate-limit-config` | Path to YAML file containing rate limit definitions |         |
+| Flag                           | Description                                                                               | Default |
+| ------------------------------ | ----------------------------------------------------------------------------------------- | ------- |
+| `--extender-enabled`           | Comma-separated list of extenders to enable; must include `authzed-fgam` and `rate-limit` |         |
+| `--extender-rate-limit-config` | Path to YAML file containing rate limit definitions                                       |         |
 
-```bash /dev/null/self-hosted-basic.sh#L1-3
+```bash /dev/null/self-hosted-basic.sh#L1-5
 spicedb serve \
-  --rate-limit-config=/path/to/config.yaml \
+  --extender-enabled=authzed-fgam,rate-limit \
+  --extender-authzed-fgam-endpoint=file:///path/to/fgam.yaml \
+  --extender-rate-limit-config=/path/to/fgam.yaml \
   ...
 ```
 
-The YAML file follows the same format as shown in the configuration examples above.
+The YAML file follows the same format as shown in the configuration examples above, with rate limits under the top-level `rate_limits` key.
+Enabling `rate-limit` without `authzed-fgam` fails at startup with `referenced dependency does not exist on chain: authzed-fgam`.
+Once `authzed-fgam` is enabled, API requests must authenticate with tokens defined in the FGAM file; the preshared key is no longer accepted.
+Keep `--grpc-preshared-key` set and identical on every replica: dispatch between replicas still authenticates with it.
+
+The configuration file is read once at startup. Changes to rate limits or tokens take effect only after SpiceDB restarts.
+
+Matching or bucketing by `service_account` (including `serviceAccount` in CEL expressions) requires the corresponding tokens and service accounts to be defined in the same file. Matching by `role` also requires the role to be assigned to the service account there.
 
 #### Distributed Rate Limiting
 
@@ -326,36 +338,64 @@ The YAML file follows the same format as shown in the configuration examples abo
   Enterprise deployments. AuthZed Dedicated handles this automatically.
 </Callout>
 
-For self-hosted deployments, you can enable distributed coordination across replicas using gossip for accurate global rate limits.
+Gossip coordination across replicas is enabled by default, for accurate global rate limits.
+Each replica discovers its peers by watching the Kubernetes EndpointSlices of a Service in its namespace, and connects to them over QUIC (UDP), so gossip only works when SpiceDB runs in Kubernetes.
 
-##### Enabling Gossip
+Set `--extender-rate-limit-gossip-replicas` to the actual number of SpiceDB replicas.
+When gossip is unavailable (or disabled), each replica falls back to safe mode and enforces its share of the limit (`limit / replicas`) with a reduced burst.
 
-```bash /dev/null/gossip-flags.sh#L1-10
+Outside Kubernetes, replicas cannot discover each other, so disable gossip with `--extender-rate-limit-gossip-enabled=false` and rely on safe mode.
+
+##### Kubernetes Requirements
+
+- **Service name**: set `--extender-rate-limit-gossip-target-service` to the name of the SpiceDB Service. The default is only populated on AuthZed-managed deployments; if it's empty, peer discovery fails with `service name is required`.
+- **Namespace**: set the `POD_NAMESPACE` environment variable from the downward API (`fieldRef: metadata.namespace`). If it's unset, replicas look for peers in the `default` namespace.
+- **Network**: allow UDP traffic on the gossip port (default `6000`) between SpiceDB pods. Peers use the Service port named by `--extender-rate-limit-gossip-port-name` (default `gossip`), falling back to the listen port.
+- **RBAC**: the pod's ServiceAccount needs `list` and `watch` on `endpointslices` in the `discovery.k8s.io` API group in its namespace. Without it, pods start but the API does not serve requests.
+- **TLS certificates**: gossip connections require TLS certificates. Without them, peers fail to connect with `tls: unrecognized name` and every replica stays in safe mode. The certificate must be valid for `{service}.{namespace}.svc.cluster.local`, or the name set with `--extender-rate-limit-gossip-tls-server-name`.
+
+```yaml /dev/null/gossip-rbac.yaml#L1-8
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: spicedb-gossip
+rules:
+  - apiGroups: ["discovery.k8s.io"]
+    resources: ["endpointslices"]
+    verbs: ["list", "watch"]
+```
+
+##### Configuring Gossip
+
+```bash /dev/null/gossip-flags.sh#L1-11
 spicedb serve \
-  --rate-limit-config=/path/to/config.yaml \
-  --rate-limit-gossip-enabled=true \
-  --rate-limit-gossip-listen-addr=:6000 \
-  --rate-limit-gossip-target-service=spicedb \
-  --rate-limit-gossip-port-name=gossip \
-  --rate-limit-gossip-replicas=3 \
-  --rate-limit-gossip-use-dispatch-tls=true \
+  --extender-enabled=authzed-fgam,rate-limit \
+  --extender-authzed-fgam-endpoint=file:///path/to/fgam.yaml \
+  --extender-rate-limit-config=/path/to/fgam.yaml \
+  --extender-rate-limit-gossip-target-service=spicedb \
+  --extender-rate-limit-gossip-replicas=3 \
+  --extender-rate-limit-gossip-tls-cert=/tls/tls.crt \
+  --extender-rate-limit-gossip-tls-key=/tls/tls.key \
+  --extender-rate-limit-gossip-tls-ca=/tls/ca.crt \
   ...
 ```
 
+Once gossip is healthy, `spicedb_ratelimit_gossip_peers_active` equals the number of replicas minus one on each pod.
+
 #### Gossip Configuration Flags
 
-| Flag                                   | Default   | Description                                 |
-| -------------------------------------- | --------- | ------------------------------------------- |
-| `--rate-limit-gossip-enabled`          | `false`   | Enable distributed rate limiting via gossip |
-| `--rate-limit-gossip-listen-addr`      | `:6000`   | Address for gossip connections              |
-| `--rate-limit-gossip-target-service`   | `spicedb` | Kubernetes service name for peer discovery  |
-| `--rate-limit-gossip-port-name`        | `""`      | Port name to use for peer addresses         |
-| `--rate-limit-gossip-replicas`         | `1`       | Number of replicas for rate division        |
-| `--rate-limit-gossip-use-dispatch-tls` | `false`   | Use dispatch TLS certificates for gossip    |
-| `--rate-limit-gossip-tls-cert`         | `""`      | TLS certificate for gossip                  |
-| `--rate-limit-gossip-tls-key`          | `""`      | TLS key for gossip                          |
-| `--rate-limit-gossip-tls-ca`           | `""`      | TLS CA for mutual TLS                       |
-| `--rate-limit-gossip-tls-server-name`  | `""`      | Server name for TLS verification            |
+| Flag                                            | Default  | Description                                                                                         |
+| ----------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------- |
+| `--extender-rate-limit-gossip-enabled`          | `true`   | Enable distributed rate limiting via gossip                                                         |
+| `--extender-rate-limit-gossip-listen-addr`      | `:6000`  | Address for gossip connections                                                                      |
+| `--extender-rate-limit-gossip-target-service`   | `""`     | Kubernetes service name for peer discovery (defaults to the `authzed.com/cluster` Kubernetes label) |
+| `--extender-rate-limit-gossip-port-name`        | `gossip` | Port name to use for peer addresses                                                                 |
+| `--extender-rate-limit-gossip-replicas`         | `1`      | Number of replicas for rate division                                                                |
+| `--extender-rate-limit-gossip-use-dispatch-tls` | `false`  | Use dispatch TLS certificates for gossip                                                            |
+| `--extender-rate-limit-gossip-tls-cert`         | `""`     | TLS certificate for gossip                                                                          |
+| `--extender-rate-limit-gossip-tls-key`          | `""`     | TLS key for gossip                                                                                  |
+| `--extender-rate-limit-gossip-tls-ca`           | `""`     | TLS CA for mutual TLS                                                                               |
+| `--extender-rate-limit-gossip-tls-server-name`  | `""`     | Server name for TLS verification (defaults to `{service}.{namespace}.svc.cluster.local`)            |
 
 #### Monitoring
 
@@ -379,7 +419,7 @@ When a rate limit is exceeded, the API returns:
 - **Response Trailers**:
 - `x-ratelimit-id`: The rate limit ID that was exceeded
 - `x-ratelimit-key`: The bucket key
-- `retry-after`: Seconds until the client can retry
+- `retry-after`: Seconds until the client can retry (omitted when zero)
 
 Example error handling in Go:
 
@@ -410,7 +450,8 @@ if err != nil {
 
 #### Rate Limits Not Applied
 
-- Verify the configuration file is being loaded with `--rate-limit-config`
+- Verify both extenders are enabled with `--extender-enabled=authzed-fgam,rate-limit` and the configuration file is set with `--extender-rate-limit-config`
+- On startup, look for `rate limit configuration loaded successfully` in the logs; `rate limit extender disabled: no config path provided` means the config flag is missing
 - Check logs for configuration parsing errors
 - Ensure match criteria are correctly specified (arrays for endpoints, service accounts, etc.)
 
@@ -423,7 +464,7 @@ if err != nil {
 
 #### Rate Limits Too Restrictive in Safe Mode
 
-- Increase `--rate-limit-gossip-replicas` if it doesn't match actual deployment
+- Ensure `--extender-rate-limit-gossip-replicas` matches the actual number of replicas (a value that's too high makes limits stricter)
 - Fix gossip connectivity to enable coordinated mode
 - Consider adjusting base rate limits to account for safe mode operation
 
