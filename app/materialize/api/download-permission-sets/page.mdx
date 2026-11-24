@@ -1,6 +1,6 @@
 ---
 title: "DownloadPermissionSets"
-description: "Bulk-download permission sets as Parquet or Avro files for a fast initial backfill, with guidance on parsing normalized and denormalized files and why Parquet is the recommended format."
+description: "Bulk-download permission sets as Parquet files for a fast initial backfill, with the columns in each file and how to query them."
 ---
 
 import { Callout } from "nextra/components";
@@ -29,64 +29,94 @@ The response ([`DownloadPermissionSetsResponse`]) lists the available [`File`]s:
 
 ```json
 {
-  "timestamp": "2026-07-01T12:00:00Z",
+  "timestamp": "2024-05-10T11:10:38Z",
+  "at_revision": {
+    "token": "GiAKHjE3MTUzMzk0Mzg2MjA4NzI1MDIuMDAwMDAwMDAwMA=="
+  },
   "files": [
     { "name": "metadata.json", "url": "https://..." },
-    { "name": "members.parquet", "url": "https://..." },
-    { "name": "sets.parquet", "url": "https://..." },
-    { "name": "member_to_set.parquet", "url": "https://..." },
-    { "name": "set_to_set.parquet", "url": "https://..." }
+    { "name": "flat_member_to_set.parquet", "url": "https://..." },
+    { "name": "flat_set_to_set.parquet", "url": "https://..." }
   ]
 }
 ```
+
+`at_revision` is the ZedToken for the revision the files were built at. When you switch to [WatchPermissionSets] after the backfill, pass it as `optional_starting_after` so the stream picks up right after the files, without gaps.
 
 Each file's `url` is a **time-limited signed URL**: download promptly, and re-call `DownloadPermissionSets` to get fresh URLs if a batch download runs long. `metadata.json` is always included and describes the revision:
 
 ```json
 {
-  "revision": "the_zed_token",
+  "revision": "1715339438620872502.0000000000",
   "watched_permissions": ["document#view@user", "document#edit@user"],
   "numShards": 4,
-  "files": ["members-shard-0.parquet", "members-shard-1.parquet", "..."]
+  "files": ["flat_member_to_set-shard-0.parquet", "flat_member_to_set-shard-1.parquet", "..."]
 }
 ```
 
-<Callout type="warning">
-  Large datasets are sharded across multiple files per table (`members-shard-0.parquet`,
-  `members-shard-1.parquet`, and so on). The internal IDs in each table are only unique *within
-  their own shard*. Read `metadata.json`'s `files` list to discover the actual shard files for a
-  revision, and treat each table's shards as one combined multi-file dataset rather than
-  concatenating them naively.
-</Callout>
-
-## File formats
+`revision` is in the datastore's own revision format. Where an API needs a ZedToken for this revision, use the response's `at_revision`.
 
 <Callout type="warning">
-  Avro support is being phased out. New integrations should use Parquet: it's faster to query, works
-  natively with standard data tools, and is where future development is focused.
+  Large datasets are sharded across multiple files per table (`flat_member_to_set-shard-0.parquet`,
+  `flat_member_to_set-shard-1.parquet`, and so on). Read `metadata.json`'s `files` list to discover
+  the actual shard files for a revision, and treat each table's shards as one combined multi-file
+  dataset.
 </Callout>
 
-Which formats a given revision publishes depends on how your Materialize instance is configured. Work with your AuthZed account team to enable Parquet if you're not seeing it in your manifest yet.
+## Files
 
-### Parquet (recommended)
+Materialize publishes [permission set](../concepts/permission-sets) data as two Parquet files, one for each kind of edge. Every row holds the full string values for both ends of its edge, so you don't need lookup tables to read them.
 
-Parquet ships in two shapes, covering the same [permission set](../concepts/permission-sets) data at different levels of normalization:
+### `flat_member_to_set.parquet`
 
-- **Normalized** (`members.parquet`, `sets.parquet`, `member_to_set.parquet`, `set_to_set.parquet`): mirrors the underlying model directly. `members.parquet` and `sets.parquet` assign a compact integer `internal_id` to each subject and each resource#permission set. `member_to_set.parquet` expresses each **member → set** edge as a `member_id` column plus a `sets` column (a list of set IDs). `set_to_set.parquet` expresses each **set → set** edge (see [Permission Sets](../concepts/permission-sets) for what "child" and "parent" mean here) as a `child_set_id` column plus a `parent_sets` column (a list of parent set IDs). Smaller on disk, but you'll need to join back to `members`/`sets` to recover the actual `subject_type`/`subject_id` or `resource_type`/`resource_id` values.
-- **Flat** (`flat_member_to_set.parquet`, `flat_set_to_set.parquet`): fully denormalized, every row already carries the resolved string values directly, no lookup tables, no joins. `flat_member_to_set.parquet` has `resource_type`, `resource_rel`, `resource_id`, `subject_type`, `subject_rel`, `subject_id`. `flat_set_to_set.parquet` has the same six fields split into `child_resource_type`/`child_resource_rel`/`child_resource_id` and `parent_resource_type`/`parent_resource_rel`/`parent_resource_id`. Pick this if you're loading straight into a query engine or your own database.
+Each row is a **member → set** edge: a subject that's directly a member of a set. Subjects are usually members of the relation they were written to, such as `document:123#viewer`, rather than of the permission you watch, such as `document:123#view`. The relation's set is then nested in the permission's set, in `flat_set_to_set.parquet`.
 
-Both shapes are plain Parquet files, so any Parquet reader works: DuckDB, pandas/pyarrow, Spark, and most data warehouses can query them directly without a custom parser. For example, with the flat files and [DuckDB](https://duckdb.org/):
+| Column          | Example    | Meaning                                                    |
+| --------------- | ---------- | ---------------------------------------------------------- |
+| `resource_type` | `document` | The set's resource type                                    |
+| `resource_id`   | `123`      | The set's resource ID                                      |
+| `resource_rel`  | `viewer`   | The set's relation or permission                           |
+| `subject_type`  | `user`     | The member's type                                          |
+| `subject_id`    | `evan`     | The member's ID                                            |
+| `subject_rel`   |            | The member's relation, or empty if the member is an object |
+
+### `flat_set_to_set.parquet`
+
+Each row is a **set → set** edge: a **child** set nested in a **parent** set, so every member of the child is also a member of the parent. Nesting is already flattened: a set nested several levels deep links straight to the permission it grants. See [Permission Sets](../concepts/permission-sets) for what "child" and "parent" mean here.
+
+| Column                 | Example       | Meaning                                 |
+| ---------------------- | ------------- | --------------------------------------- |
+| `child_resource_type`  | `group`       | The child set's resource type           |
+| `child_resource_id`    | `engineering` | The child set's resource ID             |
+| `child_resource_rel`   | `member`      | The child set's permission or relation  |
+| `parent_resource_type` | `document`    | The parent set's resource type          |
+| `parent_resource_id`   | `456`         | The parent set's resource ID            |
+| `parent_resource_rel`  | `view`        | The parent set's permission or relation |
+
+### Querying the files
+
+These are plain Parquet files, so any Parquet reader works: DuckDB, pandas/pyarrow, Spark, and most data warehouses can query them directly without a custom parser.
+
+To find everyone in a permission set, combine its direct members with the members of its child sets. Because nesting is already flattened, one join is enough. For example, with [DuckDB](https://duckdb.org/):
 
 ```sql
--- Every subject that can view a given document, no joins required
+-- Every subject that can view document 123
 SELECT subject_type, subject_id
 FROM 'flat_member_to_set.parquet'
-WHERE resource_type = 'document' AND resource_id = '123' AND resource_rel = 'view';
+WHERE resource_type = 'document' AND resource_id = '123' AND resource_rel = 'view'
+UNION
+SELECT m.subject_type, m.subject_id
+FROM 'flat_set_to_set.parquet' s
+JOIN 'flat_member_to_set.parquet' m
+  ON m.resource_type = s.child_resource_type
+  AND m.resource_id = s.child_resource_id
+  AND m.resource_rel = s.child_resource_rel
+WHERE s.parent_resource_type = 'document'
+  AND s.parent_resource_id = '123'
+  AND s.parent_resource_rel = 'view';
 ```
 
-### Avro (legacy)
-
-Avro files (`members.avro`, `sets.avro`, `member_to_set.avro`, `set_to_set.avro`) use the same normalized shape as the Parquet equivalents: integer `internal_id`s in `members`/`sets`, referenced by `member_to_set`/`set_to_set`. They're encoded as Avro [Object Container Format](https://avro.apache.org/docs/current/specification/#object-container-files), which embeds its own schema, so any standard Avro library can decode a file without needing the schema separately.
+See [Syncing to a Relational Database](../guides/relational-database) for the same pattern in tables you keep up to date.
 
 ## Errors
 
