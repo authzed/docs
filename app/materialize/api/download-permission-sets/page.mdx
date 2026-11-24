@@ -43,55 +43,70 @@ The response ([`DownloadPermissionSetsResponse`]) lists the available [`File`]s:
 
 `at_revision` is the ZedToken for the revision the files were built at. When you switch to [WatchPermissionSets] after the backfill, pass it as `optional_starting_after` so the stream picks up right after the files, without gaps.
 
-Each file's `url` is a **time-limited signed URL**: download promptly, and re-call `DownloadPermissionSets` to get fresh URLs if a batch download runs long. `metadata.json` is always included and describes the revision:
+Each file's `url` is a **time-limited signed URL**: download promptly. If a batch download runs long and the URLs expire, re-call `DownloadPermissionSets` with the previous response's `at_revision` as `optional_at_revision`. Without it, you'd get the newest files, and could end up mixing files from different snapshots.
+
+### Sharded responses
+
+<Callout type="info">
+  Sharding isn't generally available yet. If you're interested in it, contact your AuthZed account
+  team.
+</Callout>
+
+Large datasets can be sharded, with each file split into several parts. The response then lists every part:
 
 ```json
 {
-  "revision": "1715339438620872502.0000000000",
-  "watched_permissions": ["document#view@user", "document#edit@user"],
-  "numShards": 4,
-  "files": ["flat_member_to_set-shard-0.parquet", "flat_member_to_set-shard-1.parquet", "..."]
+  "timestamp": "2024-05-10T11:10:38Z",
+  "at_revision": {
+    "token": "GiAKHjE3MTUzMzk0Mzg2MjA4NzI1MDIuMDAwMDAwMDAwMA=="
+  },
+  "files": [
+    { "name": "metadata.json", "url": "https://..." },
+    { "name": "flat_member_to_set-shard-0.parquet", "url": "https://..." },
+    { "name": "flat_member_to_set-shard-1.parquet", "url": "https://..." },
+    { "name": "flat_set_to_set-shard-0.parquet", "url": "https://..." },
+    { "name": "flat_set_to_set-shard-1.parquet", "url": "https://..." }
+  ]
 }
 ```
 
-`revision` is in the datastore's own revision format. Where an API needs a ZedToken for this revision, use the response's `at_revision`.
-
-<Callout type="warning">
-  Large datasets are sharded across multiple files per table (`flat_member_to_set-shard-0.parquet`,
-  `flat_member_to_set-shard-1.parquet`, and so on). Read `metadata.json`'s `files` list to discover
-  the actual shard files for a revision, and treat each table's shards as one combined multi-file
-  dataset.
-</Callout>
+Treat each file's parts as one combined dataset. For example, read `flat_member_to_set-shard-*.parquet` together as `flat_member_to_set`.
 
 ## Files
 
-Materialize publishes [permission set](../concepts/permission-sets) data as two Parquet files, one for each kind of edge. Every row holds the full string values for both ends of its edge, so you don't need lookup tables to read them.
+Materialize publishes [permission set](../concepts/permission-sets) data as two Parquet files, one for each kind of edge.
 
 ### `flat_member_to_set.parquet`
 
-Each row is a **member → set** edge: a subject that's directly a member of a set. Subjects are usually members of the relation they were written to, such as `document:123#viewer`, rather than of the permission you watch, such as `document:123#view`. The relation's set is then nested in the permission's set, in `flat_set_to_set.parquet`.
+Each row is a **member → set** edge: a subject that's directly a member of a set. A subject is usually a member of an intermediate set, such as `document:123#viewer`, rather than of the permission you watch, such as `document:123#view`. That set is then nested in the permission's set, in `flat_set_to_set.parquet`.
 
 | Column          | Example    | Meaning                                                    |
 | --------------- | ---------- | ---------------------------------------------------------- |
 | `resource_type` | `document` | The set's resource type                                    |
 | `resource_id`   | `123`      | The set's resource ID                                      |
-| `resource_rel`  | `viewer`   | The set's relation or permission                           |
+| `resource_rel`  | `viewer`   | The set's name (see below)                                 |
 | `subject_type`  | `user`     | The member's type                                          |
 | `subject_id`    | `evan`     | The member's ID                                            |
 | `subject_rel`   |            | The member's relation, or empty if the member is an object |
+
+<Callout type="warning">
+  `resource_rel` isn't always a relation or permission from your schema. It can be a name
+  Materialize generates, such as `viewer.0`. Treat it as an opaque string, and only use it to join
+  with `child_resource_rel` in `flat_set_to_set.parquet`.
+</Callout>
 
 ### `flat_set_to_set.parquet`
 
 Each row is a **set → set** edge: a **child** set nested in a **parent** set, so every member of the child is also a member of the parent. Nesting is already flattened: a set nested several levels deep links straight to the permission it grants. See [Permission Sets](../concepts/permission-sets) for what "child" and "parent" mean here.
 
-| Column                 | Example       | Meaning                                 |
-| ---------------------- | ------------- | --------------------------------------- |
-| `child_resource_type`  | `group`       | The child set's resource type           |
-| `child_resource_id`    | `engineering` | The child set's resource ID             |
-| `child_resource_rel`   | `member`      | The child set's permission or relation  |
-| `parent_resource_type` | `document`    | The parent set's resource type          |
-| `parent_resource_id`   | `456`         | The parent set's resource ID            |
-| `parent_resource_rel`  | `view`        | The parent set's permission or relation |
+| Column                 | Example       | Meaning                                                    |
+| ---------------------- | ------------- | ---------------------------------------------------------- |
+| `child_resource_type`  | `group`       | The child set's resource type                              |
+| `child_resource_id`    | `engineering` | The child set's resource ID                                |
+| `child_resource_rel`   | `member`      | The child set's name, an opaque string like `resource_rel` |
+| `parent_resource_type` | `document`    | The parent set's resource type                             |
+| `parent_resource_id`   | `456`         | The parent set's resource ID                               |
+| `parent_resource_rel`  | `view`        | The parent set's permission or relation                    |
 
 ### Querying the files
 
