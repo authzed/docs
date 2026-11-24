@@ -23,10 +23,13 @@ Available metrics include operational information about the Go runtime and servi
 For guidance on using the `spicedb_services_logical_checks_total` counter to size SpiceDB compute, see [Scaling the SpiceDB Compute](/spicedb/ops/load-testing#scaling-the-spicedb-compute).
 
 A [Grafana dashboard][grafana-dashboard] is available for visualizing these metrics.
+It tracks the latest SpiceDB release, so panels for recently added metrics stay empty on older versions.
+AuthZed Dedicated exports metrics through its own endpoint; for those, use the [AuthZed Dedicated Grafana dashboard][dedicated-grafana-dashboard].
 
 [command]: /spicedb/concepts/commands
 [prom-endpoint]: https://prometheus.io/docs/concepts/jobs_instances/
-[grafana-dashboard]: https://github.com/authzed/examples/blob/main/authzed-dedicated-metrics/prometheus-grafana/grafana/dashboards/spicedb_grafana_dash.json
+[grafana-dashboard]: https://github.com/authzed/spicedb/blob/main/development/grafana/dashboards/dashboard.json
+[dedicated-grafana-dashboard]: https://github.com/authzed/examples/tree/main/authzed-dedicated-metrics/prometheus-grafana
 
 ## Profiling
 
