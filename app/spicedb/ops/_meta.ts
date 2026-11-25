@@ -8,4 +8,5 @@ export default {
   resilience: "Improving Resilience",
   observability: "Observability Tooling",
   "load-testing": "Load Testing",
+  "rotating-preshared-keys": "Rotating Preshared Keys",
 };
