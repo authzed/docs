@@ -2,6 +2,7 @@ export default {
   "rag-motia-spicedb":
     "Build a Multi-Tenant RAG with Fine-Grained Authorization using Motia and SpiceDB",
   "ai-agent-authorization": "Authorization for AI Agents using SpiceDB",
+  "secure-mcp-servers": "Secure an MCP Server with Fine Grained Authorization",
   "secure-rag-pipelines": "Securing RAG Pipelines with SpiceDB",
   "agentic-rag": "Tutorial: Building Agentic RAG with SpiceDB, LangChain & Weaviate",
   "federated-authorization": "Federate Authorization Across Multiple Identity Providers",
