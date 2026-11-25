@@ -1,0 +1,143 @@
+---
+title: "Rotating Preshared Keys"
+description: "Rotate SpiceDB gRPC preshared keys without interrupting client requests or dispatch between SpiceDB nodes, including environments where pods restart in no particular order."
+---
+
+import { Callout, Steps } from "nextra/components";
+
+# Rotating Preshared Keys
+
+SpiceDB uses the keys passed to `--grpc-preshared-key` for two things:
+
+- Authenticating requests from clients to the SpiceDB API.
+- Authenticating [dispatch] requests that SpiceDB nodes send to each other.
+
+Clients are under your control, so moving them to a new key is a matter of updating their configuration.
+Dispatch is handled by SpiceDB itself, so rotating keys without dispatch errors depends on the order of the keys you configure.
+This page explains why and gives two ways to rotate keys with no interruption.
+
+[dispatch]: https://authzed.com/blog/consistent-hash-load-balancing-grpc
+
+## How SpiceDB uses multiple keys
+
+`--grpc-preshared-key` (or the `SPICEDB_GRPC_PRESHARED_KEY` environment variable) accepts a comma-separated list of keys:
+
+```sh
+spicedb serve --grpc-preshared-key "key-b,key-a"
+```
+
+| Behavior                  | Detail                                                                                                               |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Accepting requests        | A request is accepted if its bearer token matches **any** configured key. This applies to both the API and dispatch. |
+| Sending dispatch requests | A node authenticates to other nodes with the **first** configured key only.                                          |
+| Reloading                 | Keys are read once at startup. A change takes effect when the node restarts.                                         |
+
+A dispatch request fails with `PermissionDenied` when a node sends a key that the receiving node does not have configured.
+Rotation is safe as long as every running node sends a key that every other running node accepts.
+
+<Callout type="warning">
+  Readiness checks do not verify the dispatch key. A node with a mismatched key reports itself as
+  ready, and its dispatch requests fail. See [Monitoring a rotation](#monitoring-a-rotation).
+</Callout>
+
+<Callout type="info">
+  If you use [Restricted API Access](/authzed/concepts/restricted-api-access), clients authenticate
+  with restricted API tokens instead. The preshared key is then only used for dispatch, but the
+  rules on this page still apply to it.
+</Callout>
+
+## Choosing an approach
+
+- **You control when nodes restart** (for example, `kubectl rollout restart` or the [SpiceDB Operator]): use [staged rollouts](#rotating-with-staged-rollouts).
+  It keeps at most two keys valid and needs three rollouts per rotation.
+- **Nodes restart on their own schedule** (for example, regular node replacement) and you load keys from a secret manager at startup: use a [three-key list](#rotating-with-a-three-key-list).
+  It needs no coordinated rollout, but keeps three keys valid at a time.
+
+[SpiceDB Operator]: /spicedb/ops/operator
+
+## Rotating with staged rollouts
+
+To replace `key-a` with `key-b`, deploy three key lists in order.
+Each rollout must finish, with no node still running the previous list, before you start the next one.
+
+| Step  | Key list      | Nodes send | Nodes accept     |
+| ----- | ------------- | ---------- | ---------------- |
+| Start | `key-a`       | `key-a`    | `key-a`          |
+| 1     | `key-a,key-b` | `key-a`    | `key-a`, `key-b` |
+| 2     | `key-b,key-a` | `key-b`    | `key-a`, `key-b` |
+| 3     | `key-b`       | `key-b`    | `key-b`          |
+
+<Steps>
+
+### Add the new key in second position
+
+Deploy `key-a,key-b`.
+Every node still sends `key-a`, and nodes on either list accept it.
+
+### Move the new key to the front
+
+Deploy `key-b,key-a`.
+Updated nodes send `key-b`, which every node accepts since step 1.
+
+Before the next step, update every client that authenticates with a preshared key to use `key-b`.
+
+### Remove the old key
+
+Deploy `key-b`.
+Every node already sends `key-b`, so removing `key-a` only affects clients that still use it.
+
+</Steps>
+
+Don't skip a step.
+Going from `key-a` directly to `key-b` or to `key-b,key-a` leaves a window where updated nodes send `key-b` to nodes that only accept `key-a`.
+
+## Rotating with a three-key list
+
+When nodes can restart at any time, in any order, you can't wait for a rollout to finish.
+Instead, keep the three most recent key versions valid, and put the **second-newest** key first so that it is the one nodes send:
+
+```sh
+SPICEDB_GRPC_PRESHARED_KEY="<previous>,<current>,<previous-previous>"
+```
+
+Here `<current>` is the newest version in your secret manager.
+Build this list when the node starts, from the three latest versions.
+To rotate, create a new version. No other action is needed.
+
+| Node started after  | Key list            | Sends   | Accepts                   |
+| ------------------- | ------------------- | ------- | ------------------------- |
+| `key-5` was created | `key-4,key-5,key-3` | `key-4` | `key-3`, `key-4`, `key-5` |
+| `key-6` was created | `key-5,key-6,key-4` | `key-5` | `key-4`, `key-5`, `key-6` |
+| `key-7` was created | `key-6,key-7,key-5` | `key-6` | `key-5`, `key-6`, `key-7` |
+
+Nodes from two neighboring rows can run side by side:
+older nodes send a key that newer nodes still accept as `<previous-previous>`,
+and newer nodes send a key that older nodes already accept as `<current>`.
+
+This holds only when nodes from **at most two neighboring rows** run at once.
+Make sure the time between rotations is longer than the longest time a node can run before it is restarted.
+If you ever need to rotate sooner, restart every node after the earlier rotation and let that finish first.
+
+For the first rotations, when fewer than three versions exist, put the second-newest key first if there is one, otherwise the newest:
+`key-1`, then `key-1,key-2`, then `key-2,key-3,key-1`.
+
+## Revoking a compromised key
+
+A key stays valid until no configured list includes it.
+Removing it everywhere at once would break dispatch between nodes on the old and new lists, so remove it with the same rules as a normal rotation:
+
+- With staged rollouts, run the three steps without waiting between them, other than for each rollout to finish.
+- With a three-key list, repeat "create a new version, then restart every node and let the restart finish" until the compromised key is no longer one of the three newest.
+  This takes two cycles if it was `<previous>` and three if it was `<current>`.
+
+## Monitoring a rotation
+
+Requests rejected because of a key mismatch are counted in SpiceDB's gRPC [metrics](/spicedb/ops/observability#prometheus).
+Alert on dispatch requests that fail authentication, for example:
+
+```promql
+sum(rate(grpc_server_handled_total{grpc_service="dispatch.v1.DispatchService", grpc_code=~"PermissionDenied|Unauthenticated"}[5m])) > 0
+```
+
+Watch this during and after each rotation step.
+To catch clients that still use an old key, run the same query without the `grpc_service` filter.
