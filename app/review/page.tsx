@@ -33,6 +33,8 @@ const MATRIX = new Set([
 const CONFIRM: Record<string, string> = {
   "/authzed/concepts/deployments": "Assumed Cloud + Dedicated (managed deployments).",
   "/authzed/concepts/feature-maturity": "Assumed all managed tiers.",
+  "/authzed/concepts/versioning":
+    "Assumed all four: open source version numbers apply everywhere, enterprise versions to the rest.",
   "/authzed/api/http-api": "Assumed all managed tiers; page duplicates the SpiceDB HTTP API doc.",
   "/mcp": "Assumed all four; unclear which products the MCP servers target.",
   "/mcp/authzed/authzed-mcp-server": "Assumed all four.",

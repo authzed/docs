@@ -83,6 +83,7 @@ const PAGE_AVAILABILITY: Record<string, Availability | null> = {
   "/authzed/concepts/security-embargo": MANAGED,
   "/authzed/concepts/deployments": { available: ["cloud", "dedicated"] },
   "/authzed/concepts/feature-maturity": MANAGED,
+  "/authzed/concepts/versioning": ALL,
   "/authzed/guides/cloud": { available: ["cloud"] },
   "/authzed/guides/postgres-fdw": { available: ["cloud", "dedicated"] },
   "/authzed/guides/setting-up-private-networking": DEDICATED,

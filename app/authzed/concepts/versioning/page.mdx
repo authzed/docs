@@ -1,0 +1,96 @@
+---
+title: "SpiceDB Versions"
+description: "How to read SpiceDB version numbers and AuthZed's enterprise versions, and how new versions reach your deployment."
+---
+
+import { Callout } from "nextra/components";
+
+# SpiceDB Versions
+
+This page explains how SpiceDB versions are numbered, how to read the enterprise versions that AuthZed builds, and how a new version reaches your deployment.
+
+<Callout type="info">
+  This page explains how versions are numbered. To find out which earlier versions AuthZed continues
+  to patch, contact your AuthZed account team.
+</Callout>
+
+## Open source versions
+
+SpiceDB follows [Semantic Versioning]. Each version has three numbers, such as `v1.57.1`:
+
+| Part  | In `v1.57.1` | Increases when a release…                                                            |
+| ----- | ------------ | ------------------------------------------------------------------------------------ |
+| Major | `1`          | Makes an incompatible change. Every SpiceDB release since v1.0.0 has major version 1 |
+| Minor | `57`         | Adds features in a backward-compatible way. It can include [datastore migrations]    |
+| Patch | `1`          | Only fixes bugs, in a backward-compatible way                                        |
+
+Each release has release notes on the [SpiceDB GitHub releases page].
+Read them before you upgrade: they list new features, datastore migrations, changes to flags, and changes to the minimum supported version of a datastore.
+
+If you run SpiceDB yourself, upgrade one minor version at a time. See [Sequential Updates] for why.
+
+## API versions
+
+The SpiceDB API has its own version, in the name of each API package: `authzed.api.v1`.
+The [HTTP API] uses the same version in its paths, such as `/v1/relationships/read`.
+
+This version is the API's compatibility contract.
+Code written against `authzed.api.v1` keeps working with later SpiceDB releases.
+An incompatible change would need a new API version, such as `v2`.
+
+There are two exceptions:
+
+- **Experimental methods.** Methods in `ExperimentalService` are prototypes for future versions of the stable API. They can change, and they're deprecated once they're promoted. For example, `ExperimentalService.BulkImportRelationships` became `PermissionsService.ImportBulkRelationships`.
+- **Materialize.** The Materialize API is version `v0` (`authzed.api.materialize.v0`), so it can still change incompatibly.
+
+The API definitions are published on [buf.build][API definitions], and the [client libraries] each have their own releases.
+Their version numbers are separate from SpiceDB's version numbers: a version of the API definitions doesn't match the SpiceDB release with the same number.
+
+## Enterprise versions
+
+AuthZed builds its own versions of SpiceDB for AuthZed Cloud, AuthZed Dedicated, and SpiceDB Enterprise.
+An enterprise version starts with the open source version it's built on, and adds a suffix.
+For example, in `v1.57.1+enterprise.v2`, `v1.57.1` is the open source version and `enterprise.v2` is the enterprise build number.
+
+| Version                                  | Meaning                                                                                                        |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `v1.57.1+enterprise.v1`                  | The first enterprise build of open source SpiceDB v1.57.1                                                      |
+| `v1.57.1+enterprise.v2`                  | A later enterprise build of v1.57.1, with changes to AuthZed's enterprise code, such as fixes and improvements |
+| `v1.57.1-hotfix+enterprise.v1.hotfix.v1` | A hotfix of v1.57.1, often for a [security fix under embargo](./security-embargo). It's newer than v1.57.1     |
+
+In the [management dashboard](./management-dashboard), a Permissions System's card shows its full version, such as `v1.57.1+enterprise.v2`.
+The version list in its settings shows a shorter name for each version, such as "SpiceDB 1.57.1.2".
+
+AuthZed support notifies enterprise customers when a hotfix is released.
+
+Container image tags can't contain `+`, so image tags use `-` instead. For example, the image for `v1.57.1+enterprise.v2` is tagged `v1.57.1-enterprise.v2`.
+
+To see the open source changes in an enterprise version, read the release notes for the open source version it starts with.
+For `v1.57.1+enterprise.v2`, that's [v1.57.1](https://github.com/authzed/spicedb/releases/tag/v1.57.1).
+
+<Callout type="warning">
+  The enterprise suffixes don't follow Semantic Versioning's ordering rules, so don't sort
+  enterprise versions with a Semantic Versioning tool. For example, Semantic Versioning puts
+  `v1.57.1-hotfix` _before_ `v1.57.1`, but the hotfix is the newer release. Your [update
+  channel](./update-channels) determines which version follows which.
+</Callout>
+
+## How new versions reach your deployment
+
+In AuthZed Cloud and AuthZed Dedicated, your [update channel](./update-channels) decides which versions are offered to your deployment, and whether they're applied automatically.
+
+AuthZed also controls which upgrades are possible:
+
+- **Required intermediate versions.** Some upgrades must go through a particular version first, for example when a datastore migration has to run in stages. If your deployment is several versions behind, it upgrades through those versions in order.
+- **Withdrawn versions.** AuthZed can withdraw a version, for example after finding a bug in it. A withdrawn version is no longer offered as an upgrade, but a deployment already running it can still upgrade to a newer version.
+- **Security fixes.** AuthZed Dedicated deployments on the latest version in their update channel get embargoed security fixes automatically. See [Security Embargo](./security-embargo).
+
+If you've turned off automatic updates, you choose when to upgrade, but only to the versions your update channel offers.
+
+[Semantic Versioning]: https://semver.org/
+[HTTP API]: /spicedb/api/http-api
+[API definitions]: https://buf.build/authzed/api
+[client libraries]: /spicedb/getting-started/client-libraries
+[datastore migrations]: /spicedb/concepts/datastore-migrations
+[Sequential Updates]: /spicedb/concepts/datastore-migrations#sequential-updates
+[SpiceDB GitHub releases page]: https://github.com/authzed/spicedb/releases
